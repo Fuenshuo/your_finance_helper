@@ -10,6 +10,7 @@ class AppTheme {
   static const Color dividerColor = Color(0xFFE5E5EA); // 浅灰
   static const Color increaseColor = Color(0xFFFF3B30); // 温暖红
   static const Color decreaseColor = Color(0xFF34C759); // 理性绿
+  static const Color warningColor = Color(0xFFFF9500); // 橙色
 
   // 字体规范
   static const String fontFamily = 'Inter'; // 优先使用Inter，回退到系统字体
@@ -206,6 +207,7 @@ extension AppThemeExtensions on BuildContext {
   Color get dividerColor => AppTheme.dividerColor;
   Color get increaseColor => AppTheme.increaseColor;
   Color get decreaseColor => AppTheme.decreaseColor;
+  Color get warningColor => AppTheme.warningColor;
 
   // 获取间距
   double get spacing4 => AppTheme.baseSpacing * 0.5; // 4pt
@@ -220,4 +222,17 @@ extension AppThemeExtensions on BuildContext {
 
   // 获取阴影
   BoxShadow get cardShadow => AppTheme.cardShadow;
+
+  // 格式化金额
+  String formatAmount(double amount, {String currency = 'CNY'}) {
+    if (currency == 'CNY') {
+      return '¥${amount.toStringAsFixed(2)}';
+    }
+    return '\$${amount.toStringAsFixed(2)}';
+  }
+
+  // 格式化百分比
+  String formatPercentage(double percentage) {
+    return '${percentage.toStringAsFixed(1)}%';
+  }
 }

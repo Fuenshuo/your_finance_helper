@@ -1,0 +1,52 @@
+---
+globs: *.dart
+description: UI/UX design system and component guidelines
+---
+
+# UI/UX设计系统规范
+
+## 设计哲学
+提供轻松、无压力的记账体验，通过柔和的色彩、清晰的布局和直观的动效让复杂的财务管理变得简单而愉悦。
+
+## 色彩规范
+- 主背景色: `#F7F7FA` (淡雅灰)
+- 主题色: `#EAEAFB` (温柔紫)
+- 主操作色: `#007AFF` (活力蓝)
+- 主要文字色: `#1C1C1E` (深邃灰)
+- 辅助文字色: `#8A8A8E` (中性灰)
+- 增加/收益色: `#FF3B30` (温暖红)
+- 减少/负债色: `#34C759` (理性绿)
+- 警告色: `#FF9500` (橙色)
+
+## 布局规范
+- 基础单位: 8pt，所有间距都是8的倍数
+- 圆角半径: 12pt
+- 卡片阴影: `color: Colors.black.withOpacity(0.04), blurRadius: 16, spreadRadius: 0, offset: Offset(0, 4)`
+
+## 组件使用规范
+- 使用[AppCard](mdc:your_finance_flutter/lib/widgets/app_card.dart)作为基础卡片组件
+- 使用[AppAnimations](mdc:your_finance_flutter/lib/widgets/app_animations.dart)进行动效处理
+- 使用[AppTheme](mdc:your_finance_flutter/lib/theme/app_theme.dart)扩展方法访问设计规范
+
+## 动效规范
+- 页面转场: 使用AppAnimations.createRoute()
+- 列表项动画: 使用AppAnimations.animatedListItem()
+- 按钮反馈: 缩放0.95倍和透明度0.8
+- 数字滚动: 使用AppAnimations.animatedNumber()
+- 模态弹窗: 使用AppAnimations.showAppModalBottomSheet()
+
+## 间距使用
+```dart
+context.spacing4   // 4pt
+context.spacing8   // 8pt
+context.spacing12  // 12pt
+context.spacing16  // 16pt
+context.spacing24  // 24pt
+context.spacing32  // 32pt
+```
+
+## 格式化方法
+```dart
+context.formatAmount(amount)      // 格式化金额
+context.formatPercentage(percent) // 格式化百分比
+```

@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+description: Project structure and architecture guidelines
+---
+
+# 家庭资产记账应用项目结构指南
+
+## 项目概述
+这是一个Flutter跨平台家庭资产记账应用，支持Web、iOS、Android三端。
+
+## 核心架构
+- **状态管理**: 使用Provider模式进行状态管理
+- **数据持久化**: 使用SharedPreferences进行本地存储
+- **UI设计**: 基于卡片式设计，遵循8pt间距系统
+- **动效系统**: 统一的页面转场和微交互动效
+
+## 关键目录结构
+- `lib/models/` - 数据模型定义
+- `lib/providers/` - 状态管理Provider
+- `lib/screens/` - 页面界面
+- `lib/widgets/` - 可复用组件
+- `lib/services/` - 业务逻辑服务
+- `lib/theme/` - 主题和样式定义
+
+## 核心功能模块
+1. **资产管理系统** - 管理家庭各类资产
+2. **预算管理系统** - 信封预算和零基预算
+3. **交易记录系统** - 收支记录和分类管理
+4. **账户管理系统** - 多账户和多币种支持
+
+## 设计原则
+- 用户无感知的复式记账架构
+- 预算与交易深度集成
+- 总资产 = 账户余额 + 信封可用余额
+- 统一的UI/UX设计规范

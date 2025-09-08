@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/asset_provider.dart';
 import 'add_asset_flow_screen.dart';
 import 'asset_management_screen.dart';
+import 'budget_management_screen.dart';
 import '../widgets/asset_overview_card.dart';
 import '../widgets/asset_distribution_card.dart';
 import '../widgets/asset_chart_card.dart';
@@ -20,18 +21,28 @@ class DashboardScreen extends StatelessWidget {
         title: const Text('家庭资产'),
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                AppAnimations.createRoute(
-                  const AssetManagementScreen(),
-                ),
-              );
-            },
-          ),
-        ],
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.account_balance_wallet_outlined),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        AppAnimations.createRoute(
+                          const BudgetManagementScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        AppAnimations.createRoute(
+                          const AssetManagementScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
       ),
       body: Consumer<AssetProvider>(
         builder: (context, assetProvider, child) {

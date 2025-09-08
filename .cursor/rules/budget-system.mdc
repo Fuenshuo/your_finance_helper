@@ -1,0 +1,40 @@
+---
+description: Budget system architecture and implementation guidelines
+---
+
+# 预算系统架构指南
+
+## 核心设计理念
+预算与记账深度集成，实现"用户无感知的复式记账"：
+- 前端：简单的收支记录界面
+- 后端：自动生成复式记账分录
+- 每笔交易自动关联对应的信封预算
+
+## 总资产计算逻辑
+```
+总资产 = 账户资产 + 信封可用余额
+- 账户资产：现金、银行、投资等账户余额
+- 信封资产：各个预算分类中的可用余额
+- 负债处理：信用卡、贷款等显示为负数
+```
+
+## 预算类型
+1. **信封预算(EnvelopeBudget)**: 为特定类别设定支出限额
+2. **零基预算(ZeroBasedBudget)**: 将收入分配到各个类别
+
+## 关键数据模型
+- [EnvelopeBudget](mdc:your_finance_flutter/lib/models/budget.dart) - 信封预算模型
+- [ZeroBasedBudget](mdc:your_finance_flutter/lib/models/budget.dart) - 零基预算模型
+- [Transaction](mdc:your_finance_flutter/lib/models/transaction.dart) - 集成预算ID的交易模型
+
+## 状态管理
+- [BudgetProvider](mdc:your_finance_flutter/lib/providers/budget_provider.dart) - 预算状态管理
+- [TransactionProvider](mdc:your_finance_flutter/lib/providers/transaction_provider.dart) - 交易状态管理
+- [AccountProvider](mdc:your_finance_flutter/lib/providers/account_provider.dart) - 账户状态管理
+
+## 业务流程
+1. **月初规划**: 用户创建零基预算，将收入分配到各个信封
+2. **日常记账**: 用户记录支出，系统自动从对应信封扣除
+3. **实时监控**: 总资产 = 账户余额 + 所有信封可用余额
+4. **智能提醒**: 信封接近上限或超支时自动提醒
+5. **预算调整**: 支持信封间资金转移和预算重新分配

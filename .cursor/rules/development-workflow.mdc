@@ -1,0 +1,52 @@
+---
+description: Development workflow and testing guidelines
+---
+
+# 开发工作流程指南
+
+## 项目启动
+项目位于`your_finance_flutter`目录下，启动命令：
+```bash
+cd your_finance_flutter
+flutter run -d chrome --hot
+```
+
+## 开发环境要求
+- Flutter SDK 3.5.0+
+- Dart SDK
+- Chrome浏览器（用于Web开发）
+- 支持iOS/Android设备测试
+
+## 依赖管理
+主要依赖包：
+- `provider: ^6.1.2` - 状态管理
+- `shared_preferences: ^2.2.3` - 本地存储
+- `fl_chart: ^0.68.0` - 图表组件
+- `uuid: ^4.4.0` - UUID生成
+- `intl: ^0.19.0` - 国际化
+- `equatable: ^2.0.5` - 对象比较
+- `image_picker: ^1.0.4` - 图片选择
+- `http: ^1.1.0` - HTTP请求
+- `path_provider: ^2.1.1` - 文件路径
+- `timeago: ^3.6.0` - 时间格式化
+
+## 代码质量检查
+```bash
+flutter analyze  # 静态代码分析
+flutter test     # 运行测试
+```
+
+## 常见问题解决
+1. **StorageService初始化问题**: 使用`late final`和异步初始化
+2. **Provider构造函数问题**: 避免在构造函数中传递异步对象
+3. **编译错误**: 确保所有import路径正确，使用正确的构造函数
+
+## 测试策略
+- Web端: 使用Chrome进行快速开发和测试
+- 移动端: 支持iOS模拟器和Android模拟器
+- 功能测试: 重点测试预算管理和交易记录功能
+
+## 部署准备
+- 确保所有Provider正确初始化
+- 检查数据持久化功能
+- 验证跨平台兼容性
