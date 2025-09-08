@@ -81,7 +81,10 @@ class DashboardScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const AddAssetFlowScreen(),
+                            builder: (context) => AddAssetFlowScreen(
+                              existingAssets: assetProvider.assets,
+                              isUpdateMode: true,
+                            ),
                           ),
                         );
                       },

@@ -4,11 +4,16 @@ import '../providers/asset_provider.dart';
 import '../models/asset_item.dart';
 import 'add_asset_sheet.dart';
 import '../theme/app_theme.dart';
-import '../widgets/app_animations.dart';
-import '../widgets/app_card.dart';
 
 class AddAssetFlowScreen extends StatefulWidget {
-  const AddAssetFlowScreen({super.key});
+  final List<AssetItem>? existingAssets;
+  final bool isUpdateMode;
+  
+  const AddAssetFlowScreen({
+    super.key,
+    this.existingAssets,
+    this.isUpdateMode = false,
+  });
 
   @override
   State<AddAssetFlowScreen> createState() => _AddAssetFlowScreenState();
@@ -23,6 +28,11 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
+    
+    // 如果是更新模式，加载现有资产数据
+    if (widget.isUpdateMode && widget.existingAssets != null) {
+      _tempAssets.addAll(widget.existingAssets!);
+    }
   }
 
   @override
@@ -39,7 +49,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
     return Scaffold(
       backgroundColor: context.primaryBackground,
       appBar: AppBar(
-        title: Text('添加${currentCategory.displayName} (${_currentStep + 1}/${categories.length})'),
+        title: Text('${widget.isUpdateMode ? '更新' : '添加'}${currentCategory.displayName} (${_currentStep + 1}/${categories.length})'),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
