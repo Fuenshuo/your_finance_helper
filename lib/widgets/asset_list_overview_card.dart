@@ -258,7 +258,8 @@ class AssetListOverviewCard extends StatelessWidget {
                                       ),
                                     ),
                                     SizedBox(
-                                        height: context.responsiveSpacing4),
+                                      height: context.responsiveSpacing4,
+                                    ),
                                     Text(
                                       assetProvider.formatAmount(totalAssets),
                                       style: context.mobileBody.copyWith(
@@ -293,7 +294,8 @@ class AssetListOverviewCard extends StatelessWidget {
                                       ),
                                     ),
                                     SizedBox(
-                                        height: context.responsiveSpacing4),
+                                      height: context.responsiveSpacing4,
+                                    ),
                                     Text(
                                       '${debtRatio.toStringAsFixed(1)}%',
                                       style: context.mobileBody.copyWith(

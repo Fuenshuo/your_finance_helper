@@ -104,7 +104,8 @@ class StorageService {
 
   // 保存草稿交易列表
   Future<void> saveDraftTransactions(
-      List<Transaction> draftTransactions) async {
+    List<Transaction> draftTransactions,
+  ) async {
     final jsonList =
         draftTransactions.map((transaction) => transaction.toJson()).toList();
     final jsonString = jsonEncode(jsonList);
@@ -156,8 +157,10 @@ class StorageService {
     final jsonString = _prefs!.getString(_currenciesKey);
     if (jsonString == null) return Currency.commonCurrencies;
 
-    final jsonList = jsonDecode(jsonString) as List;
-    return jsonList.map((json) => Currency.fromJson(json)).toList();
+    final jsonList = jsonDecode(jsonString) as List<dynamic>;
+    return jsonList
+        .map((json) => Currency.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   // 保存汇率列表
@@ -172,8 +175,10 @@ class StorageService {
     final jsonString = _prefs!.getString(_exchangeRatesKey);
     if (jsonString == null) return [];
 
-    final jsonList = jsonDecode(jsonString) as List;
-    return jsonList.map((json) => ExchangeRate.fromJson(json)).toList();
+    final jsonList = jsonDecode(jsonString) as List<dynamic>;
+    return jsonList
+        .map((json) => ExchangeRate.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   // ========== 预算相关方法 ==========
