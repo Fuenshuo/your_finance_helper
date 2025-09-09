@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/asset_provider.dart';
-import '../models/asset_item.dart';
-import 'add_asset_sheet.dart';
-import '../theme/app_theme.dart';
+import 'package:your_finance_flutter/models/asset_item.dart';
+import 'package:your_finance_flutter/providers/asset_provider.dart';
+import 'package:your_finance_flutter/screens/add_asset_sheet.dart';
+import 'package:your_finance_flutter/theme/app_theme.dart';
 
 class AddAssetFlowScreen extends StatefulWidget {
-  final List<AssetItem>? existingAssets;
-  final bool isUpdateMode;
-  
   const AddAssetFlowScreen({
     super.key,
     this.existingAssets,
     this.isUpdateMode = false,
   });
+  final List<AssetItem>? existingAssets;
+  final bool isUpdateMode;
 
   @override
   State<AddAssetFlowScreen> createState() => _AddAssetFlowScreenState();
@@ -27,8 +26,8 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
-    
+    _pageController = PageController();
+
     // 如果是更新模式，加载现有资产数据
     if (widget.isUpdateMode && widget.existingAssets != null) {
       _tempAssets.addAll(widget.existingAssets!);
@@ -43,13 +42,15 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = AssetCategory.values;
+    const categories = AssetCategory.values;
     final currentCategory = categories[_currentStep];
-    
+
     return Scaffold(
       backgroundColor: context.primaryBackground,
       appBar: AppBar(
-        title: Text('${widget.isUpdateMode ? '更新' : '添加'}${currentCategory.displayName} (${_currentStep + 1}/${categories.length})'),
+        title: Text(
+          '${widget.isUpdateMode ? '更新' : '添加'}${currentCategory.displayName} (${_currentStep + 1}/${categories.length})',
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -68,7 +69,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(context.primaryAction),
             ),
           ),
-          
+
           // 步骤内容
           Expanded(
             child: PageView.builder(
@@ -79,12 +80,11 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                 });
               },
               itemCount: categories.length,
-              itemBuilder: (context, index) {
-                return _buildCategoryPage(categories[index]);
-              },
+              itemBuilder: (context, index) =>
+                  _buildCategoryPage(categories[index]),
             ),
           ),
-          
+
           // 底部按钮
           Container(
             padding: EdgeInsets.all(context.spacing16),
@@ -127,8 +127,9 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   }
 
   Widget _buildCategoryPage(AssetCategory category) {
-    final categoryAssets = _tempAssets.where((asset) => asset.category == category).toList();
-    
+    final categoryAssets =
+        _tempAssets.where((asset) => asset.category == category).toList();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -138,25 +139,25 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
           Text(
             category.displayName,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             category.description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
           ),
           const SizedBox(height: 24),
-          
+
           // 已添加的资产列表
           if (categoryAssets.isNotEmpty) ...[
             Text(
               '已添加的${category.displayName}',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -210,14 +211,15 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                     Text(
                       '还没有添加${category.displayName}',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                   ],
                 ),
               ),
             ),
-          
+
           // 添加按钮
           SizedBox(
             width: double.infinity,
@@ -236,7 +238,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   }
 
   void _showAddAssetSheet(AssetCategory category) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => AddAssetSheet(
@@ -252,12 +254,17 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
 
   void _finishFlow(BuildContext context) {
     final assetProvider = Provider.of<AssetProvider>(context, listen: false);
-    
-    // 保存所有临时资产
-    for (final asset in _tempAssets) {
-      assetProvider.addAsset(asset);
+
+    if (widget.isUpdateMode) {
+      // 更新模式：直接用当前资产覆盖所有现有资产
+      assetProvider.replaceAllAssets(_tempAssets);
+    } else {
+      // 新增模式：添加新资产
+      for (final asset in _tempAssets) {
+        assetProvider.addAsset(asset);
+      }
     }
-    
+
     Navigator.of(context).pop();
   }
 }

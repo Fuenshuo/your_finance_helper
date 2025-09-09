@@ -39,6 +39,7 @@ dependencies:
   
   # Charts
   fl_chart: ^0.68.0
+  syncfusion_flutter_charts: ^26.1.43
   
   # UUID generation
   uuid: ^4.4.0
@@ -53,7 +54,8 @@ dependencies:
   http: ^1.1.0
   
   # File handling
-  # path_provider: ^2.1.1
+  path_provider: ^2.1.2
+  share_plus: ^7.2.2
   
   # Date and time utilities
   timeago: ^3.6.0
