@@ -1,145 +1,158 @@
-# 家庭资产记账应用 (Your Finance Helper)
+# 家庭资产记账应用 (Your Finance Flutter)
 
-一个跨平台的家庭资产记账应用，帮助用户全面管理家庭财务状况。
+一个功能完整的跨平台家庭资产记账应用，支持Web、iOS、Android三端，采用Flutter开发。
 
-## 📱 功能特性
+## ✨ 核心功能
 
-### 核心功能
-- **资产分类管理**: 支持五大类资产分类（流动资金、固定资产、投资理财、应收款、负债）
-- **分步式引导**: 直观的资产添加流程，降低使用门槛
-- **实时统计**: 自动计算总资产、净资产、负债率等关键指标
-- **数据可视化**: 资产分布图表，直观展示财务状况
-- **隐私保护**: 支持金额隐藏功能，保护用户隐私
+### 🏠 资产管理系统
+- **五大资产分类**：流动资金、固定资产、投资理财、应收款、负债
+- **分步式资产录入**：引导式添加流程，支持批量管理
+- **资产总览仪表盘**：总资产、净资产、负债率实时计算
+- **资产分布可视化**：饼图、柱状图展示资产构成
+- **隐私保护**：金额隐藏/显示功能
 
-### 技术特性
-- **跨平台支持**: 基于Flutter开发，支持iOS、Android、Web三端
-- **本地存储**: 使用SharedPreferences进行数据持久化
-- **响应式设计**: 适配不同屏幕尺寸
-- **现代化UI**: 遵循Material Design 3设计规范
+### 💰 预算管理系统
+- **信封预算(EnvelopeBudget)**：为特定类别设定支出限额
+- **零基预算(ZeroBasedBudget)**：将收入分配到各个类别
+- **预算管理界面**：创建、编辑、删除预算
+- **预算详情页面**：显示预算使用情况和交易记录
+- **预算状态管理**：活跃、暂停、完成状态
+- **预算与交易集成**：自动关联交易到对应预算
 
-## 🎨 设计系统
+### 📊 交易记录系统
+- **交易管理界面**：总览、交易记录、草稿三个标签页
+- **添加交易功能**：支持收入、支出、转账三种类型
+- **交易详情页面**：完整的交易信息展示和编辑
+- **交易列表管理**：搜索、筛选、按日期分组
+- **草稿功能**：保存未完成的交易
+- **多账户支持**：现金、银行、信用卡等账户类型
 
-### 色彩规范
-- **主背景色**: 淡雅灰 (#F7F7FA)
-- **主题色**: 活力蓝 (#007AFF)
-- **辅助色**: 温柔紫 (#EAEAFB)
-- **文字色**: 深邃灰 (#1C1C1E)
+## 🛠 技术架构
 
-### 字体规范
-- **字体家族**: Inter (优先) / 系统默认字体
-- **大标题**: 34pt, SemiBold
-- **页面标题**: 28pt, Bold
-- **卡片标题**: 17pt, SemiBold
+### 核心技术栈
+- **框架**：Flutter 3.x
+- **状态管理**：Provider模式
+- **本地存储**：SharedPreferences
+- **图表库**：fl_chart
+- **UI设计**：Material Design 3
+
+### 项目结构
+```
+lib/
+├── models/          # 数据模型
+├── providers/       # 状态管理
+├── screens/         # 页面界面
+├── widgets/         # 可复用组件
+├── services/        # 业务逻辑服务
+└── theme/           # 主题和样式
+```
+
+### 设计系统
+- **色彩规范**：基于Material Design 3的柔和配色
+- **布局规范**：8pt间距系统，12pt圆角半径
+- **动效系统**：统一的页面转场和微交互动效
+- **组件库**：AppCard、AppAnimations等自定义组件
 
 ## 🚀 快速开始
 
 ### 环境要求
-- Flutter 3.24.0+
-- Dart 3.5.0+
-- iOS 12.0+ / Android API 21+ / 现代浏览器
+- Flutter SDK 3.x
+- Dart SDK 3.x
+- Android Studio / Xcode (移动端开发)
+- Chrome (Web端开发)
 
 ### 安装步骤
 
 1. **克隆项目**
-   ```bash
-   git clone https://github.com/Fuenshuo/your_finance_helper.git
-   cd your_finance_helper
-   ```
+```bash
+git clone https://github.com/Fuenshuo/your_finance_helper.git
+cd your_finance_helper
+```
 
 2. **安装依赖**
-   ```bash
-   cd your_finance_flutter
-   flutter pub get
-   ```
+```bash
+flutter pub get
+```
 
 3. **运行应用**
-   ```bash
-   # Web版本
-   flutter run -d chrome
-   
-   # iOS版本 (需要Xcode)
-   flutter run -d ios
-   
-   # Android版本 (需要Android Studio)
-   flutter run -d android
-   ```
+```bash
+# Web端
+flutter run -d chrome
 
-## 📁 项目结构
+# iOS模拟器
+flutter run -d ios
 
-```
-your_finance/
-├── .doc/                          # 项目文档
-│   ├── 家庭资产记账应用 - 产品需求文档 (PRD).md
-│   ├── 家庭资产记账应用 - iOS本地版技术实现方案.md
-│   └── 家庭资产记账应用 - UI_UX设计及动效方案.md
-├── your_finance_flutter/          # Flutter项目
-│   ├── lib/
-│   │   ├── models/               # 数据模型
-│   │   ├── providers/            # 状态管理
-│   │   ├── screens/              # 页面组件
-│   │   ├── widgets/              # 通用组件
-│   │   ├── theme/                # 主题配置
-│   │   └── services/             # 服务层
-│   ├── pubspec.yaml              # 依赖配置
-│   └── README.md                 # Flutter项目说明
-└── README.md                     # 项目总览
+# Android设备
+flutter run -d android
 ```
 
-## 🛠 技术栈
+### 构建发布版本
 
-### 前端
-- **框架**: Flutter 3.24.0
-- **语言**: Dart 3.5.0
-- **状态管理**: Provider
-- **本地存储**: SharedPreferences
-- **图表库**: fl_chart
-- **工具库**: uuid, intl
+```bash
+# Web版本
+flutter build web --release
 
-### 设计
-- **UI框架**: Material Design 3
-- **字体**: Inter
-- **图标**: Material Icons
-- **动效**: Flutter Animation
+# iOS版本
+flutter build ios --release --no-codesign
 
-## 📋 开发计划
+# Android版本
+flutter build apk --release
+```
 
-### 已完成 ✅
-- [x] 基础项目架构
-- [x] 数据模型设计
-- [x] 核心功能实现
-- [x] UI/UX设计系统
-- [x] 跨平台适配
+## 📱 平台支持
 
-### 进行中 🚧
-- [ ] 数据导入导出
-- [ ] 多语言支持
-- [ ] 深色模式
+- ✅ **Web端**：完全支持，可直接在浏览器中运行
+- ✅ **iOS端**：支持iOS 12+，可在模拟器和真机上运行
+- ⚠️ **Android端**：支持Android 5.0+，建议使用Android Studio构建
 
-### 计划中 📅
-- [ ] 云端同步
-- [ ] 数据备份
-- [ ] 高级图表分析
-- [ ] 预算管理功能
+## 🔧 开发工具
+
+### 代码质量
+- **静态分析**：very_good_analysis
+- **代码格式化**：dart format
+- **预提交检查**：scripts/check_code.sh
+
+### 调试功能
+- **数据导出**：JSON格式导出所有数据
+- **数据导入**：从剪贴板导入数据
+- **测试数据生成**：一键生成示例数据
+- **数据清空**：清除所有本地数据
+
+## 📋 功能特性
+
+### 已实现功能
+- [x] 资产管理系统（100%完成）
+- [x] 预算管理系统（100%完成）
+- [x] 交易记录系统（100%完成）
+- [x] 多账户管理
+- [x] 数据导入导出
+- [x] 响应式UI设计
+- [x] 深色模式支持
+
+### 计划功能
+- [ ] 多币种支持
+- [ ] 自动化记账（OCR识别）
+- [ ] 银行同步
+- [ ] 数据云同步
+- [ ] 无限账户（付费功能）
 
 ## 🤝 贡献指南
 
-欢迎提交Issue和Pull Request来帮助改进项目！
-
-### 开发规范
-1. 遵循Dart代码规范
-2. 使用有意义的提交信息
-3. 添加必要的注释和文档
-4. 确保代码通过所有测试
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
 ## 📞 联系方式
 
-- 项目地址: [https://github.com/Fuenshuo/your_finance_helper](https://github.com/Fuenshuo/your_finance_helper)
-- 问题反馈: [Issues](https://github.com/Fuenshuo/your_finance_helper/issues)
+- 项目链接：[https://github.com/Fuenshuo/your_finance_helper](https://github.com/Fuenshuo/your_finance_helper)
+- 问题反馈：[Issues](https://github.com/Fuenshuo/your_finance_helper/issues)
 
 ---
 
-**注意**: 这是一个个人财务管理工具，所有数据均存储在本地设备上，请妥善保管您的设备。
+**注意**：这是一个个人财务管理应用，请确保在安全的环境中使用，并定期备份重要数据。
