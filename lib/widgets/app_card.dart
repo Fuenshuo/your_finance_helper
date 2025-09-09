@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../theme/responsive_text_styles.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -22,14 +23,14 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final card = Container(
-      margin: margin ?? EdgeInsets.all(context.spacing8),
+      margin: margin ?? EdgeInsets.all(context.responsiveSpacing8),
       decoration: BoxDecoration(
         color: backgroundColor ?? Colors.white,
         borderRadius: BorderRadius.circular(context.borderRadius),
         boxShadow: showShadow ? [context.cardShadow] : null,
       ),
       child: Padding(
-        padding: padding ?? EdgeInsets.all(context.spacing16),
+        padding: padding ?? EdgeInsets.all(context.responsiveSpacing16),
         child: child,
       ),
     );
@@ -82,12 +83,12 @@ class AppCardWithTitle extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: context.responsiveHeadlineMedium,
               ),
               if (trailing != null) trailing!,
             ],
           ),
-          SizedBox(height: context.spacing16),
+          SizedBox(height: context.responsiveSpacing16),
           child,
         ],
       ),
@@ -129,28 +130,28 @@ class StatCard extends StatelessWidget {
                   size: 20,
                   color: context.secondaryText,
                 ),
-                SizedBox(width: context.spacing8),
+                SizedBox(width: context.responsiveSpacing8),
               ],
               Expanded(
                 child: Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: context.responsiveBodyMedium,
                 ),
               ),
             ],
           ),
-          SizedBox(height: context.spacing8),
+          SizedBox(height: context.responsiveSpacing8),
           Text(
             value,
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+            style: context.responsiveDisplayLarge.copyWith(
               color: valueColor ?? context.primaryText,
             ),
           ),
           if (subtitle != null) ...[
-            SizedBox(height: context.spacing4),
+            SizedBox(height: context.responsiveSpacing4),
             Text(
               subtitle!,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: context.responsiveBodyMedium,
             ),
           ],
         ],

@@ -5,10 +5,12 @@ import 'add_asset_flow_screen.dart';
 import 'asset_management_screen.dart';
 import 'budget_management_screen.dart';
 import 'transaction_management_screen.dart';
+import 'responsive_test_screen.dart';
 import '../widgets/asset_overview_card.dart';
 import '../widgets/asset_distribution_card.dart';
 import '../widgets/asset_chart_card.dart';
 import '../theme/app_theme.dart';
+import '../theme/responsive_text_styles.dart';
 import '../widgets/app_animations.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -49,6 +51,16 @@ class DashboardScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         AppAnimations.createRoute(
                           const AssetManagementScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.text_fields_outlined),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        AppAnimations.createRoute(
+                          const ResponsiveTestScreen(),
                         ),
                       );
                     },

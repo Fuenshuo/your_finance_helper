@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class AppTheme {
   // 色彩规范 - 按照UI_UX设计文档
@@ -26,6 +27,57 @@ class AppTheme {
         spreadRadius: 0,
         offset: const Offset(0, 4),
       );
+
+  // 响应式字体大小
+  static double getResponsiveFontSize(BuildContext context, double baseFontSize) {
+    final mediaQuery = MediaQuery.of(context);
+    final devicePixelRatio = mediaQuery.devicePixelRatio;
+    final screenWidth = mediaQuery.size.width;
+    
+    // 移动端字体缩放因子
+    if (kIsWeb) {
+      return baseFontSize; // Web端保持原大小
+    } else {
+      // 移动端根据屏幕宽度和像素密度调整
+      double scaleFactor = 1.0;
+      
+      if (screenWidth < 400) {
+        // 小屏手机
+        scaleFactor = 0.85;
+      } else if (screenWidth < 600) {
+        // 普通手机
+        scaleFactor = 0.9;
+      } else if (screenWidth < 900) {
+        // 大屏手机/小平板
+        scaleFactor = 0.95;
+      }
+      
+      // 高像素密度设备进一步缩小字体
+      if (devicePixelRatio > 2.5) {
+        scaleFactor *= 0.9;
+      }
+      
+      return (baseFontSize * scaleFactor).clamp(12.0, baseFontSize);
+    }
+  }
+
+  // 响应式间距
+  static double getResponsiveSpacing(BuildContext context, double baseSpacing) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    
+    if (kIsWeb) {
+      return baseSpacing; // Web端保持原大小
+    } else {
+      // 移动端间距稍微缩小
+      if (screenWidth < 400) {
+        return baseSpacing * 0.8;
+      } else if (screenWidth < 600) {
+        return baseSpacing * 0.9;
+      }
+      return baseSpacing;
+    }
+  }
 
   // 主题数据
   static ThemeData get lightTheme {
@@ -218,6 +270,18 @@ extension AppThemeExtensions on BuildContext {
   double get spacing16 => AppTheme.baseSpacing * 2; // 16pt
   double get spacing24 => AppTheme.baseSpacing * 3; // 24pt
   double get spacing32 => AppTheme.baseSpacing * 4; // 32pt
+
+  // 响应式间距
+  double responsiveSpacing(double baseSpacing) => AppTheme.getResponsiveSpacing(this, baseSpacing);
+  double get responsiveSpacing4 => responsiveSpacing(4);
+  double get responsiveSpacing8 => responsiveSpacing(8);
+  double get responsiveSpacing12 => responsiveSpacing(12);
+  double get responsiveSpacing16 => responsiveSpacing(16);
+  double get responsiveSpacing24 => responsiveSpacing(24);
+  double get responsiveSpacing32 => responsiveSpacing(32);
+
+  // 响应式字体大小
+  double responsiveFontSize(double baseFontSize) => AppTheme.getResponsiveFontSize(this, baseFontSize);
 
   // 获取圆角
   double get borderRadius => AppTheme.borderRadius;

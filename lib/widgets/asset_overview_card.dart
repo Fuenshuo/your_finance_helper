@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/asset_provider.dart';
 import '../theme/app_theme.dart';
+import '../theme/responsive_text_styles.dart';
 import '../widgets/app_animations.dart';
 import '../widgets/app_card.dart';
 
@@ -26,7 +27,7 @@ class AssetOverviewCard extends StatelessWidget {
                 children: [
                   Text(
                     '总资产',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: context.responsiveHeadlineMedium,
                   ),
                   const Spacer(),
                   IconButton(
@@ -40,7 +41,7 @@ class AssetOverviewCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: context.spacing8),
+              SizedBox(height: context.responsiveSpacing8),
               
               // 总资产金额 - 使用动画数字
               AppAnimations.animatedNumber(

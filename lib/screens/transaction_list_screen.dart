@@ -7,6 +7,7 @@ import 'package:your_finance_flutter/providers/account_provider.dart';
 import 'package:your_finance_flutter/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/screens/transaction_detail_screen.dart';
 import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/theme/responsive_text_styles.dart';
 import 'package:your_finance_flutter/widgets/app_animations.dart';
 import 'package:your_finance_flutter/widgets/app_card.dart';
 
@@ -54,7 +55,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 child: filteredTransactions.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
-                        padding: EdgeInsets.all(context.spacing16),
+                        padding: EdgeInsets.all(context.responsiveSpacing16),
                         itemCount: groupedTransactions.length,
                         itemBuilder: (context, index) {
                           final entry =
@@ -77,7 +78,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
   // 搜索和筛选栏
   Widget _buildSearchAndFilterBar() => Container(
-        padding: EdgeInsets.all(context.spacing16),
+        padding: EdgeInsets.all(context.responsiveSpacing16),
         color: Colors.white,
         child: Column(
           children: [
@@ -101,14 +102,14 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
                 ),
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: context.spacing16,
-                  vertical: context.spacing12,
+                  horizontal: context.responsiveSpacing16,
+                  vertical: context.responsiveSpacing12,
                 ),
               ),
               onChanged: (value) => setState(() {}),
             ),
 
-            SizedBox(height: context.spacing12),
+            SizedBox(height: context.responsiveSpacing12),
 
             // 筛选按钮
             Row(
@@ -127,7 +128,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: context.spacing12),
+                SizedBox(width: context.responsiveSpacing12),
                 if (_hasActiveFilters())
                   OutlinedButton.icon(
                     onPressed: _clearFilters,
@@ -146,7 +147,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
             // 筛选选项
             if (_showFilters) ...[
-              SizedBox(height: context.spacing16),
+              SizedBox(height: context.responsiveSpacing16),
               _buildFilterOptions(),
             ],
           ],
@@ -158,13 +159,11 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '筛选条件',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    '筛选条件',
+                    style: context.mobileTitle,
                   ),
-            ),
-            SizedBox(height: context.spacing16),
+            SizedBox(height: context.responsiveSpacing16),
 
             // 交易类型筛选
             _buildFilterChips(
@@ -177,7 +176,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               (type) => type.displayName,
             ),
 
-            SizedBox(height: context.spacing12),
+            SizedBox(height: context.responsiveSpacing12),
 
             // 分类筛选
             _buildFilterChips(
@@ -191,7 +190,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               (category) => category.displayName,
             ),
 
-            SizedBox(height: context.spacing16),
+            SizedBox(height: context.responsiveSpacing16),
 
             // 日期范围
             Row(
@@ -200,7 +199,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   child: InkWell(
                     onTap: () => _selectDate(true),
                     child: Container(
-                      padding: EdgeInsets.all(context.spacing12),
+                      padding: EdgeInsets.all(context.responsiveSpacing12),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.withOpacity(0.3)),
                         borderRadius: BorderRadius.circular(8),
@@ -208,7 +207,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                       child: Row(
                         children: [
                           const Icon(Icons.calendar_today, size: 16),
-                          SizedBox(width: context.spacing8),
+                          SizedBox(width: context.responsiveSpacing8),
                           Text(
                             _filterStartDate != null
                                 ? DateFormat('MM-dd').format(_filterStartDate!)
@@ -224,14 +223,14 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: context.spacing8),
+                SizedBox(width: context.responsiveSpacing8),
                 const Text('至'),
-                SizedBox(width: context.spacing8),
+                SizedBox(width: context.responsiveSpacing8),
                 Expanded(
                   child: InkWell(
                     onTap: () => _selectDate(false),
                     child: Container(
-                      padding: EdgeInsets.all(context.spacing12),
+                      padding: EdgeInsets.all(context.responsiveSpacing12),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.withOpacity(0.3)),
                         borderRadius: BorderRadius.circular(8),
@@ -239,7 +238,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                       child: Row(
                         children: [
                           const Icon(Icons.calendar_today, size: 16),
-                          SizedBox(width: context.spacing8),
+                          SizedBox(width: context.responsiveSpacing8),
                           Text(
                             _filterEndDate != null
                                 ? DateFormat('MM-dd').format(_filterEndDate!)
@@ -266,7 +265,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     String title,
     List<T> options,
     T? selectedValue,
-    Function(T) onTap,
+    void Function(T) onTap,
     String Function(T) displayText,
   ) =>
       Column(
@@ -279,9 +278,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: context.spacing8),
+          SizedBox(height: context.responsiveSpacing8),
           Wrap(
-            spacing: context.spacing8,
+            spacing: context.responsiveSpacing8,
             children: options.map((option) {
               final isSelected = selectedValue == option;
               return FilterChip(
@@ -305,7 +304,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     final totalAmount = transactions.fold(0.0, (sum, t) => sum + t.amount);
 
     return AppCard(
-      margin: EdgeInsets.only(bottom: context.spacing12),
+      margin: EdgeInsets.only(bottom: context.responsiveSpacing12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -315,20 +314,17 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             children: [
               Text(
                 date,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: context.mobileSubtitle,
               ),
               Text(
                 context.formatAmount(totalAmount),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                style: context.mobileSubtitle.copyWith(
                       color: context.primaryAction,
                     ),
               ),
             ],
           ),
-          SizedBox(height: context.spacing12),
+          SizedBox(height: context.responsiveSpacing12),
 
           // 交易列表
           ...transactions.map(
@@ -358,7 +354,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       onTap: () => _viewTransactionDetail(transaction),
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: context.spacing8),
+        padding: EdgeInsets.symmetric(vertical: context.responsiveSpacing8),
         child: Row(
           children: [
             // 图标
@@ -372,7 +368,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 color: _getTransactionTypeColor(transaction.type),
               ),
             ),
-            SizedBox(width: context.spacing12),
+            SizedBox(width: context.responsiveSpacing12),
 
             // 交易信息
             Expanded(
@@ -381,29 +377,22 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 children: [
                   Text(
                     transaction.description,
-                    style: const TextStyle(
+                    style: context.mobileBody.copyWith(
                       fontWeight: FontWeight.w500,
-                      fontSize: 16,
                     ),
                   ),
-                  SizedBox(height: context.spacing4),
+                  SizedBox(height: context.responsiveSpacing4),
                   Row(
                     children: [
                       Text(
                         account.name,
-                        style: TextStyle(
-                          color: context.secondaryText,
-                          fontSize: 12,
-                        ),
+                        style: context.mobileCaption,
                       ),
                       if (transaction.category !=
                           TransactionCategory.otherExpense) ...[
                         Text(
                           ' • ${transaction.category.displayName}',
-                          style: TextStyle(
-                            color: context.secondaryText,
-                            fontSize: 12,
-                          ),
+                          style: context.mobileCaption,
                         ),
                       ],
                     ],
@@ -418,18 +407,14 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               children: [
                 Text(
                   context.formatAmount(transaction.amount),
-                  style: TextStyle(
+                  style: context.mobileBody.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
                     color: _getTransactionTypeColor(transaction.type),
                   ),
                 ),
                 Text(
                   DateFormat('HH:mm').format(transaction.date),
-                  style: TextStyle(
-                    color: context.secondaryText,
-                    fontSize: 12,
-                  ),
+                  style: context.mobileCaption,
                 ),
               ],
             ),
@@ -449,18 +434,17 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               size: 64,
               color: Colors.grey,
             ),
-            SizedBox(height: context.spacing16),
+            SizedBox(height: context.responsiveSpacing16),
             Text(
               _hasActiveFilters() ? '没有找到匹配的交易' : '暂无交易记录',
-              style: const TextStyle(
-                fontSize: 18,
+              style: context.mobileTitle.copyWith(
                 color: Colors.grey,
               ),
             ),
-            SizedBox(height: context.spacing8),
+            SizedBox(height: context.responsiveSpacing8),
             Text(
               _hasActiveFilters() ? '尝试调整筛选条件' : '点击右上角添加第一笔交易',
-              style: TextStyle(
+              style: context.mobileBody.copyWith(
                 color: context.secondaryText,
               ),
             ),
