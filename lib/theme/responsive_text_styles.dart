@@ -113,6 +113,16 @@ class ResponsiveTextStyles {
       color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
     );
   }
+
+  // StatCard专用金额样式（移动端优化）
+  static TextStyle getStatCardAmountStyle(BuildContext context, {bool isPositive = true}) {
+    return TextStyle(
+      fontFamily: AppTheme.fontFamily,
+      fontSize: AppTheme.getResponsiveFontSize(context, 16),
+      fontWeight: FontWeight.w600,
+      color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+    );
+  }
 }
 
 /// 扩展方法，方便使用响应式文本样式
@@ -133,4 +143,5 @@ extension ResponsiveTextStylesExtension on BuildContext {
   // 金额样式
   TextStyle amountStyle({bool isPositive = true}) => ResponsiveTextStyles.getAmountStyle(this, isPositive: isPositive);
   TextStyle largeAmountStyle({bool isPositive = true}) => ResponsiveTextStyles.getLargeAmountStyle(this, isPositive: isPositive);
+  TextStyle statCardAmountStyle({bool isPositive = true}) => ResponsiveTextStyles.getStatCardAmountStyle(this, isPositive: isPositive);
 }

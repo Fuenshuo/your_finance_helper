@@ -143,7 +143,7 @@ class StatCard extends StatelessWidget {
           SizedBox(height: context.responsiveSpacing8),
           Text(
             value,
-            style: context.responsiveDisplayLarge.copyWith(
+            style: context.statCardAmountStyle(isPositive: valueColor == context.increaseColor).copyWith(
               color: valueColor ?? context.primaryText,
             ),
           ),

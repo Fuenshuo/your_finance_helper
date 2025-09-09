@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class AppTheme {
   // 色彩规范 - 按照UI_UX设计文档
@@ -24,23 +24,25 @@ class AppTheme {
   static BoxShadow get cardShadow => BoxShadow(
         color: Colors.black.withOpacity(0.04),
         blurRadius: 16,
-        spreadRadius: 0,
         offset: const Offset(0, 4),
       );
 
   // 响应式字体大小
-  static double getResponsiveFontSize(BuildContext context, double baseFontSize) {
+  static double getResponsiveFontSize(
+    BuildContext context,
+    double baseFontSize,
+  ) {
     final mediaQuery = MediaQuery.of(context);
     final devicePixelRatio = mediaQuery.devicePixelRatio;
     final screenWidth = mediaQuery.size.width;
-    
+
     // 移动端字体缩放因子
     if (kIsWeb) {
       return baseFontSize; // Web端保持原大小
     } else {
       // 移动端根据屏幕宽度和像素密度调整
-      double scaleFactor = 1.0;
-      
+      var scaleFactor = 1.0;
+
       if (screenWidth < 400) {
         // 小屏手机
         scaleFactor = 0.85;
@@ -51,12 +53,12 @@ class AppTheme {
         // 大屏手机/小平板
         scaleFactor = 0.95;
       }
-      
+
       // 高像素密度设备进一步缩小字体
       if (devicePixelRatio > 2.5) {
         scaleFactor *= 0.9;
       }
-      
+
       return (baseFontSize * scaleFactor).clamp(12.0, baseFontSize);
     }
   }
@@ -65,7 +67,7 @@ class AppTheme {
   static double getResponsiveSpacing(BuildContext context, double baseSpacing) {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
-    
+
     if (kIsWeb) {
       return baseSpacing; // Web端保持原大小
     } else {
@@ -80,170 +82,166 @@ class AppTheme {
   }
 
   // 主题数据
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: fontFamily,
-      
-      // 色彩方案
-      colorScheme: const ColorScheme.light(
-        primary: primaryAction,
-        secondary: accentBackground,
-        surface: Colors.white,
-        onPrimary: Colors.white,
-        onSecondary: primaryText,
-        onSurface: primaryText,
-        outline: dividerColor,
-      ),
+  static ThemeData get lightTheme => ThemeData(
+        useMaterial3: true,
+        fontFamily: fontFamily,
 
-      // 应用栏主题
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: primaryText,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          color: primaryText,
+        // 色彩方案
+        colorScheme: const ColorScheme.light(
+          primary: primaryAction,
+          secondary: accentBackground,
+          onSecondary: primaryText,
+          onSurface: primaryText,
+          outline: dividerColor,
         ),
-      ),
 
-      // 卡片主题
-      cardTheme: CardTheme(
-        color: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+        // 应用栏主题
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: primaryText,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: primaryText,
+          ),
         ),
-        shadowColor: Colors.black.withOpacity(0.04),
-      ),
 
-      // 按钮主题
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryAction,
-          foregroundColor: Colors.white,
+        // 卡片主题
+        cardTheme: CardTheme(
+          color: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
+          shadowColor: Colors.black.withOpacity(0.04),
+        ),
+
+        // 按钮主题
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryAction,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 16,
+            ),
+            textStyle: const TextStyle(
+              fontFamily: fontFamily,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        // 文本按钮主题
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: primaryAction,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+            textStyle: const TextStyle(
+              fontFamily: fontFamily,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        // 输入框主题
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: const BorderSide(color: dividerColor),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: const BorderSide(color: dividerColor),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: const BorderSide(color: primaryAction, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
             vertical: 16,
           ),
-          textStyle: const TextStyle(
+          hintStyle: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            color: secondaryText,
+          ),
+        ),
+
+        // 文本主题
+        textTheme: const TextTheme(
+          // 大标题 (金额)
+          displayLarge: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 34,
+            fontWeight: FontWeight.w600,
+            color: primaryText,
+          ),
+          // 页面标题
+          displayMedium: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: primaryText,
+          ),
+          // 卡片标题
+          headlineMedium: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: primaryText,
+          ),
+          // 正文/列表项
+          bodyLarge: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            color: primaryText,
+          ),
+          // 辅助说明
+          bodyMedium: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: secondaryText,
+          ),
+          // 标签/按钮文字
+          labelLarge: TextStyle(
             fontFamily: fontFamily,
             fontSize: 15,
             fontWeight: FontWeight.w500,
+            color: primaryText,
           ),
         ),
-      ),
 
-      // 文本按钮主题
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primaryAction,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: fontFamily,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
+        // 浮动操作按钮主题
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: primaryAction,
+          foregroundColor: Colors.white,
+          elevation: 4,
         ),
-      ),
 
-      // 输入框主题
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: dividerColor),
+        // 分割线主题
+        dividerTheme: const DividerThemeData(
+          color: dividerColor,
+          thickness: 0.5,
+          space: 1,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: dividerColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: primaryAction, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 17,
-          color: secondaryText,
-        ),
-      ),
-
-      // 文本主题
-      textTheme: const TextTheme(
-        // 大标题 (金额)
-        displayLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 34,
-          fontWeight: FontWeight.w600,
-          color: primaryText,
-        ),
-        // 页面标题
-        displayMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          color: primaryText,
-        ),
-        // 卡片标题
-        headlineMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          color: primaryText,
-        ),
-        // 正文/列表项
-        bodyLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 17,
-          fontWeight: FontWeight.w400,
-          color: primaryText,
-        ),
-        // 辅助说明
-        bodyMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          color: secondaryText,
-        ),
-        // 标签/按钮文字
-        labelLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: primaryText,
-        ),
-      ),
-
-      // 浮动操作按钮主题
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryAction,
-        foregroundColor: Colors.white,
-        elevation: 4,
-      ),
-
-      // 分割线主题
-      dividerTheme: const DividerThemeData(
-        color: dividerColor,
-        thickness: 0.5,
-        space: 1,
-      ),
-    );
-  }
+      );
 }
 
 // 扩展方法，方便使用设计规范
@@ -258,7 +256,7 @@ extension AppThemeExtensions on BuildContext {
   Color get increaseColor => AppTheme.increaseColor;
   Color get decreaseColor => AppTheme.decreaseColor;
   Color get warningColor => AppTheme.warningColor;
-  
+
   // 别名，为了兼容性
   Color get successColor => AppTheme.increaseColor; // 温暖红
   Color get errorColor => AppTheme.decreaseColor; // 理性绿
@@ -272,7 +270,8 @@ extension AppThemeExtensions on BuildContext {
   double get spacing32 => AppTheme.baseSpacing * 4; // 32pt
 
   // 响应式间距
-  double responsiveSpacing(double baseSpacing) => AppTheme.getResponsiveSpacing(this, baseSpacing);
+  double responsiveSpacing(double baseSpacing) =>
+      AppTheme.getResponsiveSpacing(this, baseSpacing);
   double get responsiveSpacing4 => responsiveSpacing(4);
   double get responsiveSpacing8 => responsiveSpacing(8);
   double get responsiveSpacing12 => responsiveSpacing(12);
@@ -281,7 +280,8 @@ extension AppThemeExtensions on BuildContext {
   double get responsiveSpacing32 => responsiveSpacing(32);
 
   // 响应式字体大小
-  double responsiveFontSize(double baseFontSize) => AppTheme.getResponsiveFontSize(this, baseFontSize);
+  double responsiveFontSize(double baseFontSize) =>
+      AppTheme.getResponsiveFontSize(this, baseFontSize);
 
   // 获取圆角
   double get borderRadius => AppTheme.borderRadius;
@@ -298,27 +298,23 @@ extension AppThemeExtensions on BuildContext {
   }
 
   // 格式化百分比
-  String formatPercentage(double percentage) {
-    return '${percentage.toStringAsFixed(1)}%';
-  }
+  String formatPercentage(double percentage) =>
+      '${percentage.toStringAsFixed(1)}%';
 
   // 获取文本主题
   TextTheme get textTheme => Theme.of(this).textTheme;
 
   // 格式化日期时间
-  String formatDateTime(DateTime dateTime) {
-    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
+  String formatDateTime(DateTime dateTime) =>
+      '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
 
   // 格式化日期
-  String formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
+  String formatDate(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
   // 格式化时间
-  String formatTime(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
+  String formatTime(DateTime dateTime) =>
+      '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
 
   // 获取边框颜色
   Color get borderColor => dividerColor;

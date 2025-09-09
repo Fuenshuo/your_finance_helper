@@ -159,10 +159,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-                  Text(
-                    '筛选条件',
-                    style: context.mobileTitle,
-                  ),
+            Text(
+              '筛选条件',
+              style: context.mobileTitle,
+            ),
             SizedBox(height: context.responsiveSpacing16),
 
             // 交易类型筛选
@@ -319,8 +319,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
               Text(
                 context.formatAmount(totalAmount),
                 style: context.mobileSubtitle.copyWith(
-                      color: context.primaryAction,
-                    ),
+                  color: context.primaryAction,
+                ),
               ),
             ],
           ),
