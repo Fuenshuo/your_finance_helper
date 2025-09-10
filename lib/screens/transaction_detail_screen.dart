@@ -1,439 +1,425 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/transaction.dart';
-import '../models/account.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/account_provider.dart';
-import '../providers/budget_provider.dart';
-import '../theme/app_theme.dart';
-import '../widgets/app_animations.dart';
-import '../widgets/app_card.dart';
-import 'add_transaction_screen.dart';
+import 'package:your_finance_flutter/models/account.dart';
+import 'package:your_finance_flutter/models/transaction.dart';
+import 'package:your_finance_flutter/providers/account_provider.dart';
+import 'package:your_finance_flutter/providers/budget_provider.dart';
+import 'package:your_finance_flutter/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/screens/add_transaction_screen.dart';
+import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/widgets/app_animations.dart';
+import 'package:your_finance_flutter/widgets/app_card.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
+  const TransactionDetailScreen({
+    required this.transaction,
+    super.key,
+  });
   final Transaction transaction;
 
-  const TransactionDetailScreen({
-    super.key,
-    required this.transaction,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.primaryBackground,
-      appBar: AppBar(
-        title: const Text('交易详情'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => _editTransaction(context),
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.primaryBackground,
+        appBar: AppBar(
+          title: const Text('交易详情'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => _editTransaction(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () => _showMoreOptions(context),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(context.spacing16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTransactionCard(context),
+              SizedBox(height: context.spacing16),
+              _buildTransactionInfo(context),
+              SizedBox(height: context.spacing16),
+              _buildAccountInfo(context),
+              if (transaction.envelopeBudgetId != null) ...[
+                SizedBox(height: context.spacing16),
+                _buildBudgetInfo(context),
+              ],
+              if (transaction.notes != null &&
+                  transaction.notes!.isNotEmpty) ...[
+                SizedBox(height: context.spacing16),
+                _buildNotesCard(context),
+              ],
+              if (transaction.tags.isNotEmpty) ...[
+                SizedBox(height: context.spacing16),
+                _buildTagsCard(context),
+              ],
+              if (transaction.imagePath != null) ...[
+                SizedBox(height: context.spacing16),
+                _buildImageCard(context),
+              ],
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () => _showMoreOptions(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(context.spacing16),
+        ),
+      );
+
+  // 交易基本信息卡片
+  Widget _buildTransactionCard(BuildContext context) => AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTransactionCard(context),
-            SizedBox(height: context.spacing16),
-            _buildTransactionInfo(context),
-            SizedBox(height: context.spacing16),
-            _buildAccountInfo(context),
-            if (transaction.envelopeBudgetId != null) ...[
-              SizedBox(height: context.spacing16),
-              _buildBudgetInfo(context),
-            ],
-            if (transaction.notes != null && transaction.notes!.isNotEmpty) ...[
-              SizedBox(height: context.spacing16),
-              _buildNotesCard(context),
-            ],
-            if (transaction.tags.isNotEmpty) ...[
-              SizedBox(height: context.spacing16),
-              _buildTagsCard(context),
-            ],
-            if (transaction.imagePath != null) ...[
-              SizedBox(height: context.spacing16),
-              _buildImageCard(context),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 交易基本信息卡片
-  Widget _buildTransactionCard(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(context.spacing12),
-                decoration: BoxDecoration(
-                  color: _getTransactionColor(context).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(context.spacing12),
+                  decoration: BoxDecoration(
+                    color: _getTransactionColor(context).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(),
+                    color: _getTransactionColor(context),
+                    size: 24,
+                  ),
                 ),
-                child: Icon(
-                  _getCategoryIcon(),
-                  color: _getTransactionColor(context),
-                  size: 24,
+                SizedBox(width: context.spacing16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.description,
+                        style: context.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: context.spacing4),
+                      Text(
+                        _getTransactionTypeText(),
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: context.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(width: context.spacing16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      transaction.description,
-                      style: context.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      context.formatAmount(transaction.amount),
+                      style: context.textTheme.titleLarge?.copyWith(
+                        color: _getTransactionColor(context),
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: context.spacing4),
-                    Text(
-                      _getTransactionTypeText(),
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.secondaryText,
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.spacing8,
+                        vertical: context.spacing4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(context).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _getStatusText(),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: _getStatusColor(context),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    context.formatAmount(transaction.amount),
-                    style: context.textTheme.titleLarge?.copyWith(
-                      color: _getTransactionColor(context),
-                      fontWeight: FontWeight.bold,
-                    ),
+              ],
+            ),
+            SizedBox(height: context.spacing16),
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time_outlined,
+                  size: 16,
+                  color: context.secondaryText,
+                ),
+                SizedBox(width: context.spacing8),
+                Text(
+                  context.formatDateTime(transaction.date),
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: context.secondaryText,
                   ),
-                  SizedBox(height: context.spacing4),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.spacing8,
-                      vertical: context.spacing4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(context).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _getStatusText(),
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: _getStatusColor(context),
-                        fontWeight: FontWeight.w500,
-                      ),
+                ),
+                const Spacer(),
+                if (transaction.isRecurring) ...[
+                  Icon(
+                    Icons.repeat_outlined,
+                    size: 16,
+                    color: context.primaryAction,
+                  ),
+                  SizedBox(width: context.spacing4),
+                  Text(
+                    '周期性',
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.primaryAction,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
-          SizedBox(height: context.spacing16),
-          Row(
-            children: [
-              Icon(
-                Icons.access_time_outlined,
-                size: 16,
-                color: context.secondaryText,
-              ),
-              SizedBox(width: context.spacing8),
-              Text(
-                context.formatDateTime(transaction.date),
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.secondaryText,
-                ),
-              ),
-              const Spacer(),
-              if (transaction.isRecurring) ...[
-                Icon(
-                  Icons.repeat_outlined,
-                  size: 16,
-                  color: context.primaryAction,
-                ),
-                SizedBox(width: context.spacing4),
-                Text(
-                  '周期性',
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: context.primaryAction,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ],
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      );
 
   // 交易详细信息
-  Widget _buildTransactionInfo(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '交易信息',
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+  Widget _buildTransactionInfo(BuildContext context) => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '交易信息',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          SizedBox(height: context.spacing16),
-          _buildInfoRow(
-            context,
-            '交易类型',
-            _getTransactionTypeText(),
-            _getCategoryIcon(),
-          ),
-          _buildInfoRow(
-            context,
-            '分类',
-            _getCategoryText(),
-            _getCategoryIcon(),
-          ),
-          if (transaction.subCategory != null)
+            SizedBox(height: context.spacing16),
             _buildInfoRow(
               context,
-              '子分类',
-              transaction.subCategory!,
-              Icons.category_outlined,
+              '交易类型',
+              _getTransactionTypeText(),
+              _getCategoryIcon(),
             ),
-          _buildInfoRow(
-            context,
-            '金额',
-            context.formatAmount(transaction.amount),
-            Icons.attach_money_outlined,
-          ),
-          _buildInfoRow(
-            context,
-            '日期',
-            context.formatDate(transaction.date),
-            Icons.calendar_today_outlined,
-          ),
-          _buildInfoRow(
-            context,
-            '时间',
-            context.formatTime(transaction.date),
-            Icons.access_time_outlined,
-          ),
-          if (transaction.isRecurring)
             _buildInfoRow(
               context,
-              '周期规则',
-              transaction.recurringRule ?? '未设置',
-              Icons.repeat_outlined,
+              '分类',
+              _getCategoryText(),
+              _getCategoryIcon(),
             ),
-        ],
-      ),
-    );
-  }
+            if (transaction.subCategory != null)
+              _buildInfoRow(
+                context,
+                '子分类',
+                transaction.subCategory!,
+                Icons.category_outlined,
+              ),
+            _buildInfoRow(
+              context,
+              '金额',
+              context.formatAmount(transaction.amount),
+              Icons.attach_money_outlined,
+            ),
+            _buildInfoRow(
+              context,
+              '日期',
+              context.formatDate(transaction.date),
+              Icons.calendar_today_outlined,
+            ),
+            _buildInfoRow(
+              context,
+              '时间',
+              context.formatTime(transaction.date),
+              Icons.access_time_outlined,
+            ),
+            if (transaction.isRecurring)
+              _buildInfoRow(
+                context,
+                '周期规则',
+                transaction.recurringRule ?? '未设置',
+                Icons.repeat_outlined,
+              ),
+          ],
+        ),
+      );
 
   // 账户信息
-  Widget _buildAccountInfo(BuildContext context) {
-    return Consumer<AccountProvider>(
-      builder: (context, accountProvider, child) {
-        final fromAccount = accountProvider.accounts
-            .where((a) => a.id == transaction.fromAccountId)
-            .firstOrNull;
-        final toAccount = transaction.toAccountId != null
-            ? accountProvider.accounts
-                .where((a) => a.id == transaction.toAccountId)
-                .firstOrNull
-            : null;
+  Widget _buildAccountInfo(BuildContext context) => Consumer<AccountProvider>(
+        builder: (context, accountProvider, child) {
+          final fromAccount = accountProvider.accounts
+              .where((a) => a.id == transaction.fromAccountId)
+              .firstOrNull;
+          final toAccount = transaction.toAccountId != null
+              ? accountProvider.accounts
+                  .where((a) => a.id == transaction.toAccountId)
+                  .firstOrNull
+              : null;
 
-        return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '账户信息',
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: context.spacing16),
-              if (fromAccount != null)
-                _buildAccountRow(
-                  context,
-                  '来源账户',
-                  fromAccount.name,
-                  fromAccount.type,
-                  Icons.account_balance_wallet_outlined,
-                ),
-              if (toAccount != null)
-                _buildAccountRow(
-                  context,
-                  '目标账户',
-                  toAccount.name,
-                  toAccount.type,
-                  Icons.account_balance_outlined,
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // 预算信息
-  Widget _buildBudgetInfo(BuildContext context) {
-    return Consumer<BudgetProvider>(
-      builder: (context, budgetProvider, child) {
-        final budget = budgetProvider.envelopeBudgets
-            .where((b) => b.id == transaction.envelopeBudgetId)
-            .firstOrNull;
-
-        if (budget == null) return const SizedBox.shrink();
-
-        return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '预算信息',
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: context.spacing16),
-              _buildInfoRow(
-                context,
-                '关联预算',
-                budget.name,
-                Icons.account_balance_wallet_outlined,
-              ),
-              _buildInfoRow(
-                context,
-                '预算金额',
-                context.formatAmount(budget.allocatedAmount),
-                Icons.attach_money_outlined,
-              ),
-              _buildInfoRow(
-                context,
-                '已花费',
-                context.formatAmount(budget.spentAmount),
-                Icons.shopping_cart_outlined,
-              ),
-              _buildInfoRow(
-                context,
-                '剩余金额',
-                context.formatAmount(budget.allocatedAmount - budget.spentAmount),
-                Icons.account_balance_wallet_outlined,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // 备注信息
-  Widget _buildNotesCard(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '备注',
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: context.spacing12),
-          Text(
-            transaction.notes!,
-            style: context.textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 标签信息
-  Widget _buildTagsCard(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '标签',
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: context.spacing12),
-          Wrap(
-            spacing: context.spacing8,
-            runSpacing: context.spacing8,
-            children: transaction.tags.map((tag) {
-              return Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.spacing12,
-                  vertical: context.spacing8,
-                ),
-                decoration: BoxDecoration(
-                  color: context.primaryAction.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  tag,
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: context.primaryAction,
-                    fontWeight: FontWeight.w500,
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '账户信息',
+                  style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 图片信息
-  Widget _buildImageCard(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '收据/发票',
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+                SizedBox(height: context.spacing16),
+                if (fromAccount != null)
+                  _buildAccountRow(
+                    context,
+                    '来源账户',
+                    fromAccount.name,
+                    fromAccount.type,
+                    Icons.account_balance_wallet_outlined,
+                  ),
+                if (toAccount != null)
+                  _buildAccountRow(
+                    context,
+                    '目标账户',
+                    toAccount.name,
+                    toAccount.type,
+                    Icons.account_balance_outlined,
+                  ),
+              ],
             ),
-          ),
-          SizedBox(height: context.spacing12),
-          Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: context.borderColor,
-                width: 1,
+          );
+        },
+      );
+
+  // 预算信息
+  Widget _buildBudgetInfo(BuildContext context) => Consumer<BudgetProvider>(
+        builder: (context, budgetProvider, child) {
+          final budget = budgetProvider.envelopeBudgets
+              .where((b) => b.id == transaction.envelopeBudgetId)
+              .firstOrNull;
+
+          if (budget == null) return const SizedBox.shrink();
+
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '预算信息',
+                  style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: context.spacing16),
+                _buildInfoRow(
+                  context,
+                  '关联预算',
+                  budget.name,
+                  Icons.account_balance_wallet_outlined,
+                ),
+                _buildInfoRow(
+                  context,
+                  '预算金额',
+                  context.formatAmount(budget.allocatedAmount),
+                  Icons.attach_money_outlined,
+                ),
+                _buildInfoRow(
+                  context,
+                  '已花费',
+                  context.formatAmount(budget.spentAmount),
+                  Icons.shopping_cart_outlined,
+                ),
+                _buildInfoRow(
+                  context,
+                  '剩余金额',
+                  context.formatAmount(
+                      budget.allocatedAmount - budget.spentAmount),
+                  Icons.account_balance_wallet_outlined,
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+  // 备注信息
+  Widget _buildNotesCard(BuildContext context) => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '备注',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                transaction.imagePath!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
+            SizedBox(height: context.spacing12),
+            Text(
+              transaction.notes!,
+              style: context.textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      );
+
+  // 标签信息
+  Widget _buildTagsCard(BuildContext context) => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '标签',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: context.spacing12),
+            Wrap(
+              spacing: context.spacing8,
+              runSpacing: context.spacing8,
+              children: transaction.tags
+                  .map(
+                    (tag) => Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.spacing12,
+                        vertical: context.spacing8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.primaryAction.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        tag,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.primaryAction,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      );
+
+  // 图片信息
+  Widget _buildImageCard(BuildContext context) => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '收据/发票',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: context.spacing12),
+            Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: context.borderColor,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  transaction.imagePath!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
                     color: context.primaryBackground,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -452,15 +438,13 @@ class TransactionDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
 
   // 信息行组件
   Widget _buildInfoRow(
@@ -468,39 +452,38 @@ class TransactionDetailScreen extends StatelessWidget {
     String label,
     String value,
     IconData icon,
-  ) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: context.spacing12),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: context.secondaryText,
-          ),
-          SizedBox(width: context.spacing12),
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.secondaryText,
+  ) =>
+      Padding(
+        padding: EdgeInsets.only(bottom: context.spacing12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: context.secondaryText,
+            ),
+            SizedBox(width: context.spacing12),
+            Expanded(
+              flex: 2,
+              child: Text(
+                label,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.secondaryText,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: context.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
+            Expanded(
+              flex: 3,
+              child: Text(
+                value,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
 
   // 账户行组件
   Widget _buildAccountRow(
@@ -509,49 +492,48 @@ class TransactionDetailScreen extends StatelessWidget {
     String accountName,
     AccountType accountType,
     IconData icon,
-  ) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: context.spacing12),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: context.secondaryText,
-          ),
-          SizedBox(width: context.spacing12),
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.secondaryText,
+  ) =>
+      Padding(
+        padding: EdgeInsets.only(bottom: context.spacing12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: context.secondaryText,
+            ),
+            SizedBox(width: context.spacing12),
+            Expanded(
+              flex: 2,
+              child: Text(
+                label,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.secondaryText,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Row(
-              children: [
-                Icon(
-                  _getAccountTypeIcon(accountType),
-                  size: 16,
-                  color: context.primaryAction,
-                ),
-                SizedBox(width: context.spacing8),
-                Text(
-                  accountName,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
+            Expanded(
+              flex: 3,
+              child: Row(
+                children: [
+                  Icon(
+                    _getAccountTypeIcon(accountType),
+                    size: 16,
+                    color: context.primaryAction,
                   ),
-                ),
-              ],
+                  SizedBox(width: context.spacing8),
+                  Text(
+                    accountName,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
 
   // 获取交易颜色
   Color _getTransactionColor(BuildContext context) {
@@ -754,7 +736,6 @@ class TransactionDetailScreen extends StatelessWidget {
   // 复制交易
   void _copyTransaction(BuildContext context) {
     final copiedTransaction = transaction.copyWith(
-      id: null, // 生成新ID
       description: '${transaction.description} (副本)',
       date: DateTime.now(),
       status: TransactionStatus.draft,
@@ -784,11 +765,10 @@ class TransactionDetailScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<TransactionProvider>().deleteTransaction(transaction.id);
+              context
+                  .read<TransactionProvider>()
+                  .deleteTransaction(transaction.id);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('交易已删除')),
-              );
             },
             child: Text(
               '删除',

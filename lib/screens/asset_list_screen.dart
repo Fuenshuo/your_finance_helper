@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/models/asset_item.dart';
 import 'package:your_finance_flutter/providers/asset_provider.dart';
 import 'package:your_finance_flutter/screens/add_asset_flow_screen.dart';
+import 'package:your_finance_flutter/screens/fixed_asset_detail_screen.dart';
 import 'package:your_finance_flutter/theme/app_theme.dart';
 import 'package:your_finance_flutter/theme/responsive_text_styles.dart';
 import 'package:your_finance_flutter/utils/performance_monitor.dart';
@@ -37,11 +38,9 @@ class _AssetListScreenState extends State<AssetListScreen> {
                 icon: const Icon(Icons.analytics_outlined),
                 onPressed: () {
                   // TODO: 导航到历史数据总览页面
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('历史数据总览功能开发中')),
-                  );
-                },
-              ),
+                  // 静默处理，不显示提示框
+        // 静默处理，不显示提示框                },
+              ,,,,),
             ],
           ),
           body: Consumer<AssetProvider>(
@@ -92,15 +91,25 @@ class _AssetListScreenState extends State<AssetListScreen> {
           // 完全移除动画，直接渲染
           return AssetListItem(
             asset: assets[index],
-            onTap: () {
-              // TODO: 导航到资产详情页面
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${assets[index].name}详情页面开发中')),
-              );
-            },
+            onTap: () => _onAssetTap(context, assets[index]),
           );
         },
       );
+
+  // 处理资产点击事件
+  void _onAssetTap(BuildContext context, AssetItem asset) {
+    if (asset.isFixedAsset) {
+      // 固定资产跳转到详细设置页面
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => FixedAssetDetailScreen(asset: asset),
+        ),
+      );
+    } else {
+      // 其他资产显示简单信息
+      // 静默处理，不显示提示框
+    }
+  }
 
   // 构建空状态
   Widget _buildEmptyState() => Center(

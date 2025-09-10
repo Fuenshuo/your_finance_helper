@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/account_provider.dart';
-import '../providers/budget_provider.dart';
-import '../models/transaction.dart';
-import '../models/account.dart';
-import '../models/budget.dart';
-import '../theme/app_theme.dart';
-import '../widgets/app_animations.dart';
-import '../widgets/app_card.dart';
+import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/models/account.dart';
+import 'package:your_finance_flutter/models/budget.dart';
+import 'package:your_finance_flutter/models/transaction.dart';
+import 'package:your_finance_flutter/providers/account_provider.dart';
+import 'package:your_finance_flutter/providers/budget_provider.dart';
+import 'package:your_finance_flutter/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/widgets/app_animations.dart';
+import 'package:your_finance_flutter/widgets/app_card.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  final TransactionType? initialType;
-  final Transaction? editingTransaction;
-
   const AddTransactionScreen({
     super.key,
     this.initialType,
     this.editingTransaction,
   });
+  final TransactionType? initialType;
+  final Transaction? editingTransaction;
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -77,238 +76,234 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.primaryBackground,
-      appBar: AppBar(
-        title: Text(widget.editingTransaction != null ? '编辑交易' : '添加交易'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          if (widget.editingTransaction == null)
-            TextButton(
-              onPressed: _saveAsDraft,
-              child: const Text('保存草稿'),
-            ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(context.spacing16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 交易类型选择
-              _buildTransactionTypeSection(),
-              SizedBox(height: context.spacing16),
-
-              // 基本信息
-              _buildBasicInfoSection(),
-              SizedBox(height: context.spacing16),
-
-              // 账户选择
-              _buildAccountSection(),
-              SizedBox(height: context.spacing16),
-
-              // 预算关联
-              if (_selectedType != TransactionType.transfer)
-                _buildBudgetSection(),
-              if (_selectedType != TransactionType.transfer)
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.primaryBackground,
+        appBar: AppBar(
+          title: Text(widget.editingTransaction != null ? '编辑交易' : '添加交易'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            if (widget.editingTransaction == null)
+              TextButton(
+                onPressed: _saveAsDraft,
+                child: const Text('保存草稿'),
+              ),
+          ],
+        ),
+        body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(context.spacing16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 交易类型选择
+                _buildTransactionTypeSection(),
                 SizedBox(height: context.spacing16),
 
-              // 其他选项
-              _buildOtherOptionsSection(),
-              SizedBox(height: context.spacing24),
+                // 基本信息
+                _buildBasicInfoSection(),
+                SizedBox(height: context.spacing16),
 
-              // 保存按钮
-              _buildSaveButton(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+                // 账户选择
+                _buildAccountSection(),
+                SizedBox(height: context.spacing16),
 
-  // 交易类型选择
-  Widget _buildTransactionTypeSection() {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '交易类型',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+                // 预算关联
+                if (_selectedType != TransactionType.transfer)
+                  _buildBudgetSection(),
+                if (_selectedType != TransactionType.transfer)
+                  SizedBox(height: context.spacing16),
+
+                // 其他选项
+                _buildOtherOptionsSection(),
+                SizedBox(height: context.spacing24),
+
+                // 保存按钮
+                _buildSaveButton(),
+              ],
             ),
           ),
-          SizedBox(height: context.spacing12),
-          Row(
-            children: TransactionType.values.map((type) {
-              final isSelected = _selectedType == type;
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: context.spacing4),
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedType = type),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: context.spacing12,
-                        horizontal: context.spacing8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected 
-                            ? _getTransactionTypeColor(type).withOpacity(0.1)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected 
-                              ? _getTransactionTypeColor(type)
-                              : Colors.grey.withOpacity(0.3),
+        ),
+      );
+
+  // 交易类型选择
+  Widget _buildTransactionTypeSection() => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '交易类型',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            SizedBox(height: context.spacing12),
+            Row(
+              children: TransactionType.values.map((type) {
+                final isSelected = _selectedType == type;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: context.spacing4),
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedType = type),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: context.spacing12,
+                          horizontal: context.spacing8,
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            _getTransactionTypeIcon(type),
-                            color: isSelected 
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? _getTransactionTypeColor(type).withOpacity(0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
                                 ? _getTransactionTypeColor(type)
-                                : Colors.grey,
-                            size: 24,
+                                : Colors.grey.withOpacity(0.3),
                           ),
-                          SizedBox(height: context.spacing4),
-                          Text(
-                            type.displayName,
-                            style: TextStyle(
-                              color: isSelected 
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              _getTransactionTypeIcon(type),
+                              color: isSelected
                                   ? _getTransactionTypeColor(type)
                                   : Colors.grey,
-                              fontWeight: isSelected 
-                                  ? FontWeight.bold 
-                                  : FontWeight.normal,
-                              fontSize: 12,
+                              size: 24,
                             ),
-                          ),
-                        ],
+                            SizedBox(height: context.spacing4),
+                            Text(
+                              type.displayName,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? _getTransactionTypeColor(type)
+                                    : Colors.grey,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      );
 
   // 基本信息
-  Widget _buildBasicInfoSection() {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '基本信息',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: context.spacing16),
-          
-          // 描述
-          TextFormField(
-            controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: '描述',
-              hintText: '请输入交易描述',
-              border: OutlineInputBorder(),
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return '请输入交易描述';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: context.spacing16),
-
-          // 金额
-          TextFormField(
-            controller: _amountController,
-            decoration: const InputDecoration(
-              labelText: '金额',
-              hintText: '0.00',
-              border: OutlineInputBorder(),
-              prefixText: '¥ ',
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return '请输入金额';
-              }
-              final amount = double.tryParse(value);
-              if (amount == null || amount <= 0) {
-                return '请输入有效的金额';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: context.spacing16),
-
-          // 分类选择
-          _buildCategorySelector(),
-          SizedBox(height: context.spacing16),
-
-          // 日期选择
-          InkWell(
-            onTap: _selectDate,
-            child: Container(
-              padding: EdgeInsets.all(context.spacing12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.withOpacity(0.3)),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today, size: 20),
-                  SizedBox(width: context.spacing12),
-                  Text(
-                    DateFormat('yyyy-MM-dd').format(_selectedDate),
-                    style: const TextStyle(fontSize: 16),
+  Widget _buildBasicInfoSection() => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '基本信息',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  const Spacer(),
-                  const Icon(Icons.arrow_drop_down),
-                ],
+            ),
+            SizedBox(height: context.spacing16),
+
+            // 描述
+            TextFormField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(
+                labelText: '描述',
+                hintText: '请输入交易描述',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入交易描述';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: context.spacing16),
+
+            // 金额
+            TextFormField(
+              controller: _amountController,
+              decoration: const InputDecoration(
+                labelText: '金额',
+                hintText: '0.00',
+                border: OutlineInputBorder(),
+                prefixText: '¥ ',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '请输入金额';
+                }
+                final amount = double.tryParse(value);
+                if (amount == null || amount <= 0) {
+                  return '请输入有效的金额';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: context.spacing16),
+
+            // 分类选择
+            _buildCategorySelector(),
+            SizedBox(height: context.spacing16),
+
+            // 日期选择
+            InkWell(
+              onTap: _selectDate,
+              child: Container(
+                padding: EdgeInsets.all(context.spacing12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 20),
+                    SizedBox(width: context.spacing12),
+                    Text(
+                      DateFormat('yyyy-MM-dd').format(_selectedDate),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down),
+                  ],
+                ),
               ),
             ),
-          ),
-          SizedBox(height: context.spacing16),
+            SizedBox(height: context.spacing16),
 
-          // 备注
-          TextFormField(
-            controller: _notesController,
-            decoration: const InputDecoration(
-              labelText: '备注',
-              hintText: '可选',
-              border: OutlineInputBorder(),
+            // 备注
+            TextFormField(
+              controller: _notesController,
+              decoration: const InputDecoration(
+                labelText: '备注',
+                hintText: '可选',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
             ),
-            maxLines: 3,
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
 
   // 分类选择器
   Widget _buildCategorySelector() {
     final categories = _getAvailableCategories();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('分类', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        const Text('分类',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         SizedBox(height: context.spacing8),
         InkWell(
           onTap: () => _showCategoryPicker(categories),
@@ -341,46 +336,48 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   // 账户选择
-  Widget _buildAccountSection() {
-    return Consumer<AccountProvider>(
-      builder: (context, accountProvider, child) {
-        final accounts = accountProvider.accounts;
-        
-        return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _selectedType == TransactionType.transfer ? '转账账户' : '账户',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+  Widget _buildAccountSection() => Consumer<AccountProvider>(
+        builder: (context, accountProvider, child) {
+          final accounts = accountProvider.accounts;
+
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _selectedType == TransactionType.transfer ? '转账账户' : '账户',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-              ),
-              SizedBox(height: context.spacing16),
-              
-              // 来源账户
-              _buildAccountSelector(
-                '来源账户',
-                _selectedFromAccountId,
-                accounts,
-                (accountId) => setState(() => _selectedFromAccountId = accountId),
-              ),
-              
-              if (_selectedType == TransactionType.transfer) ...[
                 SizedBox(height: context.spacing16),
+
+                // 来源账户
                 _buildAccountSelector(
-                  '目标账户',
-                  _selectedToAccountId,
-                  accounts.where((a) => a.id != _selectedFromAccountId).toList(),
-                  (accountId) => setState(() => _selectedToAccountId = accountId),
+                  '来源账户',
+                  _selectedFromAccountId,
+                  accounts,
+                  (accountId) =>
+                      setState(() => _selectedFromAccountId = accountId),
                 ),
+
+                if (_selectedType == TransactionType.transfer) ...[
+                  SizedBox(height: context.spacing16),
+                  _buildAccountSelector(
+                    '目标账户',
+                    _selectedToAccountId,
+                    accounts
+                        .where((a) => a.id != _selectedFromAccountId)
+                        .toList(),
+                    (accountId) =>
+                        setState(() => _selectedToAccountId = accountId),
+                  ),
+                ],
               ],
-            ],
-          ),
-        );
-      },
-    );
-  }
+            ),
+          );
+        },
+      );
 
   // 账户选择器
   Widget _buildAccountSelector(
@@ -391,18 +388,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   ) {
     final selectedAccount = accounts.firstWhere(
       (a) => a.id == selectedAccountId,
-      orElse: () => accounts.isNotEmpty ? accounts.first : Account(
-        name: '请选择账户',
-        type: AccountType.cash,
-        balance: 0.0,
-        currency: 'CNY',
-      ),
+      orElse: () => accounts.isNotEmpty
+          ? accounts.first
+          : Account(
+              name: '请选择账户',
+              type: AccountType.cash,
+            ),
     );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        Text(title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         SizedBox(height: context.spacing8),
         InkWell(
           onTap: () => _showAccountPicker(accounts, onChanged),
@@ -448,129 +446,121 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   // 预算关联
-  Widget _buildBudgetSection() {
-    return Consumer<BudgetProvider>(
-      builder: (context, budgetProvider, child) {
-        final envelopeBudgets = budgetProvider.envelopeBudgets;
-        
-        return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '预算关联',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+  Widget _buildBudgetSection() => Consumer<BudgetProvider>(
+        builder: (context, budgetProvider, child) {
+          final envelopeBudgets = budgetProvider.envelopeBudgets;
+
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '预算关联',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-              ),
-              SizedBox(height: context.spacing12),
-              Text(
-                '选择要关联的信封预算（可选）',
-                style: TextStyle(
-                  color: context.secondaryText,
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: context.spacing16),
-              
-              InkWell(
-                onTap: () => _showBudgetPicker(envelopeBudgets),
-                child: Container(
-                  padding: EdgeInsets.all(context.spacing12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
-                    borderRadius: BorderRadius.circular(8),
+                SizedBox(height: context.spacing12),
+                Text(
+                  '选择要关联的信封预算（可选）',
+                  style: TextStyle(
+                    color: context.secondaryText,
+                    fontSize: 14,
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.account_balance_wallet, size: 20),
-                      SizedBox(width: context.spacing12),
-                      Expanded(
-                        child: Text(
-                          _selectedEnvelopeBudgetId != null
-                              ? envelopeBudgets
-                                  .firstWhere((b) => b.id == _selectedEnvelopeBudgetId)
-                                  .name
-                              : '选择预算（可选）',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: _selectedEnvelopeBudgetId != null 
-                                ? context.primaryText 
-                                : context.secondaryText,
+                ),
+                SizedBox(height: context.spacing16),
+                InkWell(
+                  onTap: () => _showBudgetPicker(envelopeBudgets),
+                  child: Container(
+                    padding: EdgeInsets.all(context.spacing12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.account_balance_wallet, size: 20),
+                        SizedBox(width: context.spacing12),
+                        Expanded(
+                          child: Text(
+                            _selectedEnvelopeBudgetId != null
+                                ? envelopeBudgets
+                                    .firstWhere((b) =>
+                                        b.id == _selectedEnvelopeBudgetId)
+                                    .name
+                                : '选择预算（可选）',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: _selectedEnvelopeBudgetId != null
+                                  ? context.primaryText
+                                  : context.secondaryText,
+                            ),
                           ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_drop_down),
-                    ],
+                        const Icon(Icons.arrow_drop_down),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+              ],
+            ),
+          );
+        },
+      );
 
   // 其他选项
-  Widget _buildOtherOptionsSection() {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '其他选项',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+  Widget _buildOtherOptionsSection() => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '其他选项',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            SizedBox(height: context.spacing16),
+            SwitchListTile(
+              title: const Text('周期性交易'),
+              subtitle: const Text('设置定期重复的交易'),
+              value: _isRecurring,
+              onChanged: (value) => setState(() => _isRecurring = value),
+            ),
+            if (widget.editingTransaction == null)
+              SwitchListTile(
+                title: const Text('保存为草稿'),
+                subtitle: const Text('稍后确认此交易'),
+                value: _isDraft,
+                onChanged: (value) => setState(() => _isDraft = value),
+              ),
+          ],
+        ),
+      );
+
+  // 保存按钮
+  Widget _buildSaveButton() => SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _saveTransaction,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: context.primaryAction,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: context.spacing16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            widget.editingTransaction != null
+                ? '更新交易'
+                : (_isDraft ? '保存草稿' : '保存交易'),
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: context.spacing16),
-          
-          SwitchListTile(
-            title: const Text('周期性交易'),
-            subtitle: const Text('设置定期重复的交易'),
-            value: _isRecurring,
-            onChanged: (value) => setState(() => _isRecurring = value),
-          ),
-          
-          if (widget.editingTransaction == null)
-            SwitchListTile(
-              title: const Text('保存为草稿'),
-              subtitle: const Text('稍后确认此交易'),
-              value: _isDraft,
-              onChanged: (value) => setState(() => _isDraft = value),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // 保存按钮
-  Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _saveTransaction,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: context.primaryAction,
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: context.spacing16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
-        child: Text(
-          widget.editingTransaction != null 
-              ? '更新交易' 
-              : (_isDraft ? '保存草稿' : '保存交易'),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
+      );
 
   // 获取可用分类
   List<TransactionCategory> _getAvailableCategories() {
@@ -691,21 +681,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             Text(
               '选择分类',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: context.spacing16),
-            ...categories.map((category) => ListTile(
-              leading: Icon(
-                _getCategoryIcon(category),
-                color: _getTransactionTypeColor(_selectedType),
+            ...categories.map(
+              (category) => ListTile(
+                leading: Icon(
+                  _getCategoryIcon(category),
+                  color: _getTransactionTypeColor(_selectedType),
+                ),
+                title: Text(category.displayName),
+                onTap: () {
+                  setState(() => _selectedCategory = category);
+                  Navigator.pop(context);
+                },
               ),
-              title: Text(category.displayName),
-              onTap: () {
-                setState(() => _selectedCategory = category);
-                Navigator.pop(context);
-              },
-            )).toList(),
+            ),
           ],
         ),
       ),
@@ -724,22 +716,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             Text(
               '选择账户',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: context.spacing16),
-            ...accounts.map((account) => ListTile(
-              leading: Icon(
-                _getAccountTypeIcon(account.type),
-                color: context.primaryAction,
+            ...accounts.map(
+              (account) => ListTile(
+                leading: Icon(
+                  _getAccountTypeIcon(account.type),
+                  color: context.primaryAction,
+                ),
+                title: Text(account.name),
+                subtitle: Text('余额: ${context.formatAmount(account.balance)}'),
+                onTap: () {
+                  onChanged(account.id);
+                  Navigator.pop(context);
+                },
               ),
-              title: Text(account.name),
-              subtitle: Text('余额: ${context.formatAmount(account.balance)}'),
-              onTap: () {
-                onChanged(account.id);
-                Navigator.pop(context);
-              },
-            )).toList(),
+            ),
           ],
         ),
       ),
@@ -758,8 +752,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             Text(
               '选择预算',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: context.spacing16),
             ListTile(
@@ -770,15 +764,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 Navigator.pop(context);
               },
             ),
-            ...budgets.map((budget) => ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: Text(budget.name),
-              subtitle: Text('预算: ${context.formatAmount(budget.allocatedAmount)}'),
-              onTap: () {
-                setState(() => _selectedEnvelopeBudgetId = budget.id);
-                Navigator.pop(context);
-              },
-            )).toList(),
+            ...budgets.map(
+              (budget) => ListTile(
+                leading: const Icon(Icons.account_balance_wallet),
+                title: Text(budget.name),
+                subtitle:
+                    Text('预算: ${context.formatAmount(budget.allocatedAmount)}'),
+                onTap: () {
+                  setState(() => _selectedEnvelopeBudgetId = budget.id);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -794,24 +791,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   // 保存交易
-  void _saveTransaction() async {
+  Future<void> _saveTransaction() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedFromAccountId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请选择来源账户')),
-        );
-      }
+      // 静默验证，不显示提示框
       return;
     }
 
-    if (_selectedType == TransactionType.transfer && _selectedToAccountId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请选择目标账户')),
-        );
-      }
+    if (_selectedType == TransactionType.transfer &&
+        _selectedToAccountId == null) {
+      // 静默验证，不显示提示框
       return;
     }
 
@@ -827,36 +817,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       toAccountId: _selectedToAccountId,
       envelopeBudgetId: _selectedEnvelopeBudgetId,
       date: _selectedDate,
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
       status: _isDraft ? TransactionStatus.draft : TransactionStatus.confirmed,
       isRecurring: _isRecurring,
     );
 
     try {
       final transactionProvider = context.read<TransactionProvider>();
-      
+
       if (widget.editingTransaction != null) {
         await transactionProvider.updateTransaction(transaction);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('交易更新成功')),
-          );
-        }
       } else {
         if (_isDraft) {
           await transactionProvider.addDraftTransaction(transaction);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('草稿保存成功')),
-            );
-          }
         } else {
           await transactionProvider.addTransaction(transaction);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('交易添加成功')),
-            );
-          }
         }
       }
 
@@ -864,11 +841,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e')),
-        );
-      }
+      // 静默处理错误，不显示提示框
     }
   }
 }

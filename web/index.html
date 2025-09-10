@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,12 +28,49 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>your_finance_flutter</title>
+  <title>家庭资产记账</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- 阿里巴巴普惠体支持 - 使用阿里CDN -->
+  <link rel="preconnect" href="https://at.alicdn.com">
+  <link href="https://at.alicdn.com/t/font_2234252_0r9v8e8k4om.css" rel="stylesheet">
+
+  <style>
+    /* 完全禁用Noto Sans SC字体加载 */
+    @font-face {
+      font-family: 'Noto Sans SC';
+      src: none;
+      font-display: none;
+    }
+
+    /* 阻止Google Fonts加载 */
+    @import url('data:text/css;charset=utf-8,') !important;
+
+    body {
+      font-family: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', 'SimSun', sans-serif !important;
+    }
+
+    /* 确保Flutter应用使用阿里巴巴普惠体 */
+    flt-glass-pane {
+      font-family: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', 'SimSun', sans-serif !important;
+    }
+
+    /* 强制所有元素使用阿里巴巴普惠体 */
+    * {
+      font-family: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', 'SimSun', sans-serif !important;
+    }
+
+    /* 阻止Flutter尝试加载默认字体 */
+    .flutter-view {
+      font-family: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', 'SimSun', sans-serif !important;
+    }
+  </style>
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>

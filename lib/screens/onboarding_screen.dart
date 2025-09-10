@@ -164,41 +164,6 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
-
-                // Debug按钮
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _handleDebugAction(context, 'sample'),
-                        icon: const Icon(Icons.bug_report),
-                        label: const Text('生成测试数据'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _handleDebugAction(context, 'import'),
-                        icon: const Icon(Icons.upload),
-                        label: const Text('导入数据'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
                 const SizedBox(height: 32),
               ],
             ),
@@ -442,21 +407,11 @@ class OnboardingScreen extends StatelessWidget {
       if (context.mounted) {
         context.read<AssetProvider>().loadAssets();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('测试数据生成成功！'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // 静默生成测试数据，不显示提示框
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('生成测试数据失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // 静默处理错误，不显示提示框
       }
     }
   }
@@ -466,12 +421,7 @@ class OnboardingScreen extends StatelessWidget {
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       if (clipboardData?.text == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('剪贴板中没有数据'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        // 静默处理，不显示提示框
         return;
       }
 
@@ -498,7 +448,8 @@ class OnboardingScreen extends StatelessWidget {
       if (importData['envelopeBudgets'] != null) {
         final budgets = (importData['envelopeBudgets'] as List<dynamic>)
             .map(
-                (json) => EnvelopeBudget.fromJson(json as Map<String, dynamic>))
+              (json) => EnvelopeBudget.fromJson(json as Map<String, dynamic>),
+            )
             .toList();
         await storageService.saveEnvelopeBudgets(budgets);
       }
@@ -515,21 +466,11 @@ class OnboardingScreen extends StatelessWidget {
       if (context.mounted) {
         context.read<AssetProvider>().loadAssets();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('数据导入成功！'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // 静默导入数据，不显示提示框
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('导入数据失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // 静默处理错误，不显示提示框
       }
     }
   }

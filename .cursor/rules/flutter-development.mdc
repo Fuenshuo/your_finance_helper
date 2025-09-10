@@ -9,26 +9,44 @@ description: Flutter development guidelines and best practices
 - 使用Provider进行状态管理，避免直接使用StatefulWidget
 - 所有Provider必须实现initialize()方法进行异步初始化
 - 使用late final进行延迟初始化，避免构造函数中的异步操作
+- 统一使用package导入路径：`import 'package:your_finance_flutter/...'`
 
 ## 数据模型规范
 - 所有模型类必须继承Equatable
 - 使用const构造函数和copyWith方法
-- 实现toJson/fromJson序列化方法
+- 实现toJson/fromJson序列化方法，使用类型安全的as转换
 - 使用Uuid生成唯一ID
+- 历史记录模型需要包含时间戳字段（creationDate, updateDate）
 
 ## UI组件规范
 - 使用AppCard作为基础卡片组件
 - 使用AppAnimations进行统一的动效处理
-- 遵循8pt间距系统，使用context.spacing*方法
+- 遵循8pt间距系统，使用context.responsiveSpacing*方法
 - 使用context.formatAmount格式化金额显示
+- 复杂组件使用StatefulWidget，简单展示使用StatelessWidget
+
+## 历史记录和追溯
+- 所有数据变更必须记录历史：创建、更新、删除
+- 使用AssetHistoryService管理历史记录
+- 历史记录自动限制在1000条以内，避免存储过大
+- 支持数据导出功能，包含完整的历史记录
+
+## 性能优化
+- 使用PerformanceMonitor监控Widget构建和绘制时间
+- 复杂图表使用CustomPainter而非第三方库
+- 列表使用ListView.builder with itemExtent和cacheExtent
+- 动画使用RepaintBoundary隔离重绘区域
+- 避免在build方法中进行复杂计算
 
 ## 错误处理
 - 所有异步操作必须包含try-catch错误处理
 - 使用notifyListeners()更新UI状态
 - 提供clearError()方法清除错误状态
+- 类型转换使用as关键字，避免隐式转换
 
 ## 命名规范
 - 文件名使用snake_case
 - 类名使用PascalCase
 - 方法名使用camelCase
 - 常量使用UPPER_SNAKE_CASE
+- 历史记录相关类使用History后缀

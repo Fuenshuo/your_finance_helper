@@ -127,7 +127,11 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
       );
 
   Widget _buildStatItem(
-          String label, String value, IconData icon, Color color) =>
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) =>
       Column(
         children: [
           Icon(icon, color: color, size: 24),
@@ -263,23 +267,9 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
   Future<void> _exportData() async {
     try {
       await _historyService?.exportAndShare();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('数据导出成功'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      // 静默导出数据，不显示提示框
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('导出失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      // 静默处理错误，不显示提示框
     }
   }
 

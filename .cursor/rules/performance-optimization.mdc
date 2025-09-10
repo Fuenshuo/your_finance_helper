@@ -1,0 +1,60 @@
+---
+globs: *.dart
+description: Performance optimization guidelines and monitoring
+---
+
+# 性能优化规范
+
+## 性能监控
+- 使用[PerformanceMonitor](mdc:lib/utils/performance_monitor.dart)监控构建和绘制时间
+- 在关键Widget上使用monitorBuild()和monitorPaint()方法
+- 记录性能数据用于分析和优化
+- 仅在Debug模式下启用性能监控
+
+## 图表性能
+- 复杂图表使用CustomPainter而非第三方库
+- 实现shouldRepaint逻辑避免不必要的重绘
+- 使用RepaintBoundary隔离图表重绘区域
+- 缓存计算结果，避免重复计算
+
+## 列表性能
+- 使用ListView.builder with itemExtent和cacheExtent
+- 避免在itemBuilder中进行复杂计算
+- 使用const构造函数减少Widget重建
+- 长列表考虑使用懒加载
+
+## 动画性能
+- 使用RepaintBoundary隔离动画重绘
+- 避免在动画过程中进行复杂计算
+- 使用AnimatedBuilder而非setState触发动画
+- 合理使用AnimationController的生命周期
+
+## 数据缓存
+- 使用静态Map缓存计算结果
+- 避免在build方法中重复计算
+- 使用memoization模式缓存函数结果
+- 合理使用Provider的缓存机制
+
+## 内存管理
+- 及时释放AnimationController资源
+- 避免在Widget中持有大量数据
+- 使用WeakReference避免循环引用
+- 定期清理不需要的缓存数据
+
+## 构建优化
+- 使用const构造函数减少Widget创建
+- 避免在build方法中创建新对象
+- 使用Builder模式延迟构建
+- 合理使用Key避免不必要的重建
+
+## 网络和存储
+- 异步操作使用FutureBuilder
+- 避免阻塞主线程的同步操作
+- 使用缓存减少重复的网络请求
+- 批量操作减少存储调用次数
+
+## 调试工具
+- 使用Flutter DevTools分析性能
+- 监控内存使用和CPU占用
+- 使用性能分析页面[PerformanceAnalysisScreen](mdc:lib/screens/performance_analysis_screen.dart)
+- 定期进行性能回归测试

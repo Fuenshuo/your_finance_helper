@@ -3,30 +3,37 @@ import 'package:intl/intl.dart';
 import 'package:your_finance_flutter/models/asset_history.dart';
 import 'package:your_finance_flutter/models/asset_item.dart';
 import 'package:your_finance_flutter/services/asset_history_service.dart';
-import 'package:your_finance_flutter/services/storage_service.dart';
+import 'package:your_finance_flutter/services/depreciation_service.dart';
+import 'package:your_finance_flutter/services/hybrid_storage_service.dart';
 
 class AssetProvider with ChangeNotifier {
   List<AssetItem> _assets = [];
   bool _isAmountHidden = false;
   bool _excludeFixedAssets = false;
+  bool _isInitialized = false;
 
   List<AssetItem> get assets => _assets;
   bool get isAmountHidden => _isAmountHidden;
   bool get excludeFixedAssets => _excludeFixedAssets;
+  bool get isInitialized => _isInitialized;
 
-  StorageService? _storageService;
+  HybridStorageService? _storageService;
   AssetHistoryService? _historyService;
+  final DepreciationService _depreciationService = DepreciationService();
 
   Future<void> initialize() async {
-    _storageService = await StorageService.getInstance();
+    _storageService = await HybridStorageService.getInstance();
     _historyService = await AssetHistoryService.getInstance();
     await loadAssets();
+    _isInitialized = true;
+    notifyListeners();
   }
 
   // 加载资产数据
   Future<void> loadAssets() async {
     if (_storageService == null) return;
     _assets = await _storageService!.getAssets();
+    _isInitialized = true;
     notifyListeners();
   }
 
@@ -105,14 +112,14 @@ class AssetProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 计算总资产
+  // 计算总资产（使用实际价值）
   double calculateTotalAssets() => _assets.where((asset) {
         if (_excludeFixedAssets &&
             asset.category == AssetCategory.fixedAssets) {
           return false;
         }
         return asset.category != AssetCategory.liabilities;
-      }).fold(0.0, (sum, asset) => sum + asset.amount);
+      }).fold(0.0, (sum, asset) => sum + asset.effectiveValue);
 
   // 计算总负债
   double calculateTotalLiabilities() => _assets
@@ -130,14 +137,14 @@ class AssetProvider with ChangeNotifier {
     return (calculateTotalLiabilities() / totalAssets) * 100;
   }
 
-  // 按分类获取资产
+  // 按分类获取资产（使用实际价值）
   Map<AssetCategory, double> getAssetsByCategory() {
     final categoryTotals = <AssetCategory, double>{};
 
     for (final category in AssetCategory.values) {
       final total = _assets
           .where((asset) => asset.category == category)
-          .fold(0.0, (sum, asset) => sum + asset.amount);
+          .fold(0.0, (sum, asset) => sum + asset.effectiveValue);
       categoryTotals[category] = total;
     }
 
@@ -201,5 +208,139 @@ class AssetProvider with ChangeNotifier {
     }
 
     return _historyService!.calculateMonthlyChange();
+  }
+
+  // 固定资产管理相关方法
+
+  /// 更新固定资产的折旧设置
+  Future<void> updateAssetDepreciation(
+    String assetId, {
+    DepreciationMethod? depreciationMethod,
+    double? depreciationRate,
+    DateTime? purchaseDate,
+    double? currentValue,
+  }) async {
+    final assetIndex = _assets.indexWhere((a) => a.id == assetId);
+    if (assetIndex == -1) return;
+
+    final oldAsset = _assets[assetIndex];
+    final updatedAsset = oldAsset.copyWith(
+      depreciationMethod: depreciationMethod,
+      depreciationRate: depreciationRate,
+      purchaseDate: purchaseDate,
+      currentValue: currentValue,
+      updateDate: DateTime.now(),
+    );
+
+    await updateAsset(updatedAsset);
+  }
+
+  /// 设置固定资产为闲置状态
+  Future<void> setAssetIdle(String assetId, double idleValue) async {
+    final assetIndex = _assets.indexWhere((a) => a.id == assetId);
+    if (assetIndex == -1) return;
+
+    final oldAsset = _assets[assetIndex];
+    final updatedAsset = oldAsset.copyWith(
+      isIdle: true,
+      idleValue: idleValue,
+      updateDate: DateTime.now(),
+    );
+
+    await updateAsset(updatedAsset);
+  }
+
+  /// 取消固定资产的闲置状态
+  Future<void> unsetAssetIdle(String assetId) async {
+    final assetIndex = _assets.indexWhere((a) => a.id == assetId);
+    if (assetIndex == -1) return;
+
+    final oldAsset = _assets[assetIndex];
+    final updatedAsset = oldAsset.copyWith(
+      isIdle: false,
+      updateDate: DateTime.now(),
+    );
+
+    await updateAsset(updatedAsset);
+  }
+
+  /// 批量更新固定资产的折旧价值
+  Future<void> updateDepreciatedValues() async {
+    var hasChanges = false;
+
+    for (var i = 0; i < _assets.length; i++) {
+      final asset = _assets[i];
+      if (asset.isFixedAsset &&
+          asset.depreciationMethod == DepreciationMethod.smartEstimate) {
+        final depreciatedValue =
+            _depreciationService.calculateDepreciatedValue(asset);
+        if (asset.currentValue != depreciatedValue) {
+          _assets[i] = asset.copyWith(
+            currentValue: depreciatedValue,
+            updateDate: DateTime.now(),
+          );
+          hasChanges = true;
+        }
+      }
+    }
+
+    if (hasChanges) {
+      // 批量保存到存储
+      if (_storageService != null) {
+        for (final asset in _assets) {
+          await _storageService!.updateAsset(asset);
+        }
+      }
+      notifyListeners();
+    }
+  }
+
+  /// 获取固定资产列表
+  List<AssetItem> getFixedAssets() =>
+      _assets.where((asset) => asset.isFixedAsset).toList();
+
+  /// 获取闲置资产列表
+  List<AssetItem> getIdleAssets() =>
+      _assets.where((asset) => asset.isIdle).toList();
+
+  /// 获取需要折旧的资产列表
+  List<AssetItem> getDepreciableAssets() => _assets
+      .where(
+        (asset) =>
+            asset.isFixedAsset &&
+            asset.depreciationMethod != DepreciationMethod.none,
+      )
+      .toList();
+
+  /// 计算固定资产的总折旧额
+  double calculateTotalDepreciation() {
+    var totalDepreciation = 0.0;
+
+    for (final asset in _assets) {
+      if (asset.isFixedAsset &&
+          asset.depreciationMethod != DepreciationMethod.none) {
+        final originalValue = asset.amount;
+        final currentValue = asset.effectiveValue;
+        totalDepreciation += originalValue - currentValue;
+      }
+    }
+
+    return totalDepreciation;
+  }
+
+  /// 获取资产的折旧历史
+  Map<DateTime, double> getAssetDepreciationHistory(
+    String assetId, {
+    required DateTime startDate,
+    required DateTime endDate,
+    int interval = 1,
+  }) {
+    final asset = _assets.firstWhere((a) => a.id == assetId);
+    return _depreciationService.getDepreciationHistory(
+      asset,
+      startDate: startDate,
+      endDate: endDate,
+      interval: interval,
+    );
   }
 }

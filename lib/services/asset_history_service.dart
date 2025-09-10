@@ -119,6 +119,11 @@ class AssetHistoryService {
     print('Web端复制功能需要实现');
   }
 
+  // 导入资产历史记录
+  Future<void> importAssetHistory(List<AssetHistory> histories) async {
+    await _saveAssetHistory(histories);
+  }
+
   // 清空历史记录
   Future<void> clearHistory() async {
     await _prefs!.remove(_historyKey);

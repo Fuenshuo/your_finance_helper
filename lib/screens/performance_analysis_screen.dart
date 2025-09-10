@@ -44,10 +44,8 @@ class PerformanceAnalysisScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         PerformanceMonitor.printAllStats();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('性能统计已输出到控制台')),
-                        );
-                      },
+                        // 静默处理，不显示提示框
+        // 静默处理，不显示提示框                      },
                       icon: const Icon(Icons.analytics_outlined),
                       label: const Text('查看统计'),
                       style: ElevatedButton.styleFrom(
@@ -64,10 +62,8 @@ class PerformanceAnalysisScreen extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () {
                         PerformanceMonitor.clearStats();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('统计数据已清除')),
-                        );
-                      },
+                        // 静默处理，不显示提示框
+        // 静默处理，不显示提示框                      },
                       icon: const Icon(Icons.clear_all_outlined),
                       label: const Text('清除数据'),
                       style: OutlinedButton.styleFrom(

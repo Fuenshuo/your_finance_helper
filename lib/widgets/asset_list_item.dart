@@ -159,8 +159,8 @@ class _AssetListItemState extends State<AssetListItem>
                                       ),
                                       decoration: BoxDecoration(
                                         color: _getCategoryColor(
-                                                widget.asset.category)
-                                            .withOpacity(
+                                          widget.asset.category,
+                                        ).withOpacity(
                                           _isHovered ? 0.2 : 0.1,
                                         ),
                                         borderRadius: BorderRadius.circular(8),
@@ -169,7 +169,8 @@ class _AssetListItemState extends State<AssetListItem>
                                         widget.asset.category.displayName,
                                         style: context.mobileCaption.copyWith(
                                           color: _getCategoryColor(
-                                              widget.asset.category),
+                                            widget.asset.category,
+                                          ),
                                           fontWeight: _isHovered
                                               ? FontWeight.w600
                                               : FontWeight.w500,
@@ -181,11 +182,17 @@ class _AssetListItemState extends State<AssetListItem>
 
                                 SizedBox(height: context.responsiveSpacing4),
 
+                                // 固定资产特殊信息
+                                if (widget.asset.isFixedAsset) ...[
+                                  _buildFixedAssetInfo(context),
+                                  SizedBox(height: context.responsiveSpacing4),
+                                ],
+
                                 // 当前价值和变化（带动画）
                                 Row(
                                   children: [
                                     AppAnimations.animatedNumber(
-                                      value: widget.asset.amount,
+                                      value: widget.asset.effectiveValue,
                                       formatter: (value) =>
                                           '¥${value.toStringAsFixed(2)}',
                                       duration:
@@ -193,7 +200,8 @@ class _AssetListItemState extends State<AssetListItem>
                                     ),
                                     if (changeAmount != 0) ...[
                                       SizedBox(
-                                          width: context.responsiveSpacing8),
+                                        width: context.responsiveSpacing8,
+                                      ),
                                       Icon(
                                         changeAmount > 0
                                             ? Icons.trending_up_outlined
@@ -204,7 +212,8 @@ class _AssetListItemState extends State<AssetListItem>
                                             : context.errorColor,
                                       ),
                                       SizedBox(
-                                          width: context.responsiveSpacing4),
+                                        width: context.responsiveSpacing4,
+                                      ),
                                       Text(
                                         '${changeAmount > 0 ? '+' : ''}${changePercentage.toStringAsFixed(1)}%',
                                         style: context.mobileCaption.copyWith(
@@ -234,7 +243,9 @@ class _AssetListItemState extends State<AssetListItem>
                                       ),
                                       child: RepaintBoundary(
                                         child: _buildLightweightTrendChart(
-                                            context, trendData),
+                                          context,
+                                          trendData,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -371,6 +382,138 @@ class _AssetListItemState extends State<AssetListItem>
     final changePercentage = (random.nextDouble() - 0.5) * 2.0; // ±1%的变化
     _changePercentageCache[widget.asset.id] = changePercentage;
     return changePercentage;
+  }
+
+  // 构建固定资产特殊信息
+  Widget _buildFixedAssetInfo(BuildContext context) {
+    final infoWidgets = <Widget>[];
+
+    // 闲置状态
+    if (widget.asset.isIdle) {
+      infoWidgets.add(
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: Colors.orange.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.pause_circle_outline,
+                size: 12,
+                color: Colors.orange,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '闲置',
+                style: context.mobileCaption.copyWith(
+                  color: Colors.orange,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 折旧信息
+    if (widget.asset.depreciationMethod != DepreciationMethod.none) {
+      final originalValue = widget.asset.amount;
+      final currentValue = widget.asset.effectiveValue;
+      final depreciationAmount = originalValue - currentValue;
+      final depreciationPercentage =
+          originalValue > 0 ? (depreciationAmount / originalValue * 100) : 0;
+
+      if (depreciationAmount > 0) {
+        infoWidgets.add(
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: Colors.blue.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.trending_down_outlined,
+                  size: 12,
+                  color: Colors.blue,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '已折旧 ${depreciationPercentage.toStringAsFixed(1)}%',
+                  style: context.mobileCaption.copyWith(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    }
+
+    // 手动更新状态
+    if (widget.asset.depreciationMethod == DepreciationMethod.manualUpdate) {
+      infoWidgets.add(
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.green.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: Colors.green.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.edit_outlined,
+                size: 12,
+                color: Colors.green,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '手动更新',
+                style: context.mobileCaption.copyWith(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (infoWidgets.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: infoWidgets,
+    );
   }
 }
 

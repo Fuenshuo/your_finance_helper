@@ -14,7 +14,7 @@ class AppTheme {
   static const Color warningColor = Color(0xFFFF9500); // 橙色
 
   // 字体规范
-  static const String fontFamily = 'Inter'; // 优先使用Inter，回退到系统字体
+  static const String fontFamily = 'Alibaba PuHuiTi'; // 阿里巴巴普惠体
 
   // 布局规范
   static const double borderRadius = 12.0; // 12pt圆角

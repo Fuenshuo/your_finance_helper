@@ -1,0 +1,53 @@
+---
+globs: *.dart
+description: Asset history tracing and data management guidelines
+---
+
+# 资产历史追溯系统规范
+
+## 核心概念
+- **历史记录**：记录所有资产变更的完整历史
+- **数据追溯**：基于历史数据计算真实的变化趋势
+- **本地存储**：所有历史数据存储在本地，支持导出
+
+## 历史记录模型
+- 使用[AssetHistory](mdc:lib/models/asset_history.dart)模型记录变更
+- 包含变更类型：created, updated, deleted
+- 记录变更时间、描述和完整的资产快照
+- 支持导出数据模型[ExportData](mdc:lib/models/asset_history.dart)
+
+## 历史服务
+- 使用[AssetHistoryService](mdc:lib/services/asset_history_service.dart)管理历史
+- 自动记录所有资产变更操作
+- 提供历史查询、统计和导出功能
+- 限制历史记录数量（1000条），避免存储过大
+
+## 集成规范
+- 所有Provider的CRUD操作必须调用历史记录
+- 在addAsset、updateAsset、deleteAsset中自动记录历史
+- 批量操作使用特殊的历史记录标识
+- 历史记录与数据操作同步进行
+
+## 数据计算
+- 基于历史数据计算真实的月度变化
+- 使用历史快照重建特定时间点的资产状态
+- 提供变化金额和百分比计算
+- 支持按时间范围查询历史数据
+
+## 用户界面
+- 历史记录查看页面[AssetHistoryScreen](mdc:lib/screens/asset_history_screen.dart)
+- 显示历史统计信息和详细变更记录
+- 支持数据导出和分享功能
+- 在Dashboard添加历史记录入口
+
+## 导出功能
+- 支持完整数据导出（资产+历史记录）
+- Web端和移动端不同的导出方式
+- 导出文件包含时间戳和版本信息
+- 支持JSON格式的数据交换
+
+## 性能考虑
+- 历史记录异步存储，不影响主操作性能
+- 使用批量操作减少存储调用
+- 定期清理过期的历史记录
+- 导出操作在后台进行，避免阻塞UI

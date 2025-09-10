@@ -4,8 +4,28 @@ import 'package:your_finance_flutter/models/asset_item.dart';
 import 'package:your_finance_flutter/providers/asset_provider.dart';
 import 'package:your_finance_flutter/theme/app_theme.dart';
 
-class SankeyChartWidget extends StatelessWidget {
+class SankeyChartWidget extends StatefulWidget {
   const SankeyChartWidget({super.key});
+
+  @override
+  State<SankeyChartWidget> createState() => _SankeyChartWidgetState();
+}
+
+class _SankeyChartWidgetState extends State<SankeyChartWidget> {
+  bool _forceRepaint = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Web端延迟重绘，解决刷新后文字不显示的问题
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _forceRepaint = true;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) => Consumer<AssetProvider>(
@@ -13,6 +33,60 @@ class SankeyChartWidget extends StatelessWidget {
           final assets = assetProvider.assets;
           final totalAssets = assetProvider.calculateTotalAssets();
           final netAssets = assetProvider.calculateNetAssets();
+
+          print(
+            '📊 桑基图构建: 资产数量=${assets.length}, 总资产=$totalAssets, 净资产=$netAssets, 强制重绘=$_forceRepaint',
+          );
+
+          // 检查是否已初始化
+          if (!assetProvider.isInitialized) {
+            print('📊 桑基图: 未初始化，显示加载状态');
+            return Container(
+              height: 300,
+              padding: const EdgeInsets.all(16),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          // 检查数据是否有效
+          if (totalAssets <= 0 && netAssets <= 0) {
+            print('📊 桑基图: 数据无效，显示空状态');
+            return Container(
+              height: 300,
+              padding: const EdgeInsets.all(16),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.pie_chart_outline,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '暂无资产数据',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '请添加资产后查看分布图',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
 
           // 计算各类别资产
           final liquidAssets = assets
@@ -48,6 +122,45 @@ class SankeyChartWidget extends StatelessWidget {
             topFixed,
             assetProvider,
           );
+
+          // 检查是否有有效数据
+          final hasValidData = sankeyData.any((item) => item.weight > 0);
+
+          if (!hasValidData) {
+            return Container(
+              height: 300,
+              padding: EdgeInsets.all(context.responsiveSpacing16),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.pie_chart_outline,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '暂无资产数据',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '请添加资产后查看分布图',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
 
           return Container(
             height: 300,
@@ -145,10 +258,280 @@ class SankeyChartWidget extends StatelessWidget {
     List<SankeyData> data,
     AssetProvider assetProvider,
   ) =>
-      CustomPaint(
-        painter: ImprovedSankeyPainter(data, assetProvider),
-        size: Size.infinite,
+      LayoutBuilder(
+        builder: (context, constraints) => Stack(
+          children: [
+            // Background canvas for shapes and connections
+            CustomPaint(
+              painter: SankeyBackgroundPainter(data, assetProvider),
+              size: Size(constraints.maxWidth, constraints.maxHeight),
+            ),
+            // Text widgets overlaid on top
+            ..._buildTextOverlays(context, data, assetProvider, constraints),
+          ],
+        ),
       );
+
+  List<Widget> _buildTextOverlays(
+    BuildContext context,
+    List<SankeyData> data,
+    AssetProvider assetProvider,
+    BoxConstraints constraints,
+  ) {
+    final overlays = <Widget>[];
+
+    // Calculate node positions (same logic as before)
+    final nodePositions =
+        _calculateNodePositions(data, assetProvider, constraints);
+
+    for (final entry in nodePositions.entries) {
+      final nodeName = entry.key;
+      final rect = entry.value;
+      final amount = _getNodeAmount(nodeName, data, assetProvider);
+      final displayText = amount != null ? '$nodeName $amount' : nodeName;
+
+      // Split text into lines
+      final lines = displayText.split(' ');
+      if (lines.length >= 2) {
+        // Two lines: title and amount
+        overlays.add(
+          Positioned(
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    lines[0],
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Flexible(
+                  child: Text(
+                    lines[1],
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        // Single line
+        overlays.add(
+          Positioned(
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+            child: Center(
+              child: Text(
+                displayText,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return overlays;
+  }
+
+  Map<String, Rect> _calculateNodePositions(
+    List<SankeyData> data,
+    AssetProvider assetProvider,
+    BoxConstraints constraints,
+  ) {
+    final nodePositions = <String, Rect>{};
+    final nodeHeights = <String, double>{};
+
+    // Same calculation logic as before
+    const leftMargin = 20.0;
+    const nodeWidth = 100.0;
+    const nodeSpacing = 15.0;
+    const levelSpacing = 140.0;
+    const minNodeHeight = 30.0;
+
+    final totalAssets = assetProvider.calculateTotalAssets();
+    final maxNodeHeight = constraints.maxHeight * 0.8;
+
+    // Calculate node weights and heights
+    final nodeWeights = <String, double>{};
+    for (final item in data) {
+      nodeWeights[item.source] = (nodeWeights[item.source] ?? 0) + item.weight;
+      nodeWeights[item.target] = (nodeWeights[item.target] ?? 0) + item.weight;
+    }
+
+    for (final entry in nodeWeights.entries) {
+      final weight = entry.value;
+      final ratio = totalAssets > 0 ? weight / totalAssets : 0.0;
+      final height =
+          (ratio * maxNodeHeight).clamp(minNodeHeight, maxNodeHeight);
+      nodeHeights[entry.key] = height;
+    }
+
+    // Define levels
+    final level1Nodes = <String>['净资产'];
+    final level2Nodes = <String>['总资产'];
+    final level3Nodes = <String>['流动资金', '固定资产'];
+    final level4Nodes = <String>[];
+
+    for (final item in data) {
+      if (!level1Nodes.contains(item.target) &&
+          !level2Nodes.contains(item.target) &&
+          !level3Nodes.contains(item.target)) {
+        if (!level4Nodes.contains(item.target)) {
+          level4Nodes.add(item.target);
+        }
+      }
+    }
+
+    // Calculate positions for each level
+    _calculateLevelPositions(
+      level1Nodes,
+      0,
+      leftMargin,
+      levelSpacing,
+      nodeWidth,
+      nodeSpacing,
+      nodeHeights,
+      nodePositions,
+      constraints.maxHeight,
+      minNodeHeight,
+    );
+    _calculateLevelPositions(
+      level2Nodes,
+      1,
+      leftMargin,
+      levelSpacing,
+      nodeWidth,
+      nodeSpacing,
+      nodeHeights,
+      nodePositions,
+      constraints.maxHeight,
+      minNodeHeight,
+    );
+    _calculateLevelPositions(
+      level3Nodes,
+      2,
+      leftMargin,
+      levelSpacing,
+      nodeWidth,
+      nodeSpacing,
+      nodeHeights,
+      nodePositions,
+      constraints.maxHeight,
+      minNodeHeight,
+    );
+    _calculateLevelPositions(
+      level4Nodes,
+      3,
+      leftMargin,
+      levelSpacing,
+      nodeWidth,
+      nodeSpacing,
+      nodeHeights,
+      nodePositions,
+      constraints.maxHeight,
+      minNodeHeight,
+    );
+
+    return nodePositions;
+  }
+
+  void _calculateLevelPositions(
+    List<String> nodes,
+    int level,
+    double leftMargin,
+    double levelSpacing,
+    double nodeWidth,
+    double nodeSpacing,
+    Map<String, double> nodeHeights,
+    Map<String, Rect> nodePositions,
+    double totalHeight,
+    double minNodeHeight,
+  ) {
+    if (nodes.isEmpty) return;
+
+    final totalNodeHeight = nodes.fold(
+          0.0,
+          (sum, node) =>
+              sum + (nodeHeights[node] ?? minNodeHeight) + nodeSpacing,
+        ) -
+        nodeSpacing;
+
+    var currentY = (totalHeight - totalNodeHeight) / 2;
+    final x = leftMargin + level * levelSpacing;
+
+    for (final node in nodes) {
+      final height = nodeHeights[node] ?? minNodeHeight;
+      nodePositions[node] = Rect.fromLTWH(x, currentY, nodeWidth, height);
+      currentY += height + nodeSpacing;
+    }
+  }
+
+  String? _getNodeAmount(
+    String nodeName,
+    List<SankeyData> data,
+    AssetProvider assetProvider,
+  ) {
+    switch (nodeName) {
+      case '净资产':
+        final netAssets = assetProvider.calculateNetAssets();
+        return '${(netAssets / 10000).toStringAsFixed(2)}万';
+      case '总资产':
+        final totalAssets = assetProvider.calculateTotalAssets();
+        return '${(totalAssets / 10000).toStringAsFixed(2)}万';
+      case '流动资金':
+        final liquidAssets = assetProvider.assets
+            .where((asset) => asset.category == AssetCategory.liquidAssets)
+            .toList();
+        final liquidTotal =
+            liquidAssets.fold(0.0, (sum, asset) => sum + asset.amount);
+        return '${(liquidTotal / 10000).toStringAsFixed(2)}万';
+      case '固定资产':
+        final fixedAssets = assetProvider.assets
+            .where((asset) => asset.category == AssetCategory.fixedAssets)
+            .toList();
+        final fixedTotal =
+            fixedAssets.fold(0.0, (sum, asset) => sum + asset.amount);
+        return '${(fixedTotal / 10000).toStringAsFixed(2)}万';
+      default:
+        // For specific accounts, find from data
+        for (final item in data) {
+          if (item.target == nodeName) {
+            return '${(item.weight / 10000).toStringAsFixed(2)}万';
+          }
+        }
+        return null;
+    }
+  }
 }
 
 class SankeyData {
@@ -164,30 +547,29 @@ class SankeyData {
   final Color color;
 }
 
-class ImprovedSankeyPainter extends CustomPainter {
-  ImprovedSankeyPainter(this.data, this.assetProvider);
+class SankeyBackgroundPainter extends CustomPainter {
+  SankeyBackgroundPainter(this.data, this.assetProvider);
   final List<SankeyData> data;
   final AssetProvider assetProvider;
 
-  // 缓存文字布局
-  final Map<String, TextPainter> _textPainterCache = {};
-
   @override
   void paint(Canvas canvas, Size size) {
+    // 检查是否有有效数据
+    final hasValidData = data.any((item) => item.weight > 0);
+    if (!hasValidData) return;
+
     final paint = Paint()
       ..style = PaintingStyle.fill
       ..strokeWidth = 2;
 
     // 计算布局参数
     const leftMargin = 20.0;
-    const nodeWidth = 100.0; // 增加节点宽度以容纳金额文字
-    const nodeSpacing = 15.0; // 增加节点间距
-    const levelSpacing = 140.0; // 增加层级间距
+    const nodeWidth = 100.0;
+    const nodeSpacing = 15.0;
+    const levelSpacing = 140.0;
 
-    // 计算总权重
-    final totalWeight = data.fold(0.0, (sum, item) => sum + item.weight);
-
-    // 计算节点高度
+    // 计算总资产（用于比例计算）
+    final totalAssets = assetProvider.calculateTotalAssets();
     final maxNodeHeight = size.height * 0.8;
     const minNodeHeight = 30.0;
 
@@ -212,12 +594,21 @@ class ImprovedSankeyPainter extends CustomPainter {
     final nodePositions = <String, Rect>{};
     final nodeHeights = <String, double>{};
 
-    // 计算所有节点高度
+    // 计算每个节点的实际权重和高度
+    final nodeWeights = <String, double>{};
     for (final item in data) {
-      final height = (item.weight / totalWeight * maxNodeHeight)
-          .clamp(minNodeHeight, maxNodeHeight);
-      nodeHeights[item.source] = height;
-      nodeHeights[item.target] = height;
+      nodeWeights[item.source] = (nodeWeights[item.source] ?? 0) + item.weight;
+      nodeWeights[item.target] = (nodeWeights[item.target] ?? 0) + item.weight;
+    }
+
+    // 计算节点高度（基于实际权重）
+    for (final entry in nodeWeights.entries) {
+      final nodeName = entry.key;
+      final weight = entry.value;
+      final ratio = totalAssets > 0 ? weight / totalAssets : 0.0;
+      final height =
+          (ratio * maxNodeHeight).clamp(minNodeHeight, maxNodeHeight);
+      nodeHeights[nodeName] = height;
     }
 
     // 为每层计算节点位置
@@ -270,7 +661,7 @@ class ImprovedSankeyPainter extends CustomPainter {
       minNodeHeight,
     );
 
-    // 第三遍：绘制节点
+    // 绘制节点（只绘制形状，不绘制文字）
     for (final entry in nodePositions.entries) {
       final rect = entry.value;
       final nodeName = entry.key;
@@ -294,71 +685,9 @@ class ImprovedSankeyPainter extends CustomPainter {
         RRect.fromRectAndRadius(rect, const Radius.circular(8)),
         paint,
       );
-
-      // 绘制节点标签
-      final amount = _getNodeAmount(nodeName);
-      final displayText = amount != null ? '$nodeName $amount' : nodeName;
-
-      // 分行显示：第一行是类型，第二行是金额
-      final lines = displayText.split(' ');
-      if (lines.length >= 2) {
-        // 绘制类型名称
-        final titlePainter = _getTextPainter(
-          lines[0],
-          const TextStyle(
-            color: Colors.black,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          rect.width,
-        );
-        titlePainter.paint(
-          canvas,
-          Offset(
-            rect.left + rect.width / 2 - titlePainter.width / 2,
-            rect.top + rect.height / 2 - 8,
-          ),
-        );
-
-        // 绘制金额
-        final amountPainter = _getTextPainter(
-          lines[1],
-          const TextStyle(
-            color: Colors.black,
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-          ),
-          rect.width,
-        );
-        amountPainter.paint(
-          canvas,
-          Offset(
-            rect.left + rect.width / 2 - amountPainter.width / 2,
-            rect.top + rect.height / 2 + 8,
-          ),
-        );
-      } else {
-        // 单行显示
-        final singlePainter = _getTextPainter(
-          displayText,
-          const TextStyle(
-            color: Colors.black,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-          rect.width,
-        );
-        singlePainter.paint(
-          canvas,
-          Offset(
-            rect.left + rect.width / 2 - singlePainter.width / 2,
-            rect.top + rect.height / 2 - singlePainter.height / 2,
-          ),
-        );
-      }
     }
 
-    // 第四遍：绘制连接线
+    // 绘制连接线
     for (final item in data) {
       final sourceRect = nodePositions[item.source];
       final targetRect = nodePositions[item.target];
@@ -418,52 +747,6 @@ class ImprovedSankeyPainter extends CustomPainter {
     );
   }
 
-  TextPainter _getTextPainter(String text, TextStyle style, double maxWidth) {
-    final key = '${text}_${style.fontSize}_${style.fontWeight}_$maxWidth';
-    if (!_textPainterCache.containsKey(key)) {
-      final painter = TextPainter(
-        text: TextSpan(text: text, style: style),
-        textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      );
-      painter.layout(maxWidth: maxWidth);
-      _textPainterCache[key] = painter;
-    }
-    return _textPainterCache[key]!;
-  }
-
-  String? _getNodeAmount(String nodeName) {
-    // 根据节点名称返回对应的金额
-    switch (nodeName) {
-      case '净资产':
-        return '${(assetProvider.calculateNetAssets() / 10000).toStringAsFixed(2)}万';
-      case '总资产':
-        return '${(assetProvider.calculateTotalAssets() / 10000).toStringAsFixed(2)}万';
-      case '流动资金':
-        final liquidAssets = assetProvider.assets
-            .where((asset) => asset.category == AssetCategory.liquidAssets)
-            .toList();
-        final liquidTotal =
-            liquidAssets.fold(0.0, (sum, asset) => sum + asset.amount);
-        return '${(liquidTotal / 10000).toStringAsFixed(2)}万';
-      case '固定资产':
-        final fixedAssets = assetProvider.assets
-            .where((asset) => asset.category == AssetCategory.fixedAssets)
-            .toList();
-        final fixedTotal =
-            fixedAssets.fold(0.0, (sum, asset) => sum + asset.amount);
-        return '${(fixedTotal / 10000).toStringAsFixed(2)}万';
-      default:
-        // 对于具体账户，从数据中查找
-        for (final item in data) {
-          if (item.target == nodeName) {
-            return '${(item.weight / 10000).toStringAsFixed(2)}万';
-          }
-        }
-        return null;
-    }
-  }
-
   void _calculateNodePositions(
     List<String> nodes,
     int level,
@@ -478,21 +761,16 @@ class ImprovedSankeyPainter extends CustomPainter {
   ) {
     if (nodes.isEmpty) return;
 
-    // 计算该层所有节点的总高度
     final totalNodeHeight = nodes.fold(
           0.0,
           (sum, node) =>
               sum + (nodeHeights[node] ?? minNodeHeight) + nodeSpacing,
         ) -
-        nodeSpacing; // 减去最后一个间距
+        nodeSpacing;
 
-    // 计算起始Y位置（垂直居中）
     var currentY = (totalHeight - totalNodeHeight) / 2;
-
-    // 计算X位置（根据层级）
     final x = leftMargin + level * levelSpacing;
 
-    // 为每个节点分配位置
     for (final node in nodes) {
       final height = nodeHeights[node] ?? minNodeHeight;
       nodePositions[node] = Rect.fromLTWH(x, currentY, nodeWidth, height);
@@ -501,5 +779,14 @@ class ImprovedSankeyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    if (oldDelegate is SankeyBackgroundPainter) {
+      if (data.length != oldDelegate.data.length) return true;
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].weight != oldDelegate.data[i].weight) return true;
+      }
+      return true;
+    }
+    return true;
+  }
 }

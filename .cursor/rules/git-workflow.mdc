@@ -1,0 +1,62 @@
+---
+alwaysApply: true
+description: Git workflow and version control best practices
+---
+
+# Git工作流和版本控制规范
+
+## 提交规范
+- 使用语义化提交信息：feat:, fix:, chore:, docs:
+- 提交信息格式：`type: 简短描述`
+- 详细描述写在提交信息正文中
+- 每个提交只包含一个逻辑变更
+
+## 文件管理
+- 自动生成的文件不提交到版本控制
+- 使用.gitignore忽略Flutter生成的插件注册文件
+- pubspec.lock需要提交，确保依赖版本一致
+- 文档文件(.md)需要提交到版本控制
+
+## 忽略规则
+```gitignore
+# Flutter generated plugin registrant files
+**/generated_plugin_registrant.*
+**/generated_plugins.cmake
+**/GeneratedPluginRegistrant.*
+```
+
+## 分支管理
+- 主分支：main
+- 功能开发使用feature分支
+- 修复bug使用hotfix分支
+- 合并前进行代码审查
+
+## 代码整理
+- 定期整理本地未提交的代码
+- 区分重要代码文件和自动生成文件
+- 及时提交重要的功能代码
+- 忽略不必要的临时文件
+
+## 依赖管理
+- 新依赖添加到pubspec.yaml
+- 运行flutter pub get更新pubspec.lock
+- 提交pubspec.lock确保版本一致性
+- 定期更新依赖到最新稳定版本
+
+## 文档管理
+- 产品需求文档(.md)需要版本控制
+- 设计文档和规范需要提交
+- 更新文档时同步更新代码
+- 保持文档和代码的一致性
+
+## 发布流程
+- 功能完成后进行完整测试
+- 更新版本号和CHANGELOG
+- 创建release标签
+- 推送到远程仓库
+
+## 团队协作
+- 定期同步远程仓库
+- 解决合并冲突时保持代码质量
+- 使用有意义的提交信息
+- 保持提交历史的清晰性

@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/budget_provider.dart';
-import '../providers/transaction_provider.dart';
-import '../models/budget.dart';
-import '../models/transaction.dart';
-import '../theme/app_theme.dart';
-import '../widgets/app_animations.dart';
-import '../widgets/app_card.dart';
-import 'add_transaction_screen.dart';
-import 'transaction_detail_screen.dart';
+import 'package:your_finance_flutter/models/budget.dart';
+import 'package:your_finance_flutter/models/transaction.dart';
+import 'package:your_finance_flutter/providers/budget_provider.dart';
+import 'package:your_finance_flutter/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/screens/add_transaction_screen.dart';
+import 'package:your_finance_flutter/screens/transaction_detail_screen.dart';
+import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/widgets/app_animations.dart';
+import 'package:your_finance_flutter/widgets/app_card.dart';
 
 class EnvelopeBudgetDetailScreen extends StatefulWidget {
+  const EnvelopeBudgetDetailScreen({
+    required this.envelope,
+    super.key,
+  });
   final EnvelopeBudget envelope;
 
-  const EnvelopeBudgetDetailScreen({
-    super.key,
-    required this.envelope,
-  });
-
   @override
-  State<EnvelopeBudgetDetailScreen> createState() => _EnvelopeBudgetDetailScreenState();
+  State<EnvelopeBudgetDetailScreen> createState() =>
+      _EnvelopeBudgetDetailScreenState();
 }
 
 class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
@@ -39,49 +39,45 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.primaryBackground,
-      appBar: AppBar(
-        title: Text(widget.envelope.name),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => _editEnvelope(),
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.primaryBackground,
+        appBar: AppBar(
+          title: Text(widget.envelope.name),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: _editEnvelope,
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: _showMoreOptions,
+            ),
+          ],
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: context.primaryAction,
+            unselectedLabelColor: context.secondaryText,
+            indicatorColor: context.primaryAction,
+            tabs: const [
+              Tab(text: '概览'),
+              Tab(text: '交易记录'),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () => _showMoreOptions(),
-          ),
-        ],
-        bottom: TabBar(
+        ),
+        body: TabBarView(
           controller: _tabController,
-          labelColor: context.primaryAction,
-          unselectedLabelColor: context.secondaryText,
-          indicatorColor: context.primaryAction,
-          tabs: const [
-            Tab(text: '概览'),
-            Tab(text: '交易记录'),
+          children: [
+            _buildOverviewTab(),
+            _buildTransactionsTab(),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildOverviewTab(),
-          _buildTransactionsTab(),
-        ],
-      ),
-    );
-  }
+      );
 
   // 概览标签页
-  Widget _buildOverviewTab() {
-    return Consumer<BudgetProvider>(
-      builder: (context, budgetProvider, child) {
-        return SingleChildScrollView(
+  Widget _buildOverviewTab() => Consumer<BudgetProvider>(
+        builder: (context, budgetProvider, child) => SingleChildScrollView(
           padding: EdgeInsets.all(context.spacing16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,37 +117,31 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
 
   // 交易记录标签页
-  Widget _buildTransactionsTab() {
-    return Consumer<TransactionProvider>(
-      builder: (context, transactionProvider, child) {
-        final relatedTransactions = transactionProvider.transactions
-            .where((t) => t.envelopeBudgetId == widget.envelope.id)
-            .toList()
-          ..sort((a, b) => b.date.compareTo(a.date));
+  Widget _buildTransactionsTab() => Consumer<TransactionProvider>(
+        builder: (context, transactionProvider, child) {
+          final relatedTransactions = transactionProvider.transactions
+              .where((t) => t.envelopeBudgetId == widget.envelope.id)
+              .toList()
+            ..sort((a, b) => b.date.compareTo(a.date));
 
-        if (relatedTransactions.isEmpty) {
-          return _buildEmptyTransactions();
-        }
+          if (relatedTransactions.isEmpty) {
+            return _buildEmptyTransactions();
+          }
 
-        return ListView.builder(
-          padding: EdgeInsets.all(context.spacing16),
-          itemCount: relatedTransactions.length,
-          itemBuilder: (context, index) {
-            return AppAnimations.animatedListItem(
+          return ListView.builder(
+            padding: EdgeInsets.all(context.spacing16),
+            itemCount: relatedTransactions.length,
+            itemBuilder: (context, index) => AppAnimations.animatedListItem(
               index: index,
               child: _buildTransactionCard(relatedTransactions[index]),
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
+          );
+        },
+      );
 
   // 预算状态卡片
   Widget _buildBudgetStatusCard() {
@@ -169,9 +159,10 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: envelope.color != null 
-                    ? Color(int.parse(envelope.color!.replaceFirst('#', '0xff')))
-                    : context.primaryAction,
+                  color: envelope.color != null
+                      ? Color(
+                          int.parse(envelope.color!.replaceFirst('#', '0xff')))
+                      : context.primaryAction,
                   borderRadius: BorderRadius.circular(context.borderRadius / 2),
                 ),
                 child: Icon(
@@ -188,14 +179,14 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                     Text(
                       envelope.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     Text(
                       envelope.category.displayName,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: context.secondaryText,
-                      ),
+                            color: context.secondaryText,
+                          ),
                     ),
                   ],
                 ),
@@ -212,9 +203,9 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                 child: Text(
                   statusText,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
             ],
@@ -251,9 +242,9 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                 child: StatCard(
                   title: '可用余额',
                   value: context.formatAmount(envelope.availableAmount),
-                  valueColor: envelope.availableAmount >= 0 
-                    ? context.decreaseColor 
-                    : context.increaseColor,
+                  valueColor: envelope.availableAmount >= 0
+                      ? context.decreaseColor
+                      : context.increaseColor,
                   icon: Icons.savings_outlined,
                 ),
               ),
@@ -262,11 +253,11 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                 child: StatCard(
                   title: '使用率',
                   value: '${envelope.usagePercentage.toStringAsFixed(1)}%',
-                  valueColor: envelope.usagePercentage > 100 
-                    ? context.increaseColor 
-                    : envelope.usagePercentage > 80 
-                      ? context.warningColor 
-                      : context.decreaseColor,
+                  valueColor: envelope.usagePercentage > 100
+                      ? context.increaseColor
+                      : envelope.usagePercentage > 80
+                          ? context.warningColor
+                          : context.decreaseColor,
                   icon: Icons.pie_chart_outline,
                 ),
               ),
@@ -289,8 +280,8 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
           Text(
             '支出进度',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           SizedBox(height: context.spacing16),
 
@@ -299,11 +290,11 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
             value: progressValue.clamp(0.0, 1.0),
             backgroundColor: context.dividerColor,
             valueColor: AlwaysStoppedAnimation<Color>(
-              envelope.usagePercentage > 100 
-                ? context.increaseColor 
-                : envelope.usagePercentage > 80 
-                  ? context.warningColor 
-                  : context.primaryAction,
+              envelope.usagePercentage > 100
+                  ? context.increaseColor
+                  : envelope.usagePercentage > 80
+                      ? context.warningColor
+                      : context.primaryAction,
             ),
             minHeight: 8,
           ),
@@ -316,31 +307,32 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
               Text(
                 '已使用 ${context.formatAmount(envelope.spentAmount)}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: context.secondaryText,
-                ),
+                      color: context.secondaryText,
+                    ),
               ),
               Text(
                 '剩余 ${context.formatAmount(envelope.availableAmount)}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: envelope.availableAmount >= 0 
-                    ? context.decreaseColor 
-                    : context.increaseColor,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: envelope.availableAmount >= 0
+                          ? context.decreaseColor
+                          : context.increaseColor,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ],
           ),
           SizedBox(height: context.spacing16),
 
           // 阈值指示器
-          if (envelope.warningThreshold != null || envelope.limitThreshold != null) ...[
+          if (envelope.warningThreshold != null ||
+              envelope.limitThreshold != null) ...[
             Divider(color: context.dividerColor),
             SizedBox(height: context.spacing12),
             Text(
               '阈值设置',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
             SizedBox(height: context.spacing8),
             Row(
@@ -360,7 +352,8 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
-                if (envelope.warningThreshold != null && envelope.limitThreshold != null)
+                if (envelope.warningThreshold != null &&
+                    envelope.limitThreshold != null)
                   SizedBox(width: context.spacing16),
                 if (envelope.limitThreshold != null) ...[
                   Container(
@@ -397,18 +390,18 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
           Text(
             '时间信息',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           SizedBox(height: context.spacing16),
-
           Row(
             children: [
               Expanded(
                 child: _buildTimeInfoItem(
                   icon: Icons.calendar_today_outlined,
                   title: '开始日期',
-                  value: '${envelope.startDate.year}-${envelope.startDate.month.toString().padLeft(2, '0')}-${envelope.startDate.day.toString().padLeft(2, '0')}',
+                  value:
+                      '${envelope.startDate.year}-${envelope.startDate.month.toString().padLeft(2, '0')}-${envelope.startDate.day.toString().padLeft(2, '0')}',
                 ),
               ),
               SizedBox(width: context.spacing16),
@@ -416,18 +409,19 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                 child: _buildTimeInfoItem(
                   icon: Icons.event_outlined,
                   title: '结束日期',
-                  value: '${envelope.endDate.year}-${envelope.endDate.month.toString().padLeft(2, '0')}-${envelope.endDate.day.toString().padLeft(2, '0')}',
+                  value:
+                      '${envelope.endDate.year}-${envelope.endDate.month.toString().padLeft(2, '0')}-${envelope.endDate.day.toString().padLeft(2, '0')}',
                 ),
               ),
             ],
           ),
           SizedBox(height: context.spacing16),
-
           _buildTimeInfoItem(
             icon: Icons.schedule_outlined,
             title: '剩余时间',
-            value: remainingDays > 0 ? '${remainingDays}天' : '已结束',
-            valueColor: remainingDays > 0 ? context.primaryText : context.secondaryText,
+            value: remainingDays > 0 ? '$remainingDays天' : '已结束',
+            valueColor:
+                remainingDays > 0 ? context.primaryText : context.secondaryText,
           ),
         ],
       ),
@@ -445,26 +439,25 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
           Text(
             '设置信息',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           SizedBox(height: context.spacing16),
-
           _buildSettingItem(
             icon: Icons.repeat_outlined,
             title: '预算周期',
             value: envelope.period.displayName,
           ),
           Divider(color: context.dividerColor),
-          
           _buildSettingItem(
             icon: Icons.priority_high_outlined,
             title: '必需支出',
             value: envelope.isEssential ? '是' : '否',
-            valueColor: envelope.isEssential ? context.warningColor : context.secondaryText,
+            valueColor: envelope.isEssential
+                ? context.warningColor
+                : context.secondaryText,
           ),
           Divider(color: context.dividerColor),
-
           if (envelope.tags.isNotEmpty) ...[
             _buildSettingItem(
               icon: Icons.label_outline,
@@ -473,11 +466,11 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
             ),
             Divider(color: context.dividerColor),
           ],
-
           _buildSettingItem(
             icon: Icons.update_outlined,
             title: '最后更新',
-            value: '${envelope.updateDate.year}-${envelope.updateDate.month.toString().padLeft(2, '0')}-${envelope.updateDate.day.toString().padLeft(2, '0')}',
+            value:
+                '${envelope.updateDate.year}-${envelope.updateDate.month.toString().padLeft(2, '0')}-${envelope.updateDate.day.toString().padLeft(2, '0')}',
           ),
         ],
       ),
@@ -485,175 +478,172 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
   }
 
   // 操作按钮
-  Widget _buildActionButtons() {
-    return AppCard(
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _addTransaction(),
-              icon: const Icon(Icons.add),
-              label: const Text('添加交易'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: context.spacing12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(context.borderRadius),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: context.spacing12),
-          
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _editEnvelope(),
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('编辑'),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: context.spacing12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(context.borderRadius),
-                    ),
+  Widget _buildActionButtons() => AppCard(
+        child: Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _addTransaction,
+                icon: const Icon(Icons.add),
+                label: const Text('添加交易'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: context.spacing12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(context.borderRadius),
                   ),
                 ),
               ),
-              SizedBox(width: context.spacing12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _transferMoney(),
-                  icon: const Icon(Icons.swap_horiz),
-                  label: const Text('转账'),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: context.spacing12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(context.borderRadius),
+            ),
+            SizedBox(height: context.spacing12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _editEnvelope,
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('编辑'),
+                    style: OutlinedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(vertical: context.spacing12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(context.borderRadius),
+                      ),
                     ),
+                  ),
+                ),
+                SizedBox(width: context.spacing12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _transferMoney,
+                    icon: const Icon(Icons.swap_horiz),
+                    label: const Text('转账'),
+                    style: OutlinedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(vertical: context.spacing12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(context.borderRadius),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+  // 空交易记录
+  Widget _buildEmptyTransactions() => Center(
+        child: Padding(
+          padding: EdgeInsets.all(context.spacing32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 80,
+                color: context.secondaryText,
+              ),
+              SizedBox(height: context.spacing24),
+              Text(
+                '暂无交易记录',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              SizedBox(height: context.spacing8),
+              Text(
+                '开始记录支出，让预算管理更精准',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: context.secondaryText,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: context.spacing24),
+              ElevatedButton.icon(
+                onPressed: _addTransaction,
+                icon: const Icon(Icons.add),
+                label: const Text('添加交易'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.spacing24,
+                    vertical: context.spacing12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(context.borderRadius),
                   ),
                 ),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  // 空交易记录
-  Widget _buildEmptyTransactions() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(context.spacing32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 80,
-              color: context.secondaryText,
-            ),
-            SizedBox(height: context.spacing24),
-            Text(
-              '暂无交易记录',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: context.spacing8),
-            Text(
-              '开始记录支出，让预算管理更精准',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: context.secondaryText,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: context.spacing24),
-            ElevatedButton.icon(
-              onPressed: () => _addTransaction(),
-              icon: const Icon(Icons.add),
-              label: const Text('添加交易'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.spacing24,
-                  vertical: context.spacing12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(context.borderRadius),
-                ),
-              ),
-            ),
-          ],
         ),
-      ),
-    );
-  }
+      );
 
   // 交易卡片
-  Widget _buildTransactionCard(Transaction transaction) {
-    return AppCard(
-      margin: EdgeInsets.only(bottom: context.spacing12),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: transaction.type == TransactionType.expense 
-              ? context.increaseColor.withOpacity(0.1)
-              : context.decreaseColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(context.borderRadius / 2),
-          ),
-          child: Icon(
-            transaction.type == TransactionType.expense 
-              ? Icons.trending_down_outlined
-              : Icons.trending_up_outlined,
-            color: transaction.type == TransactionType.expense 
-              ? context.increaseColor
-              : context.decreaseColor,
-            size: 20,
-          ),
-        ),
-        title: Text(
-          transaction.description,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: context.secondaryText,
-              ),
+  Widget _buildTransactionCard(Transaction transaction) => AppCard(
+        margin: EdgeInsets.only(bottom: context.spacing12),
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: transaction.type == TransactionType.expense
+                  ? context.increaseColor.withOpacity(0.1)
+                  : context.decreaseColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(context.borderRadius / 2),
             ),
-            if (transaction.notes != null && transaction.notes!.isNotEmpty)
-              Text(
-                transaction.notes!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: context.secondaryText,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-        trailing: Text(
-          '${transaction.type == TransactionType.expense ? '-' : '+'}${context.formatAmount(transaction.amount)}',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: transaction.type == TransactionType.expense 
-              ? context.increaseColor
-              : context.decreaseColor,
-            fontWeight: FontWeight.bold,
+            child: Icon(
+              transaction.type == TransactionType.expense
+                  ? Icons.trending_down_outlined
+                  : Icons.trending_up_outlined,
+              color: transaction.type == TransactionType.expense
+                  ? context.increaseColor
+                  : context.decreaseColor,
+              size: 20,
+            ),
           ),
+          title: Text(
+            transaction.description,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: context.secondaryText,
+                    ),
+              ),
+              if (transaction.notes != null && transaction.notes!.isNotEmpty)
+                Text(
+                  transaction.notes!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: context.secondaryText,
+                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+          trailing: Text(
+            '${transaction.type == TransactionType.expense ? '-' : '+'}${context.formatAmount(transaction.amount)}',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: transaction.type == TransactionType.expense
+                      ? context.increaseColor
+                      : context.decreaseColor,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          onTap: () => _viewTransactionDetail(transaction),
         ),
-        onTap: () => _viewTransactionDetail(transaction),
-      ),
-    );
-  }
+      );
 
   // 时间信息项
   Widget _buildTimeInfoItem({
@@ -661,38 +651,37 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
     required String title,
     required String value,
     Color? valueColor,
-  }) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: context.secondaryText,
-        ),
-        SizedBox(width: context.spacing8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: context.secondaryText,
-                ),
-              ),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: valueColor ?? context.primaryText,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+  }) =>
+      Row(
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: context.secondaryText,
           ),
-        ),
-      ],
-    );
-  }
+          SizedBox(width: context.spacing8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: context.secondaryText,
+                      ),
+                ),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: valueColor ?? context.primaryText,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
 
   // 设置项
   Widget _buildSettingItem({
@@ -700,34 +689,33 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
     required String title,
     required String value,
     Color? valueColor,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: context.spacing8),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: context.secondaryText,
-          ),
-          SizedBox(width: context.spacing12),
-          Expanded(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium,
+  }) =>
+      Padding(
+        padding: EdgeInsets.symmetric(vertical: context.spacing8),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: context.secondaryText,
             ),
-          ),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: valueColor ?? context.primaryText,
-              fontWeight: FontWeight.w500,
+            SizedBox(width: context.spacing12),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: valueColor ?? context.primaryText,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ],
+        ),
+      );
 
   // 获取状态颜色
   Color _getStatusColor(EnvelopeBudget envelope) {
@@ -785,7 +773,7 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
   void _addTransaction() {
     Navigator.of(context).push(
       AppAnimations.createRoute(
-        AddTransactionScreen(
+        const AddTransactionScreen(
           initialType: TransactionType.expense,
           // 预选当前信封预算
         ),
@@ -796,17 +784,13 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
   // 编辑信封
   void _editEnvelope() {
     // TODO: 实现编辑信封功能
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('编辑信封功能开发中...')),
-    );
+    // 静默处理，不显示提示框
   }
 
   // 转账
   void _transferMoney() {
     // TODO: 实现转账功能
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('转账功能开发中...')),
-    );
+    // 静默处理，不显示提示框
   }
 
   // 查看交易详情
@@ -872,13 +856,11 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+              final budgetProvider =
+                  Provider.of<BudgetProvider>(context, listen: false);
               await budgetProvider.deleteEnvelopeBudget(widget.envelope.id);
               if (mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('预算已删除')),
-                );
               }
             },
             child: Text(

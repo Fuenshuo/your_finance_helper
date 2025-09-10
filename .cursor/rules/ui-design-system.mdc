@@ -37,12 +37,12 @@ description: UI/UX design system and component guidelines
 
 ## 间距使用
 ```dart
-context.spacing4   // 4pt
-context.spacing8   // 8pt
-context.spacing12  // 12pt
-context.spacing16  // 16pt
-context.spacing24  // 24pt
-context.spacing32  // 32pt
+context.responsiveSpacing4   // 4pt
+context.responsiveSpacing8   // 8pt
+context.responsiveSpacing12  // 12pt
+context.responsiveSpacing16  // 16pt
+context.responsiveSpacing24  // 24pt
+context.responsiveSpacing32  // 32pt
 ```
 
 ## 格式化方法

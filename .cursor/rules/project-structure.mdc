@@ -15,21 +15,33 @@ description: Project structure and architecture guidelines
 - **动效系统**: 统一的页面转场和微交互动效
 
 ## 关键目录结构
-- `lib/models/` - 数据模型定义
+- `lib/models/` - 数据模型定义（包含历史记录模型）
 - `lib/providers/` - 状态管理Provider
-- `lib/screens/` - 页面界面
-- `lib/widgets/` - 可复用组件
-- `lib/services/` - 业务逻辑服务
+- `lib/screens/` - 页面界面（包含历史记录页面）
+- `lib/widgets/` - 可复用组件（包含图表和动效组件）
+- `lib/services/` - 业务逻辑服务（包含历史记录服务）
 - `lib/theme/` - 主题和样式定义
+- `lib/utils/` - 工具类（包含性能监控）
+- `.doc/` - 项目文档和需求文档
 
 ## 核心功能模块
 1. **资产管理系统** - 管理家庭各类资产
 2. **预算管理系统** - 信封预算和零基预算
 3. **交易记录系统** - 收支记录和分类管理
 4. **账户管理系统** - 多账户和多币种支持
+5. **历史追溯系统** - 完整的资产变更历史记录
+6. **性能监控系统** - 应用性能分析和优化
 
 ## 设计原则
 - 用户无感知的复式记账架构
 - 预算与交易深度集成
 - 总资产 = 账户余额 + 信封可用余额
 - 统一的UI/UX设计规范
+- 完整的历史记录和追溯能力
+- 高性能和流畅的用户体验
+
+## 新增组件
+- [AssetHistoryService](mdc:lib/services/asset_history_service.dart) - 历史记录管理
+- [PerformanceMonitor](mdc:lib/utils/performance_monitor.dart) - 性能监控
+- [SankeyChartWidget](mdc:lib/widgets/sankey_chart_widget.dart) - 桑基图组件
+- [AssetHistoryScreen](mdc:lib/screens/asset_history_screen.dart) - 历史记录页面
