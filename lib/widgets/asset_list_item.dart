@@ -182,6 +182,50 @@ class _AssetListItemState extends State<AssetListItem>
 
                                 SizedBox(height: context.responsiveSpacing4),
 
+                                // 备注信息
+                                if (widget.asset.notes != null &&
+                                    widget.asset.notes!.isNotEmpty) ...[
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: context.responsiveSpacing8,
+                                      vertical: context.responsiveSpacing4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: context.secondaryText
+                                          .withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: context.secondaryText
+                                            .withOpacity(0.1),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.note_outlined,
+                                          size: 12,
+                                          color: context.secondaryText,
+                                        ),
+                                        SizedBox(
+                                            width: context.responsiveSpacing4),
+                                        Expanded(
+                                          child: Text(
+                                            widget.asset.notes!,
+                                            style:
+                                                context.mobileCaption.copyWith(
+                                              color: context.secondaryText,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: context.responsiveSpacing4),
+                                ],
+
                                 // 固定资产特殊信息
                                 if (widget.asset.isFixedAsset) ...[
                                   _buildFixedAssetInfo(context),

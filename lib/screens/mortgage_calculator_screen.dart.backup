@@ -5,13 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/models/budget.dart';
 import 'package:your_finance_flutter/models/transaction.dart';
 import 'package:your_finance_flutter/providers/budget_provider.dart';
-import 'package:your_finance_flutter/screens/budget_management_screen.dart';
-import 'package:your_finance_flutter/screens/salary_income_setup_screen.dart';
 import 'package:your_finance_flutter/services/chinese_mortgage_service.dart';
 import 'package:your_finance_flutter/theme/app_theme.dart';
-import 'package:your_finance_flutter/widgets/amount_input_field.dart';
 import 'package:your_finance_flutter/widgets/app_animations.dart';
 import 'package:your_finance_flutter/widgets/app_card.dart';
+import 'package:your_finance_flutter/widgets/amount_input_field.dart';
 
 class MortgageCalculatorScreen extends StatefulWidget {
   const MortgageCalculatorScreen({
@@ -32,10 +30,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
   final TextEditingController _downPaymentController = TextEditingController();
 
   // 组合贷款专用控制器
-  final TextEditingController _gongjijinAmountController =
-      TextEditingController();
-  final TextEditingController _commercialAmountController =
-      TextEditingController();
+  final TextEditingController _gongjijinAmountController = TextEditingController();
+  final TextEditingController _commercialAmountController = TextEditingController();
 
   double _propertyValue = 0;
   double _loanAmount = 0; // 总贷款额度
@@ -46,10 +42,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
   // 组合贷款专用字段
   double _gongjijinAmount = 0; // 公积金贷款额度
   int _gongjijinYears = 30; // 公积金贷款年限
-  double _gongjijinRate = 0.026; // 公积金贷款利率 (2.6%)
   double _commercialAmount = 0; // 商业贷款额度
   int _commercialYears = 30; // 商业贷款年限
-  double _commercialRate = 0.0305; // 商业贷款利率 (3.05%)
 
   MortgageType _mortgageType = MortgageType.combined; // 贷款类型
   List<MortgageRecommendation> _recommendations = [];
@@ -216,10 +210,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
                     switch (value) {
                       case MortgageType.commercial:
                         _interestRate = 0.0305; // 商业贷款3.05%
-                        _commercialRate = 0.0305;
                       case MortgageType.gongjijin:
                         _interestRate = 0.026; // 公积金贷款2.6%
-                        _gongjijinRate = 0.026;
                       case MortgageType.combined:
                         _interestRate = 0.029; // 组合贷款2.9%
                         // 重置组合贷款参数
@@ -227,8 +219,6 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
                         _commercialAmount = 0;
                         _gongjijinYears = 30;
                         _commercialYears = 30;
-                        _gongjijinRate = 0.026; // 重置为默认公积金利率
-                        _commercialRate = 0.0305; // 重置为默认商业利率
                     }
                   });
                 }
@@ -270,14 +260,29 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               Row(
                 children: [
                   Expanded(
-                    flex: 3, // 额度输入框占3份
-                    child: AmountInputField(
-                      controller: _gongjijinAmountController,
-                      labelText: '公积金贷款额度',
-                      hintText: '请输入额度',
-                      prefixIcon: const Icon(
-                        Icons.account_balance_wallet,
-                        color: Colors.blue,
+                    child: TextFormField(
+                      initialValue: _gongjijinAmount > 0
+                          ? _gongjijinAmount.toStringAsFixed(0)
+                          : '',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: '公积金贷款额度（元）',
+                        hintText: '请输入额度',
+                        labelStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.account_balance_wallet,
+                          color: Colors.blue,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -287,7 +292,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
                     ),
                   ),
                   SizedBox(width: context.spacing12),
-                  Expanded(
+                  SizedBox(
+                    width: 120,
                     child: DropdownButtonFormField<int>(
                       value: _gongjijinYears,
                       decoration: InputDecoration(
@@ -340,14 +346,25 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               Row(
                 children: [
                   Expanded(
-                    flex: 3, // 额度输入框占3份
-                    child: AmountInputField(
-                      controller: _commercialAmountController,
-                      labelText: '商业贷款额度',
-                      hintText: '请输入额度',
-                      prefixIcon: const Icon(
-                        Icons.business_center,
-                        color: Colors.orange,
+                    child: TextFormField(
+                      initialValue: _commercialAmount > 0
+                          ? _commercialAmount.toStringAsFixed(0)
+                          : '',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: '商业贷款额度（元）',
+                        hintText: '请输入额度',
+                        prefixIcon: const Icon(
+                          Icons.business_center,
+                          color: Colors.orange,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -357,7 +374,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
                     ),
                   ),
                   SizedBox(width: context.spacing12),
-                  Expanded(
+                  SizedBox(
+                    width: 120,
                     child: DropdownButtonFormField<int>(
                       value: _commercialYears,
                       decoration: InputDecoration(
@@ -424,109 +442,54 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               ),
 
               SizedBox(height: context.spacing16),
-
-              // 公积金利率设置
-              Text(
-                '利率设置',
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: context.primaryAction,
-                ),
-              ),
-
-              SizedBox(height: context.spacing8),
-
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3, // 公积金利率输入框占3份
-                    child: TextFormField(
-                      initialValue: (_gongjijinRate * 100).toStringAsFixed(2),
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: '公积金利率（%）',
-                        hintText: '请输入利率',
-                        prefixIcon: const Icon(
-                          Icons.account_balance_wallet,
-                          color: Colors.blue,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _gongjijinRate = (double.tryParse(value) ?? 0) / 100;
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(width: context.spacing12),
-                  Expanded(
-                    flex: 3, // 商业利率输入框占3份
-                    child: TextFormField(
-                      initialValue: (_commercialRate * 100).toStringAsFixed(2),
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: '商业利率（%）',
-                        hintText: '请输入利率',
-                        prefixIcon: const Icon(
-                          Icons.business_center,
-                          color: Colors.orange,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _commercialRate = (double.tryParse(value) ?? 0) / 100;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: context.spacing16),
             ],
 
-            // 贷款年限（仅在非组合贷款时显示）
-            if (_mortgageType != MortgageType.combined) ...[
-              DropdownButtonFormField<int>(
-                value: _loanYears,
-                decoration: InputDecoration(
-                  labelText: '贷款年限',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+            // 贷款年限
+            DropdownButtonFormField<int>(
+              value: _loanYears,
+              decoration: InputDecoration(
+                labelText: '贷款年限',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                items: [5, 10, 15, 20, 25, 30]
-                    .map(
-                      (years) => DropdownMenuItem(
-                        value: years,
-                        child: Text('$years年'),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _loanYears = value;
-                    });
-                  }
-                },
               ),
-              SizedBox(height: context.spacing16),
-            ],
+              items: [5, 10, 15, 20, 25, 30]
+                  .map(
+                    (years) => DropdownMenuItem(
+                      value: years,
+                      child: Text('$years年'),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _loanYears = value;
+                  });
+                }
+              },
+            ),
+
+            SizedBox(height: context.spacing16),
+
+            // 利率
+            TextFormField(
+              initialValue: (_interestRate * 100).toStringAsFixed(2),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: '年利率（%）',
+                hintText: '请输入年利率',
+                prefixIcon: const Icon(Icons.percent),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onChanged: (value) {
+                _interestRate = (double.tryParse(value) ?? 0) / 100;
+              },
+            ),
+
+            SizedBox(height: context.spacing16),
 
             // 计算按钮
             SizedBox(
@@ -929,8 +892,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               years: max(_commercialYears, _gongjijinYears), // 使用较长年限
               commercialAmount: _commercialAmount,
               gongjijinAmount: _gongjijinAmount,
-              commercialRate: _commercialRate, // 用户设置的商业贷款利率
-              gongjijinRate: _gongjijinRate, // 用户设置的公积金贷款利率
+              commercialRate: 0.0305, // 商业贷款利率
+              gongjijinRate: 0.026, // 公积金贷款利率
               commercialYears: _commercialYears, // 商业贷款年限
               gongjijinYears: _gongjijinYears, // 公积金贷款年限
             );
@@ -939,7 +902,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               MortgageRecommendation(
                 title: '组合贷款',
                 description:
-                    '公积金¥${_gongjijinAmount.toStringAsFixed(0)}($_gongjijinYears年,${(_gongjijinRate * 100).toStringAsFixed(2)}%) + 商业¥${_commercialAmount.toStringAsFixed(0)}($_commercialYears年,${(_commercialRate * 100).toStringAsFixed(2)}%)',
+                    '公积金¥${_gongjijinAmount.toStringAsFixed(0)}($_gongjijinYears年) + 商业¥${_commercialAmount.toStringAsFixed(0)}($_commercialYears年)',
                 result: combinedResult,
                 pros: ['利率适中', '额度充足', '灵活性强', '精准计算'],
                 cons: ['手续复杂', '审批时间长'],
@@ -952,14 +915,14 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               totalAmount: _gongjijinAmount,
               type: MortgageType.gongjijin,
               years: _gongjijinYears,
-              gongjijinRate: _gongjijinRate,
+              gongjijinRate: 0.026,
             );
 
             recommendations.add(
               MortgageRecommendation(
                 title: '公积金贷款',
                 description:
-                    '¥${_gongjijinAmount.toStringAsFixed(0)}，$_gongjijinYears年期，${(_gongjijinRate * 100).toStringAsFixed(2)}%',
+                    '¥${_gongjijinAmount.toStringAsFixed(0)}，$_gongjijinYears年期',
                 result: gongjijinResult,
                 pros: ['利率最低', '总利息少', '还款压力小'],
                 cons: ['额度限制', '审批较慢'],
@@ -972,14 +935,14 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               totalAmount: _commercialAmount,
               type: MortgageType.commercial,
               years: _commercialYears,
-              commercialRate: _commercialRate,
+              commercialRate: 0.0305,
             );
 
             recommendations.add(
               MortgageRecommendation(
                 title: '商业贷款',
                 description:
-                    '¥${_commercialAmount.toStringAsFixed(0)}，$_commercialYears年期，${(_commercialRate * 100).toStringAsFixed(2)}%',
+                    '¥${_commercialAmount.toStringAsFixed(0)}，$_commercialYears年期',
                 result: commercialResult,
                 pros: ['审批简单', '额度充足', '放款快'],
                 cons: ['利率较高', '总利息多'],
@@ -997,8 +960,8 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               years: _loanYears,
               commercialAmount: commercialAmount,
               gongjijinAmount: gongjijinAmount,
-              commercialRate: _commercialRate,
-              gongjijinRate: _gongjijinRate,
+              commercialRate: 0.0305,
+              gongjijinRate: 0.026,
             );
 
             recommendations.add(
@@ -1018,7 +981,6 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
             totalAmount: _loanAmount,
             type: MortgageType.commercial,
             years: _loanYears,
-            commercialRate: _commercialRate,
           );
 
           recommendations.add(
@@ -1075,28 +1037,10 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
           Provider.of<BudgetProvider>(context, listen: false);
       final now = DateTime.now();
 
-      // 检查是否有工资收入数据
-      if (budgetProvider.salaryIncomes.isEmpty) {
-        // 如果没有收入数据，先引导用户设置收入
-        final shouldSetupIncome = await _showIncomeSetupDialog();
-        if (!shouldSetupIncome) {
-          // 用户选择跳过，直接使用默认收入计算
-          print('💰 用户跳过收入设置，使用默认计算');
-        } else {
-          // 用户选择设置收入，导航到收入设置页面
-          await _navigateToIncomeSetup();
-          return; // 返回，让用户设置完收入后再创建预算
-        }
-      }
-
-      // 创建月度零基预算（使用实际收入或默认计算）
-      final totalIncome = budgetProvider.getTotalMonthlyIncome() > 0
-          ? budgetProvider.getTotalMonthlyIncome() // 使用实际工资收入
-          : recommendation.result.monthlyPayment * 2; // 默认：月供的2倍
-
+      // 创建月度零基预算（如果不存在）
       await budgetProvider.createMonthlyZeroBasedBudget(
         name: '房贷预算 - ${recommendation.title}',
-        totalIncome: totalIncome,
+        totalIncome: recommendation.result.monthlyPayment * 2, // 假设收入是月供的2倍
         month: now,
       );
 
@@ -1113,7 +1057,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
 
       print('✅ 房贷预算创建成功');
 
-      // 显示成功提示并导航到预算管理页面
+      // 显示成功提示
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1121,19 +1065,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
               '房贷预算创建成功！每月预算 ¥${recommendation.result.monthlyPayment.toStringAsFixed(0)}',
             ),
             backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-            action: SnackBarAction(
-              label: '查看预算',
-              textColor: Colors.white,
-              onPressed: () {
-                // 导航到预算管理页面
-                Navigator.of(context).push<Widget>(
-                  MaterialPageRoute<Widget>(
-                    builder: (context) => const BudgetManagementScreen(),
-                  ),
-                );
-              },
-            ),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -1150,50 +1082,6 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
           ),
         );
       }
-    }
-  }
-
-  // 显示收入设置对话框
-  Future<bool> _showIncomeSetupDialog() async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('设置工资收入'),
-        content: const Text(
-          '为了更准确地计算预算，建议您先设置工资收入信息。这将帮助我们基于您的实际收入来规划支出分配。\n\n如果跳过此步骤，我们将使用默认的收入估算（月供的2倍）。',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('跳过'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('设置收入'),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false;
-  }
-
-  // 导航到收入设置页面
-  Future<void> _navigateToIncomeSetup() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SalaryIncomeSetupScreen(),
-      ),
-    );
-
-    // 用户设置完收入后，重新尝试创建预算
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('收入设置完成！请重新点击"创建预算"'),
-          backgroundColor: Colors.green,
-        ),
-      );
     }
   }
 }

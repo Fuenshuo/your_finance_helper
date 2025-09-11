@@ -17,6 +17,7 @@ class StorageService {
   static const String _exchangeRatesKey = 'exchange_rates_data';
   static const String _envelopeBudgetsKey = 'envelope_budgets_data';
   static const String _zeroBasedBudgetsKey = 'zero_based_budgets_data';
+  static const String _salaryIncomesKey = 'salary_incomes_data';
 
   static StorageService? _instance;
   static SharedPreferences? _prefs;
@@ -36,13 +37,36 @@ class StorageService {
 
   // 获取资产列表
   Future<List<AssetItem>> getAssets() async {
-    final jsonString = _prefs!.getString(_assetsKey);
-    if (jsonString == null) return [];
+    print('💾 StorageService.getAssets() 开始执行');
+    try {
+      final jsonString = _prefs!.getString(_assetsKey);
+      if (jsonString == null) {
+        print('💾 SharedPreferences中没有资产数据');
+        return [];
+      }
 
-    final jsonList = jsonDecode(jsonString) as List<dynamic>;
-    return jsonList
-        .map((json) => AssetItem.fromJson(json as Map<String, dynamic>))
-        .toList();
+      print('💾 从SharedPreferences读取到JSON数据，长度: ${jsonString.length}');
+      final jsonList = jsonDecode(jsonString) as List<dynamic>;
+      final assets = jsonList
+          .map((json) => AssetItem.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      print('💾 从SharedPreferences加载到${assets.length}个资产');
+      for (var i = 0; i < assets.length; i++) {
+        final asset = assets[i];
+        print(
+          '💾 SharedPreferences资产${i + 1}: ${asset.name} - ${asset.amount}',
+        );
+      }
+
+      return assets;
+    } catch (e) {
+      print('❌ 读取资产数据失败: $e');
+      // 清除损坏的数据
+      await _prefs!.remove(_assetsKey);
+      print('🗑️ 已清除损坏的资产数据');
+      return [];
+    }
   }
 
   // 添加资产
@@ -71,14 +95,31 @@ class StorageService {
 
   // 清空所有数据
   Future<void> clearAll() async {
-    await _prefs!.remove(_assetsKey);
-    await _prefs!.remove(_transactionsKey);
-    await _prefs!.remove(_draftTransactionsKey);
-    await _prefs!.remove(_accountsKey);
-    await _prefs!.remove(_currenciesKey);
-    await _prefs!.remove(_exchangeRatesKey);
-    await _prefs!.remove(_envelopeBudgetsKey);
-    await _prefs!.remove(_zeroBasedBudgetsKey);
+    print('🗑️ StorageService.clearAll() 开始执行');
+
+    final keys = [
+      _assetsKey,
+      _transactionsKey,
+      _draftTransactionsKey,
+      _accountsKey,
+      _currenciesKey,
+      _exchangeRatesKey,
+      _envelopeBudgetsKey,
+      _zeroBasedBudgetsKey,
+      _salaryIncomesKey,
+    ];
+
+    for (final key in keys) {
+      final exists = _prefs!.containsKey(key);
+      print('🗑️ 检查SharedPreferences键: $key, 存在: $exists');
+
+      if (exists) {
+        await _prefs!.remove(key);
+        print('🗑️ 已删除SharedPreferences键: $key');
+      }
+    }
+
+    print('🗑️ StorageService.clearAll() 执行完成');
   }
 
   // ========== 交易相关方法 ==========
@@ -216,6 +257,26 @@ class StorageService {
     final jsonList = jsonDecode(jsonString) as List<dynamic>;
     return jsonList
         .map((json) => ZeroBasedBudget.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  // ========== 工资收入相关方法 ==========
+
+  // 保存工资收入列表
+  Future<void> saveSalaryIncomes(List<SalaryIncome> incomes) async {
+    final jsonList = incomes.map((income) => income.toJson()).toList();
+    final jsonString = jsonEncode(jsonList);
+    await _prefs!.setString(_salaryIncomesKey, jsonString);
+  }
+
+  // 获取工资收入列表
+  Future<List<SalaryIncome>> loadSalaryIncomes() async {
+    final jsonString = _prefs!.getString(_salaryIncomesKey);
+    if (jsonString == null) return [];
+
+    final jsonList = jsonDecode(jsonString) as List<dynamic>;
+    return jsonList
+        .map((json) => SalaryIncome.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 }

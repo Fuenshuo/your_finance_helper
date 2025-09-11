@@ -5,8 +5,13 @@ import 'package:your_finance_flutter/models/asset_item.dart';
 import 'package:your_finance_flutter/providers/asset_provider.dart';
 
 class EditAssetSheet extends StatefulWidget {
-  const EditAssetSheet({required this.asset, super.key});
+  const EditAssetSheet({
+    required this.asset,
+    this.onAssetUpdated,
+    super.key,
+  });
   final AssetItem asset;
+  final void Function(AssetItem)? onAssetUpdated;
 
   @override
   State<EditAssetSheet> createState() => _EditAssetSheetState();
@@ -175,8 +180,13 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
       updateDate: DateTime.now(),
     );
 
-    final assetProvider = Provider.of<AssetProvider>(context, listen: false);
-    assetProvider.updateAsset(updatedAsset);
+    // 如果有回调，使用回调；否则使用默认的 asset provider 更新
+    if (widget.onAssetUpdated != null) {
+      widget.onAssetUpdated!(updatedAsset);
+    } else {
+      final assetProvider = Provider.of<AssetProvider>(context, listen: false);
+      assetProvider.updateAsset(updatedAsset);
+    }
 
     Navigator.of(context).pop();
     // 静默更新，不显示提示框

@@ -31,27 +31,71 @@ class AssetProvider with ChangeNotifier {
 
   // 加载资产数据
   Future<void> loadAssets() async {
-    if (_storageService == null) return;
-    _assets = await _storageService!.getAssets();
-    _isInitialized = true;
-    notifyListeners();
+    if (_storageService == null) {
+      print('❌ 存储服务未初始化');
+      return;
+    }
+
+    print('🔄 开始加载资产数据...');
+    try {
+      _assets = await _storageService!.getAssets();
+      print('✅ 资产数据加载完成，共${_assets.length}个资产');
+
+      // 打印每个资产的详细信息
+      for (var i = 0; i < _assets.length; i++) {
+        final asset = _assets[i];
+        print(
+          '📊 资产${i + 1}: ${asset.name} - ${asset.amount} (${asset.category.displayName})',
+        );
+      }
+
+      if (_assets.isEmpty) {
+        print('⚠️ 没有找到任何资产数据');
+      }
+
+      _isInitialized = true;
+      notifyListeners();
+    } catch (e) {
+      print('❌ 加载资产数据失败: $e');
+      _assets = [];
+      _isInitialized = true;
+      notifyListeners();
+    }
   }
 
   // 添加资产
   Future<void> addAsset(AssetItem asset) async {
-    if (_storageService == null) return;
-    await _storageService!.addAsset(asset);
-    _assets.add(asset);
+    if (_storageService == null) {
+      print('❌ 存储服务未初始化，无法添加资产');
+      return;
+    }
 
-    // 记录历史
-    await _historyService?.recordAssetChange(
-      assetId: asset.id,
-      newAsset: asset,
-      changeType: AssetChangeType.created,
-      description: '新增资产: ${asset.name}',
-    );
+    print('➕ 开始添加资产: ${asset.name} - ${asset.amount}');
+    print('➕ 添加前资产总数: ${_assets.length}');
 
-    notifyListeners();
+    try {
+      await _storageService!.addAsset(asset);
+      print('✅ 资产已保存到存储服务');
+
+      _assets.add(asset);
+      print('✅ 资产已添加到内存列表');
+      print('➕ 添加后资产总数: ${_assets.length}');
+
+      // 记录历史
+      await _historyService?.recordAssetChange(
+        assetId: asset.id,
+        newAsset: asset,
+        changeType: AssetChangeType.created,
+        description: '新增资产: ${asset.name}',
+      );
+      print('✅ 资产历史记录已保存');
+
+      notifyListeners();
+      print('✅ 界面已更新');
+    } catch (e) {
+      print('❌ 添加资产失败: $e');
+      rethrow;
+    }
   }
 
   // 更新资产

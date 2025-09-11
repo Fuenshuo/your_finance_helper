@@ -31,6 +31,8 @@ class ChineseMortgageService {
     double? gongjijinRate, // 公积金贷款利率（可选，默认使用当前利率）
     double? commercialAmount, // 商业贷款金额（组合贷时使用）
     double? gongjijinAmount, // 公积金贷款金额（组合贷时使用）
+    int? commercialYears, // 商业贷款年限（可选，用于不同年限组合贷）
+    int? gongjijinYears, // 公积金贷款年限（可选，用于不同年限组合贷）
   }) {
     switch (type) {
       case MortgageType.commercial:
@@ -46,13 +48,26 @@ class ChineseMortgageService {
           years,
         );
       case MortgageType.combined:
-        return _calculateCombinedMortgage(
-          commercialAmount ?? 0,
-          gongjijinAmount ?? 0,
-          commercialRate ?? currentCommercialRate,
-          gongjijinRate ?? currentGongjijinRate,
-          years,
-        );
+        // 如果提供了不同的年限参数，使用新方法
+        if (commercialYears != null || gongjijinYears != null) {
+          return _calculateCombinedMortgageWithDifferentYears(
+            commercialAmount ?? 0,
+            gongjijinAmount ?? 0,
+            commercialRate ?? currentCommercialRate,
+            gongjijinRate ?? currentGongjijinRate,
+            commercialYears ?? years,
+            gongjijinYears ?? years,
+          );
+        } else {
+          // 使用原有方法（统一年限）
+          return _calculateCombinedMortgage(
+            commercialAmount ?? 0,
+            gongjijinAmount ?? 0,
+            commercialRate ?? currentCommercialRate,
+            gongjijinRate ?? currentGongjijinRate,
+            years,
+          );
+        }
     }
   }
 
@@ -194,6 +209,80 @@ class ChineseMortgageService {
     );
   }
 
+  /// 计算组合贷款（支持不同年限）
+  MortgageCalculationResult _calculateCombinedMortgageWithDifferentYears(
+    double commercialAmount,
+    double gongjijinAmount,
+    double commercialRate,
+    double gongjijinRate,
+    int commercialYears,
+    int gongjijinYears,
+  ) {
+    final totalAmount = commercialAmount + gongjijinAmount;
+
+    // 计算商业贷款月供
+    final commercialMonthlyRate = commercialRate / 12;
+    final commercialMonths = commercialYears * 12;
+    final commercialMonthlyPayment = _calculateMonthlyPayment(
+      commercialAmount,
+      commercialMonthlyRate,
+      commercialMonths,
+    );
+
+    // 计算公积金贷款月供
+    final gongjijinMonthlyRate = gongjijinRate / 12;
+    final gongjijinMonths = gongjijinYears * 12;
+    final gongjijinMonthlyPayment = _calculateMonthlyPayment(
+      gongjijinAmount,
+      gongjijinMonthlyRate,
+      gongjijinMonths,
+    );
+
+    // 确定还款周期（取较长的年限）
+    final maxYears = max(commercialYears, gongjijinYears);
+    final maxMonths = maxYears * 12;
+
+    // 计算月供总和（在还款期间内）
+    final totalMonthlyPayment =
+        commercialMonthlyPayment + gongjijinMonthlyPayment;
+
+    // 计算总还款和总利息
+    final commercialTotalPayment = commercialMonthlyPayment * commercialMonths;
+    final gongjijinTotalPayment = gongjijinMonthlyPayment * gongjijinMonths;
+    final totalPayment = commercialTotalPayment + gongjijinTotalPayment;
+    final totalInterest = totalPayment - totalAmount;
+
+    // 计算加权平均利率
+    final weightedRate =
+        (commercialAmount * commercialRate + gongjijinAmount * gongjijinRate) /
+            totalAmount;
+
+    // 使用较长年限作为整体年限
+    return MortgageCalculationResult(
+      type: MortgageType.combined,
+      totalAmount: totalAmount,
+      monthlyPayment: totalMonthlyPayment,
+      totalPayment: totalPayment,
+      totalInterest: totalInterest,
+      years: maxYears,
+      rate: weightedRate,
+      commercialAmount: commercialAmount,
+      gongjijinAmount: gongjijinAmount,
+      commercialRate: commercialRate,
+      gongjijinRate: gongjijinRate,
+      paymentSchedule: _generateCombinedPaymentScheduleWithDifferentYears(
+        commercialAmount,
+        gongjijinAmount,
+        commercialMonthlyPayment,
+        gongjijinMonthlyPayment,
+        commercialMonthlyRate,
+        gongjijinMonthlyRate,
+        commercialMonths,
+        gongjijinMonths,
+      ),
+    );
+  }
+
   /// 计算等额本息月供
   double _calculateMonthlyPayment(
     double principal,
@@ -204,8 +293,8 @@ class ChineseMortgageService {
 
     return principal *
         monthlyRate *
-        pow(1 + monthlyRate, months) /
-        (pow(1 + monthlyRate, months) - 1);
+        pow(1 + monthlyRate, months).toDouble() /
+        (pow(1 + monthlyRate, months).toDouble() - 1);
   }
 
   /// 生成还款计划表（单一贷款）
@@ -279,6 +368,86 @@ class ChineseMortgageService {
           loanType: '组合贷款',
           commercialPayment: commercialMonthlyPayment,
           gongjijinPayment: gongjijinMonthlyPayment,
+          commercialPrincipalPayment: commercialPrincipalPayment,
+          gongjijinPrincipalPayment: gongjijinPrincipalPayment,
+          commercialInterestPayment: commercialInterest,
+          gongjijinInterestPayment: gongjijinInterest,
+          commercialRemaining: max(0, commercialRemaining),
+          gongjijinRemaining: max(0, gongjijinRemaining),
+        ),
+      );
+    }
+
+    return schedule;
+  }
+
+  /// 生成组合贷款还款计划表（支持不同年限）
+  List<PaymentScheduleItem> _generateCombinedPaymentScheduleWithDifferentYears(
+    double commercialPrincipal,
+    double gongjijinPrincipal,
+    double commercialMonthlyPayment,
+    double gongjijinMonthlyPayment,
+    double commercialMonthlyRate,
+    double gongjijinMonthlyRate,
+    int commercialMonths,
+    int gongjijinMonths,
+  ) {
+    final schedule = <PaymentScheduleItem>[];
+    final maxMonths = max(commercialMonths, gongjijinMonths);
+
+    var commercialRemaining = commercialPrincipal;
+    var gongjijinRemaining = gongjijinPrincipal;
+
+    for (var month = 1; month <= maxMonths; month++) {
+      // 计算商业贷款本期利息和本金
+      var commercialInterest = 0.0;
+      var commercialPrincipalPayment = 0.0;
+
+      if (month <= commercialMonths && commercialRemaining > 0) {
+        commercialInterest = commercialRemaining * commercialMonthlyRate;
+        commercialPrincipalPayment =
+            commercialMonthlyPayment - commercialInterest;
+
+        // 最后一期调整
+        if (commercialPrincipalPayment > commercialRemaining) {
+          commercialPrincipalPayment = commercialRemaining;
+        }
+
+        commercialRemaining -= commercialPrincipalPayment;
+      }
+
+      // 计算公积金贷款本期利息和本金
+      var gongjijinInterest = 0.0;
+      var gongjijinPrincipalPayment = 0.0;
+
+      if (month <= gongjijinMonths && gongjijinRemaining > 0) {
+        gongjijinInterest = gongjijinRemaining * gongjijinMonthlyRate;
+        gongjijinPrincipalPayment = gongjijinMonthlyPayment - gongjijinInterest;
+
+        // 最后一期调整
+        if (gongjijinPrincipalPayment > gongjijinRemaining) {
+          gongjijinPrincipalPayment = gongjijinRemaining;
+        }
+
+        gongjijinRemaining -= gongjijinPrincipalPayment;
+      }
+
+      // 总月供（只在两个贷款都有还款时相加）
+      final totalMonthlyPayment =
+          (month <= commercialMonths ? commercialMonthlyPayment : 0.0) +
+              (month <= gongjijinMonths ? gongjijinMonthlyPayment : 0.0);
+
+      schedule.add(
+        PaymentScheduleItem(
+          month: month,
+          paymentDate:
+              DateTime.now().add(Duration(days: month * 30)), // 每月30天估算
+          monthlyPayment: totalMonthlyPayment,
+          principalPayment:
+              commercialPrincipalPayment + gongjijinPrincipalPayment,
+          interestPayment: commercialInterest + gongjijinInterest,
+          remainingPrincipal: commercialRemaining + gongjijinRemaining,
+          loanType: 'combined',
           commercialPrincipalPayment: commercialPrincipalPayment,
           gongjijinPrincipalPayment: gongjijinPrincipalPayment,
           commercialInterestPayment: commercialInterest,

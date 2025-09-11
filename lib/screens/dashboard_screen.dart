@@ -2,30 +2,89 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/models/asset_item.dart';
 import 'package:your_finance_flutter/providers/asset_provider.dart';
+import 'package:your_finance_flutter/providers/budget_provider.dart';
 import 'package:your_finance_flutter/screens/add_asset_flow_screen.dart';
 import 'package:your_finance_flutter/screens/asset_calendar_view.dart';
 import 'package:your_finance_flutter/screens/asset_history_screen.dart';
 import 'package:your_finance_flutter/screens/asset_management_screen.dart';
 import 'package:your_finance_flutter/screens/budget_management_screen.dart';
 import 'package:your_finance_flutter/screens/mortgage_calculator_screen.dart';
+import 'package:your_finance_flutter/screens/salary_income_setup_screen.dart';
 import 'package:your_finance_flutter/screens/smart_budget_guidance_screen.dart';
 import 'package:your_finance_flutter/screens/transaction_management_screen.dart';
 import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/utils/debug_mode_manager.dart';
 import 'package:your_finance_flutter/widgets/app_animations.dart';
 import 'package:your_finance_flutter/widgets/asset_distribution_card.dart';
 import 'package:your_finance_flutter/widgets/asset_list_overview_card.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final DebugModeManager _debugManager = DebugModeManager();
+
+  @override
+  void initState() {
+    super.initState();
+    // 监听debug模式变化
+    _debugManager.addListener(_onDebugModeChanged);
+  }
+
+  @override
+  void dispose() {
+    _debugManager.removeListener(_onDebugModeChanged);
+    super.dispose();
+  }
+
+  void _onDebugModeChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.primaryBackground,
         appBar: AppBar(
-          title: const Text('家庭资产'),
+          title: GestureDetector(
+            onTap: () {
+              final debugEnabled = _debugManager.handleClick();
+              if (debugEnabled) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🔧 Debug模式已开启'),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            child: const Text('家庭资产'),
+          ),
           backgroundColor: Colors.white,
           elevation: 0,
           actions: [
+            // Debug模式指示器
+            if (_debugManager.isDebugModeEnabled)
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'DEBUG',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             IconButton(
               icon: const Icon(Icons.history),
               onPressed: () {
@@ -76,30 +135,35 @@ class DashboardScreen extends StatelessWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
+                  // Banner位 - 在功能导航外部
+                  _buildIncomeBanner(context),
+
                   // 功能导航 - 横向滑动
                   _buildHorizontalFunctionNav(context),
-                  
+
+                  const SizedBox(height: 8),
+
                   // 主要内容区域
-                  Padding(
-                    padding: EdgeInsets.all(context.spacing16),
-                    child: Column(
-                      children: [
-                        // 资产总览卡片
-                        AppAnimations.animatedListItem(
-                          index: 0,
-                          child: const AssetListOverviewCard(),
-                        ),
-                        SizedBox(height: context.spacing16),
+                  Column(
+                    children: [
+                      // 资产总览卡片
+                      AppAnimations.animatedListItem(
+                        index: 0,
+                        child: const AssetListOverviewCard(),
+                      ),
+                      const SizedBox(height: 4),
 
-                        // 资产分布卡片
-                        AppAnimations.animatedListItem(
-                          index: 1,
-                          child: const AssetDistributionCard(),
-                        ),
-                        SizedBox(height: context.spacing16),
+                      // 资产分布卡片
+                      AppAnimations.animatedListItem(
+                        index: 1,
+                        child: const AssetDistributionCard(),
+                      ),
+                      const SizedBox(height: 4),
 
-                        // 更新资产按钮
-                        SizedBox(
+                      // 更新资产按钮
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () {
@@ -119,8 +183,8 @@ class DashboardScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -129,19 +193,95 @@ class DashboardScreen extends StatelessWidget {
         ),
       );
 
+  // 构建收入设置banner
+  Widget _buildIncomeBanner(BuildContext context) => Consumer<BudgetProvider>(
+        builder: (context, budgetProvider, child) {
+          if (budgetProvider.salaryIncomes.isEmpty) {
+            return InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  AppAnimations.createRoute(
+                    const SalaryIncomeSetupScreen(),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFFFF6B6B)),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Color(0xFFFF6B6B),
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '请先设置收入信息，以便更好地管理预算',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Color(0xFFFF6B6B),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      );
+
   // 构建横向功能导航
   Widget _buildHorizontalFunctionNav(BuildContext context) => Container(
-        height: 100,
-        margin: EdgeInsets.symmetric(vertical: context.spacing8),
+        height: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: context.spacing16),
+          padding:
+              EdgeInsets.symmetric(horizontal: context.responsiveSpacing12),
           itemCount: _getFunctionItems().length,
           itemBuilder: (context, index) {
             final item = _getFunctionItems()[index];
             return Container(
-              width: 80,
-              margin: EdgeInsets.only(right: context.spacing12),
+              width: 60,
+              margin: EdgeInsets.only(right: context.responsiveSpacing8),
               child: _buildFunctionNavItem(context, item),
             );
           },
@@ -150,9 +290,24 @@ class DashboardScreen extends StatelessWidget {
 
   // 获取功能项目列表
   List<FunctionNavItem> _getFunctionItems() => [
+        // ⭐ 高优先级功能：设置收入（放在最前面）
+        FunctionNavItem(
+          icon: Icons.monetization_on_outlined,
+          title: '设置收入',
+          color: const Color(0xFFFF6B6B), // 醒目的红色
+          onTap: (context) {
+            Navigator.of(context).push(
+              AppAnimations.createRoute(
+                const SalaryIncomeSetupScreen(),
+              ),
+            );
+          },
+        ),
+
+        // 基础功能
         FunctionNavItem(
           icon: Icons.account_balance_wallet_outlined,
-          title: '预算',
+          title: '预算管理',
           color: const Color(0xFF4ECDC4),
           onTap: (context) {
             Navigator.of(context).push(
@@ -164,7 +319,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         FunctionNavItem(
           icon: Icons.receipt_long_outlined,
-          title: '交易',
+          title: '交易记录',
           color: const Color(0xFF45B7D1),
           onTap: (context) {
             Navigator.of(context).push(
@@ -175,8 +330,35 @@ class DashboardScreen extends StatelessWidget {
           },
         ),
         FunctionNavItem(
+          icon: Icons.settings_outlined,
+          title: '资产管理',
+          color: const Color(0xFFF7DC6F),
+          onTap: (context) {
+            Navigator.of(context).push(
+              AppAnimations.createRoute(
+                const AssetManagementScreen(),
+              ),
+            );
+          },
+        ),
+        FunctionNavItem(
+          icon: Icons.add_circle_outline,
+          title: '添加资产',
+          color: const Color(0xFFBB8FCE),
+          onTap: (context) {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => AddAssetFlowScreen(
+                  existingAssets: context.read<AssetProvider>().assets,
+                ),
+              ),
+            );
+          },
+        ),
+        // 特色功能
+        FunctionNavItem(
           icon: Icons.home_work_outlined,
-          title: '房贷',
+          title: '房贷计算',
           color: const Color(0xFF96CEB4),
           onTap: (context) {
             Navigator.of(context).push(
@@ -188,7 +370,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         FunctionNavItem(
           icon: Icons.auto_awesome_outlined,
-          title: '智能',
+          title: '智能引导',
           color: const Color(0xFFFFEAA7),
           onTap: (context) {
             Navigator.of(context).push(
@@ -211,7 +393,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         FunctionNavItem(
           icon: Icons.calendar_month_outlined,
-          title: '日历',
+          title: '日历视图',
           color: const Color(0xFFDDA0DD),
           onTap: (context) {
             Navigator.of(context).push(
@@ -223,7 +405,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         FunctionNavItem(
           icon: Icons.history_outlined,
-          title: '历史',
+          title: '历史记录',
           color: const Color(0xFF98D8C8),
           onTap: (context) {
             Navigator.of(context).push(
@@ -233,57 +415,22 @@ class DashboardScreen extends StatelessWidget {
             );
           },
         ),
-        FunctionNavItem(
-          icon: Icons.settings_outlined,
-          title: '管理',
-          color: const Color(0xFFF7DC6F),
-          onTap: (context) {
-            Navigator.of(context).push(
-              AppAnimations.createRoute(
-                const AssetManagementScreen(),
-              ),
-            );
-          },
-        ),
-        FunctionNavItem(
-          icon: Icons.add_circle_outline,
-          title: '添加',
-          color: const Color(0xFFBB8FCE),
-          onTap: (context) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => AddAssetFlowScreen(
-                  existingAssets: context.read<AssetProvider>().assets,
-                ),
-              ),
-            );
-          },
-        ),
       ];
 
   // 构建功能导航项
-  Widget _buildFunctionNavItem(BuildContext context, FunctionNavItem item) => 
+  Widget _buildFunctionNavItem(BuildContext context, FunctionNavItem item) =>
       InkWell(
         onTap: () => item.onTap(context),
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+          padding: EdgeInsets.symmetric(vertical: context.responsiveSpacing8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Icon组件
               Container(
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: item.color,
                   borderRadius: BorderRadius.circular(8),
@@ -291,16 +438,17 @@ class DashboardScreen extends StatelessWidget {
                 child: Icon(
                   item.icon,
                   color: Colors.white,
-                  size: 20,
+                  size: 18,
                 ),
               ),
-              SizedBox(height: context.spacing4),
+              const SizedBox(height: 4),
               Text(
                 item.title,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -313,15 +461,14 @@ class DashboardScreen extends StatelessWidget {
 
 // 功能导航项数据类
 class FunctionNavItem {
-  final IconData icon;
-  final String title;
-  final Color color;
-  final void Function(BuildContext) onTap;
-
   FunctionNavItem({
     required this.icon,
     required this.title,
     required this.color,
     required this.onTap,
   });
+  final IconData icon;
+  final String title;
+  final Color color;
+  final void Function(BuildContext) onTap;
 }

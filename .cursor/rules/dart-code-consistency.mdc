@@ -1,0 +1,142 @@
+---
+alwaysApply: false
+globs: *.dart
+description: Dart代码一致性规则 - 防止自动格式化破坏功能
+---
+
+# Dart代码一致性规则
+
+## 核心问题
+自动格式化工具和lint规则可能破坏代码功能，特别是：
+- 移除必要的`break`语句
+- 改变变量类型声明
+- 修改方法调用的格式
+
+## 强制规则
+
+### 1. Switch语句必须使用break
+```dart
+// ❌ 错误：格式化工具可能移除break
+switch (value) {
+  case 1:
+    doSomething();
+  case 2:  // 格式化工具可能移除break
+    doSomethingElse();
+}
+
+// ✅ 正确：明确使用break
+switch (value) {
+  case 1:
+    doSomething();
+    break;
+  case 2:
+    doSomethingElse();
+    break;
+  default:
+    handleDefault();
+    break;
+}
+```
+
+### 2. 变量类型声明要明确
+```dart
+// ❌ 错误：使用var可能导致类型推断问题
+var totalBonusIncome = 0;  // 可能被推断为int
+var totalTax = 0.0;        // 可能被推断为double但不够明确
+
+// ✅ 正确：明确类型声明
+double totalBonusIncome = 0.0;
+double totalTax = 0.0;
+```
+
+### 3. 数值计算中的类型一致性
+```dart
+// ❌ 错误：混合使用不同数值类型
+total += (_pensionContribution / 12).clamp(0.0, 1000.0); // clamp返回num
+
+// ✅ 正确：明确类型转换
+total += (_pensionContribution / 12).clamp(0.0, 1000.0).toDouble();
+```
+
+### 4. 方法链式调用的安全性
+```dart
+// ❌ 错误：混合cascade和method chaining
+list..sort()  // cascade返回原对象
+    .map((item) => item.transform())  // 这里可能出错
+    .toList();
+
+// ✅ 正确：使用单一模式
+// 方法1：纯cascade
+(list..sort()).map((item) => item.transform()).toList();
+
+// 方法2：纯method chaining
+list.map((item) => item.transform()).toList()..sort();
+```
+
+### 5. 异步操作的错误处理
+```dart
+// ❌ 错误：缺少错误处理
+await someAsyncOperation();
+
+// ✅ 正确：包含错误处理
+try {
+  await someAsyncOperation();
+} catch (e) {
+  // 处理错误
+}
+```
+
+## 开发工作流
+
+### 1. 代码修改后立即测试
+```bash
+# 修改代码后立即编译测试
+flutter run --debug
+
+# 或者检查语法
+flutter analyze
+```
+
+### 2. 格式化工具使用策略
+```dart
+// 在代码块中使用格式化忽略注释
+// ignore_for_file: prefer_expression_function_bodies
+// ignore_for_file: cascade_invocations
+
+// 或者在特定行忽略
+// ignore: unnecessary_breaks
+```
+
+### 3. 类型安全检查
+```dart
+// 使用明确的类型检查
+assert(totalBonusIncome is double, 'totalBonusIncome must be double');
+assert(totalTax is double, 'totalTax must be double');
+```
+
+## 常见问题解决
+
+### 问题1：格式化工具移除break
+**解决方案：** 在switch语句中使用显式的break和default case
+
+### 问题2：变量类型被自动更改
+**解决方案：** 使用明确的类型声明而不是var
+
+### 问题3：方法链式调用出错
+**解决方案：** 避免混合cascade和method chaining
+
+### 问题4：数值类型转换问题
+**解决方案：** 明确进行类型转换
+
+## 代码审查清单
+
+- [ ] 所有switch语句都有break
+- [ ] 变量类型明确声明
+- [ ] 数值计算类型一致
+- [ ] 方法链式调用安全
+- [ ] 异步操作有错误处理
+- [ ] 编译通过无警告
+
+## 相关文件
+- [lib/screens/salary_income_setup_screen.dart](mdc:lib/screens/salary_income_setup_screen.dart) - 工资设置页面
+- [lib/services/personal_income_tax_service.dart](mdc:lib/services/personal_income_tax_service.dart) - 个税计算服务

@@ -12,44 +12,83 @@ import 'package:your_finance_flutter/providers/asset_provider.dart';
 import 'package:your_finance_flutter/providers/budget_provider.dart';
 import 'package:your_finance_flutter/screens/add_asset_flow_screen.dart';
 import 'package:your_finance_flutter/services/storage_service.dart';
+import 'package:your_finance_flutter/utils/debug_mode_manager.dart';
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final DebugModeManager _debugManager = DebugModeManager();
+
+  @override
+  void initState() {
+    super.initState();
+    _debugManager.addListener(_onDebugModeChanged);
+  }
+
+  @override
+  void dispose() {
+    _debugManager.removeListener(_onDebugModeChanged);
+    super.dispose();
+  }
+
+  void _onDebugModeChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text('家庭资产记账'),
+          title: GestureDetector(
+            onTap: () {
+              final debugEnabled = _debugManager.handleClick();
+              if (debugEnabled) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🔧 Debug模式已开启'),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            child: const Text('家庭资产记账'),
+          ),
           backgroundColor: Colors.white,
           elevation: 0,
           actions: [
-            // Debug按钮
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.bug_report),
-              onSelected: (value) => _handleDebugAction(context, value),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'sample',
-                  child: Row(
-                    children: [
-                      Icon(Icons.data_object, size: 20),
-                      SizedBox(width: 8),
-                      Text('生成测试数据'),
-                    ],
+            // Debug按钮 - 仅在debug模式开启时显示
+            if (_debugManager.isDebugModeEnabled)
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.bug_report),
+                onSelected: (value) => _handleDebugAction(context, value),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'sample',
+                    child: Row(
+                      children: [
+                        Icon(Icons.data_object, size: 20),
+                        SizedBox(width: 8),
+                        Text('生成测试数据'),
+                      ],
+                    ),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'import',
-                  child: Row(
-                    children: [
-                      Icon(Icons.upload, size: 20),
-                      SizedBox(width: 8),
-                      Text('导入数据'),
-                    ],
+                  const PopupMenuItem(
+                    value: 'import',
+                    child: Row(
+                      children: [
+                        Icon(Icons.upload, size: 20),
+                        SizedBox(width: 8),
+                        Text('导入数据'),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
         body: SafeArea(
