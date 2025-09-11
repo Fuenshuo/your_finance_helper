@@ -34,7 +34,9 @@ class AssetManagementScreen extends StatelessWidget {
 
   // 导出数据
   Future<void> _exportData(
-      BuildContext context, HybridStorageService storageService) async {
+    BuildContext context,
+    HybridStorageService storageService,
+  ) async {
     try {
       final assets = await storageService.getAssets();
       final transactions = await storageService.loadTransactions();
@@ -63,7 +65,9 @@ class AssetManagementScreen extends StatelessWidget {
 
   // 导入数据
   Future<void> _importData(
-      BuildContext context, HybridStorageService storageService) async {
+    BuildContext context,
+    HybridStorageService storageService,
+  ) async {
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       if (clipboardData?.text == null) {
@@ -100,14 +104,16 @@ class AssetManagementScreen extends StatelessWidget {
       // 导入预算
       if (importData['envelopeBudgets'] != null) {
         final budgets = (importData['envelopeBudgets'] as List)
-            .map((json) => EnvelopeBudget.fromJson(json as Map<String, dynamic>))
+            .map(
+                (json) => EnvelopeBudget.fromJson(json as Map<String, dynamic>))
             .toList();
         await storageService.saveEnvelopeBudgets(budgets);
       }
 
       if (importData['zeroBasedBudgets'] != null) {
         final budgets = (importData['zeroBasedBudgets'] as List)
-            .map((json) => ZeroBasedBudget.fromJson(json as Map<String, dynamic>))
+            .map((json) =>
+                ZeroBasedBudget.fromJson(json as Map<String, dynamic>))
             .toList();
         await storageService.saveZeroBasedBudgets(budgets);
       }
@@ -125,7 +131,9 @@ class AssetManagementScreen extends StatelessWidget {
 
   // 清空所有数据
   Future<void> _clearAllData(
-      BuildContext context, HybridStorageService storageService) async {
+    BuildContext context,
+    HybridStorageService storageService,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -397,8 +405,9 @@ class AssetManagementScreen extends StatelessWidget {
                                 ),
                       ),
                     ),
-                    ...assets.map((asset) =>
-                        _buildAssetCard(context, asset, assetProvider)),
+                    ...assets.map(
+                      (asset) => _buildAssetCard(context, asset, assetProvider),
+                    ),
                     const SizedBox(height: 16),
                   ],
                 );
@@ -409,7 +418,10 @@ class AssetManagementScreen extends StatelessWidget {
       );
 
   Widget _buildAssetCard(
-          BuildContext context, AssetItem asset, AssetProvider assetProvider) =>
+    BuildContext context,
+    AssetItem asset,
+    AssetProvider assetProvider,
+  ) =>
       Card(
         margin: const EdgeInsets.only(bottom: 8),
         child: ListTile(
@@ -473,7 +485,10 @@ class AssetManagementScreen extends StatelessWidget {
   }
 
   void _showDeleteDialog(
-      BuildContext context, AssetItem asset, AssetProvider assetProvider) {
+    BuildContext context,
+    AssetItem asset,
+    AssetProvider assetProvider,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
