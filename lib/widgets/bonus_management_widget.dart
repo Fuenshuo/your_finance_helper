@@ -360,9 +360,7 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
     showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          debugPrint('🎨 StatefulBuilder重建: _selectedQuarterMonth = $_selectedQuarterMonth');
-          return AlertDialog(
+        builder: (context, setState) => AlertDialog(
           title: Text(bonus == null ? '添加奖金项目' : '编辑奖金项目'),
           content: SingleChildScrollView(
             child: Column(
@@ -715,19 +713,13 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
                   label: Text('$month月'),
                   selected: _selectedQuarterMonth == month,
                   onSelected: (selected) {
-                    debugPrint('🏷️ 季度选择: ${month}月, selected=$selected (当前选择: $_selectedQuarterMonth)');
                     if (selected) {
-                      debugPrint('🔄 执行setState: $_selectedQuarterMonth -> $month');
+                      debugPrint('季度选择: ${month}月');
                       setState(() {
                         _selectedQuarterMonth = month;
                         _updateQuarterlyStartDate();
-                        debugPrint('✅ setState完成: _selectedQuarterMonth = $_selectedQuarterMonth');
                       });
-                      // 移除持续年数输入框的焦点
                       FocusScope.of(context).unfocus();
-                      debugPrint('🎯 季度选择完成');
-                    } else {
-                      debugPrint('❌ 季度选择被取消');
                     }
                   },
                 ),
