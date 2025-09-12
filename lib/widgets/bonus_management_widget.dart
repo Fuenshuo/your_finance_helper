@@ -40,53 +40,32 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
   void _initializeQuarterlySettings() {
     // 只在第一次调用时进行初始化
     if (!_quarterlySettingsInitialized) {
-      final now = DateTime.now();
-      _quarterlyStartDate = _getNextQuarterlyDate(now);
-
+      _quarterlyStartDate = _getNextQuarterlyDate(DateTime.now());
       // 确保初始化时的年份在下拉列表范围内（从前年开始到未来8年）
-      final currentYear = now.year;
-      final oldYear = _selectedYear;
+      final currentYear = DateTime.now().year;
       _selectedYear = (_quarterlyStartDate.year >= currentYear - 2 &&
               _quarterlyStartDate.year <= currentYear + 8)
           ? _quarterlyStartDate.year
           : currentYear;
-
       // 确保_selectedQuarterMonth是有效的季度月份
       final quarterlyMonths = [1, 4, 7, 10];
-      final oldMonth = _selectedQuarterMonth;
       _selectedQuarterMonth =
           quarterlyMonths.contains(_quarterlyStartDate.month)
               ? _quarterlyStartDate.month
               : 1; // 默认选择1月
-
       _quarterlyDurationYears = 5;
       _durationController.text = _quarterlyDurationYears.toString();
       _durationController.selection = TextSelection.fromPosition(
         TextPosition(offset: _durationController.text.length),
       );
       _quarterlySettingsInitialized = true;
-
-      // 调试日志
-      debugPrint('🚀 初始化季度设置:');
-      debugPrint('  当前时间: $now');
-      debugPrint('  计算的开始日期: $_quarterlyStartDate');
-      debugPrint('  年份: $oldYear -> $_selectedYear');
-      debugPrint('  季度月份: $oldMonth -> $_selectedQuarterMonth');
     }
   }
 
   // 根据选择的年份和季度更新开始日期
   void _updateQuarterlyStartDate() {
-    final oldDate = _quarterlyStartDate;
     _quarterlyStartDate = DateTime(_selectedYear, _selectedQuarterMonth, 15);
     _quarterlySettingsInitialized = true;
-
-    // 调试日志
-    debugPrint('🎯 _updateQuarterlyStartDate:');
-    debugPrint('  年份: $_selectedYear');
-    debugPrint('  季度月份: $_selectedQuarterMonth');
-    debugPrint('  旧日期: $oldDate');
-    debugPrint('  新日期: $_quarterlyStartDate');
   }
 
   @override
@@ -357,14 +336,13 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
     var endDate = bonus?.endDate;
     var description = bonus?.description ?? '';
 
-
     // 如果编辑的是季度奖金，确保频率设置为每季度
     if (bonus != null && type == BonusType.quarterlyBonus) {
       frequency = BonusFrequency.quarterly;
       // 初始化季度奖金的状态变量
       _quarterlyStartDate = bonus.startDate;
-      _selectedYear = bonus.startDate.year; // 同步类级别状态
-      _selectedQuarterMonth = bonus.startDate.month; // 同步类级别状态
+      _selectedYear = bonus.startDate.year;
+      _selectedQuarterMonth = bonus.startDate.month;
       // 如果有结束日期，计算持续年数
       if (bonus.endDate != null) {
         _quarterlyDurationYears = bonus.endDate!.year - bonus.startDate.year;
@@ -611,8 +589,8 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
             ),
           ],
         ),
-      );
-    },
+      ),
+    );
   }
 
   void _showDeleteBonusDialog(BuildContext context, BonusItem bonus) {
@@ -648,8 +626,6 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
   Widget _buildQuarterlyBonusInput(double amount) {
     // 计算季度发放月份：1、4、7、10月
     final quarterlyMonths = [1, 4, 7, 10];
-
-    // 使用类级别的状态变量 - 确保selected状态正确
 
     // 计算支付日期
     final paymentDates = _calculateQuarterlyPaymentDates(
@@ -701,7 +677,7 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
             border: OutlineInputBorder(),
           ),
           items: List.generate(11, (index) {
-            final year = DateTime.now().year + index - 2; // 从前年到未来8年
+            final year = DateTime.now().year + index - 2; // 从前年开始到未来8年
             return DropdownMenuItem(
               value: year,
               child: Text('$year年'),
@@ -709,7 +685,6 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
           }),
           onChanged: (value) {
             if (value != null) {
-              debugPrint('📅 年份选择: $value (原值: $_selectedYear)');
               setState(() {
                 _selectedYear = value;
                 _updateQuarterlyStartDate();
@@ -732,38 +707,25 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
         Wrap(
           spacing: context.spacing8,
           runSpacing: context.spacing8,
-          children: quarterlyMonths.map(
-            (month) {
-                  debugPrint(
-                      '🔄 构建季度选择ChoiceChip $month月, 当前选择: $_selectedQuarterMonth月');
-              final isSelected = _selectedQuarterMonth == month;
-              if (isSelected) {
-                debugPrint(
-                    '✅ ChoiceChip $month月 被选中 (当前选择: $_selectedQuarterMonth)');
-              }
-              return ChoiceChip(
-                label: Text('$month月'),
-                selected: isSelected,
-                onSelected: (selected) {
-                  debugPrint(
-                      '🏷️ 季度选择: $month月, selected=$selected (当前选择: $_selectedQuarterMonth)');
-                  if (selected) {
-                    setState(() {
-                      _selectedQuarterMonth = month;
-                      _updateQuarterlyStartDate();
-                    });
-                    // 移除持续年数输入框的焦点
-                    FocusScope.of(context).unfocus();
-                  }
-                },
-              );
-            },
-          ).toList(),
+          children: quarterlyMonths
+              .map(
+                (month) => ChoiceChip(
+                  label: Text('$month月'),
+                  selected: _selectedQuarterMonth == month,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedQuarterMonth = month;
+                        _updateQuarterlyStartDate();
+                      });
+                      // 移除持续年数输入框的焦点
+                      FocusScope.of(context).unfocus();
+                    }
+                  },
+                ),
+              )
+              .toList(),
         ),
-        SizedBox(height: context.spacing16),
-
-        // 计算出的开始日期（隐藏，因为用户通过年份+季度已经选择了）
-        // 这个日期会自动传递给奖金项目，无需用户关心
         SizedBox(height: context.spacing16),
 
         // 持续年数输入
