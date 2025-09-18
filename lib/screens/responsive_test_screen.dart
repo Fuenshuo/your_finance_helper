@@ -34,11 +34,17 @@ class ResponsiveTestScreen extends StatelessWidget {
                   ),
                   SizedBox(height: context.responsiveSpacing12),
                   _buildInfoRow(
-                      '屏幕宽度', '${mediaQuery.size.width.toStringAsFixed(1)}px'),
+                    '屏幕宽度',
+                    '${mediaQuery.size.width.toStringAsFixed(1)}px',
+                  ),
                   _buildInfoRow(
-                      '屏幕高度', '${mediaQuery.size.height.toStringAsFixed(1)}px'),
-                  _buildInfoRow('像素密度',
-                      '${mediaQuery.devicePixelRatio.toStringAsFixed(2)}x'),
+                    '屏幕高度',
+                    '${mediaQuery.size.height.toStringAsFixed(1)}px',
+                  ),
+                  _buildInfoRow(
+                    '像素密度',
+                    '${mediaQuery.devicePixelRatio.toStringAsFixed(2)}x',
+                  ),
                   _buildInfoRow('平台', kIsWeb ? 'Web' : 'Mobile'),
                 ],
               ),

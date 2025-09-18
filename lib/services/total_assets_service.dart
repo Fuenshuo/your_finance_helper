@@ -1,5 +1,5 @@
-import '../models/account.dart';
-import '../models/budget.dart';
+import 'package:your_finance_flutter/models/account.dart';
+import 'package:your_finance_flutter/models/budget.dart';
 
 /// 总资产计算服务
 /// 实现"总资产 = 所有账户余额 + 所有信封余额"的核心逻辑
@@ -23,7 +23,7 @@ class TotalAssetsService {
   /// 计算账户资产
   /// 包括现金、银行、投资等资产账户，减去负债账户
   static double _calculateAccountAssets(List<Account> accounts) {
-    double totalAssets = 0.0;
+    var totalAssets = 0.0;
     
     for (final account in accounts) {
       if (account.status == AccountStatus.active) {
@@ -42,11 +42,9 @@ class TotalAssetsService {
 
   /// 计算信封资产
   /// 信封中的可用余额也是总资产的一部分
-  static double _calculateEnvelopeAssets(List<EnvelopeBudget> envelopeBudgets) {
-    return envelopeBudgets
+  static double _calculateEnvelopeAssets(List<EnvelopeBudget> envelopeBudgets) => envelopeBudgets
         .where((budget) => budget.status == BudgetStatus.active)
         .fold(0.0, (sum, budget) => sum + budget.availableAmount);
-  }
 
   /// 计算净资产
   /// 净资产 = 总资产 - 总负债
@@ -65,14 +63,12 @@ class TotalAssetsService {
   }
 
   /// 计算总负债
-  static double _calculateTotalLiabilities(List<Account> accounts) {
-    return accounts
+  static double _calculateTotalLiabilities(List<Account> accounts) => accounts
         .where((account) => 
           account.status == AccountStatus.active && 
-          account.type.isLiability
+          account.type.isLiability,
         )
         .fold(0.0, (sum, account) => sum + account.balance);
-  }
 
   /// 计算负债率
   static double calculateDebtRatio({
@@ -183,7 +179,6 @@ class TotalAssetsService {
             .toList();
         suggestions.add('以下预算已超支：${overBudgetEnvelopes.join('、')}');
         suggestions.add('建议调整预算分配或减少相关支出');
-        break;
         
       case BudgetHealthStatus.warning:
         final warningEnvelopes = envelopeBudgets
@@ -192,19 +187,15 @@ class TotalAssetsService {
             .toList();
         suggestions.add('以下预算接近上限：${warningEnvelopes.join('、')}');
         suggestions.add('请注意控制相关支出');
-        break;
         
       case BudgetHealthStatus.healthy:
         suggestions.add('预算使用情况良好');
-        break;
         
       case BudgetHealthStatus.noBudget:
         suggestions.add('建议创建预算来更好地管理支出');
-        break;
         
       case BudgetHealthStatus.noActiveBudget:
         suggestions.add('当前没有活跃的预算，建议创建新的预算周期');
-        break;
     }
     
     return suggestions;

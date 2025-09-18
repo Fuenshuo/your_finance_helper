@@ -1,0 +1,225 @@
+---
+alwaysApply: true
+description: 组件设计原则 - 当组件过于复杂时遵循KISS和开闭原则进行拆分
+---
+
+# 组件设计原则
+
+## KISS原则 (Keep It Simple, Stupid)
+**一个组件只做一件事，并且把它做好。**
+
+### 复杂度识别指标
+- **代码行数 > 300行**：强烈建议拆分
+- **方法数量 > 15个**：考虑职责分离
+- **嵌套层级 > 3层**：重构为组合模式
+- **状态变量 > 10个**：使用状态管理分离
+
+### 拆分策略
+```dart
+// ❌ 错误：单个巨大组件承担过多职责
+class ComplexWidget extends StatefulWidget {
+  // 包含UI构建、数据处理、状态管理、业务逻辑等所有功能
+  // 数百行代码...
+}
+
+// ✅ 正确：职责分离的组件组合
+class SimpleWidget extends StatelessWidget {
+  const SimpleWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        HeaderWidget(),
+        ContentWidget(),
+        FooterWidget(),
+      ],
+    );
+  }
+}
+```
+
+## 开闭原则 (Open-Closed Principle)
+**对扩展开放，对修改封闭。**
+
+### 组件设计准则
+1. **单一职责**：每个组件只负责一个明确的职责
+2. **接口稳定**：通过props/参数定义清晰的接口契约
+3. **组合优于继承**：使用组合模式而非继承
+4. **依赖注入**：通过构造函数注入依赖，避免硬编码
+
+### 实践模式
+```dart
+// ✅ 开闭原则：通过组合实现扩展
+abstract class BaseComponent {
+  Widget build(BuildContext context);
+}
+
+class ConfigurableWidget extends StatelessWidget {
+  final BaseComponent header;
+  final BaseComponent content;
+  final BaseComponent footer;
+
+  const ConfigurableWidget({
+    required this.header,
+    required this.content,
+    required this.footer,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        header.build(context),
+        content.build(context),
+        footer.build(context),
+      ],
+    );
+  }
+}
+```
+
+## 组件拆分流程
+
+### 第一步：识别复杂点
+```dart
+// 分析组件中的复杂逻辑
+class OriginalComplexWidget {
+  // 1. UI构建逻辑 (拆分 → UI组件)
+  Widget _buildUI() { /* ... */ }
+
+  // 2. 数据处理逻辑 (拆分 → Service/Util)
+  void _processData() { /* ... */ }
+
+  // 3. 状态管理逻辑 (拆分 → Provider/StateManager)
+  void _manageState() { /* ... */ }
+
+  // 4. 业务逻辑 (拆分 → Business Logic组件)
+  void _handleBusiness() { /* ... */ }
+}
+```
+
+### 第二步：定义接口契约
+```dart
+// 定义清晰的组件接口
+abstract class ComponentInterface {
+  Widget build(BuildContext context);
+}
+
+class ComponentWithProps extends StatelessWidget {
+  final String title;
+  final VoidCallback onAction;
+  final Widget? customContent;
+
+  const ComponentWithProps({
+    required this.title,
+    required this.onAction,
+    this.customContent,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) => /* ... */;
+}
+```
+
+### 第三步：组合集成
+```dart
+// 在原组件中只负责集成和协调
+class IntegrationWidget extends StatelessWidget {
+  const IntegrationWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // 只负责组合，不负责具体实现
+        HeaderComponent(title: '标题'),
+        ContentComponent(data: data),
+        ActionComponent(onPressed: handleAction),
+      ],
+    );
+  }
+}
+```
+
+## 拆分后的优势
+
+### 1. 可维护性提升
+- 每个组件职责单一，易于理解
+- 问题定位更加精准
+- 修改影响范围可控
+
+### 2. 可复用性增强
+- 组件可独立使用
+- 组合灵活多样
+- 减少代码重复
+
+### 3. 可测试性改善
+- 单元测试更加简单
+- 组件间依赖清晰
+- Mock和Stub更容易实现
+
+### 4. 团队协作优化
+- 并行开发成为可能
+- 代码冲突大幅减少
+- 代码审查更加高效
+
+## 实际案例
+
+### 奖金管理组件重构
+```dart
+// 重构前：单个868行文件
+class BonusManagementWidget extends StatefulWidget {
+  // 包含所有逻辑...
+}
+
+// 重构后：职责分离的组件体系
+class BonusManagementWidget extends StatelessWidget {
+  // 只负责集成和协调
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        BonusHeader(),
+        BonusList(),
+        BonusTaxInfo(),
+      ],
+    );
+  }
+}
+
+class BonusItemWidget extends StatelessWidget {
+  // 只负责单个奖金项展示
+}
+
+class BonusDialogManager {
+  // 只负责对话框管理
+}
+```
+
+## 实施准则
+
+### 何时拆分
+- [ ] 代码行数超过300行
+- [ ] 承担了3个以上不同职责
+- [ ] 状态管理过于复杂
+- [ ] 单元测试难以编写
+
+### 如何拆分
+1. **识别职责边界**：分析组件做了哪些不同的事情
+2. **定义接口契约**：明确组件间的通信协议
+3. **创建独立组件**：每个组件只做一件事
+4. **组合集成**：在高层组件中组合使用
+
+### 验证拆分效果
+- [ ] 每个组件职责是否单一
+- [ ] 接口契约是否清晰
+- [ ] 组合使用是否灵活
+- [ ] 单元测试是否简化
+
+## 相关文件
+- [BonusManagementWidget](mdc:lib/widgets/bonus_management_widget.dart) - 重构后的奖金管理组件
+- [AppCard](mdc:lib/widgets/app_card.dart) - 基础UI组件示例
+- [PerformanceMonitor](mdc:lib/utils/performance_monitor.dart) - 工具类组件示例

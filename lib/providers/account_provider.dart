@@ -146,7 +146,9 @@ class AccountProvider with ChangeNotifier {
 
   // 计算总负债（使用实际负债余额）
   double calculateTotalLiabilities() => liabilityAccounts.fold(
-      0.0, (sum, account) => sum + account.effectiveLiabilityBalance);
+        0.0,
+        (sum, account) => sum + account.effectiveLiabilityBalance,
+      );
 
   // 计算净资产
   double calculateNetWorth() =>
@@ -323,12 +325,18 @@ class AccountProvider with ChangeNotifier {
   Map<String, dynamic> getLoanStatistics() {
     final loanAccounts = this.loanAccounts;
     final totalLoanAmount = loanAccounts.fold(
-        0.0, (sum, account) => sum + (account.loanAmount ?? 0));
+      0.0,
+      (sum, account) => sum + (account.loanAmount ?? 0),
+    );
     final totalRemainingPrincipal = loanAccounts.fold(
-        0.0, (sum, account) => sum + (account.remainingPrincipal ?? 0));
+      0.0,
+      (sum, account) => sum + (account.remainingPrincipal ?? 0),
+    );
     final totalPaidPrincipal = totalLoanAmount - totalRemainingPrincipal;
     final totalMonthlyPayment = loanAccounts.fold(
-        0.0, (sum, account) => sum + (account.monthlyPayment ?? 0));
+      0.0,
+      (sum, account) => sum + (account.monthlyPayment ?? 0),
+    );
 
     return {
       'totalLoans': loanAccounts.length,

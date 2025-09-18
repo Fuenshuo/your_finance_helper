@@ -1,0 +1,170 @@
+---
+alwaysApply: true
+description: Logging format standards for better debugging and troubleshooting
+---
+
+# 日志格式化规范
+
+## 核心原则
+**上下文优先，信息完整** - 每个日志必须包含足够的信息，便于后续排查和调试问题。
+
+## 标准日志格式
+
+### 基本格式
+```dart
+print('[页面类名.方法名] 操作描述: 关键信息');
+```
+
+### 详细格式
+```dart
+print('[页面类名.方法名] 📝 操作描述: 关键信息 | 上下文: ${contextInfo} | 状态: ${stateInfo}');
+```
+
+## 日志级别分类
+
+### 🔵 页面导航日志
+```dart
+print('[页面类名.initState] 📱 页面初始化: 参数=${widget.param}');
+print('[页面类名.build] 🎨 构建UI: 数据项=${data.length}');
+print('[页面类名.dispose] 🗑️ 页面销毁: 清理资源');
+```
+
+### 🟡 数据操作日志
+```dart
+print('[页面类名._loadData] 📊 加载数据: 用户ID=${userId}, 类型=${dataType}');
+print('[页面类名._saveData] 💾 保存数据: 记录数=${records.length}');
+print('[页面类名._calculateResult] 🧮 计算结果: 总金额=${totalAmount}');
+```
+
+### 🔴 错误和异常日志
+```dart
+print('[页面类名._handleError] ❌ 错误处理: ${error.message} | 堆栈: ${stackTrace}');
+print('[页面类名._validateInput] ⚠️ 验证失败: 字段=${fieldName}, 值=${fieldValue}');
+```
+
+### 🟢 业务流程日志
+```dart
+print('[页面类名._processBonus] 🎁 处理奖金: 类型=${bonusType}, 金额=${amount}');
+print('[页面类名._calculateTax] 💰 计算税费: 收入=${income}, 税率=${taxRate}');
+print('[页面类名._updateBudget] 📈 更新预算: 原金额=${oldAmount}, 新金额=${newAmount}');
+```
+
+## 上下文信息要求
+
+### 必须包含信息
+- **页面类名**: 当前操作的Widget类名
+- **方法名**: 当前执行的方法名
+- **操作类型**: 用emoji区分操作类型
+- **关键数据**: 操作涉及的关键数据值
+
+### 可选增强信息
+- **用户状态**: 当前用户相关信息
+- **数据状态**: 当前数据状态快照
+- **性能指标**: 执行时间、数据量等
+- **调用链**: 上级方法的调用关系
+
+## 日志示例
+
+### 奖金管理页面
+```dart
+print('[BonusDialogManager._showBonusDialog] 🎁 奖金对话框: 类型=${type}, 金额=${amount}');
+print('[BonusDialogManager._getBasicSalary] 💼 获取基本工资: 用户薪资记录=${salaryRecords.length}');
+print('[BonusManagementWidget._addBonus] ➕ 添加奖金: 名称=${bonusName}, 类型=${bonusType}');
+```
+
+### 薪资设置页面
+```dart
+print('[SalaryIncomeSetupScreen._calculatePreview] 🧮 预览计算: 基本工资=${basicSalary}, 奖金数=${bonuses.length}');
+print('[SalaryIncomeSetupScreen._saveSalaryIncome] 💾 保存薪资设置: 总收入=${totalIncome}');
+print('[SalaryIncomeSetupScreen._navigateToPreview] ➡️ 导航到预览: 薪资ID=${salaryId}');
+```
+
+### 数据服务层
+```dart
+print('[StorageService.loadSalaryIncomes] 📂 加载薪资数据: 文件大小=${fileSize}字节');
+print('[PersonalIncomeTaxService.calculateTax] 💰 计算个税: 应纳税所得额=${taxableIncome}');
+print('[AssetHistoryService.recordChange] 📝 记录变更: 类型=${changeType}, 资产ID=${assetId}');
+```
+
+## 实现指南
+
+### 1. 方法入口日志
+```dart
+void _loadData() {
+  print('[$runtimeType._loadData] 📊 开始加载数据: 参数=${widget.param}');
+  // ... 业务逻辑
+}
+```
+
+### 2. 关键节点日志
+```dart
+Future<void> _saveData() async {
+  print('[$runtimeType._saveData] 💾 开始保存数据: 记录数=${data.length}');
+  
+  try {
+    await storageService.save(data);
+    print('[$runtimeType._saveData] ✅ 保存成功: ID=${savedId}');
+  } catch (e) {
+    print('[$runtimeType._saveData] ❌ 保存失败: ${e.message}');
+    rethrow;
+  }
+}
+```
+
+### 3. 状态变更日志
+```dart
+void _updateState() {
+  print('[$runtimeType._updateState] 🔄 状态更新: 原值=${oldValue}, 新值=${newValue}');
+  setState(() => currentValue = newValue);
+}
+```
+
+## 调试技巧
+
+### 1. 日志过滤
+使用特定的emoji前缀来过滤日志：
+- `grep "🎁"` - 查看奖金相关日志
+- `grep "💰"` - 查看财务计算日志
+- `grep "📱"` - 查看页面导航日志
+
+### 2. 日志级别控制
+```dart
+const bool isDebugMode = true; // 在开发模式下开启详细日志
+
+if (isDebugMode) {
+  print('[${runtimeType}._detailedLog] 🔍 详细日志: ${debugInfo}');
+}
+```
+
+### 3. 性能监控
+```dart
+final startTime = DateTime.now();
+// ... 执行操作
+final duration = DateTime.now().difference(startTime);
+print('[$runtimeType.${methodName}] ⏱️ 执行时间: ${duration.inMilliseconds}ms');
+```
+
+## 常见问题解决
+
+### 问题1：日志太多难以定位
+**解决方案**：
+- 使用特定的页面前缀过滤
+- 在生产环境中关闭详细日志
+- 使用日志级别控制
+
+### 问题2：日志信息不完整
+**解决方案**：
+- 遵循标准格式，确保包含所有必要信息
+- 在方法开始时记录输入参数
+- 在关键节点记录中间状态
+
+### 问题3：新页面没有日志
+**解决方案**：
+- 为每个新页面添加标准的入口日志
+- 在build方法中添加UI构建日志
+- 在导航方法中添加跳转日志
+
+## 相关文件
+- [BonusDialogManager](mdc:lib/widgets/bonus_dialog_manager.dart) - 奖金对话框管理
+- [SalaryIncomeSetupScreen](mdc:lib/screens/salary_income_setup_screen.dart) - 薪资设置页面
+- [StorageService](mdc:lib/services/storage_service.dart) - 数据存储服务

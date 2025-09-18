@@ -24,8 +24,10 @@ class AmountInputDemo extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 公积金贷款输入框演示
-              const Text('公积金贷款额度：',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '公积金贷款额度：',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 8),
               const AmountInputField(
                 labelText: '公积金贷款额度',
@@ -37,8 +39,10 @@ class AmountInputDemo extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 商业贷款输入框演示
-              const Text('商业贷款额度：',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '商业贷款额度：',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 8),
               const AmountInputField(
                 labelText: '商业贷款额度',
@@ -49,8 +53,10 @@ class AmountInputDemo extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 其他金额输入演示
-              const Text('其他金额输入：',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '其他金额输入：',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 8),
               const Row(
                 children: [
@@ -82,8 +88,10 @@ class AmountInputDemo extends StatelessWidget {
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('🎨 样式特点：',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      '🎨 样式特点：',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     SizedBox(height: 8),
                     Text('• "元"字居中显示在右侧'),
                     Text('• 浅灰色背景块包裹整个输入区域'),

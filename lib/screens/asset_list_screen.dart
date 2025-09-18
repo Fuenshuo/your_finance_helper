@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:your_finance_flutter/models/asset_item.dart';
-import 'package:your_finance_flutter/providers/asset_provider.dart';
-import 'package:your_finance_flutter/screens/add_asset_flow_screen.dart';
-import 'package:your_finance_flutter/screens/fixed_asset_detail_screen.dart';
-import 'package:your_finance_flutter/theme/app_theme.dart';
-import 'package:your_finance_flutter/theme/responsive_text_styles.dart';
-import 'package:your_finance_flutter/utils/performance_monitor.dart';
-import 'package:your_finance_flutter/widgets/app_animations.dart';
-import 'package:your_finance_flutter/widgets/asset_category_tab_bar.dart';
-import 'package:your_finance_flutter/widgets/asset_distribution_card.dart';
-import 'package:your_finance_flutter/widgets/asset_list_item.dart';
-import 'package:your_finance_flutter/widgets/asset_list_overview_card.dart';
-import 'package:your_finance_flutter/widgets/enhanced_floating_action_button.dart';
+import 'package:your_finance_flutter/core/models/asset_item.dart';
+import 'package:your_finance_flutter/core/providers/asset_provider.dart';
+import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/fixed_asset_detail_screen.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
+import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
+import 'package:your_finance_flutter/features/family_info/widgets/asset_category_tab_bar.dart';
+import 'package:your_finance_flutter/features/family_info/widgets/asset_distribution_card.dart';
+import 'package:your_finance_flutter/features/family_info/widgets/asset_list_item.dart';
+import 'package:your_finance_flutter/features/family_info/widgets/asset_list_overview_card.dart';
+import 'package:your_finance_flutter/core/widgets/enhanced_floating_action_button.dart';
 
 class AssetListScreen extends StatefulWidget {
   const AssetListScreen({super.key});
@@ -39,8 +39,8 @@ class _AssetListScreenState extends State<AssetListScreen> {
                 onPressed: () {
                   // TODO: 导航到历史数据总览页面
                   // 静默处理，不显示提示框
-        // 静默处理，不显示提示框                },
-              ,,,,),
+                },
+              ),
             ],
           ),
           body: Consumer<AssetProvider>(

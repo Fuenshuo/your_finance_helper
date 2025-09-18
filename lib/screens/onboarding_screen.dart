@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:your_finance_flutter/models/account.dart';
-import 'package:your_finance_flutter/models/asset_item.dart';
-import 'package:your_finance_flutter/models/budget.dart';
-import 'package:your_finance_flutter/models/transaction.dart';
-import 'package:your_finance_flutter/providers/asset_provider.dart';
-import 'package:your_finance_flutter/providers/budget_provider.dart';
-import 'package:your_finance_flutter/screens/add_asset_flow_screen.dart';
-import 'package:your_finance_flutter/services/storage_service.dart';
-import 'package:your_finance_flutter/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/core/models/account.dart';
+import 'package:your_finance_flutter/core/models/asset_item.dart';
+import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/providers/asset_provider.dart';
+import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
+import 'package:your_finance_flutter/core/services/storage_service.dart';
+import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -292,7 +292,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           id: const Uuid().v4(),
           name: '自住房产',
           amount: 800000,
-          category: AssetCategory.fixedAssets,
+          category: AssetCategory.realEstate,
           subCategory: '房产(自住)',
           creationDate: DateTime.now(),
           updateDate: DateTime.now(),

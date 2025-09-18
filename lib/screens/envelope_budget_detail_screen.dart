@@ -161,7 +161,8 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
                 decoration: BoxDecoration(
                   color: envelope.color != null
                       ? Color(
-                          int.parse(envelope.color!.replaceFirst('#', '0xff')))
+                          int.parse(envelope.color!.replaceFirst('#', '0xff')),
+                        )
                       : context.primaryAction,
                   borderRadius: BorderRadius.circular(context.borderRadius / 2),
                 ),

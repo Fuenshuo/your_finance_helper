@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../theme/responsive_text_styles.dart';
+import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/theme/responsive_text_styles.dart';
 
 class AppCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-  final Color? backgroundColor;
-  final VoidCallback? onTap;
-  final bool showShadow;
-
   const AppCard({
-    super.key,
     required this.child,
+    super.key,
     this.padding,
     this.margin,
     this.backgroundColor,
     this.onTap,
     this.showShadow = true,
   });
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final Color? backgroundColor;
+  final VoidCallback? onTap;
+  final bool showShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +51,15 @@ class AppCard extends StatelessWidget {
 
 // 带标题的卡片
 class AppCardWithTitle extends StatelessWidget {
+  const AppCardWithTitle({
+    required this.title,
+    required this.child,
+    super.key,
+    this.trailing,
+    this.padding,
+    this.margin,
+    this.backgroundColor,
+  });
   final String title;
   final Widget child;
   final Widget? trailing;
@@ -59,45 +67,42 @@ class AppCardWithTitle extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final Color? backgroundColor;
 
-  const AppCardWithTitle({
-    super.key,
-    required this.title,
-    required this.child,
-    this.trailing,
-    this.padding,
-    this.margin,
-    this.backgroundColor,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      padding: padding,
-      margin: margin,
-      backgroundColor: backgroundColor,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: context.responsiveHeadlineMedium,
-              ),
-              if (trailing != null) trailing!,
-            ],
-          ),
-          SizedBox(height: context.responsiveSpacing16),
-          child,
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppCard(
+        padding: padding,
+        margin: margin,
+        backgroundColor: backgroundColor,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: context.responsiveHeadlineMedium,
+                ),
+                if (trailing != null) trailing!,
+              ],
+            ),
+            SizedBox(height: context.responsiveSpacing16),
+            child,
+          ],
+        ),
+      );
 }
 
 // 统计卡片
 class StatCard extends StatelessWidget {
+  const StatCard({
+    required this.title,
+    required this.value,
+    super.key,
+    this.subtitle,
+    this.valueColor,
+    this.icon,
+    this.onTap,
+  });
   final String title;
   final String value;
   final String? subtitle;
@@ -105,57 +110,48 @@ class StatCard extends StatelessWidget {
   final IconData? icon;
   final VoidCallback? onTap;
 
-  const StatCard({
-    super.key,
-    required this.title,
-    required this.value,
-    this.subtitle,
-    this.valueColor,
-    this.icon,
-    this.onTap,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 20,
-                  color: context.secondaryText,
+  Widget build(BuildContext context) => AppCard(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: context.secondaryText,
+                  ),
+                  SizedBox(width: context.responsiveSpacing8),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    style: context.responsiveBodyMedium,
+                  ),
                 ),
-                SizedBox(width: context.responsiveSpacing8),
               ],
-              Expanded(
-                child: Text(
-                  title,
-                  style: context.responsiveBodyMedium,
-                ),
+            ),
+            SizedBox(height: context.responsiveSpacing8),
+            Text(
+              value,
+              style: context
+                  .statCardAmountStyle(
+                      isPositive: valueColor == context.increaseColor)
+                  .copyWith(
+                    color: valueColor ?? context.primaryText,
+                  ),
+            ),
+            if (subtitle != null) ...[
+              SizedBox(height: context.responsiveSpacing4),
+              Text(
+                subtitle!,
+                style: context.responsiveBodyMedium,
               ),
             ],
-          ),
-          SizedBox(height: context.responsiveSpacing8),
-          Text(
-            value,
-            style: context.statCardAmountStyle(isPositive: valueColor == context.increaseColor).copyWith(
-              color: valueColor ?? context.primaryText,
-            ),
-          ),
-          if (subtitle != null) ...[
-            SizedBox(height: context.responsiveSpacing4),
-            Text(
-              subtitle!,
-              style: context.responsiveBodyMedium,
-            ),
           ],
-        ],
-      ),
-    );
-  }
+        ),
+      );
 }
