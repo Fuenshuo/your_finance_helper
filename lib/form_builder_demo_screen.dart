@@ -16,8 +16,7 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
   bool _isLoading = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Form Builder Demo'),
         backgroundColor: Theme.of(context).primaryColor,
@@ -69,13 +68,13 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
               FormBuilderUtils.buildAmountField(
                 name: 'monthlyIncome',
                 label: '月收入',
-                validator: (value) => FormBuilderUtils.amountValidator(value, min: 0),
+                validator: FormBuilderUtils.amountValidator,
               ),
 
               FormBuilderUtils.buildAmountField(
                 name: 'monthlyExpenses',
                 label: '月支出',
-                validator: (value) => FormBuilderUtils.amountValidator(value, min: 0),
+                validator: FormBuilderUtils.amountValidator,
               ),
 
               FormBuilderUtils.buildDropdown<String>(
@@ -114,7 +113,6 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
                 name: 'autoBackup',
                 title: '自动备份',
                 subtitle: '每天自动备份数据到云端',
-                initialValue: false,
               ),
 
               FormBuilderUtils.buildSlider(
@@ -133,14 +131,12 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
                 onSave: _handleSave,
                 isLoading: _isLoading,
                 saveText: '保存设置',
-                cancelText: '取消',
               ),
             ],
           ),
         ),
       ),
     );
-  }
 
   void _handleCancel() {
     if (_formKey.isValid()) {

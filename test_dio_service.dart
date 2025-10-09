@@ -22,7 +22,6 @@ void main() async {
     // but we can verify the service initializes correctly
     print('✅ Dio HTTP service test completed successfully');
     print('🚀 Ready for future cloud sync implementation');
-
   } catch (e, stackTrace) {
     print('❌ Dio service test failed: $e');
     print('Stack trace: $stackTrace');

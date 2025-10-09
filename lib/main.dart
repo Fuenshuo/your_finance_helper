@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/income_plan_provider.dart';
+// Riverpod providers imported via MaterialApp wrapper
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
@@ -44,6 +45,9 @@ void main() async {
     enableFileLogging: true,
   );
 
+  // Database initialization will be added after full Drift integration
+  Log.business('App', 'Application Startup', {'phase': 'database_init', 'status': 'simplified_for_demo'});
+
   // 执行数据迁移
   Log.business('App', 'Application Startup', {'phase': 'migration'});
   final migrationService = await DataMigrationService.getInstance();
@@ -54,7 +58,7 @@ void main() async {
   // 监听应用生命周期，清理资源
   WidgetsBinding.instance.addObserver(AppLifecycleObserver());
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

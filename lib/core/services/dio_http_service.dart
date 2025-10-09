@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -8,10 +7,9 @@ import 'package:your_finance_flutter/core/utils/logger.dart';
 /// HTTP service using Dio - for future cloud sync capabilities
 /// Provides type-safe HTTP operations with interceptors for logging and error handling
 class DioHttpService {
+  DioHttpService._();
   static DioHttpService? _instance;
   late final Dio _dio;
-
-  DioHttpService._();
 
   static Future<DioHttpService> getInstance() async {
     _instance ??= DioHttpService._();
@@ -29,7 +27,8 @@ class DioHttpService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'YourFinance/${Platform.isIOS ? 'iOS' : Platform.isAndroid ? 'Android' : 'Web'}',
+          'User-Agent':
+              'YourFinance/${Platform.isIOS ? 'iOS' : Platform.isAndroid ? 'Android' : 'Web'}',
         },
       ),
     );
@@ -41,8 +40,11 @@ class DioHttpService {
       _RetryInterceptor(),
     ]);
 
-    Log.business('DioHttpService', 'HTTP Service Initialized',
-        {'baseUrl': _getBaseUrl(), 'platform': Platform.operatingSystem});
+    Log.business(
+      'DioHttpService',
+      'HTTP Service Initialized',
+      {'baseUrl': _getBaseUrl(), 'platform': Platform.operatingSystem},
+    );
   }
 
   String _getBaseUrl() {
@@ -73,7 +75,8 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'GET request failed', {'path': path, 'error': e.toString()});
+      Log.error('DioHttpService', 'GET request failed',
+          {'path': path, 'error': e.toString()});
       rethrow;
     }
   }
@@ -81,7 +84,7 @@ class DioHttpService {
   /// POST request
   Future<Response<T>> post<T>(
     String path, {
-    dynamic data,
+    data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -100,7 +103,8 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'POST request failed', {'path': path, 'error': e.toString()});
+      Log.error('DioHttpService', 'POST request failed',
+          {'path': path, 'error': e.toString()});
       rethrow;
     }
   }
@@ -108,7 +112,7 @@ class DioHttpService {
   /// PUT request
   Future<Response<T>> put<T>(
     String path, {
-    dynamic data,
+    data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -127,7 +131,8 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'PUT request failed', {'path': path, 'error': e.toString()});
+      Log.error('DioHttpService', 'PUT request failed',
+          {'path': path, 'error': e.toString()});
       rethrow;
     }
   }
@@ -135,7 +140,7 @@ class DioHttpService {
   /// DELETE request
   Future<Response<T>> delete<T>(
     String path, {
-    dynamic data,
+    data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
@@ -150,7 +155,8 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'DELETE request failed', {'path': path, 'error': e.toString()});
+      Log.error('DioHttpService', 'DELETE request failed',
+          {'path': path, 'error': e.toString()});
       rethrow;
     }
   }
@@ -158,7 +164,7 @@ class DioHttpService {
   /// PATCH request
   Future<Response<T>> patch<T>(
     String path, {
-    dynamic data,
+    data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -177,7 +183,8 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'PATCH request failed', {'path': path, 'error': e.toString()});
+      Log.error('DioHttpService', 'PATCH request failed',
+          {'path': path, 'error': e.toString()});
       rethrow;
     }
   }
@@ -218,7 +225,8 @@ class DioHttpService {
 
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'File upload failed', {'path': path, 'error': e.toString()});
+      Log.error('DioHttpService', 'File upload failed',
+          {'path': path, 'error': e.toString()});
       rethrow;
     }
   }
@@ -232,7 +240,7 @@ class DioHttpService {
     CancelToken? cancelToken,
     bool deleteOnError = true,
     String lengthHeader = Headers.contentLengthHeader,
-    dynamic data,
+    data,
     Options? options,
   }) async {
     try {
@@ -250,7 +258,8 @@ class DioHttpService {
 
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'File download failed', {'url': url, 'error': e.toString()});
+      Log.error('DioHttpService', 'File download failed',
+          {'url': url, 'error': e.toString()});
       rethrow;
     }
   }
@@ -340,39 +349,31 @@ class _ErrorInterceptor extends Interceptor {
           error: '网络连接超时，请检查网络连接',
           type: err.type,
         );
-        break;
       case DioExceptionType.connectionError:
         err = DioException(
           requestOptions: err.requestOptions,
           error: '网络连接失败，请检查网络设置',
           type: err.type,
         );
-        break;
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode;
-        String message = '请求失败';
+        var message = '请求失败';
 
         switch (statusCode) {
           case 400:
             message = '请求参数错误';
-            break;
           case 401:
             message = '未授权访问';
-            break;
           case 403:
             message = '访问被拒绝';
-            break;
           case 404:
             message = '资源不存在';
-            break;
           case 500:
             message = '服务器内部错误';
-            break;
           case 502:
           case 503:
           case 504:
             message = '服务器暂时不可用';
-            break;
         }
 
         err = DioException(
@@ -381,14 +382,12 @@ class _ErrorInterceptor extends Interceptor {
           error: message,
           type: err.type,
         );
-        break;
       default:
         err = DioException(
           requestOptions: err.requestOptions,
           error: '网络请求失败，请稍后重试',
           type: err.type,
         );
-        break;
     }
 
     super.onError(err, handler);
@@ -401,12 +400,15 @@ class _RetryInterceptor extends Interceptor {
   static const Duration retryDelay = Duration(seconds: 1);
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
     final requestOptions = err.requestOptions;
 
     // Only retry on network errors, not on bad responses
-    if (_shouldRetry(err) && (requestOptions.extra['retryCount'] ?? 0) < maxRetries) {
-      requestOptions.extra['retryCount'] = (requestOptions.extra['retryCount'] ?? 0) + 1;
+    if (_shouldRetry(err) &&
+        (requestOptions.extra['retryCount'] ?? 0) < maxRetries) {
+      requestOptions.extra['retryCount'] =
+          (requestOptions.extra['retryCount'] ?? 0) + 1;
 
       Log.business('HTTP Retry', 'Retrying request', {
         'attempt': requestOptions.extra['retryCount'],
@@ -414,13 +416,15 @@ class _RetryInterceptor extends Interceptor {
       });
 
       await Future.delayed(retryDelay);
-      final retryDio = Dio(BaseOptions(
-        baseUrl: requestOptions.baseUrl,
-        connectTimeout: requestOptions.connectTimeout,
-        receiveTimeout: requestOptions.receiveTimeout,
-        sendTimeout: requestOptions.sendTimeout,
-        headers: requestOptions.headers,
-      ));
+      final retryDio = Dio(
+        BaseOptions(
+          baseUrl: requestOptions.baseUrl,
+          connectTimeout: requestOptions.connectTimeout,
+          receiveTimeout: requestOptions.receiveTimeout,
+          sendTimeout: requestOptions.sendTimeout,
+          headers: requestOptions.headers,
+        ),
+      );
 
       try {
         final response = await retryDio.request(
@@ -438,13 +442,12 @@ class _RetryInterceptor extends Interceptor {
     super.onError(err, handler);
   }
 
-  bool _shouldRetry(DioException err) {
-    return err.type == DioExceptionType.connectionTimeout ||
-           err.type == DioExceptionType.connectionError ||
-           err.type == DioExceptionType.receiveTimeout ||
-           err.type == DioExceptionType.sendTimeout ||
-           (err.type == DioExceptionType.badResponse &&
-            err.response?.statusCode != null &&
-            err.response!.statusCode! >= 500);
-  }
+  bool _shouldRetry(DioException err) =>
+      err.type == DioExceptionType.connectionTimeout ||
+      err.type == DioExceptionType.connectionError ||
+      err.type == DioExceptionType.receiveTimeout ||
+      err.type == DioExceptionType.sendTimeout ||
+      (err.type == DioExceptionType.badResponse &&
+          err.response?.statusCode != null &&
+          err.response!.statusCode! >= 500);
 }

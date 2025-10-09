@@ -1,45 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
-
+import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/add_wallet_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/asset_history_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/asset_management_screen.dart';
+// Family Info Screens
+import 'package:your_finance_flutter/features/family_info/screens/family_info_home_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/salary_income_setup_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/wallet_management_screen.dart';
+import 'package:your_finance_flutter/features/financial_planning/screens/budget_management_screen.dart';
+// Financial Planning Screens
+import 'package:your_finance_flutter/features/financial_planning/screens/financial_planning_home_screen.dart';
+import 'package:your_finance_flutter/features/financial_planning/screens/mortgage_calculator_screen.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
+// Transaction Flow Screens
+import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_flow_home_screen.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_records_screen.dart';
+import 'package:your_finance_flutter/screens/debug_screen.dart';
+import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
 // ============================================================================
 // Screen Imports
 // ============================================================================
 
 // Main Screens
+import 'package:your_finance_flutter/riverpod_asset_demo_screen.dart';
 import 'package:your_finance_flutter/screens/home_screen.dart';
+import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
 import 'package:your_finance_flutter/screens/onboarding_screen.dart';
 import 'package:your_finance_flutter/screens/settings_screen.dart';
-import 'package:your_finance_flutter/screens/debug_screen.dart';
-import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
-
-// Family Info Screens
-import 'package:your_finance_flutter/features/family_info/screens/family_info_home_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/asset_management_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/asset_detail_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/asset_edit_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/salary_income_setup_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/salary_preview_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/wallet_management_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/account_detail_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/add_wallet_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/asset_history_screen.dart';
-
-// Financial Planning Screens
-import 'package:your_finance_flutter/features/financial_planning/screens/financial_planning_home_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/budget_management_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/envelope_budget_detail_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/create_budget_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/mortgage_calculator_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/create_income_plan_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/create_expense_plan_screen.dart';
-
-// Transaction Flow Screens
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_flow_home_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_records_screen.dart';
 
 // ============================================================================
 // Route Constants
@@ -52,6 +40,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String debug = '/debug';
   static const String developer = '/developer';
+  static const String riverpodDemo = '/riverpod-demo';
 
   // Family Info Routes
   static const String familyInfo = '/family-info';
@@ -109,6 +98,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.developer,
       builder: (context, state) => const DeveloperModeScreen(),
+    ),
+
+    GoRoute(
+      path: AppRoutes.riverpodDemo,
+      builder: (context, state) => const RiverpodAssetDemoScreen(),
     ),
 
     // Main Navigation
@@ -264,4 +258,7 @@ extension GoRouterExtensions on BuildContext {
 
   /// Navigate to debug screen
   void goDebug() => go(AppRoutes.debug);
+
+  /// Navigate to Riverpod demo
+  void goRiverpodDemo() => go(AppRoutes.riverpodDemo);
 }
