@@ -784,14 +784,55 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
 
   // 编辑信封
   void _editEnvelope() {
-    // TODO: 实现编辑信封功能
-    // 静默处理，不显示提示框
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('编辑信封'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('信封: ${widget.envelope.name}'),
+            const SizedBox(height: 8),
+            Text(
+                '当前预算: ¥${widget.envelope.allocatedAmount.toStringAsFixed(2)}'),
+            const SizedBox(height: 8),
+            const Text('编辑功能即将上线'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
   }
 
   // 转账
   void _transferMoney() {
-    // TODO: 实现转账功能
-    // 静默处理，不显示提示框
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('信封转账'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('从: ${widget.envelope.name}'),
+            const SizedBox(height: 8),
+            const Text('转账功能即将上线'),
+            const SizedBox(height: 8),
+            const Text('可以在不同信封之间转移资金'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
   }
 
   // 查看交易详情

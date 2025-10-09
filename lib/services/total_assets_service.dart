@@ -1,10 +1,9 @@
-import 'package:your_finance_flutter/models/account.dart';
-import 'package:your_finance_flutter/models/budget.dart';
+import 'package:your_finance_flutter/core/models/account.dart';
+import 'package:your_finance_flutter/core/models/budget.dart';
 
 /// 总资产计算服务
 /// 实现"总资产 = 所有账户余额 + 所有信封余额"的核心逻辑
 class TotalAssetsService {
-  
   /// 计算总资产
   /// 总资产 = 账户资产 + 信封可用余额
   static double calculateTotalAssets({
@@ -13,38 +12,47 @@ class TotalAssetsService {
   }) {
     // 1. 计算账户资产
     final accountAssets = _calculateAccountAssets(accounts);
-    
+
     // 2. 计算信封可用余额
     final envelopeAssets = _calculateEnvelopeAssets(envelopeBudgets);
-    
+
     return accountAssets + envelopeAssets;
   }
 
   /// 计算账户资产
   /// 包括现金、银行、投资等资产账户，减去负债账户
-  static double _calculateAccountAssets(List<Account> accounts) {
+  static double _calculateAccountAssets(
+    List<Account> accounts,
+    List<Transaction> transactions,
+    AccountProvider accountProvider,
+  ) {
     var totalAssets = 0.0;
-    
+
     for (final account in accounts) {
       if (account.status == AccountStatus.active) {
+        final realBalance =
+            accountProvider.getAccountBalance(account.id, transactions);
         if (account.type.isAsset) {
           // 资产账户：现金、银行、投资等
-          totalAssets += account.balance;
+          totalAssets += realBalance;
         } else if (account.type.isLiability) {
           // 负债账户：信用卡、贷款等（显示为负数）
-          totalAssets -= account.balance;
+          totalAssets -= realBalance;
         }
       }
     }
-    
+
     return totalAssets;
   }
 
   /// 计算信封资产
   /// 信封中的可用余额也是总资产的一部分
-  static double _calculateEnvelopeAssets(List<EnvelopeBudget> envelopeBudgets) => envelopeBudgets
-        .where((budget) => budget.status == BudgetStatus.active)
-        .fold(0.0, (sum, budget) => sum + budget.availableAmount);
+  static double _calculateEnvelopeAssets(
+    List<EnvelopeBudget> envelopeBudgets,
+  ) =>
+      envelopeBudgets
+          .where((budget) => budget.status == BudgetStatus.active)
+          .fold(0.0, (sum, budget) => sum + budget.availableAmount);
 
   /// 计算净资产
   /// 净资产 = 总资产 - 总负债
@@ -56,19 +64,19 @@ class TotalAssetsService {
       accounts: accounts,
       envelopeBudgets: envelopeBudgets,
     );
-    
+
     final totalLiabilities = _calculateTotalLiabilities(accounts);
-    
+
     return totalAssets - totalLiabilities;
   }
 
   /// 计算总负债
   static double _calculateTotalLiabilities(List<Account> accounts) => accounts
-        .where((account) => 
-          account.status == AccountStatus.active && 
-          account.type.isLiability,
-        )
-        .fold(0.0, (sum, account) => sum + account.balance);
+      .where(
+        (account) =>
+            account.status == AccountStatus.active && account.type.isLiability,
+      )
+      .fold(0.0, (sum, account) => sum + account.balance);
 
   /// 计算负债率
   static double calculateDebtRatio({
@@ -79,9 +87,9 @@ class TotalAssetsService {
       accounts: accounts,
       envelopeBudgets: envelopeBudgets,
     );
-    
+
     if (totalAssets == 0) return 0.0;
-    
+
     final totalLiabilities = _calculateTotalLiabilities(accounts);
     return (totalLiabilities / totalAssets) * 100;
   }
@@ -92,7 +100,7 @@ class TotalAssetsService {
     required List<EnvelopeBudget> envelopeBudgets,
   }) {
     final distribution = <String, double>{};
-    
+
     // 账户资产分布
     for (final account in accounts) {
       if (account.status == AccountStatus.active) {
@@ -104,7 +112,7 @@ class TotalAssetsService {
         }
       }
     }
-    
+
     // 信封资产分布
     for (final budget in envelopeBudgets) {
       if (budget.status == BudgetStatus.active) {
@@ -112,7 +120,7 @@ class TotalAssetsService {
         distribution[key] = (distribution[key] ?? 0.0) + budget.availableAmount;
       }
     }
-    
+
     return distribution;
   }
 
@@ -121,7 +129,7 @@ class TotalAssetsService {
     required List<EnvelopeBudget> envelopeBudgets,
   }) {
     final usage = <String, Map<String, double>>{};
-    
+
     for (final budget in envelopeBudgets) {
       if (budget.status == BudgetStatus.active) {
         usage[budget.name] = {
@@ -132,7 +140,7 @@ class TotalAssetsService {
         };
       }
     }
-    
+
     return usage;
   }
 
@@ -143,18 +151,19 @@ class TotalAssetsService {
     if (envelopeBudgets.isEmpty) {
       return BudgetHealthStatus.noBudget;
     }
-    
-    final activeBudgets = envelopeBudgets
-        .where((b) => b.status == BudgetStatus.active)
-        .toList();
-    
+
+    final activeBudgets =
+        envelopeBudgets.where((b) => b.status == BudgetStatus.active).toList();
+
     if (activeBudgets.isEmpty) {
       return BudgetHealthStatus.noActiveBudget;
     }
-    
+
     final overBudgetCount = activeBudgets.where((b) => b.isOverBudget).length;
-    final warningCount = activeBudgets.where((b) => b.isWarningThresholdReached && !b.isOverBudget).length;
-    
+    final warningCount = activeBudgets
+        .where((b) => b.isWarningThresholdReached && !b.isOverBudget)
+        .length;
+
     if (overBudgetCount > 0) {
       return BudgetHealthStatus.overBudget;
     } else if (warningCount > 0) {
@@ -169,8 +178,9 @@ class TotalAssetsService {
     required List<EnvelopeBudget> envelopeBudgets,
   }) {
     final suggestions = <String>[];
-    final healthStatus = getBudgetHealthStatus(envelopeBudgets: envelopeBudgets);
-    
+    final healthStatus =
+        getBudgetHealthStatus(envelopeBudgets: envelopeBudgets);
+
     switch (healthStatus) {
       case BudgetHealthStatus.overBudget:
         final overBudgetEnvelopes = envelopeBudgets
@@ -179,7 +189,7 @@ class TotalAssetsService {
             .toList();
         suggestions.add('以下预算已超支：${overBudgetEnvelopes.join('、')}');
         suggestions.add('建议调整预算分配或减少相关支出');
-        
+
       case BudgetHealthStatus.warning:
         final warningEnvelopes = envelopeBudgets
             .where((b) => b.isWarningThresholdReached && !b.isOverBudget)
@@ -187,17 +197,17 @@ class TotalAssetsService {
             .toList();
         suggestions.add('以下预算接近上限：${warningEnvelopes.join('、')}');
         suggestions.add('请注意控制相关支出');
-        
+
       case BudgetHealthStatus.healthy:
         suggestions.add('预算使用情况良好');
-        
+
       case BudgetHealthStatus.noBudget:
         suggestions.add('建议创建预算来更好地管理支出');
-        
+
       case BudgetHealthStatus.noActiveBudget:
         suggestions.add('当前没有活跃的预算，建议创建新的预算周期');
     }
-    
+
     return suggestions;
   }
 }

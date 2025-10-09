@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/theme/responsive_text_styles.dart';
 
 class AppCard extends StatelessWidget {
@@ -139,7 +139,8 @@ class StatCard extends StatelessWidget {
               value,
               style: context
                   .statCardAmountStyle(
-                      isPositive: valueColor == context.increaseColor)
+                    isPositive: valueColor == context.increaseColor,
+                  )
                   .copyWith(
                     color: valueColor ?? context.primaryText,
                   ),

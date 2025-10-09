@@ -197,7 +197,7 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
                           labelText: '收入频率',
                           border: OutlineInputBorder(),
                         ),
-                        value: _frequency,
+                        initialValue: _frequency,
                         items: _frequencies
                             .map(
                               (frequency) => DropdownMenuItem(
@@ -222,7 +222,8 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
                           labelText: '目标钱包',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedWallet.isEmpty ? null : _selectedWallet,
+                        initialValue:
+                            _selectedWallet.isEmpty ? null : _selectedWallet,
                         hint: const Text('选择收入存入的钱包'),
                         items: _wallets
                             .map(
@@ -507,13 +508,65 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
   /// 选择工资收入
   Future<void> _selectSalaryIncome(BuildContext context) async {
     final budgetProvider = context.read<BudgetProvider>();
+    print('📝 获取预算提供者中的工资收入列表');
+    print(
+      '📝 BudgetProvider 初始化状态: ${budgetProvider.isInitialized}, 加载状态: ${budgetProvider.isLoading}',
+    );
+
+    // 等待BudgetProvider初始化完成
+    if (!budgetProvider.isInitialized && budgetProvider.isLoading) {
+      print('⏳ BudgetProvider 正在初始化，等待...');
+      // 等待一小段时间让初始化完成
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
     final salaryIncomes = budgetProvider.salaryIncomes;
+    print('📝 工资收入数量: ${salaryIncomes.length}');
 
     if (salaryIncomes.isEmpty) {
+      print('❌ 没有找到已设置的工资收入');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('没有找到已设置的工资收入，请先设置工资')),
       );
       return;
+    }
+
+    print('📝 显示工资收入选择对话框');
+    for (var i = 0; i < salaryIncomes.length; i++) {
+      final salary = salaryIncomes[i];
+      print(
+        '  工资收入${i + 1}: ${salary.name} - 月薪: ¥${salary.netIncome.toStringAsFixed(0)}',
+      );
+
+      // 详细的扣除项信息
+      print('    📊 基本工资: ¥${salary.basicSalary}');
+      print('    💰 个税: ¥${salary.personalIncomeTax}');
+      print(
+          '    🏥 五险一金: ¥${salary.socialInsurance + salary.housingFund} (社保: ¥${salary.socialInsurance}, 公积金: ¥${salary.housingFund})');
+      print('    📋 专项附加扣除: ¥${salary.specialDeductionMonthly}');
+      print('    📝 其他扣除: ¥${salary.otherDeductions}');
+      print('    🧾 其他税收扣除: ¥${salary.otherTaxDeductions}');
+
+      // 手动计算验证
+      final totalIncome = salary.basicSalary +
+          salary.housingAllowance +
+          salary.mealAllowance +
+          salary.transportationAllowance +
+          salary.otherAllowance;
+      final totalDeductions = salary.personalIncomeTax +
+          salary.socialInsurance +
+          salary.housingFund +
+          salary.specialDeductionMonthly +
+          salary.otherDeductions +
+          salary.otherTaxDeductions;
+      final calculatedNetIncome = totalIncome - totalDeductions;
+
+      print('    🔍 总收入: ¥$totalIncome');
+      print('    🔍 总扣除: ¥$totalDeductions');
+      print('    ✅ 手动计算净收入: ¥$calculatedNetIncome');
+      print('    📊 存储的净收入: ¥${salary.netIncome}');
+      print(
+          '    ⚠️ 差异: ¥${(calculatedNetIncome - salary.netIncome).toStringAsFixed(2)}');
     }
 
     final selectedSalary = await showDialog<SalaryIncome>(
@@ -552,6 +605,7 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
     );
 
     if (selectedSalary != null) {
+      print('✅ 选择了工资收入: ${selectedSalary.name}');
       setState(() {
         _selectedTemplate = 'salary';
         _selectedSalary = selectedSalary;
@@ -559,6 +613,8 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
         _amount = selectedSalary.netIncome;
         _frequency = 'monthly';
       });
+    } else {
+      print('❌ 未选择任何工资收入');
     }
   }
 

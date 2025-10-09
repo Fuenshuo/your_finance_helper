@@ -11,6 +11,7 @@ class BudgetProvider with ChangeNotifier {
   List<SalaryIncome> _salaryIncomes = []; // 新增：工资收入列表
   List<MonthlyWallet> _monthlyWallets = []; // 新增：每月工资钱包列表
   bool _isLoading = false;
+  bool _isInitialized = false; // 新增：初始化状态标记
   String? _error;
   late final StorageService _storageService;
 
@@ -25,15 +26,33 @@ class BudgetProvider with ChangeNotifier {
       _zeroBasedBudgets.where((b) => b.status == BudgetStatus.active).toList();
   List<SalaryIncome> get activeSalaryIncomes => _salaryIncomes; // 新增：活跃工资收入
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized; // 新增：初始化状态getter
   String? get error => _error;
 
-  // 初始化
+  // 初始化预算数据
   Future<void> initialize() async {
-    print('🔄 BudgetProvider 初始化开始');
-    _storageService = await StorageService.getInstance();
-    print('✅ StorageService 初始化完成');
-    await _loadBudgets();
-    print('✅ BudgetProvider 初始化完成，工资收入数量: ${_salaryIncomes.length}');
+    print('🔄 BudgetProvider 开始初始化');
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _storageService = await StorageService.getInstance();
+      print('✅ StorageService 初始化完成');
+
+      // 加载所有数据
+      await _loadBudgets();
+
+      _isInitialized = true;
+      _isLoading = false;
+      _error = null;
+      print('✅ BudgetProvider 初始化完成，工资收入数量: ${_salaryIncomes.length}');
+      notifyListeners();
+    } catch (e) {
+      print('❌ BudgetProvider 初始化失败: $e');
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 
   // 加载预算数据
@@ -52,6 +71,19 @@ class BudgetProvider with ChangeNotifier {
 
       _salaryIncomes = await _storageService.loadSalaryIncomes(); // 新增：加载工资收入
       print('✅ 工资收入加载完成: ${_salaryIncomes.length} 个');
+      if (_salaryIncomes.isNotEmpty) {
+        print('💼 工资收入详情:');
+        for (var i = 0; i < _salaryIncomes.length; i++) {
+          final income = _salaryIncomes[i];
+          print(
+              '  工资收入${i + 1}: ${income.name} - 基本工资=${income.basicSalary}, 奖金数量=${income.bonuses.length}');
+          for (var j = 0; j < income.bonuses.length; j++) {
+            final bonus = income.bonuses[j];
+            print(
+                '    奖金${j + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
+          }
+        }
+      }
 
       _monthlyWallets =
           await _storageService.loadMonthlyWallets(); // 新增：加载每月工资钱包
@@ -166,10 +198,15 @@ class BudgetProvider with ChangeNotifier {
   // 添加工资收入
   Future<void> addSalaryIncome(SalaryIncome income) async {
     try {
+      print('📝 添加工资收入: ${income.name}, ID: ${income.id}');
       _salaryIncomes.add(income);
+      print('📝 工资收入列表长度: ${_salaryIncomes.length}');
       await _storageService.saveSalaryIncomes(_salaryIncomes);
+      print('✅ 工资收入保存成功');
       notifyListeners();
+      print('📢 通知监听器');
     } catch (e) {
+      print('❌ 添加工资收入失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -177,16 +214,69 @@ class BudgetProvider with ChangeNotifier {
 
   // 更新工资收入
   Future<void> updateSalaryIncome(SalaryIncome updatedIncome) async {
+    print('📝 更新工资收入: ${updatedIncome.name}');
+    print('📝 查找ID为: ${updatedIncome.id} 的工资收入');
+    print('📝 当前工资收入列表中的ID:');
+    for (var i = 0; i < _salaryIncomes.length; i++) {
+      print('  ID ${i + 1}: ${_salaryIncomes[i].id}');
+    }
+    if (_salaryIncomes.isEmpty) {
+      print('⚠️ 警告: 工资收入列表为空，可能数据尚未加载完成');
+    }
+    print('📝 更新的奖金数量: ${updatedIncome.bonuses.length}');
+    for (var i = 0; i < updatedIncome.bonuses.length; i++) {
+      final bonus = updatedIncome.bonuses[i];
+      print('  奖金${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
+    }
+
+    // 如果数据正在加载，等待加载完成
+    if (_isLoading) {
+      print('⏳ 数据正在加载中，等待加载完成...');
+      // 等待一段时间让数据加载完成
+      await Future.delayed(const Duration(milliseconds: 100));
+      // 如果还是在加载，再等一会儿
+      if (_isLoading) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
+
     try {
       final index = _salaryIncomes.indexWhere((i) => i.id == updatedIncome.id);
+      print('📝 找到索引: $index');
       if (index != -1) {
         _salaryIncomes[index] =
             updatedIncome.copyWith(updateDate: DateTime.now());
+        print('📝 保存工资收入到存储...');
         await _storageService.saveSalaryIncomes(_salaryIncomes);
+        print('✅ 工资收入保存成功');
+        print('📢 通知监听器');
         notifyListeners();
+      } else {
+        print('❌ 未找到要更新的工资收入');
+        // 如果没找到，可能是数据还没加载完成，尝试重新加载
+        if (_salaryIncomes.isEmpty && !_isLoading) {
+          print('🔄 尝试重新加载工资收入数据...');
+          await _loadBudgets();
+          // 再次尝试查找
+          final newIndex =
+              _salaryIncomes.indexWhere((i) => i.id == updatedIncome.id);
+          print('📝 重新加载后找到索引: $newIndex');
+          if (newIndex != -1) {
+            _salaryIncomes[newIndex] =
+                updatedIncome.copyWith(updateDate: DateTime.now());
+            print('📝 保存工资收入到存储...');
+            await _storageService.saveSalaryIncomes(_salaryIncomes);
+            print('✅ 工资收入保存成功');
+            print('📢 通知监听器');
+            notifyListeners();
+          } else {
+            print('❌ 重新加载后仍然未找到要更新的工资收入');
+          }
+        }
       }
     } catch (e) {
       _error = e.toString();
+      print('❌ 工资收入更新失败: $e');
       notifyListeners();
     }
   }
@@ -213,12 +303,14 @@ class BudgetProvider with ChangeNotifier {
     double transportationAllowance = 0.0,
     double otherAllowance = 0.0,
     Map<DateTime, double>? salaryHistory,
+    Map<int, AllowanceRecord>? monthlyAllowances, // 月度津贴记录
     List<BonusItem> bonuses = const [],
     double personalIncomeTax = 0.0,
     double socialInsurance = 0.0,
     double housingFund = 0.0,
     double otherDeductions = 0.0,
     double specialDeductionMonthly = 0.0,
+    double otherTaxDeductions = 0.0, // 其他税收扣除
     String? description,
   }) async {
     final income = SalaryIncome(
@@ -230,12 +322,14 @@ class BudgetProvider with ChangeNotifier {
       mealAllowance: mealAllowance,
       transportationAllowance: transportationAllowance,
       otherAllowance: otherAllowance,
+      monthlyAllowances: monthlyAllowances, // 月度津贴记录
       bonuses: bonuses,
       personalIncomeTax: personalIncomeTax,
       socialInsurance: socialInsurance,
       housingFund: housingFund,
       otherDeductions: otherDeductions,
       specialDeductionMonthly: specialDeductionMonthly,
+      otherTaxDeductions: otherTaxDeductions, // 其他税收扣除
       salaryDay: salaryDay,
     );
 
@@ -373,7 +467,9 @@ class BudgetProvider with ChangeNotifier {
 
   // 生成指定年份的所有工资钱包
   Future<void> generateYearlyWallets(
-      SalaryIncome salaryIncome, int year) async {
+    SalaryIncome salaryIncome,
+    int year,
+  ) async {
     try {
       final wallets = <MonthlyWallet>[];
       final now = DateTime.now();

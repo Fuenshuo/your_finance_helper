@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/utils/notification_manager.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/features/family_info/screens/account_detail_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/add_wallet_screen.dart';
 
 /// 钱包管理屏幕
@@ -36,8 +37,9 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
             ),
           ],
         ),
-        body: Consumer<AccountProvider>(
-          builder: (context, accountProvider, child) => RefreshIndicator(
+        body: Consumer2<AccountProvider, TransactionProvider>(
+          builder: (context, accountProvider, transactionProvider, child) =>
+              RefreshIndicator(
             onRefresh: () => accountProvider.refresh(),
             child: SingleChildScrollView(
               padding: EdgeInsets.all(context.responsiveSpacing16),
@@ -86,7 +88,9 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                               child: _buildStatItem(
                                 context,
                                 label: '总资产',
-                                amount: accountProvider.calculateTotalAssets(),
+                                amount: accountProvider.calculateTotalAssets(
+                                  transactionProvider.transactions,
+                                ),
                                 color: const Color(0xFF4CAF50),
                               ),
                             ),
@@ -96,7 +100,9 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                                 context,
                                 label: '总负债',
                                 amount:
-                                    accountProvider.calculateTotalLiabilities(),
+                                    accountProvider.calculateTotalLiabilities(
+                                  transactionProvider.transactions,
+                                ),
                                 color: const Color(0xFFF44336),
                               ),
                             ),
@@ -121,7 +127,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                               SizedBox(width: context.spacing8),
                               Expanded(
                                 child: Text(
-                                  '净资产：¥${accountProvider.calculateNetWorth().toStringAsFixed(2)}',
+                                  '净资产：¥${accountProvider.calculateNetWorth(transactionProvider.transactions).toStringAsFixed(2)}',
                                   style: context.textTheme.bodyMedium?.copyWith(
                                     color: const Color(0xFF2196F3),
                                     fontWeight: FontWeight.w500,
@@ -141,7 +147,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                   if (accountProvider.accounts.isEmpty)
                     _buildEmptyState(context)
                   else
-                    _buildAccountList(context, accountProvider),
+                    _buildAccountList(
+                        context, accountProvider, transactionProvider),
                 ],
               ),
             ),
@@ -223,6 +230,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   Widget _buildAccountList(
     BuildContext context,
     AccountProvider accountProvider,
+    TransactionProvider transactionProvider,
   ) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,6 +250,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
               title: '资产账户',
               accounts: accountProvider.assetAccounts,
               accountProvider: accountProvider,
+              transactionProvider: transactionProvider,
             ),
             SizedBox(height: context.spacing16),
           ],
@@ -253,6 +262,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
               title: '负债账户',
               accounts: accountProvider.liabilityAccounts,
               accountProvider: accountProvider,
+              transactionProvider: transactionProvider,
             ),
           ],
         ],
@@ -263,6 +273,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     required String title,
     required List<Account> accounts,
     required AccountProvider accountProvider,
+    required TransactionProvider transactionProvider,
   }) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +289,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
           ...accounts.map(
             (account) => AppAnimations.animatedListItem(
               index: accounts.indexOf(account),
-              child: _buildAccountCard(context, account, accountProvider),
+              child: _buildAccountCard(
+                  context, account, accountProvider, transactionProvider),
             ),
           ),
         ],
@@ -288,6 +300,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
     BuildContext context,
     Account account,
     AccountProvider accountProvider,
+    TransactionProvider transactionProvider,
   ) =>
       AppCard(
         margin: EdgeInsets.only(bottom: context.spacing12),
@@ -372,23 +385,43 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    '¥${account.displayBalance.toStringAsFixed(2)}',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: account.type.isLiability
-                          ? context.decreaseColor
-                          : context.increaseColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final realBalance = accountProvider.getAccountBalance(
+                        account.id,
+                        transactionProvider.transactions,
+                      );
+                      final displayBalance =
+                          account.type.isLiability ? -realBalance : realBalance;
+                      return Text(
+                        '¥${displayBalance.toStringAsFixed(2)}',
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: account.type.isLiability
+                              ? context.decreaseColor
+                              : context.increaseColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                   if (account.type == AccountType.creditCard &&
                       account.creditLimit != null) ...[
                     SizedBox(height: context.spacing4),
-                    Text(
-                      '可用 ¥${account.availableBalance.toStringAsFixed(2)}',
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: context.secondaryText,
-                      ),
+                    Builder(
+                      builder: (context) {
+                        final realBalance = accountProvider.getAccountBalance(
+                          account.id,
+                          transactionProvider.transactions,
+                        );
+                        final availableBalance =
+                            account.creditLimit! - realBalance;
+                        return Text(
+                          '可用 ¥${availableBalance.toStringAsFixed(2)}',
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: context.secondaryText,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ],
@@ -445,11 +478,10 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
   }
 
   void _showAccountDetail(BuildContext context, Account account) {
-    // TODO: 实现账户详情页面
-    NotificationManager().showDevelopmentHint(
-      context,
-      '账户详情',
-      additionalInfo: '账户详情和编辑功能即将上线',
+    Navigator.of(context).push(
+      AppAnimations.createRoute(
+        AccountDetailScreen(account: account),
+      ),
     );
   }
 }

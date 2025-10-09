@@ -92,6 +92,7 @@ class Account extends Equatable {
     this.description,
     this.status = AccountStatus.active,
     this.balance = 0.0,
+    this.initialBalance = 0.0,
     this.currency = 'CNY',
     this.bankName,
     this.accountNumber,
@@ -139,6 +140,7 @@ class Account extends Equatable {
               throw ArgumentError('Unknown AccountStatus: ${json['status']}'),
         ),
         balance: json['balance'] as double,
+        initialBalance: json['initialBalance'] as double? ?? 0.0,
         currency: json['currency'] as String? ?? 'CNY',
         bankName: json['bankName'] as String?,
         accountNumber: json['accountNumber'] as String?,
@@ -191,6 +193,7 @@ class Account extends Equatable {
   final AccountType type;
   final AccountStatus status;
   final double balance;
+  final double initialBalance; // 账户初始余额
   final String currency; // 币种代码，如 'CNY', 'USD'
   final String? bankName; // 银行名称
   final String? accountNumber; // 账户号码（脱敏显示）
@@ -229,6 +232,7 @@ class Account extends Equatable {
     AccountType? type,
     AccountStatus? status,
     double? balance,
+    double? initialBalance,
     String? currency,
     String? bankName,
     String? accountNumber,
@@ -264,6 +268,7 @@ class Account extends Equatable {
         type: type ?? this.type,
         status: status ?? this.status,
         balance: balance ?? this.balance,
+        initialBalance: initialBalance ?? this.initialBalance,
         currency: currency ?? this.currency,
         bankName: bankName ?? this.bankName,
         accountNumber: accountNumber ?? this.accountNumber,
@@ -394,6 +399,7 @@ class Account extends Equatable {
         'type': type.name,
         'status': status.name,
         'balance': balance,
+        'initialBalance': initialBalance,
         'currency': currency,
         'bankName': bankName,
         'accountNumber': accountNumber,

@@ -273,17 +273,28 @@ class Transaction extends Equatable {
       }
     }
 
+    // 先解析category
+    final TransactionCategory category = TransactionCategory.values.firstWhere(
+      (e) => e.name == json['category'],
+      orElse: () => throw ArgumentError(
+          'Unknown TransactionCategory: ${json['category']}'),
+    );
+
+    // 如果legacyType为null，尝试根据category推断
+    TransactionType? finalType = legacyType;
+    if (finalType == null && category.isIncome) {
+      finalType = TransactionType.income;
+    } else if (finalType == null && !category.isIncome) {
+      finalType = TransactionType.expense;
+    }
+
     return Transaction(
       id: json['id'] as String,
       description: json['description'] as String,
       amount: (json['amount'] as num).toDouble(),
       flow: flow,
-      type: legacyType,
-      category: TransactionCategory.values.firstWhere(
-        (e) => e.name == json['category'],
-        orElse: () => throw ArgumentError(
-            'Unknown TransactionCategory: ${json['category']}'),
-      ),
+      type: finalType,
+      category: category,
       subCategory: json['subCategory'] as String?,
       // 新的钱包ID字段
       fromWalletId: json['fromWalletId'] as String?,

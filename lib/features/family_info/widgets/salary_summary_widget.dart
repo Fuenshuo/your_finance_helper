@@ -1,11 +1,378 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
+import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/services/logging_service.dart';
 import 'package:your_finance_flutter/core/services/personal_income_tax_service.dart';
 import 'package:your_finance_flutter/core/services/salary_calculation_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/expandable_calculation_item.dart';
+import 'dart:convert';
+
+// 个税计算详情组件
+class TaxCalculationDetailItem extends StatefulWidget {
+  const TaxCalculationDetailItem({
+    required this.monthlyIncome,
+    required this.monthlyDeductions,
+    required this.specialDeductionMonthly,
+    required this.otherTaxDeductions, // 其他税收扣除
+    required this.monthlyTax,
+    required this.month,
+    required this.cumulativeTaxableIncome, // 累计应纳税所得额
+    required this.cumulativeTax, // 累计已预扣税款
+    this.yearEndBonusAmount = 0.0, // 年终奖金额
+    this.yearEndBonusTax = 0.0, // 年终奖税额
+    super.key,
+  });
+
+  final double monthlyIncome;
+  final double monthlyDeductions;
+  final double specialDeductionMonthly;
+  final double otherTaxDeductions; // 其他税收扣除
+  final double monthlyTax;
+  final String month;
+  final double cumulativeTaxableIncome; // 累计应纳税所得额
+  final double cumulativeTax; // 累计已预扣税款
+  final double yearEndBonusAmount; // 年终奖金额
+  final double yearEndBonusTax; // 年终奖税额
+
+  @override
+  State<TaxCalculationDetailItem> createState() =>
+      _TaxCalculationDetailItemState();
+}
+
+class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // 计算月收入中除年终奖外的部分
+    final monthlyIncomeWithoutBonus = widget.monthlyIncome - widget.yearEndBonusAmount;
+    final monthlyTaxableIncome =
+        monthlyIncomeWithoutBonus - widget.monthlyDeductions - 5000 - widget.otherTaxDeductions;
+    // 使用累计应纳税所得额确定税率阶梯，符合年度累积预扣法
+    final taxBracket =
+        PersonalIncomeTaxService.getApplicableTaxBracket(widget.cumulativeTaxableIncome);
+    final taxRate = taxBracket.rate;
+    final quickDeduction = taxBracket.deduction;
+    final annualTax = widget.cumulativeTaxableIncome * taxRate - quickDeduction;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: context.spacing8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 月份标题栏
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Container(
+              padding: EdgeInsets.all(context.spacing12),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.03),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(6),
+                  topRight: Radius.circular(6),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${widget.month} 个税计算详情',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        '¥${widget.monthlyTax.toStringAsFixed(0)}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red.shade600,
+                            ),
+                      ),
+                      SizedBox(width: context.spacing4),
+                      Icon(
+                        _isExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 展开的计算详情
+          if (_isExpanded) ...[
+            Padding(
+              padding: EdgeInsets.all(context.spacing12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 基本信息
+                  _buildTaxCalculationStep(
+                    '1. 月收入',
+                    '¥${widget.monthlyIncome.toStringAsFixed(0)}',
+                    Colors.blue,
+                    '当月总收入（含年终奖）',
+                  ),
+                  if (widget.yearEndBonusAmount > 0) ...[
+                    _buildTaxCalculationStep(
+                      '   其中年终奖',
+                      '¥${widget.yearEndBonusAmount.toStringAsFixed(0)}',
+                      Colors.purple,
+                      '年终奖单独计税',
+                    ),
+                  ],
+                  _buildTaxCalculationStep(
+                    '2. 减除费用',
+                    '¥5,000',
+                    Colors.orange,
+                    '基础减除费用',
+                  ),
+                  _buildTaxCalculationStep(
+                    '3. 五险一金',
+                    '-¥${widget.monthlyDeductions.toStringAsFixed(0)}',
+                    Colors.red,
+                    '社保、公积金等',
+                  ),
+                  _buildTaxCalculationStep(
+                    '4. 专项附加扣除',
+                    '-¥${widget.specialDeductionMonthly.toStringAsFixed(0)}',
+                    Colors.purple,
+                    '子女教育、继续教育等',
+                  ),
+                  if (widget.otherTaxDeductions > 0) ...[
+                    _buildTaxCalculationStep(
+                      '5. 其他税收扣除',
+                      '-¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+                      Colors.brown,
+                      '其他可扣除项目',
+                    ),
+                  ],
+                  const Divider(height: 20, color: Colors.grey),
+
+                  // 当月应纳税所得额（不包括年终奖）
+                  _buildTaxCalculationStep(
+                    '6. 当月应纳税所得额',
+                    '¥${monthlyTaxableIncome.toStringAsFixed(0)}',
+                    monthlyTaxableIncome > 0 ? Colors.green : Colors.grey,
+                    '当月应纳税所得额 = 月收入(不含年终奖) - 基础减除 - 五险一金 - 专项扣除 - 其他税收扣除',
+                  ),
+                  
+                  const Divider(height: 20, color: Colors.grey),
+
+                  // 累计计算
+                  _buildTaxCalculationStep(
+                    '7. 累计应纳税所得额',
+                    '¥${widget.cumulativeTaxableIncome.toStringAsFixed(0)}',
+                    widget.cumulativeTaxableIncome > 0 ? Colors.blue : Colors.grey,
+                    '累计应纳税所得额 = 之前累计 + 当月应纳税所得额（不含年终奖）',
+                  ),
+                  
+                  const Divider(height: 20, color: Colors.grey),
+
+                  // 税率和速算扣除数（基于累计应纳税所得额）
+                  _buildTaxCalculationStep(
+                    '8. 适用税率',
+                    '${(taxRate * 100).toStringAsFixed(0)}%',
+                    Colors.blue.shade700,
+                    '根据累计应纳税所得额确定税率（年度累积预扣法）',
+                  ),
+                  _buildTaxCalculationStep(
+                    '9. 速算扣除数',
+                    '¥${quickDeduction.toStringAsFixed(0)}',
+                    Colors.indigo,
+                    '对应税率的速算扣除数',
+                  ),
+
+                  const Divider(height: 20, color: Colors.grey),
+
+                  // 最终税额计算
+                  Container(
+                    padding: EdgeInsets.all(context.spacing12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.red.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '10. 最终税额计算',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red.shade700,
+                                  ),
+                        ),
+                        SizedBox(height: context.spacing4),
+                        Text(
+                          '累计应纳税额 = 累计应纳税所得额 × 税率 - 速算扣除数',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                    color: Colors.red.shade600,
+                                  ),
+                        ),
+                        Text(
+                          '累计应纳税额 = ¥${widget.cumulativeTaxableIncome.toStringAsFixed(0)} × ${(taxRate * 100).toStringAsFixed(0)}% - ¥${quickDeduction.toStringAsFixed(0)} = ¥${annualTax.toStringAsFixed(0)}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                    color: Colors.red.shade700,
+                                    fontSize: 11,
+                                  ),
+                        ),
+                        SizedBox(height: context.spacing8),
+                        Text(
+                          '当月预扣税额 = 累计应纳税额 - 累计已预扣税额',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                    color: Colors.red.shade600,
+                                  ),
+                        ),
+                        Text(
+                          '当月预扣税额 = ¥${annualTax.toStringAsFixed(0)} - ¥${widget.cumulativeTax.toStringAsFixed(0)} = ¥${(widget.monthlyTax - widget.yearEndBonusTax).toStringAsFixed(0)}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                    color: Colors.red.shade700,
+                                    fontSize: 11,
+                                  ),
+                        ),
+                        if (widget.yearEndBonusAmount > 0) ...[
+                          SizedBox(height: context.spacing8),
+                          Text(
+                            '年终奖税额（单独计税）',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purple.shade700,
+                                    ),
+                          ),
+                          Text(
+                            '年终奖税额 = 年终奖 ÷ 12后适用税率 × 12 - 速算扣除数',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontFamily: 'monospace',
+                                      color: Colors.purple.shade600,
+                                    ),
+                          ),
+                          Text(
+                            '年终奖税额 = ¥${widget.yearEndBonusTax.toStringAsFixed(0)}',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontFamily: 'monospace',
+                                      color: Colors.purple.shade700,
+                                      fontSize: 11,
+                                    ),
+                          ),
+                        ],
+                        SizedBox(height: context.spacing8),
+                        Text(
+                          '月总税额 = 当月预扣税额 + 年终奖税额',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red.shade700,
+                                  ),
+                        ),
+                        Text(
+                          '月总税额 = ¥${(widget.monthlyTax - widget.yearEndBonusTax).toStringAsFixed(0)} + ¥${widget.yearEndBonusTax.toStringAsFixed(0)} = ¥${widget.monthlyTax.toStringAsFixed(0)}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                    color: Colors.red.shade700,
+                                    fontSize: 11,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTaxCalculationStep(
+    String step,
+    String amount,
+    Color color,
+    String description,
+  ) =>
+      Container(
+        margin: EdgeInsets.only(bottom: context.spacing8),
+        padding: EdgeInsets.all(context.spacing8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Text(
+                step,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: color,
+                    ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                amount,
+                textAlign: TextAlign.right,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+              ),
+            ),
+            SizedBox(width: context.spacing8),
+            Expanded(
+              flex: 5,
+              child: Text(
+                description,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: context.secondaryText,
+                      fontSize: 10,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      );
+}
 
 class SalarySummaryWidget extends StatefulWidget {
   const SalarySummaryWidget({
@@ -20,8 +387,10 @@ class SalarySummaryWidget extends StatefulWidget {
     required this.socialInsurance,
     required this.housingFund,
     required this.otherDeductions,
+    required this.otherTaxDeductions, // 新增其他税收扣除项
     required this.bonuses,
     required this.salaryDay,
+    this.monthlyAllowances, // 月度津贴记录
     super.key,
   });
 
@@ -36,17 +405,54 @@ class SalarySummaryWidget extends StatefulWidget {
   final double socialInsurance;
   final double housingFund;
   final double otherDeductions;
+  final double otherTaxDeductions; // 新增其他税收扣除项
   final List<BonusItem> bonuses;
   final int salaryDay;
+  final Map<int, AllowanceRecord>? monthlyAllowances; // 月度津贴记录
 
   @override
   State<SalarySummaryWidget> createState() => _SalarySummaryWidgetState();
 }
 
 class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
+  late SalaryCalculationResult _summary;
+  bool _isCalculating = true;
+
   @override
-  Widget build(BuildContext context) {
-    final summary = SalaryCalculationService.calculateIncomeSummary(
+  void initState() {
+    super.initState();
+    _calculateSummary();
+  }
+
+  Future<void> _calculateSummary() async {
+    final logger = LoggingService();
+    await logger.initialize();
+
+    await logger.log('🧮 开始计算收入汇总:');
+    await logger.log('  基本工资: ${widget.basicSalary}');
+    await logger.log('  住房补贴: ${widget.housingAllowance}');
+    await logger.log('  餐补: ${widget.mealAllowance}');
+    await logger.log('  交通补贴: ${widget.transportationAllowance}');
+    await logger.log('  其他补贴: ${widget.otherAllowance}');
+    await logger.log('  绩效奖金: ${widget.performanceBonus}');
+    await logger.log('  其他奖金: ${widget.otherBonuses}');
+    await logger.log('  个税: ${widget.personalIncomeTax}');
+    await logger.log('  社保: ${widget.socialInsurance}');
+    await logger.log('  公积金: ${widget.housingFund}');
+    await logger.log('  专项附加扣除: ${widget.otherDeductions}');
+    await logger.log('  其他税收扣除: ${widget.otherTaxDeductions}');
+    await logger.log('  奖金数量: ${widget.bonuses.length}');
+
+    for (var i = 0; i < widget.bonuses.length; i++) {
+      final bonus = widget.bonuses[i];
+      await logger.log(
+          '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}');
+      if (bonus.type == BonusType.quarterlyBonus) {
+        await logger.log('    季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
+      }
+    }
+
+    _summary = await SalaryCalculationService.calculateIncomeSummary(
       basicSalary: widget.basicSalary,
       housingAllowance: widget.housingAllowance,
       mealAllowance: widget.mealAllowance,
@@ -59,7 +465,34 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       housingFund: widget.housingFund,
       otherDeductions: widget.otherDeductions,
       bonuses: widget.bonuses,
+      monthlyAllowances: widget.monthlyAllowances, // 月度津贴记录
     );
+
+    await logger.log('🧮 收入汇总计算结果:');
+    await logger.log('  基本收入: ${_summary.basicIncome}');
+    await logger.log('  津贴收入: ${_summary.allowanceIncome}');
+    await logger.log('  奖金收入: ${_summary.bonusIncome}');
+    await logger.log('  总收入: ${_summary.totalIncome}');
+    await logger.log('  总税费: ${_summary.totalTax}');
+
+    setState(() {
+      _isCalculating = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isCalculating) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Log the net income
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final logger = LoggingService();
+      logger.initialize().then((_) async {
+        await logger.log('  净收入: ${_summary.netIncome}');
+      });
+    });
 
     return AppAnimations.animatedListItem(
       index: 4,
@@ -79,6 +512,12 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 20),
+                    onPressed: _copyMonthlyIncomeDetails,
+                    tooltip: '复制每月收入详情',
+                  ),
                 ],
               ),
               SizedBox(height: context.spacing16),
@@ -89,7 +528,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                   // 税前收入
                   ExpandableCalculationItem(
                     title: '税前收入',
-                    amount: '¥${summary.totalIncome.toStringAsFixed(0)}',
+                    amount: '¥${_summary.totalIncome.toStringAsFixed(0)}',
                     amountColor: Colors.blue,
                     icon: Icons.account_balance_wallet,
                     monthlyDetails: _generateIncomeMonthlyDetails(),
@@ -98,26 +537,115 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                   ),
                   SizedBox(height: context.spacing12),
 
-                  // 扣除总额
+                  // 五险一金扣除
                   ExpandableCalculationItem(
-                    title: '扣除总额',
-                    amount: '¥${summary.totalTax.toStringAsFixed(0)}',
+                    title: '五险一金扣除',
+                    amount:
+                        '¥${(widget.socialInsurance + widget.housingFund).toStringAsFixed(0)}',
                     amountColor: Colors.red,
-                    icon: Icons.remove_circle,
-                    monthlyDetails: _generateTaxMonthlyDetails(),
-                    calculationFormula: '扣除总额 = 五险一金 + 专项附加扣除 + 其他扣除 + 个税',
+                    icon: Icons.security,
+                    monthlyDetails: _generateSocialInsuranceMonthlyDetails(),
+                    calculationFormula:
+                        '五险一金 = 养老保险 + 医疗保险 + 失业保险 + 工伤保险 + 生育保险 + 住房公积金',
                   ),
                   SizedBox(height: context.spacing12),
 
-                  // 其他扣除
+                  // 专项附加扣除
+                  if (widget.otherDeductions > 0) ...[
+                    ExpandableCalculationItem(
+                      title: '专项附加扣除',
+                      amount: '¥${widget.otherDeductions.toStringAsFixed(0)}',
+                      amountColor: Colors.purple,
+                      icon: Icons.receipt_long,
+                      monthlyDetails:
+                          _generateSpecialDeductionsMonthlyDetails(),
+                      calculationFormula:
+                          '专项附加扣除 = 子女教育 + 继续教育 + 大病医疗 + 住房贷款利息 + 住房租金 + 赡养老人',
+                    ),
+                    SizedBox(height: context.spacing12),
+                  ],
+
+                  // 其他税收扣除
+                  if (widget.otherTaxDeductions > 0) ...[
+                    ExpandableCalculationItem(
+                      title: '其他税收扣除',
+                      amount: '¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+                      amountColor: Colors.brown,
+                      icon: Icons.receipt_long,
+                      monthlyDetails:
+                          _generateOtherTaxDeductionsMonthlyDetails(),
+                      calculationFormula:
+                          '其他税收扣除 = 其他可扣除项目',
+                    ),
+                    SizedBox(height: context.spacing12),
+                  ],
+
+                  // 个税计算详情
+                  Container(
+                    padding: EdgeInsets.all(context.spacing16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calculate,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            SizedBox(width: context.spacing8),
+                            Text(
+                              '个税计算详情',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red.shade700,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: context.spacing8),
+                        Text(
+                          '全年个税总额：¥${widget.personalIncomeTax.toStringAsFixed(0)}',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red.shade700,
+                                  ),
+                        ),
+                        SizedBox(height: context.spacing8),
+                        Text(
+                          '💡 点击下方月份查看详细个税计算过程',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.red.shade600,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: context.spacing12),
+
+                  // 每月个税计算详情
+                  ..._generateMonthlyTaxCalculationDetails(),
+
+                  SizedBox(height: context.spacing12),
+
+                  // 扣除总额汇总
                   ExpandableCalculationItem(
-                    title: '其他扣除',
-                    amount:
-                        '¥${(widget.socialInsurance + widget.housingFund + widget.otherDeductions).toStringAsFixed(0)}',
-                    amountColor: Colors.orange,
-                    icon: Icons.info,
-                    monthlyDetails: _generateOtherDeductionsMonthlyDetails(),
-                    calculationFormula: '其他扣除 = 社保 + 公积金 + 专项附加扣除 + 其他税前扣除',
+                    title: '扣除总额汇总',
+                    amount: '¥${_summary.totalTax.toStringAsFixed(0)}',
+                    amountColor: Colors.red.shade800,
+                    icon: Icons.account_balance_wallet,
+                    monthlyDetails: _generateTotalDeductionsMonthlyDetails(),
+                    calculationFormula: '扣除总额 = 五险一金 + 专项附加扣除 + 其他税收扣除 + 个税',
                   ),
                 ],
               ),
@@ -126,7 +654,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
               // 实际到手收入
               ExpandableCalculationItem(
                 title: '实际到手收入',
-                amount: '¥${summary.netIncome.toStringAsFixed(0)}',
+                amount: '¥${_summary.netIncome.toStringAsFixed(0)}',
                 amountColor: Colors.green,
                 icon: Icons.account_balance_wallet,
                 monthlyDetails: _generateNetIncomeMonthlyDetails(),
@@ -186,7 +714,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                                 ),
                           ),
                           Text(
-                            '¥${summary.bonusIncome.toStringAsFixed(0)}',
+                            '¥${_summary.bonusIncome.toStringAsFixed(0)}',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -234,7 +762,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                                 ),
                           ),
                           Text(
-                            '¥${(summary.bonusIncome - _calculateTotalBonusTax()).toStringAsFixed(0)}', // 税后奖金
+                            '¥${(_summary.bonusIncome - _calculateTotalBonusTax()).toStringAsFixed(0)}', // 税后奖金
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -300,6 +828,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
     ];
 
     for (var i = 0; i < 12; i++) {
+      final month = i + 1;
       final components = <ComponentItem>[];
 
       // 基本工资
@@ -314,12 +843,23 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
         );
       }
 
+      // 津贴收入（考虑月度津贴变化）
+      final allowanceRecord = widget.monthlyAllowances != null && 
+                               widget.monthlyAllowances!.containsKey(month)
+          ? widget.monthlyAllowances![month]!
+          : AllowanceRecord(
+              housingAllowance: widget.housingAllowance,
+              mealAllowance: widget.mealAllowance,
+              transportationAllowance: widget.transportationAllowance,
+              otherAllowance: widget.otherAllowance,
+            );
+
       // 住房补贴
-      if (widget.housingAllowance > 0) {
+      if (allowanceRecord.housingAllowance > 0) {
         components.add(
           ComponentItem(
             label: '住房补贴',
-            value: '¥${widget.housingAllowance.toStringAsFixed(0)}',
+            value: '¥${allowanceRecord.housingAllowance.toStringAsFixed(0)}',
             description: '每月住房补贴',
             color: Colors.green,
           ),
@@ -327,11 +867,11 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       }
 
       // 餐补
-      if (widget.mealAllowance > 0) {
+      if (allowanceRecord.mealAllowance > 0) {
         components.add(
           ComponentItem(
             label: '餐补',
-            value: '¥${widget.mealAllowance.toStringAsFixed(0)}',
+            value: '¥${allowanceRecord.mealAllowance.toStringAsFixed(0)}',
             description: '每月餐费补贴',
             color: Colors.orange,
           ),
@@ -339,11 +879,12 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       }
 
       // 交通补贴
-      if (widget.transportationAllowance > 0) {
+      if (allowanceRecord.transportationAllowance > 0) {
         components.add(
           ComponentItem(
             label: '交通补贴',
-            value: '¥${widget.transportationAllowance.toStringAsFixed(0)}',
+            value:
+                '¥${allowanceRecord.transportationAllowance.toStringAsFixed(0)}',
             description: '每月交通补贴',
             color: Colors.purple,
           ),
@@ -351,11 +892,11 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       }
 
       // 其他补贴
-      if (widget.otherAllowance > 0) {
+      if (allowanceRecord.otherAllowance > 0) {
         components.add(
           ComponentItem(
             label: '其他补贴',
-            value: '¥${widget.otherAllowance.toStringAsFixed(0)}',
+            value: '¥${allowanceRecord.otherAllowance.toStringAsFixed(0)}',
             description: '其他补贴总额',
             color: Colors.teal,
           ),
@@ -365,29 +906,23 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       // 奖金收入
       var totalBonusAmount = 0.0;
       for (final bonus in widget.bonuses) {
-        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, i + 1);
+        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
 
-        // 对于十三薪和双薪，即使金额为0也要显示（因为它们是一次性奖金）
-        final shouldShowBonus = monthlyBonus > 0 ||
-            bonus.type == BonusType.thirteenthSalary ||
-            bonus.type == BonusType.doublePayBonus;
-
-        if (shouldShowBonus) {
-          if (monthlyBonus > 0) {
-            totalBonusAmount += monthlyBonus;
-          }
+        // 只显示金额大于0的奖金
+        if (monthlyBonus > 0) {
+          totalBonusAmount += monthlyBonus;
 
           components.add(
             ComponentItem(
               label: bonus.name,
-              value: monthlyBonus > 0
-                  ? '¥${monthlyBonus.toStringAsFixed(0)}'
-                  : '¥0',
+              value: '¥${monthlyBonus.toStringAsFixed(0)}',
               description: bonus.type == BonusType.thirteenthSalary
                   ? '十三薪 · ${bonus.thirteenthSalaryMonth != null ? "${bonus.thirteenthSalaryMonth}月发放" : "待定月份"}'
                   : bonus.type == BonusType.doublePayBonus
                       ? '双薪 · 年终发放'
-                      : '${bonus.frequency == BonusFrequency.quarterly ? "季度奖金" : "年终奖金"} · ${bonus.type == BonusType.yearEndBonus ? "年终奖税率" : "单独计税"}',
+                      : bonus.type == BonusType.yearEndBonus
+                          ? '年终奖 · 年终奖税率'
+                          : '${bonus.frequency == BonusFrequency.quarterly ? "季度奖金" : "奖金"} · 单独计税',
               color: Colors.pink,
             ),
           );
@@ -396,10 +931,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
 
       // 计算总月收入
       final totalMonthIncome = widget.basicSalary +
-          widget.housingAllowance +
-          widget.mealAllowance +
-          widget.transportationAllowance +
-          widget.otherAllowance +
+          allowanceRecord.housingAllowance +
+          allowanceRecord.mealAllowance +
+          allowanceRecord.transportationAllowance +
+          allowanceRecord.otherAllowance +
           totalBonusAmount;
 
       details.add(
@@ -414,8 +949,286 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
     return details;
   }
 
-  // 生成税费每月详情
-  List<MonthlyDetailItem> _generateTaxMonthlyDetails() {
+  // 生成五险一金每月详情
+  List<MonthlyDetailItem> _generateSocialInsuranceMonthlyDetails() {
+    final details = <MonthlyDetailItem>[];
+    final months = [
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
+    ];
+
+    for (var i = 0; i < 12; i++) {
+      final components = <ComponentItem>[];
+
+      // 社保
+      if (widget.socialInsurance > 0) {
+        components.add(
+          ComponentItem(
+            label: '养老保险',
+            value: '¥${(widget.socialInsurance * 0.4).toStringAsFixed(0)}',
+            description: '个人缴纳养老保险',
+            color: Colors.red,
+          ),
+        );
+        components.add(
+          ComponentItem(
+            label: '医疗保险',
+            value: '¥${(widget.socialInsurance * 0.3).toStringAsFixed(0)}',
+            description: '个人缴纳医疗保险',
+            color: Colors.red.shade300,
+          ),
+        );
+        components.add(
+          ComponentItem(
+            label: '失业保险',
+            value: '¥${(widget.socialInsurance * 0.1).toStringAsFixed(0)}',
+            description: '个人缴纳失业保险',
+            color: Colors.red.shade200,
+          ),
+        );
+        components.add(
+          ComponentItem(
+            label: '工伤保险',
+            value: '¥${(widget.socialInsurance * 0.1).toStringAsFixed(0)}',
+            description: '个人缴纳工伤保险',
+            color: Colors.red.shade100,
+          ),
+        );
+        components.add(
+          ComponentItem(
+            label: '生育保险',
+            value: '¥${(widget.socialInsurance * 0.1).toStringAsFixed(0)}',
+            description: '个人缴纳生育保险',
+            color: Colors.pink,
+          ),
+        );
+      }
+
+      // 公积金
+      if (widget.housingFund > 0) {
+        components.add(
+          ComponentItem(
+            label: '住房公积金',
+            value: '¥${widget.housingFund.toStringAsFixed(0)}',
+            description: '个人缴纳住房公积金',
+            color: Colors.indigo,
+          ),
+        );
+      }
+
+      final monthlyDeductions = widget.socialInsurance + widget.housingFund;
+
+      details.add(
+        MonthlyDetailItem.withComponents(
+          month: months[i],
+          amount: '¥${monthlyDeductions.toStringAsFixed(0)}',
+          components: components,
+        ),
+      );
+    }
+
+    return details;
+  }
+
+  // 生成专项附加扣除每月详情
+  List<MonthlyDetailItem> _generateSpecialDeductionsMonthlyDetails() {
+    final details = <MonthlyDetailItem>[];
+    final months = [
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
+    ];
+
+    for (var i = 0; i < 12; i++) {
+      final components = <ComponentItem>[];
+
+      // 这里可以进一步细分专项附加扣除的各个项目
+      // 目前统一显示为专项附加扣除总额
+      components.add(
+        ComponentItem(
+          label: '专项附加扣除',
+          value: '¥${widget.otherDeductions.toStringAsFixed(0)}',
+          description: '子女教育、继续教育、大病医疗、住房贷款利息、住房租金、赡养老人等',
+          color: Colors.purple,
+        ),
+      );
+
+      details.add(
+        MonthlyDetailItem.withComponents(
+          month: months[i],
+          amount: '¥${widget.otherDeductions.toStringAsFixed(0)}',
+          components: components,
+        ),
+      );
+    }
+
+    return details;
+  }
+
+  // 生成其他税收扣除每月详情
+  List<MonthlyDetailItem> _generateOtherTaxDeductionsMonthlyDetails() {
+    final details = <MonthlyDetailItem>[];
+    final months = [
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
+    ];
+
+    for (var i = 0; i < 12; i++) {
+      final components = <ComponentItem>[];
+
+      // 其他税收扣除
+      components.add(
+        ComponentItem(
+          label: '其他税收扣除',
+          value: '¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+          description: '其他可扣除项目',
+          color: Colors.brown,
+        ),
+      );
+
+      details.add(
+        MonthlyDetailItem.withComponents(
+          month: months[i],
+          amount: '¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+          components: components,
+        ),
+      );
+    }
+
+    return details;
+  }
+
+  // 生成每月个税计算详情
+  List<Widget> _generateMonthlyTaxCalculationDetails() {
+    final currentYear = DateTime.now().year;
+    final widgets = <Widget>[];
+
+    // 计算年度累积收入和税费，用于年度累积预扣法
+    var cumulativeTaxableIncome = 0.0; // 年度累积应纳税所得额
+    var cumulativeTax = 0.0; // 年度累积已预扣税款
+
+    for (var month = 1; month <= 12; month++) {
+      // 计算当月收入和扣除（不包括年终奖）
+      final baseIncome = widget.basicSalary;
+      
+      // 津贴收入（考虑月度津贴变化）
+      final allowanceRecord = widget.monthlyAllowances != null && 
+                               widget.monthlyAllowances!.containsKey(month)
+          ? widget.monthlyAllowances![month]!
+          : AllowanceRecord(
+              housingAllowance: widget.housingAllowance,
+              mealAllowance: widget.mealAllowance,
+              transportationAllowance: widget.transportationAllowance,
+              otherAllowance: widget.otherAllowance,
+            );
+      
+      final allowanceIncome = allowanceRecord.housingAllowance +
+          allowanceRecord.mealAllowance +
+          allowanceRecord.transportationAllowance +
+          allowanceRecord.otherAllowance;
+
+      // 计算当月奖金（排除年终奖）
+      var bonusAmount = 0.0;
+      for (final bonus in widget.bonuses) {
+        // 年终奖单独计税，不参与每月累计计税
+        if (bonus.type != BonusType.yearEndBonus) {
+          final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
+          bonusAmount += monthlyBonus;
+        }
+      }
+
+      final totalMonthlyIncome = baseIncome + allowanceIncome + bonusAmount;
+      final monthlyDeductions = widget.socialInsurance + widget.housingFund;
+
+      // 计算当月应纳税所得额（基础减除5000元，不包括年终奖）
+      final monthlyTaxableIncome =
+          PersonalIncomeTaxService.calculateTaxableIncome(
+        totalMonthlyIncome,
+        monthlyDeductions,
+        widget.otherDeductions, // 专项附加扣除
+        widget.otherTaxDeductions, // 其他税收扣除
+      );
+
+      // 累积当月应纳税所得额（不包括年终奖）
+      final previousCumulativeTaxableIncome = cumulativeTaxableIncome;
+      cumulativeTaxableIncome += monthlyTaxableIncome;
+
+      // 计算年度累积应纳税额
+      final annualTax =
+          PersonalIncomeTaxService.calculateAnnualTax(cumulativeTaxableIncome);
+
+      // 计算当月应预扣税额（年度累积预扣法，不包括年终奖）
+      final monthlyTax = annualTax - cumulativeTax;
+
+      // 累积已预扣税款
+      final previousCumulativeTax = cumulativeTax;
+      cumulativeTax += monthlyTax;
+
+      // 如果当月有年终奖，需要单独计算其税额
+      var yearEndBonusAmount = 0.0;
+      var yearEndBonusTax = 0.0;
+      for (final bonus in widget.bonuses) {
+        if (bonus.type == BonusType.yearEndBonus) {
+          final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
+          if (monthlyBonus > 0) {
+            yearEndBonusAmount = monthlyBonus;
+            // 年终奖单独计税
+            yearEndBonusTax = PersonalIncomeTaxService.calculateYearEndBonusTax(yearEndBonusAmount);
+            break;
+          }
+        }
+      }
+
+      widgets.add(
+        TaxCalculationDetailItem(
+          monthlyIncome: totalMonthlyIncome + yearEndBonusAmount, // 显示总收入包括年终奖
+          monthlyDeductions: monthlyDeductions,
+          specialDeductionMonthly: widget.otherDeductions,
+          otherTaxDeductions: widget.otherTaxDeductions, // 其他税收扣除
+          monthlyTax: (monthlyTax > 0 ? monthlyTax : 0) + yearEndBonusTax, // 总税额包括年终奖税
+          month: '$month月',
+          cumulativeTaxableIncome: cumulativeTaxableIncome, // 传递累计应纳税所得额（不包括年终奖）
+          cumulativeTax: previousCumulativeTax, // 传递累计已预扣税款（计算当月税额前的值，不包括年终奖）
+          yearEndBonusAmount: yearEndBonusAmount, // 年终奖金额
+          yearEndBonusTax: yearEndBonusTax, // 年终奖税额
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
+  // 生成扣除总额每月详情
+  List<MonthlyDetailItem> _generateTotalDeductionsMonthlyDetails() {
     final details = <MonthlyDetailItem>[];
     final currentYear = DateTime.now().year;
     final months = [
@@ -433,51 +1246,23 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       '12月',
     ];
 
+    // 计算年度累积收入和税费，用于年度累积预扣法
+    var cumulativeTaxableIncome = 0.0; // 年度累积应纳税所得额
+    var cumulativeTax = 0.0; // 年度累积已预扣税款
+
     for (var i = 0; i < 12; i++) {
+      final month = i + 1;
       final components = <ComponentItem>[];
 
-      // 计算总月收入用于税费计算
-      final baseIncome = widget.basicSalary;
-      final allowanceIncome = widget.housingAllowance +
-          widget.mealAllowance +
-          widget.transportationAllowance +
-          widget.otherAllowance;
-
-      var bonusAmount = 0.0;
-      var thirteenthSalaryAmount = 0.0;
-      for (final bonus in widget.bonuses) {
-        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, i + 1);
-        if (bonus.type == BonusType.thirteenthSalary ||
-            bonus.type == BonusType.doublePayBonus) {
-          thirteenthSalaryAmount += monthlyBonus;
-        } else {
-          bonusAmount += monthlyBonus;
-        }
-      }
-
-      final totalMonthlyIncome =
-          baseIncome + allowanceIncome + bonusAmount + thirteenthSalaryAmount;
-
-      // 社保
-      if (widget.socialInsurance > 0) {
+      // 五险一金
+      final socialInsuranceAmount = widget.socialInsurance + widget.housingFund;
+      if (socialInsuranceAmount > 0) {
         components.add(
           ComponentItem(
-            label: '社保',
-            value: '¥${widget.socialInsurance.toStringAsFixed(0)}',
-            description: '五险一金中的社保部分',
+            label: '五险一金',
+            value: '¥${socialInsuranceAmount.toStringAsFixed(0)}',
+            description: '养老、医疗、失业、工伤、生育保险 + 公积金',
             color: Colors.red,
-          ),
-        );
-      }
-
-      // 公积金
-      if (widget.housingFund > 0) {
-        components.add(
-          ComponentItem(
-            label: '公积金',
-            value: '¥${widget.housingFund.toStringAsFixed(0)}',
-            description: '住房公积金',
-            color: Colors.indigo,
           ),
         );
       }
@@ -488,136 +1273,92 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
           ComponentItem(
             label: '专项附加扣除',
             value: '¥${widget.otherDeductions.toStringAsFixed(0)}',
-            description: '专项附加扣除项目',
+            description: '子女教育、继续教育、大病医疗等',
+            color: Colors.purple,
+          ),
+        );
+      }
+
+      // 其他税收扣除
+      if (widget.otherTaxDeductions > 0) {
+        components.add(
+          ComponentItem(
+            label: '其他税收扣除',
+            value: '¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+            description: '其他可扣除项目',
             color: Colors.brown,
           ),
         );
       }
 
-      // 计算奖金税务的摊平计算
-      var totalMonthlyBonusTax = 0.0;
-      for (final bonus in widget.bonuses) {
-        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, i + 1);
-        if (monthlyBonus > 0) {
-          final monthlyBonusTax =
-              _calculateBonusTaxPerMonth(bonus, monthlyBonus, i + 1);
-          totalMonthlyBonusTax += monthlyBonusTax;
-
-          if (monthlyBonusTax > 0) {
-            components.add(
-              ComponentItem(
-                label: '${bonus.name}税费',
-                value: '¥${monthlyBonusTax.toStringAsFixed(0)}',
-                description: _getBonusTaxDescription(bonus),
-                color: Colors.pink.shade700,
-              ),
+      // 计算当月收入用于个税计算
+      final baseIncome = widget.basicSalary;
+      
+      // 津贴收入（考虑月度津贴变化）
+      final allowanceRecord = widget.monthlyAllowances != null && 
+                               widget.monthlyAllowances!.containsKey(month)
+          ? widget.monthlyAllowances![month]!
+          : AllowanceRecord(
+              housingAllowance: widget.housingAllowance,
+              mealAllowance: widget.mealAllowance,
+              transportationAllowance: widget.transportationAllowance,
+              otherAllowance: widget.otherAllowance,
             );
-          }
-        }
+      
+      final allowanceIncome = allowanceRecord.housingAllowance +
+          allowanceRecord.mealAllowance +
+          allowanceRecord.transportationAllowance +
+          allowanceRecord.otherAllowance;
+
+      var bonusAmount = 0.0;
+      for (final bonus in widget.bonuses) {
+        bonusAmount += bonus.calculateMonthlyBonus(currentYear, month);
       }
 
-      // 个税部分（包含奖金税后的工资税）
-      final monthlyTax = SalaryCalculationService.calculateMonthlyTax(
-        monthlyIncome: totalMonthlyIncome,
-        monthlyDeductions: widget.socialInsurance + widget.housingFund,
-        specialDeductionMonthly: widget.otherDeductions,
-        otherTaxFreeMonthly: 0,
+      final totalMonthlyIncome = baseIncome + allowanceIncome + bonusAmount;
+
+      // 计算当月应纳税所得额（基础减除5000元）
+      final monthlyTaxableIncome =
+          PersonalIncomeTaxService.calculateTaxableIncome(
+        totalMonthlyIncome,
+        widget.socialInsurance + widget.housingFund,
+        widget.otherDeductions,
+        widget.otherTaxDeductions, // 其他税收扣除
       );
+
+      // 累积当月应纳税所得额
+      cumulativeTaxableIncome += monthlyTaxableIncome;
+
+      // 计算年度累积应纳税额
+      final annualTax =
+          PersonalIncomeTaxService.calculateAnnualTax(cumulativeTaxableIncome);
+
+      // 计算当月应预扣税额（年度累积预扣法）
+      final monthlyTax = annualTax - cumulativeTax;
+
+      // 累积已预扣税款
+      cumulativeTax += monthlyTax;
 
       if (monthlyTax > 0) {
         components.add(
           ComponentItem(
-            label: '工资个税',
+            label: '个人所得税',
             value: '¥${monthlyTax.toStringAsFixed(0)}',
-            description: '工资部分预扣个税',
+            description: '工资薪金个人所得税（年度累积预扣）',
             color: Colors.red.shade700,
           ),
         );
       }
 
-      // 计算总扣除额（包含奖金税）
-      final totalDeductions = widget.socialInsurance +
-          widget.housingFund +
+      final totalDeductions = socialInsuranceAmount +
           widget.otherDeductions +
-          monthlyTax +
-          totalMonthlyBonusTax;
+          widget.otherTaxDeductions +
+          (monthlyTax > 0 ? monthlyTax : 0);
 
       details.add(
         MonthlyDetailItem.withComponents(
           month: months[i],
           amount: '¥${totalDeductions.toStringAsFixed(0)}',
-          components: components,
-        ),
-      );
-    }
-
-    return details;
-  }
-
-  // 生成其他扣除每月详情
-  List<MonthlyDetailItem> _generateOtherDeductionsMonthlyDetails() {
-    final details = <MonthlyDetailItem>[];
-    final months = [
-      '1月',
-      '2月',
-      '3月',
-      '4月',
-      '5月',
-      '6月',
-      '7月',
-      '8月',
-      '9月',
-      '10月',
-      '11月',
-      '12月',
-    ];
-
-    for (var i = 0; i < 12; i++) {
-      final components = <ComponentItem>[];
-
-      // 社保
-      if (widget.socialInsurance > 0) {
-        components.add(
-          ComponentItem(
-            label: '社保',
-            value: '¥${widget.socialInsurance.toStringAsFixed(0)}',
-            description: '五险一金中的社保部分',
-            color: Colors.red,
-          ),
-        );
-      }
-
-      // 公积金
-      if (widget.housingFund > 0) {
-        components.add(
-          ComponentItem(
-            label: '公积金',
-            value: '¥${widget.housingFund.toStringAsFixed(0)}',
-            description: '住房公积金',
-            color: Colors.indigo,
-          ),
-        );
-      }
-
-      // 专项附加扣除
-      if (widget.otherDeductions > 0) {
-        components.add(
-          ComponentItem(
-            label: '专项附加扣除',
-            value: '¥${widget.otherDeductions.toStringAsFixed(0)}',
-            description: '专项附加扣除项目',
-            color: Colors.brown,
-          ),
-        );
-      }
-
-      final monthlyDeductions =
-          widget.socialInsurance + widget.housingFund + widget.otherDeductions;
-
-      details.add(
-        MonthlyDetailItem.withComponents(
-          month: months[i],
-          amount: '¥${monthlyDeductions.toStringAsFixed(0)}',
           components: components,
         ),
       );
@@ -646,19 +1387,32 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
     ];
 
     for (var i = 0; i < 12; i++) {
+      final month = i + 1;
       final components = <ComponentItem>[];
 
       // 计算收入部分
       final baseIncome = widget.basicSalary;
-      final allowanceIncome = widget.housingAllowance +
-          widget.mealAllowance +
-          widget.transportationAllowance +
-          widget.otherAllowance;
+      
+      // 津贴收入（考虑月度津贴变化）
+      final allowanceRecord = widget.monthlyAllowances != null && 
+                               widget.monthlyAllowances!.containsKey(month)
+          ? widget.monthlyAllowances![month]!
+          : AllowanceRecord(
+              housingAllowance: widget.housingAllowance,
+              mealAllowance: widget.mealAllowance,
+              transportationAllowance: widget.transportationAllowance,
+              otherAllowance: widget.otherAllowance,
+            );
+      
+      final allowanceIncome = allowanceRecord.housingAllowance +
+          allowanceRecord.mealAllowance +
+          allowanceRecord.transportationAllowance +
+          allowanceRecord.otherAllowance;
 
       var bonusAmount = 0.0;
       var thirteenthSalaryAmount = 0.0;
       for (final bonus in widget.bonuses) {
-        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, i + 1);
+        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
         if (bonus.type == BonusType.thirteenthSalary ||
             bonus.type == BonusType.doublePayBonus) {
           thirteenthSalaryAmount += monthlyBonus;
@@ -704,14 +1458,14 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
         );
       }
 
-      // 显示十三薪（即使金额为0也要显示，因为它是一次性奖金）
+      // 显示十三薪（只在有金额时显示）
       final hasThirteenthSalary = widget.bonuses.any(
         (bonus) =>
             bonus.type == BonusType.thirteenthSalary ||
             bonus.type == BonusType.doublePayBonus,
       );
 
-      if (hasThirteenthSalary) {
+      if (hasThirteenthSalary && thirteenthSalaryAmount > 0) {
         final thirteenthSalaryBonus = widget.bonuses.firstWhere(
           (bonus) =>
               bonus.type == BonusType.thirteenthSalary ||
@@ -723,9 +1477,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
             label: thirteenthSalaryBonus.type == BonusType.thirteenthSalary
                 ? '十三薪'
                 : '双薪',
-            value: thirteenthSalaryAmount > 0
-                ? '+¥${thirteenthSalaryAmount.toStringAsFixed(0)}'
-                : '+¥0',
+            value: '+¥${thirteenthSalaryAmount.toStringAsFixed(0)}',
             description: thirteenthSalaryBonus.type ==
                     BonusType.thirteenthSalary
                 ? '十三薪 · ${thirteenthSalaryBonus.thirteenthSalaryMonth != null ? "${thirteenthSalaryBonus.thirteenthSalaryMonth}月发放" : "待定月份"}'
@@ -738,10 +1490,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       // 计算奖金税务的摊平计算
       var totalMonthlyBonusTax = 0.0;
       for (final bonus in widget.bonuses) {
-        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, i + 1);
+        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
         if (monthlyBonus > 0) {
           final monthlyBonusTax =
-              _calculateBonusTaxPerMonth(bonus, monthlyBonus, i + 1);
+              _calculateBonusTaxPerMonth(bonus, monthlyBonus, month);
           totalMonthlyBonusTax += monthlyBonusTax;
         }
       }
@@ -750,6 +1502,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       final monthlyDeductions = widget.socialInsurance +
           widget.housingFund +
           widget.otherDeductions +
+          widget.otherTaxDeductions +
           (widget.personalIncomeTax / 12) + // 估算月度工资个税
           totalMonthlyBonusTax; // 奖金税费
 
@@ -788,12 +1541,24 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
         );
       }
 
+      // 其他税收扣除
+      if (widget.otherTaxDeductions > 0) {
+        components.add(
+          ComponentItem(
+            label: '其他税收扣除',
+            value: '-¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+            description: '其他可扣除项目',
+            color: Colors.grey,
+          ),
+        );
+      }
+
       // 添加奖金税费扣除
       for (final bonus in widget.bonuses) {
-        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, i + 1);
+        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
         if (monthlyBonus > 0) {
           final monthlyBonusTax =
-              _calculateBonusTaxPerMonth(bonus, monthlyBonus, i + 1);
+              _calculateBonusTaxPerMonth(bonus, monthlyBonus, month);
           if (monthlyBonusTax > 0) {
             components.add(
               ComponentItem(
@@ -807,13 +1572,15 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
         }
       }
 
+      // 使用年度累积预扣法计算当月税费
+      // 这里需要累积计算，但为了简化，我们使用widget.personalIncomeTax作为年度总税费
       final monthlyTax = widget.personalIncomeTax / 12;
       if (monthlyTax > 0) {
         components.add(
           ComponentItem(
             label: '工资个税',
             value: '-¥${monthlyTax.toStringAsFixed(0)}',
-            description: '工资部分预扣个税',
+            description: '工资薪金个人所得税（年度累积预扣）',
             color: Colors.red.shade700,
           ),
         );
@@ -898,7 +1665,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
 
   /// 计算奖金每月税费（摊平计算）
   double _calculateBonusTaxPerMonth(
-      BonusItem bonus, double monthlyBonus, int month) {
+    BonusItem bonus,
+    double monthlyBonus,
+    int month,
+  ) {
     if (monthlyBonus <= 0) {
       return 0.0;
     }
@@ -909,7 +1679,8 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
         // 年终奖：如果在发放月份，计算全年年终奖税费
         if (month == 12) {
           return PersonalIncomeTaxService.calculateYearEndBonusTax(
-              bonus.amount);
+            bonus.amount,
+          );
         }
         return 0.0;
 
@@ -1089,6 +1860,159 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
 
       case BonusType.other:
         return '计算公式: ¥${amount.toStringAsFixed(0)} ÷ ${bonus.paymentCount}次发放，按月摊平计税';
+    }
+  }
+
+  /// 生成每月收入详情的JSON格式数据
+  String _generateMonthlyIncomeDetailsJson() {
+    final monthlyDetails = <Map<String, dynamic>>[];
+    final currentYear = DateTime.now().year;
+    final months = [
+      '1月',
+      '2月',
+      '3月',
+      '4月',
+      '5月',
+      '6月',
+      '7月',
+      '8月',
+      '9月',
+      '10月',
+      '11月',
+      '12月',
+    ];
+
+    for (var i = 0; i < 12; i++) {
+      final month = i + 1;
+      final components = <Map<String, dynamic>>[];
+
+      // 基本工资
+      if (widget.basicSalary > 0) {
+        components.add({
+          '项目': '基本工资',
+          '金额': widget.basicSalary,
+          '描述': '每月固定基本工资',
+        });
+      }
+
+      // 津贴收入（考虑月度津贴变化）
+      final allowanceRecord = widget.monthlyAllowances != null && 
+                               widget.monthlyAllowances!.containsKey(month)
+          ? widget.monthlyAllowances![month]!
+          : AllowanceRecord(
+              housingAllowance: widget.housingAllowance,
+              mealAllowance: widget.mealAllowance,
+              transportationAllowance: widget.transportationAllowance,
+              otherAllowance: widget.otherAllowance,
+            );
+
+      // 住房补贴
+      if (allowanceRecord.housingAllowance > 0) {
+        components.add({
+          '项目': '住房补贴',
+          '金额': allowanceRecord.housingAllowance,
+          '描述': '每月住房补贴',
+        });
+      }
+
+      // 餐补
+      if (allowanceRecord.mealAllowance > 0) {
+        components.add({
+          '项目': '餐补',
+          '金额': allowanceRecord.mealAllowance,
+          '描述': '每月餐费补贴',
+        });
+      }
+
+      // 交通补贴
+      if (allowanceRecord.transportationAllowance > 0) {
+        components.add({
+          '项目': '交通补贴',
+          '金额': allowanceRecord.transportationAllowance,
+          '描述': '每月交通补贴',
+        });
+      }
+
+      // 其他补贴
+      if (allowanceRecord.otherAllowance > 0) {
+        components.add({
+          '项目': '其他补贴',
+          '金额': allowanceRecord.otherAllowance,
+          '描述': '其他补贴总额',
+        });
+      }
+
+      // 奖金收入
+      var totalBonusAmount = 0.0;
+      for (final bonus in widget.bonuses) {
+        final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
+
+        if (monthlyBonus > 0) {
+          totalBonusAmount += monthlyBonus;
+          components.add({
+            '项目': bonus.name,
+            '金额': monthlyBonus,
+            '描述': bonus.type == BonusType.thirteenthSalary
+                ? '十三薪 · ${bonus.thirteenthSalaryMonth != null ? "${bonus.thirteenthSalaryMonth}月发放" : "待定月份"}'
+                : bonus.type == BonusType.doublePayBonus
+                    ? '双薪 · 年终发放'
+                    : bonus.type == BonusType.yearEndBonus
+                        ? '年终奖 · 年终奖税率'
+                        : '${bonus.frequency == BonusFrequency.quarterly ? "季度奖金" : "奖金"} · 单独计税',
+          });
+        }
+      }
+
+      // 计算总月收入
+      final totalMonthIncome = widget.basicSalary +
+          allowanceRecord.housingAllowance +
+          allowanceRecord.mealAllowance +
+          allowanceRecord.transportationAllowance +
+          allowanceRecord.otherAllowance +
+          totalBonusAmount;
+
+      monthlyDetails.add({
+        '月份': months[i],
+        '总额': totalMonthIncome,
+        '组成明细': components,
+      });
+    }
+
+    // 创建完整的JSON结构
+    final jsonData = {
+      '年度': currentYear,
+      '每月收入详情': monthlyDetails,
+    };
+
+    // 转换为格式化的JSON字符串
+    return const JsonEncoder.withIndent('  ').convert(jsonData);
+  }
+
+  /// 复制每月收入详情到剪贴板
+  Future<void> _copyMonthlyIncomeDetails() async {
+    try {
+      final jsonDetails = _generateMonthlyIncomeDetailsJson();
+      await Clipboard.setData(ClipboardData(text: jsonDetails));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('每月收入详情已复制到剪贴板'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('复制失败，请重试'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 }

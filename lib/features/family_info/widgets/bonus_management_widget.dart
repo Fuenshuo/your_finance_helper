@@ -31,6 +31,15 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
   }
 
   @override
+  void didUpdateWidget(BonusManagementWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update _tempBonuses when widget.bonuses changes
+    if (oldWidget.bonuses != widget.bonuses) {
+      _tempBonuses = List.from(widget.bonuses);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => AppAnimations.animatedListItem(
         index: 2,
         child: AppCard(
@@ -169,16 +178,24 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
   }
 
   Future<void> _handleEditBonus(BonusItem bonus) async {
+    print('📝 Editing bonus: ${bonus.name} with quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}');
     final updatedBonus =
         await BonusDialogManager.showEditDialog(context, bonus);
     if (updatedBonus != null) {
+      print('✅ Updated bonus: ${updatedBonus.name} with quarterlyPaymentMonths: ${updatedBonus.quarterlyPaymentMonths}');
       setState(() {
         final index = _tempBonuses.indexWhere((b) => b.id == bonus.id);
         if (index != -1) {
           _tempBonuses[index] = updatedBonus;
+          print('✅ Bonus updated in _tempBonuses at index $index');
+        } else {
+          print('❌ Bonus not found in _tempBonuses');
         }
       });
       widget.onBonusesChanged(List.from(_tempBonuses));
+      print('✅ onBonusesChanged called with ${_tempBonuses.length} bonuses');
+    } else {
+      print('❌ No updated bonus returned from dialog');
     }
   }
 

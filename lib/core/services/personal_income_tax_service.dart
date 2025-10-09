@@ -3,7 +3,7 @@ import 'package:your_finance_flutter/core/models/bonus_item.dart';
 /// 中国个人所得税计算服务
 /// 根据2021年最新税率表实现自动计算功能
 class PersonalIncomeTaxService {
-  /// 个人所得税税率阶梯
+  /// 个人所得税税率阶梯（工资薪金）
   static const List<TaxBracket> _taxBrackets = [
     TaxBracket(threshold: 0, rate: 0.03, deduction: 0),
     TaxBracket(threshold: 36000, rate: 0.10, deduction: 2520),
@@ -12,6 +12,17 @@ class PersonalIncomeTaxService {
     TaxBracket(threshold: 420000, rate: 0.30, deduction: 52920),
     TaxBracket(threshold: 660000, rate: 0.35, deduction: 85920),
     TaxBracket(threshold: 960000, rate: 0.45, deduction: 181920),
+  ];
+
+  /// 年终奖专用税率阶梯
+  static const List<TaxBracket> _yearEndBonusTaxBrackets = [
+    TaxBracket(threshold: 0, rate: 0.03, deduction: 0),
+    TaxBracket(threshold: 3000, rate: 0.10, deduction: 210),
+    TaxBracket(threshold: 12000, rate: 0.20, deduction: 1410),
+    TaxBracket(threshold: 25000, rate: 0.25, deduction: 2660),
+    TaxBracket(threshold: 35000, rate: 0.30, deduction: 4410),
+    TaxBracket(threshold: 55000, rate: 0.35, deduction: 7160),
+    TaxBracket(threshold: 80000, rate: 0.45, deduction: 15160),
   ];
 
   /// 计算年度应纳税所得额
@@ -173,7 +184,7 @@ class PersonalIncomeTaxService {
       grossIncome - taxAmount;
 
   /// 计算年终奖个人所得税
-  /// 年终奖计税方法：年终奖 ÷ 12，适用月度税率表，税额 × 12
+  /// 年终奖计税方法：年终奖 ÷ 12，适用年终奖专用月度税率表，税额 × 12
   /// @param yearEndBonus 年终奖金额
   /// @return 年终奖应纳税额
   static double calculateYearEndBonusTax(double yearEndBonus) {
@@ -182,9 +193,9 @@ class PersonalIncomeTaxService {
     // 年终奖按月均分计算
     final monthlyBonus = yearEndBonus / 12;
 
-    // 找到适用的税率阶梯
-    for (var i = _taxBrackets.length - 1; i >= 0; i--) {
-      final bracket = _taxBrackets[i];
+    // 找到适用的税率阶梯（使用年终奖专用税率阶梯）
+    for (var i = _yearEndBonusTaxBrackets.length - 1; i >= 0; i--) {
+      final bracket = _yearEndBonusTaxBrackets[i];
       if (monthlyBonus > bracket.threshold) {
         // 计算应纳税额（月税额 × 12）
         final monthlyTax = (monthlyBonus - bracket.threshold) * bracket.rate +
@@ -397,6 +408,9 @@ class BonusTaxCalculator {
     double otherTaxFreeMonthly, // 月其他免税收入
   ) {
     print('🏆 开始计算年度奖金税费: year=$year, bonuses=${bonuses.length}个');
+    print('  月收入: $monthlyIncome');
+    print('  月扣除: $monthlyDeductions');
+    print('  月专项扣除: $specialDeductionMonthly');
     var totalBonus = 0.0;
     var totalTax = 0.0;
 
@@ -405,6 +419,9 @@ class BonusTaxCalculator {
       print(
         '🎁 处理奖金: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}, 频率=${bonus.frequency}',
       );
+      if (bonus.type == BonusType.quarterlyBonus) {
+        print('  季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
+      }
       final annualBonusAmount = bonus.calculateAnnualBonus(year);
       print('📊 年度奖金金额: $annualBonusAmount');
       if (annualBonusAmount > 0) {
@@ -484,34 +501,55 @@ class BonusTaxCalculator {
     double specialDeductionMonthly,
     double otherTaxFreeMonthly,
   ) {
+    print('🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount');
+    
     switch (bonus.type) {
       case BonusType.yearEndBonus:
         // 年终奖：单独按年终奖税率计算
-        return calculateYearEndBonusTax(annualBonusAmount);
+        final tax = calculateYearEndBonusTax(annualBonusAmount);
+        print('  年终奖税费: $tax');
+        return tax;
 
       case BonusType.thirteenthSalary:
       case BonusType.doublePayBonus:
+        // 十三薪、回奖金：与每月工资合并计算税率
+        final monthlyTax = _calculateMonthlyBonusTax(
+          annualBonusAmount / 12, // 按月均分
+          monthlyIncome,
+          monthlyDeductions,
+          specialDeductionMonthly,
+          otherTaxFreeMonthly,
+        );
+        final tax = monthlyTax * 12; // 乘回12个月
+        print('  十三薪/回奖金税费: 月税费=$monthlyTax, 年税费=$tax');
+        return tax;
+        
       case BonusType.quarterlyBonus:
-        // 十三薪、回奖金、季度奖金：与每月工资合并计算税率
-        return _calculateMonthlyBonusTax(
-              annualBonusAmount / 12, // 按月均分
-              monthlyIncome,
-              monthlyDeductions,
-              specialDeductionMonthly,
-              otherTaxFreeMonthly,
-            ) *
-            12; // 乘回12个月
+        // 季度奖金：按季度发放月份计算税费
+        // 季度奖金应该在发放月份与工资合并计税，这里简化处理为按月均分计算
+        final monthlyTax = _calculateMonthlyBonusTax(
+          annualBonusAmount / 12, // 按月均分
+          monthlyIncome,
+          monthlyDeductions,
+          specialDeductionMonthly,
+          otherTaxFreeMonthly,
+        );
+        final tax = monthlyTax * 12; // 乘回12个月
+        print('  季度奖金税费: 月税费=$monthlyTax, 年税费=$tax');
+        return tax;
 
       case BonusType.other:
         // 其他奖金：与每月工资合并计算税率
-        return _calculateMonthlyBonusTax(
-              annualBonusAmount / 12, // 按月均分
-              monthlyIncome,
-              monthlyDeductions,
-              specialDeductionMonthly,
-              otherTaxFreeMonthly,
-            ) *
-            12; // 乘回12个月
+        final monthlyTax = _calculateMonthlyBonusTax(
+          annualBonusAmount / 12, // 按月均分
+          monthlyIncome,
+          monthlyDeductions,
+          specialDeductionMonthly,
+          otherTaxFreeMonthly,
+        );
+        final tax = monthlyTax * 12; // 乘回12个月
+        print('  其他奖金税费: 月税费=$monthlyTax, 年税费=$tax');
+        return tax;
     }
 
     return 0;
@@ -519,15 +557,8 @@ class BonusTaxCalculator {
 
   /// 计算一次性奖金税费
   static double calculateYearEndBonusTax(double bonusAmount) {
-    // 年终奖单独计税：奖金÷12后适用月度税率，再×12
-    final monthlyEquivalent = bonusAmount / 12;
-    final monthlyTax = PersonalIncomeTaxService.calculateMonthlyTax(
-      monthlyEquivalent,
-      0, // 年终奖不扣除五险一金
-      0, // 假设没有前期预扣税款
-      0, // 当月
-    );
-    return monthlyTax * 12;
+    // 年终奖单独计税：使用年终奖专用税率计算
+    return PersonalIncomeTaxService.calculateYearEndBonusTax(bonusAmount);
   }
 
   /// 计算每月奖金的税费
@@ -538,13 +569,19 @@ class BonusTaxCalculator {
     double specialDeductionMonthly,
     double otherTaxFreeMonthly,
   ) {
+    print('🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly');
     final totalMonthlyIncome = monthlyBaseIncome + monthlyBonusAmount;
-    return PersonalIncomeTaxService.calculateMonthlyTax(
+    print('  总月收入: $totalMonthlyIncome');
+    
+    final tax = PersonalIncomeTaxService.calculateMonthlyTax(
       totalMonthlyIncome,
       monthlyDeductions,
       0, // 假设没有前期预扣税款
       0, // 当月
     );
+    
+    print('  月税费: $tax');
+    return tax;
   }
 
   /// 获取指定类型的奖金总额

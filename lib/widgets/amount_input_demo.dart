@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/widgets/amount_input_field.dart';
+import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
 
 /// AmountInputField组件演示页面
 class AmountInputDemo extends StatelessWidget {

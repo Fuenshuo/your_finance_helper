@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/features/family_info/screens/asset_edit_screen.dart';
 
 /// 通用资产详情屏幕
 class AssetDetailScreen extends StatelessWidget {
@@ -221,10 +223,18 @@ class AssetDetailScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        // TODO: 编辑资产
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('编辑功能即将上线')),
-                        );
+                        Navigator.of(context)
+                            .push(
+                              AppAnimations.createRoute(
+                                AssetEditScreen(asset: asset),
+                              ),
+                            )
+                            .then((result) {
+                              // 如果编辑成功，返回上一页
+                              if (result == true) {
+                                Navigator.of(context).pop(true);
+                              }
+                            });
                       },
                       icon: const Icon(Icons.edit),
                       label: const Text('编辑资产'),

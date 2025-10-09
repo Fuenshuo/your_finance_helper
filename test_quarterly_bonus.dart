@@ -1,10 +1,75 @@
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 
 void main() {
-  print('🔍 手动计算季度奖金发放情况');
-  print('📅 当前日期: 2025-09-17');
-  print('');
+  print('🔍 验证季度奖金和十三薪计算修复');
+  print('=' * 50);
 
+  // 测试季度奖金发放月份计算
+  testQuarterlyPaymentMonths();
+
+  // 测试十三薪发放月份计算
+  testThirteenthSalaryCalculation();
+
+  print('=' * 50);
+  print('✅ 验证完成');
+}
+
+void testQuarterlyPaymentMonths() {
+  print('🎯 测试季度奖金发放月份计算');
+  print('=' * 30);
+
+  // 测试不同开始日期的季度奖金发放月份
+  final testDates = [
+    DateTime(2024, 6, 20), // FY24奖金开始日期
+    DateTime(2025, 5, 28), // FY25奖金开始日期
+    DateTime(2025, 1, 15), // 1月开始
+    DateTime(2025, 4, 15), // 4月开始
+  ];
+
+  for (final date in testDates) {
+    final months = BonusItem.calculateQuarterlyPaymentMonths(date);
+    print(
+      '📅 开始日期: ${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+    );
+    print('   🎁 发放月份: ${months.join(', ')}月');
+    print('');
+  }
+}
+
+void testThirteenthSalaryCalculation() {
+  print('🎯 测试十三薪发放月份计算');
+  print('=' * 30);
+
+  // 测试十三薪的计算逻辑
+  final thirteenthSalaryBonus = BonusItem(
+    id: 'test-thirteenth',
+    name: '2025十三薪',
+    amount: 30000.0,
+    type: BonusType.thirteenthSalary,
+    frequency: BonusFrequency.oneTime,
+    paymentCount: 1, // 十三薪只发放一次
+    startDate: DateTime(2025, 1, 15), // 1月开始
+    thirteenthSalaryMonth: 1, // 设置为1月发放
+    creationDate: DateTime.now(),
+    updateDate: DateTime.now(),
+  );
+
+  print('📅 十三薪开始日期: ${thirteenthSalaryBonus.startDate}');
+  print('   🎁 发放月份: ${thirteenthSalaryBonus.thirteenthSalaryMonth}月');
+  print('   💰 发放金额: ¥${thirteenthSalaryBonus.amount}');
+
+  // 测试各月奖金计算
+  print('');
+  print('📊 各月奖金计算结果:');
+  for (var month = 1; month <= 12; month++) {
+    final bonus = thirteenthSalaryBonus.calculateMonthlyBonus(2025, month);
+    if (bonus > 0) {
+      print('   $month月: ¥$bonus');
+    }
+  }
+}
+
+void testExistingQuarterlyBonuses() {
   // 测试数据基于终端输出 - 使用用户配置的发放月份 1/4/7/10
   final bonus1 = BonusItem(
     id: 'test-bonus-1',

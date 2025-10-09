@@ -5,10 +5,10 @@ import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   const TransactionDetailScreen({
@@ -221,8 +221,8 @@ class TransactionDetailScreen extends StatelessWidget {
             ),
             _buildInfoRow(
               context,
-              '时间',
-              context.formatTime(transaction.date),
+              '最后更新',
+              context.formatTime(transaction.updateDate ?? transaction.date),
               Icons.access_time_outlined,
             ),
             if (transaction.isRecurring)
@@ -262,7 +262,9 @@ class TransactionDetailScreen extends StatelessWidget {
                 if (fromAccount != null)
                   _buildAccountRow(
                     context,
-                    '来源账户',
+                    _getAccountLabel(
+                        transaction.type ?? TransactionType.expense,
+                        isFromAccount: true),
                     fromAccount.name,
                     fromAccount.type,
                     Icons.account_balance_wallet_outlined,
@@ -270,7 +272,9 @@ class TransactionDetailScreen extends StatelessWidget {
                 if (toAccount != null)
                   _buildAccountRow(
                     context,
-                    '目标账户',
+                    _getAccountLabel(
+                        transaction.type ?? TransactionType.expense,
+                        isFromAccount: false),
                     toAccount.name,
                     toAccount.type,
                     Icons.account_balance_outlined,
@@ -420,7 +424,7 @@ class TransactionDetailScreen extends StatelessWidget {
                 child: Image.asset(
                   transaction.imagePath!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  errorBuilder: (context, error, stackTrace) => ColoredBox(
                     color: context.primaryBackground,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -538,15 +542,15 @@ class TransactionDetailScreen extends StatelessWidget {
 
   // 获取交易颜色
   Color _getTransactionColor(BuildContext context) {
-    switch (transaction.type) {
-      case TransactionType.income:
-        return context.increaseColor;
-      case TransactionType.expense:
-        return context.decreaseColor;
-      case TransactionType.transfer:
-        return context.primaryAction;
-      default:
-        return context.primaryAction; // 默认颜色
+    final isIncome = transaction.type == TransactionType.income ||
+        (transaction.type == null && transaction.category.isIncome);
+
+    if (isIncome) {
+      return context.increaseColor;
+    } else if (transaction.type == TransactionType.transfer) {
+      return context.primaryAction;
+    } else {
+      return context.decreaseColor;
     }
   }
 
@@ -592,6 +596,18 @@ class TransactionDetailScreen extends StatelessWidget {
     }
   }
 
+  // 获取账户标签
+  String _getAccountLabel(TransactionType type, {required bool isFromAccount}) {
+    switch (type) {
+      case TransactionType.income:
+        return '目标账户'; // 收入的目标账户
+      case TransactionType.expense:
+        return '来源账户'; // 支出的来源账户
+      case TransactionType.transfer:
+        return isFromAccount ? '来源账户' : '目标账户'; // 转账的来源和目标
+    }
+  }
+
   // 获取分类文本
   String _getCategoryText() {
     switch (transaction.category) {
@@ -627,6 +643,8 @@ class TransactionDetailScreen extends StatelessWidget {
         return '其他支出';
       case TransactionCategory.gift:
         return '礼品';
+      default:
+        return transaction.category.displayName; // 使用枚举的displayName作为fallback
     }
   }
 

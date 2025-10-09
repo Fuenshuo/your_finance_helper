@@ -179,22 +179,96 @@ class _FinancialPlanningHomeScreenState
                           ),
                         ),
                         SizedBox(height: context.spacing8),
-                        _buildPlanItem(
-                          context,
-                          title: '月薪收入计划',
-                          subtitle: '每月25号发放，税后收入¥25,000',
-                          type: '收入',
-                          status: '活跃',
-                          color: const Color(0xFF4CAF50),
+                        // 显示真实的收入计划
+                        Consumer<IncomePlanProvider>(
+                          builder: (context, incomePlanProvider, child) {
+                            final activeIncomePlans =
+                                incomePlanProvider.incomePlans
+                                    .where((plan) => plan.isActive)
+                                    .take(2) // 只显示前2个
+                                    .toList();
+
+                            if (activeIncomePlans.isEmpty) {
+                              return _buildEmptyPlanItem(
+                                context,
+                                type: '收入',
+                                message: '暂无收入计划',
+                                actionText: '创建收入计划',
+                                onAction: () =>
+                                    _navigateToCreateIncomePlan(context),
+                              );
+                            }
+
+                            return Column(
+                              children: activeIncomePlans.map((plan) {
+                                final frequencyText =
+                                    plan.frequency.displayName;
+                                return Column(
+                                  children: [
+                                    _buildPlanItem(
+                                      context,
+                                      title: plan.name,
+                                      subtitle:
+                                          '$frequencyText发放，预计¥${plan.amount.toStringAsFixed(0)}',
+                                      type: '收入',
+                                      status: plan.isActive ? '活跃' : '暂停',
+                                      color: const Color(0xFF4CAF50),
+                                    ),
+                                    if (activeIncomePlans.length > 1 &&
+                                        activeIncomePlans.indexOf(plan) <
+                                            activeIncomePlans.length - 1)
+                                      SizedBox(height: context.spacing12),
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          },
                         ),
+
                         SizedBox(height: context.spacing12),
-                        _buildPlanItem(
-                          context,
-                          title: '房贷还款计划',
-                          subtitle: '每月15号还款，本息¥8,500',
-                          type: '支出',
-                          status: '活跃',
-                          color: const Color(0xFFF44336),
+
+                        // 显示真实的支出计划
+                        Consumer<ExpensePlanProvider>(
+                          builder: (context, expensePlanProvider, child) {
+                            final activeExpensePlans = expensePlanProvider
+                                .expensePlans
+                                .where(
+                                  (plan) =>
+                                      plan.status == ExpensePlanStatus.active,
+                                )
+                                .take(2) // 只显示前2个
+                                .toList();
+
+                            if (activeExpensePlans.isEmpty) {
+                              return _buildEmptyPlanItem(
+                                context,
+                                type: '支出',
+                                message: '暂无支出计划',
+                                actionText: '创建支出计划',
+                                onAction: () =>
+                                    _navigateToCreateExpensePlan(context),
+                              );
+                            }
+
+                            return Column(
+                              children: activeExpensePlans.map((plan) {
+                                final frequencyText =
+                                    plan.frequency.displayName;
+                                return _buildPlanItem(
+                                  context,
+                                  title: plan.name,
+                                  subtitle:
+                                      '$frequencyText支出，预算¥${plan.amount.toStringAsFixed(0)}',
+                                  type: '支出',
+                                  status:
+                                      plan.status == ExpensePlanStatus.active
+                                          ? '活跃'
+                                          : '暂停',
+                                  color: const Color(0xFFF44336),
+                                );
+                              }).toList(),
+                            );
+                          },
                         ),
                       ],
                     ],
@@ -680,14 +754,14 @@ class _FinancialPlanningHomeScreenState
                 vertical: context.spacing4,
               ),
               decoration: BoxDecoration(
-                color: plan.status.color.withOpacity(0.1),
+                color: _getExpensePlanStatusColor(plan.status).withOpacity(0.1),
                 borderRadius:
                     BorderRadius.circular(context.responsiveSpacing12),
               ),
               child: Text(
-                plan.status.displayName,
+                _getExpensePlanStatusDisplayName(plan.status),
                 style: context.textTheme.bodySmall?.copyWith(
-                  color: plan.status.color,
+                  color: _getExpensePlanStatusColor(plan.status),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -695,4 +769,107 @@ class _FinancialPlanningHomeScreenState
           ],
         ),
       );
+}
+
+Widget _buildEmptyPlanItem(
+  BuildContext context, {
+  required String type,
+  required String message,
+  required String actionText,
+  required VoidCallback onAction,
+}) =>
+    Container(
+      padding: EdgeInsets.all(context.responsiveSpacing16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(context.responsiveSpacing8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            type == '收入' ? Icons.trending_up : Icons.trending_down,
+            color: Colors.grey.shade400,
+            size: 32,
+          ),
+          SizedBox(height: context.spacing8),
+          Text(
+            message,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: Colors.grey.shade600,
+            ),
+          ),
+          SizedBox(height: context.spacing12),
+          OutlinedButton.icon(
+            onPressed: onAction,
+            icon: const Icon(Icons.add),
+            label: Text(actionText),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: type == '收入'
+                    ? const Color(0xFF4CAF50)
+                    : const Color(0xFFF44336),
+              ),
+              foregroundColor: type == '收入'
+                  ? const Color(0xFF4CAF50)
+                  : const Color(0xFFF44336),
+            ),
+          ),
+        ],
+      ),
+    );
+
+String _getFrequencyText(String frequency) {
+  switch (frequency) {
+    case 'daily':
+      return '每日';
+    case 'weekly':
+      return '每周';
+    case 'monthly':
+      return '每月';
+    case 'quarterly':
+      return '每季度';
+    case 'yearly':
+      return '每年';
+    default:
+      return frequency;
+  }
+}
+
+void _navigateToCreateIncomePlan(BuildContext context) {
+  Navigator.of(context).push(
+    AppAnimations.createRoute(const CreateIncomePlanScreen()),
+  );
+}
+
+void _navigateToCreateExpensePlan(BuildContext context) {
+  Navigator.of(context).push(
+    AppAnimations.createRoute(const CreateExpensePlanScreen()),
+  );
+}
+
+Color _getExpensePlanStatusColor(ExpensePlanStatus status) {
+  switch (status) {
+    case ExpensePlanStatus.active:
+      return Colors.green;
+    case ExpensePlanStatus.paused:
+      return Colors.orange;
+    case ExpensePlanStatus.completed:
+      return Colors.blue;
+    case ExpensePlanStatus.cancelled:
+      return Colors.red;
+  }
+}
+
+String _getExpensePlanStatusDisplayName(ExpensePlanStatus status) {
+  switch (status) {
+    case ExpensePlanStatus.active:
+      return '活跃';
+    case ExpensePlanStatus.paused:
+      return '暂停';
+    case ExpensePlanStatus.completed:
+      return '完成';
+    case ExpensePlanStatus.cancelled:
+      return '取消';
+  }
 }

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:your_finance_flutter/models/account.dart';
+import 'package:your_finance_flutter/core/models/account.dart';
 
 /// 还款计划项
 class PaymentScheduleItem {

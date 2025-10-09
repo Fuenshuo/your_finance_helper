@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-import 'package:your_finance_flutter/models/account.dart';
-import 'package:your_finance_flutter/services/loan_calculation_service.dart';
-import 'package:your_finance_flutter/services/storage_service.dart';
+import 'package:your_finance_flutter/core/models/account.dart';
+import 'package:your_finance_flutter/core/services/loan_calculation_service.dart';
+import 'package:your_finance_flutter/core/services/storage_service.dart';
 
 class AccountProvider with ChangeNotifier {
   List<Account> _accounts = [];

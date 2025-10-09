@@ -16,9 +16,11 @@ class AddTransactionScreen extends StatefulWidget {
     super.key,
     this.initialType,
     this.editingTransaction,
+    this.initialAccountId,
   });
   final TransactionType? initialType;
   final Transaction? editingTransaction;
+  final String? initialAccountId;
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -33,8 +35,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   TransactionType _selectedType = TransactionType.expense;
   TransactionCategory _selectedCategory = TransactionCategory.otherExpense;
   String? _selectedSubCategory;
-  String? _selectedFromAccountId;
-  String? _selectedToAccountId;
+  String? _selectedAccountId; // 收入/支出使用这个，统一账户选择
+  String? _selectedFromAccountId; // 转账的来源账户
+  String? _selectedToAccountId; // 转账的目标账户
   String? _selectedEnvelopeBudgetId;
   DateTime _selectedDate = DateTime.now();
   bool _isRecurring = false;
@@ -45,6 +48,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     super.initState();
     if (widget.initialType != null) {
       _selectedType = widget.initialType!;
+    }
+    if (widget.initialAccountId != null) {
+      // 根据交易类型设置相应的账户ID
+      if (_selectedType == TransactionType.transfer) {
+        _selectedFromAccountId = widget.initialAccountId;
+      } else {
+        _selectedAccountId = widget.initialAccountId;
+      }
     }
     if (widget.editingTransaction != null) {
       _loadTransactionData();
@@ -67,12 +78,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _selectedType = transaction.type ?? TransactionType.income;
     _selectedCategory = transaction.category;
     _selectedSubCategory = transaction.subCategory;
-    _selectedFromAccountId = transaction.fromAccountId;
-    _selectedToAccountId = transaction.toAccountId;
+    // 根据交易类型设置账户
+    if (_selectedType == TransactionType.transfer) {
+      _selectedFromAccountId = transaction.fromAccountId;
+      _selectedToAccountId = transaction.toAccountId;
+    } else {
+      _selectedAccountId = transaction.fromAccountId ?? transaction.toAccountId;
+    }
     _selectedEnvelopeBudgetId = transaction.envelopeBudgetId;
     _selectedDate = transaction.date;
     _isRecurring = transaction.isRecurring;
     _isDraft = transaction.status == TransactionStatus.draft;
+
+    // 验证类型和分类的一致性
+    final availableCategories = _getAvailableCategories();
+    if (!availableCategories.contains(_selectedCategory)) {
+      // 如果当前分类在新类型中不可用，选择合适的默认分类
+      _selectedCategory = _getDefaultCategoryForType(_selectedType);
+    }
   }
 
   @override
@@ -146,7 +169,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: context.spacing4),
                     child: InkWell(
-                      onTap: () => setState(() => _selectedType = type),
+                      onTap: () => _onTransactionTypeChanged(type),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: EdgeInsets.symmetric(
@@ -312,7 +335,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Container(
             padding: EdgeInsets.all(context.spacing12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+              color: Colors.grey.withOpacity(0.02),
+              border: Border.all(color: Colors.grey.withOpacity(0.4)),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -324,8 +348,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 SizedBox(width: context.spacing12),
                 Text(
-                  _selectedCategory.displayName,
-                  style: const TextStyle(fontSize: 16),
+                  _selectedCategory == TransactionCategory.otherExpense
+                      ? '请选择分类'
+                      : _selectedCategory.displayName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: _selectedCategory == TransactionCategory.otherExpense
+                        ? Colors.grey.shade500
+                        : Colors.black,
+                    fontStyle:
+                        _selectedCategory == TransactionCategory.otherExpense
+                            ? FontStyle.italic
+                            : FontStyle.normal,
+                  ),
                 ),
                 const Spacer(),
                 const Icon(Icons.arrow_drop_down),
@@ -346,27 +381,37 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _selectedType == TransactionType.transfer ? '转账账户' : '账户',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                SizedBox(height: context.spacing16),
+                // 只在非转账模式下显示section title
+                if (_selectedType != TransactionType.transfer) ...[
+                  Text(
+                    _getAccountSectionTitle(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  SizedBox(height: context.spacing16),
+                ],
 
-                // 来源账户
+                // 账户选择器
                 _buildAccountSelector(
-                  '来源账户',
-                  _selectedFromAccountId,
+                  _getAccountSelectorTitle(_selectedType, true),
+                  _selectedType == TransactionType.transfer
+                      ? _selectedFromAccountId
+                      : _selectedAccountId,
                   accounts,
-                  (accountId) =>
-                      setState(() => _selectedFromAccountId = accountId),
+                  (accountId) => setState(() {
+                    if (_selectedType == TransactionType.transfer) {
+                      _selectedFromAccountId = accountId;
+                    } else {
+                      _selectedAccountId = accountId;
+                    }
+                  }),
                 ),
 
                 if (_selectedType == TransactionType.transfer) ...[
                   SizedBox(height: context.spacing16),
                   _buildAccountSelector(
-                    '目标账户',
+                    _getAccountSelectorTitle(_selectedType, false),
                     _selectedToAccountId,
                     accounts
                         .where((a) => a.id != _selectedFromAccountId)
@@ -388,15 +433,26 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     List<Account> accounts,
     Function(String?) onChanged,
   ) {
-    final selectedAccount = accounts.firstWhere(
-      (a) => a.id == selectedAccountId,
-      orElse: () => accounts.isNotEmpty
-          ? accounts.first
-          : Account(
-              name: '请选择账户',
+    final selectedAccount = selectedAccountId != null
+        ? accounts.firstWhere(
+            (a) => a.id == selectedAccountId,
+            orElse: () => Account(
+              name: '账户不存在',
               type: AccountType.cash,
             ),
-    );
+          )
+        : Account(
+            name: '请选择账户',
+            type: AccountType.cash,
+          );
+
+    // 计算实时余额
+    final realBalance = selectedAccountId != null
+        ? context.read<AccountProvider>().getAccountBalance(
+              selectedAccountId,
+              context.read<TransactionProvider>().transactions,
+            )
+        : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +467,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Container(
             padding: EdgeInsets.all(context.spacing12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+              color: Colors.grey.withOpacity(0.02),
+              border: Border.all(color: Colors.grey.withOpacity(0.4)),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -428,10 +485,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     children: [
                       Text(
                         selectedAccount.name,
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: selectedAccountId == null
+                              ? Colors.grey.shade500
+                              : Colors.black,
+                          fontStyle: selectedAccountId == null
+                              ? FontStyle.italic
+                              : FontStyle.normal,
+                        ),
                       ),
                       Text(
-                        '余额: ${context.formatAmount(selectedAccount.balance)}',
+                        '余额: ${context.formatAmount(realBalance)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: context.secondaryText,
@@ -478,7 +543,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   child: Container(
                     padding: EdgeInsets.all(context.spacing12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                      color: Colors.grey.withOpacity(0.02),
+                      border: Border.all(color: Colors.grey.withOpacity(0.4)),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -496,9 +562,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 : '选择预算（可选）',
                             style: TextStyle(
                               fontSize: 16,
-                              color: _selectedEnvelopeBudgetId != null
-                                  ? context.primaryText
-                                  : context.secondaryText,
+                              color: _selectedEnvelopeBudgetId == null
+                                  ? Colors.grey.shade500
+                                  : Colors.black,
+                              fontStyle: _selectedEnvelopeBudgetId == null
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
                             ),
                           ),
                         ),
@@ -566,6 +635,76 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ),
         ),
       );
+
+  // 交易类型改变处理
+  void _onTransactionTypeChanged(TransactionType newType) {
+    setState(() {
+      final oldType = _selectedType;
+      _selectedType = newType;
+
+      // 如果交易类型改变，检查当前分类是否仍然有效
+      if (oldType != newType) {
+        final availableCategories = _getAvailableCategories();
+        if (!availableCategories.contains(_selectedCategory)) {
+          // 当前分类在新类型中不可用，选择合适的默认分类
+          _selectedCategory = _getDefaultCategoryForType(newType);
+        }
+      }
+    });
+  }
+
+  // 获取指定交易类型的默认分类
+  TransactionCategory _getDefaultCategoryForType(TransactionType type) {
+    switch (type) {
+      case TransactionType.income:
+        return TransactionCategory.salary; // 收入默认选择工资
+      case TransactionType.expense:
+        return TransactionCategory.food; // 支出默认选择餐饮
+      case TransactionType.transfer:
+        return TransactionCategory.otherExpense; // 转账使用其他支出
+    }
+  }
+
+  // 获取账户区域标题
+  String _getAccountSectionTitle() {
+    switch (_selectedType) {
+      case TransactionType.income:
+        return '目标账户'; // 收入进入账户
+      case TransactionType.expense:
+        return '来源账户'; // 支出从账户出去
+      case TransactionType.transfer:
+        return '账户选择'; // 转账涉及两个账户
+    }
+  }
+
+  // 获取账户选择器标题
+  String _getAccountSelectorTitle(TransactionType type, bool isFromAccount) {
+    switch (type) {
+      case TransactionType.income:
+        return '目标账户'; // 收入的目标账户
+      case TransactionType.expense:
+        return '来源账户'; // 支出的来源账户
+      case TransactionType.transfer:
+        return isFromAccount ? '来源账户' : '目标账户'; // 转账的来源和目标
+    }
+  }
+
+  // 更新账户余额
+  // 账户余额现在通过交易历史实时计算，不需要手动更新
+  Future<void> _updateAccountBalances(
+    Transaction transaction,
+    BuildContext context,
+  ) async {
+    print('✅ 交易已记录，账户余额将基于所有交易历史实时计算');
+    print('🔄 交易类型: ${transaction.type}, 金额: ${transaction.amount}');
+    print(
+      '📊 账户IDs: from=${transaction.fromAccountId}, to=${transaction.toAccountId}',
+    );
+
+    // 不再需要手动更新账户余额
+    // 余额通过AccountProvider.getAccountBalance()方法实时计算
+    // 这样确保了数据一致性和完整的审计追踪
+  }
 
   // 获取可用分类
   List<TransactionCategory> _getAvailableCategories() {
@@ -726,16 +865,25 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             SizedBox(height: context.spacing16),
             ...accounts.map(
-              (account) => ListTile(
-                leading: Icon(
-                  _getAccountTypeIcon(account.type),
-                  color: context.primaryAction,
-                ),
-                title: Text(account.name),
-                subtitle: Text('余额: ${context.formatAmount(account.balance)}'),
-                onTap: () {
-                  onChanged(account.id);
-                  Navigator.pop(context);
+              (account) => Consumer<TransactionProvider>(
+                builder: (context, transactionProvider, child) {
+                  final accountProvider = context.read<AccountProvider>();
+                  final realBalance = accountProvider.getAccountBalance(
+                    account.id,
+                    transactionProvider.transactions,
+                  );
+                  return ListTile(
+                    leading: Icon(
+                      _getAccountTypeIcon(account.type),
+                      color: context.primaryAction,
+                    ),
+                    title: Text(account.name),
+                    subtitle: Text('余额: ${context.formatAmount(realBalance)}'),
+                    onTap: () {
+                      onChanged(account.id);
+                      Navigator.pop(context);
+                    },
+                  );
                 },
               ),
             ),
@@ -797,20 +945,80 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 保存交易
   Future<void> _saveTransaction() async {
-    if (!_formKey.currentState!.validate()) return;
+    print('🔄 开始保存交易');
+    print('📝 交易类型: $_selectedType');
+    print('📝 来源账户ID: $_selectedFromAccountId');
+    print('📝 目标账户ID: $_selectedToAccountId');
+    print('📝 金额: ${_amountController.text}');
+    print('📝 描述: ${_descriptionController.text}');
 
-    if (_selectedFromAccountId == null) {
-      // 静默验证，不显示提示框
+    if (!_formKey.currentState!.validate()) {
+      print('❌ 表单验证失败');
       return;
     }
 
-    if (_selectedType == TransactionType.transfer &&
-        _selectedToAccountId == null) {
-      // 静默验证，不显示提示框
-      return;
+    // 根据交易类型校验账户选择
+    switch (_selectedType) {
+      case TransactionType.income:
+        if (_selectedAccountId == null) {
+          print('❌ 收入未选择目标账户');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('请选择目标账户'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+      case TransactionType.expense:
+        if (_selectedAccountId == null) {
+          print('❌ 支出未选择来源账户');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('请选择来源账户'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+      case TransactionType.transfer:
+        if (_selectedFromAccountId == null) {
+          print('❌ 转账未选择来源账户');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('请选择来源账户'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        if (_selectedToAccountId == null) {
+          print('❌ 转账未选择目标账户');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('请选择目标账户'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        // 转账不能在同一账户间进行
+        if (_selectedFromAccountId == _selectedToAccountId) {
+          print('❌ 转账来源和目标账户不能相同');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('来源账户和目标账户不能相同'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
     }
 
     final amount = double.parse(_amountController.text);
+    print('🎯 创建交易: type=$_selectedType, name=${_selectedType.name}');
     final transaction = Transaction(
       id: widget.editingTransaction?.id,
       description: _descriptionController.text.trim(),
@@ -818,8 +1026,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       type: _selectedType,
       category: _selectedCategory,
       subCategory: _selectedSubCategory,
-      fromAccountId: _selectedFromAccountId,
-      toAccountId: _selectedToAccountId,
+      fromAccountId: _selectedType == TransactionType.expense ||
+              _selectedType == TransactionType.transfer
+          ? (_selectedType == TransactionType.transfer
+              ? _selectedFromAccountId
+              : _selectedAccountId)
+          : null,
+      toAccountId: _selectedType == TransactionType.income ||
+              _selectedType == TransactionType.transfer
+          ? (_selectedType == TransactionType.transfer
+              ? _selectedToAccountId
+              : _selectedAccountId)
+          : null,
       envelopeBudgetId: _selectedEnvelopeBudgetId,
       date: _selectedDate,
       notes: _notesController.text.trim().isEmpty
@@ -828,6 +1046,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       status: _isDraft ? TransactionStatus.draft : TransactionStatus.confirmed,
       isRecurring: _isRecurring,
     );
+    print('✅ 交易创建完成: ${transaction.toJson()}');
 
     try {
       final transactionProvider = context.read<TransactionProvider>();
@@ -839,11 +1058,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           await transactionProvider.addDraftTransaction(transaction);
         } else {
           await transactionProvider.addTransaction(transaction);
+
+          // 更新账户余额
+          await _updateAccountBalances(transaction, context);
         }
       }
 
       if (mounted) {
-        Navigator.of(context).pop();
+        // 给AccountDetailScreen一些时间来检测交易变化和触发动画
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       }
     } catch (e) {
       // 静默处理错误，不显示提示框

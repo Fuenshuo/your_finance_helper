@@ -33,8 +33,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # State management - Riverpod (recommended from awesome-flutter)
-  flutter_riverpod: ^2.5.1
+  # State management
+  provider: ^6.1.2  # Keep for now during migration to Riverpod
+  flutter_riverpod: ^2.5.1  # For future Riverpod migration
 
   # Data persistence - Drift (Moor) for complex relational data
   drift: ^2.18.0

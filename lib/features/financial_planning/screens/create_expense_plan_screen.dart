@@ -270,7 +270,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                             labelText: '支出频率',
                             border: OutlineInputBorder(),
                           ),
-                          value: _frequency,
+                          initialValue: _frequency,
                           items: ExpenseFrequency.values
                               .map(
                                 (frequency) => DropdownMenuItem(
@@ -295,7 +295,8 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                           labelText: '支付钱包',
                           border: OutlineInputBorder(),
                         ),
-                        value: _selectedWallet.isEmpty ? null : _selectedWallet,
+                        initialValue:
+                            _selectedWallet.isEmpty ? null : _selectedWallet,
                         hint: const Text('选择支出使用的钱包'),
                         items: _wallets
                             .map(
@@ -327,7 +328,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                           border: OutlineInputBorder(),
                         ),
                         hint: const Text('选择支出分类'),
-                        value: _categoryId,
+                        initialValue: _categoryId,
                         items: _categories
                             .map(
                               (category) => DropdownMenuItem(
@@ -368,7 +369,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                             labelText: '预算周期',
                             border: OutlineInputBorder(),
                           ),
-                          value: _budgetFrequency,
+                          initialValue: _budgetFrequency,
                           items: ['weekly', 'monthly', 'quarterly']
                               .map(
                                 (frequency) => DropdownMenuItem(
@@ -730,21 +731,49 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
     }
   }
 
-  void _savePlan() {
+  Future<void> _savePlan() async {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
 
-      // TODO: 保存支出计划到数据库
+      try {
+        // 创建支出计划对象
+        final expensePlan = ExpensePlan(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: _planName,
+          type: _planType == 'budget'
+              ? ExpensePlanType.budget
+              : ExpensePlanType.periodic,
+          amount: _amount,
+          frequency: _frequency,
+          walletId: _selectedWallet,
+          startDate: _startDate,
+          description: _description.isEmpty ? '' : _description,
+          categoryId: _categoryId,
+        );
 
-      final planTypeText = _planType == 'budget' ? '预算' : '支出';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$planTypeText计划 "$_planName" 创建成功！'),
-          backgroundColor: const Color(0xFFF44336),
-        ),
-      );
+        // 保存到Provider
+        final expensePlanProvider = context.read<ExpensePlanProvider>();
+        await expensePlanProvider.addExpensePlan(expensePlan);
 
-      Navigator.of(context).pop();
+        final planTypeText = _planType == 'budget' ? '预算' : '支出';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$planTypeText计划 "$_planName" 创建成功！'),
+            backgroundColor: const Color(0xFFF44336),
+          ),
+        );
+
+        if (mounted) {
+          Navigator.of(context).pop(true); // 返回成功标志
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

@@ -8,13 +8,18 @@ import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
-import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/asset_detail_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/edit_asset_sheet.dart';
-import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/hybrid_storage_service.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/features/family_info/screens/account_detail_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/asset_detail_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/asset_edit_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/edit_asset_sheet.dart';
+import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/wallet_management_screen.dart';
 
 class AssetManagementScreen extends StatefulWidget {
   const AssetManagementScreen({super.key});
@@ -185,7 +190,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
 
     print('🗑️ 用户确认结果: $confirmed');
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       print('🗑️ 开始执行清空操作...');
       await storageService.clearAll();
       print('🗑️ 清空操作完成');
@@ -507,37 +512,345 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
               groupedAssets.putIfAbsent(asset.category, () => []).add(asset);
             }
 
-            return ListView.builder(
+            return ListView(
               padding: const EdgeInsets.all(16),
-              itemCount: groupedAssets.length,
-              itemBuilder: (context, index) {
-                final category = groupedAssets.keys.elementAt(index);
-                final assets = groupedAssets[category]!;
+              children: [
+                // 账户余额总览
+                _buildAccountBalanceOverview(context),
+                const SizedBox(height: 24),
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        category.displayName,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                // 资产分组列表
+                ...groupedAssets.entries.map((entry) {
+                  final category = entry.key;
+                  final assets = entry.value;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          category.displayName,
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
                       ),
-                    ),
-                    ...assets.map(
-                      (asset) => _buildAssetCard(context, asset, assetProvider),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              },
+                      ...assets.map(
+                        (asset) =>
+                            _buildAssetCard(context, asset, assetProvider),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }),
+              ],
             );
           },
         ),
       );
+
+  /// 构建账户余额总览
+  Widget _buildAccountBalanceOverview(BuildContext context) =>
+      Consumer2<AccountProvider, TransactionProvider>(
+        builder: (context, accountProvider, transactionProvider, child) {
+          final accounts = accountProvider.activeAccounts;
+
+          if (accounts.isEmpty) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2196F3).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(
+                            Icons.account_balance_wallet,
+                            color: Color(0xFF2196F3),
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '💰 账户余额',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '暂无账户信息，请先添加银行卡或电子钱包',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          // 导航到钱包管理页面
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  const WalletManagementScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text('添加账户'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2196F3),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // 计算总余额
+          double totalBalance = 0;
+          for (final account in accounts) {
+            final realBalance = accountProvider.getAccountBalance(
+              account.id,
+              transactionProvider.transactions,
+            );
+            if (account.type.isAsset) {
+              totalBalance += realBalance;
+            } else {
+              totalBalance -= realBalance; // 负债减去
+            }
+          }
+
+          // 按类型分组账户
+          final assetAccounts = accounts.where((a) => a.type.isAsset).toList();
+          final liabilityAccounts =
+              accounts.where((a) => a.type.isLiability).toList();
+
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2196F3).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet,
+                          color: Color(0xFF2196F3),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '💰 账户余额',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ),
+                      Text(
+                        '${totalBalance >= 0 ? '+' : ''}¥${totalBalance.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: totalBalance >= 0 ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 资产账户列表
+                  if (assetAccounts.isNotEmpty) ...[
+                    Text(
+                      '流动资产',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...assetAccounts.map(
+                      (account) => _buildAccountItem(
+                        context,
+                        account,
+                        transactionProvider,
+                        accountProvider,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // 负债账户列表
+                  if (liabilityAccounts.isNotEmpty) ...[
+                    Text(
+                      '负债账户',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...liabilityAccounts.map(
+                      (account) => _buildAccountItem(
+                        context,
+                        account,
+                        transactionProvider,
+                        accountProvider,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // 导航到钱包管理页面
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (context) =>
+                                const WalletManagementScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.manage_accounts),
+                      label: const Text('管理账户'),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF2196F3)),
+                        foregroundColor: const Color(0xFF2196F3),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+  /// 构建账户项
+  Widget _buildAccountItem(
+    BuildContext context,
+    Account account,
+    TransactionProvider transactionProvider,
+    AccountProvider accountProvider,
+  ) =>
+      InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => AccountDetailScreen(account: account),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _getAccountIconColor(account.type).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  _getAccountIcon(account.type),
+                  color: _getAccountIconColor(account.type),
+                  size: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  account.name,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              Builder(
+                builder: (context) {
+                  final realBalance = accountProvider.getAccountBalance(
+                    account.id,
+                    transactionProvider.transactions,
+                  );
+                  return Text(
+                    '${realBalance >= 0 ? '+' : ''}¥${realBalance.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: account.type.isAsset ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+
+  /// 获取账户图标
+  IconData _getAccountIcon(AccountType type) {
+    switch (type) {
+      case AccountType.cash:
+        return Icons.money;
+      case AccountType.bank:
+        return Icons.account_balance;
+      case AccountType.creditCard:
+        return Icons.credit_card;
+      case AccountType.investment:
+        return Icons.trending_up;
+      case AccountType.loan:
+        return Icons.account_balance_wallet;
+      case AccountType.asset:
+        return Icons.business;
+      case AccountType.liability:
+        return Icons.warning;
+    }
+  }
+
+  /// 获取账户图标颜色
+  Color _getAccountIconColor(AccountType type) {
+    switch (type) {
+      case AccountType.cash:
+        return Colors.green;
+      case AccountType.bank:
+        return const Color(0xFF2196F3);
+      case AccountType.creditCard:
+        return Colors.orange;
+      case AccountType.investment:
+        return Colors.purple;
+      case AccountType.loan:
+        return Colors.red;
+      case AccountType.asset:
+        return Colors.teal;
+      case AccountType.liability:
+        return Colors.red;
+    }
+  }
 
   Widget _buildAssetCard(
     BuildContext context,
@@ -547,7 +860,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       InkWell(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(
+            MaterialPageRoute<void>(
               builder: (context) => AssetDetailScreen(asset: asset),
             ),
           );
@@ -599,7 +912,12 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                     PopupMenuButton<String>(
                       onSelected: (value) {
                         if (value == 'edit') {
-                          _showEditAssetSheet(context, asset);
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  AssetEditScreen(asset: asset),
+                            ),
+                          );
                         } else if (value == 'delete') {
                           _showDeleteDialog(context, asset, assetProvider);
                         }
@@ -1106,9 +1424,6 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           return Icons.shopping_bag_outlined;
         }
         return Icons.account_balance_outlined;
-
-      default:
-        return Icons.account_balance_wallet_outlined;
     }
   }
 
@@ -1127,8 +1442,6 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         return const Color(0xFFF8C471); // 橙色 - 应收款
       case AssetCategory.liabilities:
         return const Color(0xFFBB8FCE); // 紫色 - 债务
-      default:
-        return const Color(0xFF4ECDC4); // 默认青色
     }
   }
 

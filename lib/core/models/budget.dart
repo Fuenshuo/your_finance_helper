@@ -409,6 +409,67 @@ class ZeroBasedBudget extends Equatable {
 double _calculateTotalBonuses(List<BonusItem> bonuses, int year) =>
     bonuses.fold(0.0, (sum, bonus) => sum + bonus.calculateAnnualBonus(year));
 
+// 津贴记录模型
+class AllowanceRecord extends Equatable {
+  const AllowanceRecord({
+    required this.housingAllowance,
+    required this.mealAllowance,
+    required this.transportationAllowance,
+    required this.otherAllowance,
+  });
+
+  /// 创建默认津贴记录
+  factory AllowanceRecord.defaultAllowance({
+    double housingAllowance = 0.0,
+    double mealAllowance = 0.0,
+    double transportationAllowance = 0.0,
+    double otherAllowance = 0.0,
+  }) =>
+      AllowanceRecord(
+        housingAllowance: housingAllowance,
+        mealAllowance: mealAllowance,
+        transportationAllowance: transportationAllowance,
+        otherAllowance: otherAllowance,
+      );
+
+  /// 从JSON创建实例
+  factory AllowanceRecord.fromJson(Map<String, dynamic> json) =>
+      AllowanceRecord(
+        housingAllowance: json['housingAllowance'] as double,
+        mealAllowance: json['mealAllowance'] as double,
+        transportationAllowance: json['transportationAllowance'] as double,
+        otherAllowance: json['otherAllowance'] as double,
+      );
+
+  final double housingAllowance;
+  final double mealAllowance;
+  final double transportationAllowance;
+  final double otherAllowance;
+
+  /// 转换为JSON
+  Map<String, dynamic> toJson() => {
+        'housingAllowance': housingAllowance,
+        'mealAllowance': mealAllowance,
+        'transportationAllowance': transportationAllowance,
+        'otherAllowance': otherAllowance,
+      };
+
+  /// 计算总津贴金额
+  double get totalAllowance =>
+      housingAllowance +
+      mealAllowance +
+      transportationAllowance +
+      otherAllowance;
+
+  @override
+  List<Object?> get props => [
+        housingAllowance,
+        mealAllowance,
+        transportationAllowance,
+        otherAllowance,
+      ];
+}
+
 // 工资收入模型
 class SalaryIncome extends Equatable {
   SalaryIncome({
@@ -422,12 +483,14 @@ class SalaryIncome extends Equatable {
     this.mealAllowance = 0.0,
     this.transportationAllowance = 0.0,
     this.otherAllowance = 0.0,
+    this.monthlyAllowances, // 月度津贴记录
     this.bonuses = const [],
     this.personalIncomeTax = 0.0,
     this.socialInsurance = 0.0,
     this.housingFund = 0.0,
     this.otherDeductions = 0.0,
     this.specialDeductionMonthly = 0.0,
+    this.otherTaxDeductions = 0.0, // 其他税收扣除
     this.period = BudgetPeriod.monthly,
     this.lastSalaryDate,
     this.nextSalaryDate,
@@ -439,23 +502,24 @@ class SalaryIncome extends Equatable {
             housingAllowance +
             mealAllowance +
             transportationAllowance +
-            otherAllowance +
-            _calculateTotalBonuses(bonuses, DateTime.now().year),
+            otherAllowance,
         totalDeductions = personalIncomeTax +
             socialInsurance +
             housingFund +
             otherDeductions +
-            specialDeductionMonthly,
+            specialDeductionMonthly +
+            otherTaxDeductions, // 添加其他税收扣除
         netIncome = (basicSalary +
                 housingAllowance +
                 mealAllowance +
                 transportationAllowance +
-                otherAllowance +
-                _calculateTotalBonuses(bonuses, DateTime.now().year)) -
+                otherAllowance) -
             (personalIncomeTax +
                 socialInsurance +
                 housingFund +
-                otherDeductions),
+                otherDeductions +
+                specialDeductionMonthly +
+                otherTaxDeductions), // 包含专项附加扣除
         creationDate = creationDate ?? DateTime.now(),
         updateDate = updateDate ?? DateTime.now();
 
@@ -551,6 +615,21 @@ class SalaryIncome extends Equatable {
       }
     }
 
+    // 处理月度津贴记录
+    Map<int, AllowanceRecord>? monthlyAllowances;
+    if (json['monthlyAllowances'] != null) {
+      final allowancesMap = json['monthlyAllowances'] as Map<String, dynamic>;
+      monthlyAllowances = {};
+      for (final entry in allowancesMap.entries) {
+        final month = int.parse(entry.key);
+        final allowanceRecord = AllowanceRecord.fromJson(
+          entry.value as Map<String, dynamic>,
+        );
+        monthlyAllowances[month] = allowanceRecord;
+      }
+    }
+
+    // 重新计算netIncome而不是从JSON读取，以修复旧数据的计算错误
     return SalaryIncome(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -562,6 +641,7 @@ class SalaryIncome extends Equatable {
       transportationAllowance:
           json['transportationAllowance'] as double? ?? 0.0,
       otherAllowance: json['otherAllowance'] as double? ?? 0.0,
+      monthlyAllowances: monthlyAllowances, // 月度津贴记录
       bonuses: bonuses,
       personalIncomeTax: json['personalIncomeTax'] as double? ?? 0.0,
       socialInsurance: json['socialInsurance'] as double? ?? 0.0,
@@ -569,6 +649,8 @@ class SalaryIncome extends Equatable {
       otherDeductions: json['otherDeductions'] as double? ?? 0.0,
       specialDeductionMonthly:
           json['specialDeductionMonthly'] as double? ?? 0.0,
+      otherTaxDeductions:
+          json['otherTaxDeductions'] as double? ?? 0.0, // 其他税收扣除
       salaryDay: json['salaryDay'] as int,
       period: BudgetPeriod.values.firstWhere(
         (e) => e.name == json['period'],
@@ -586,6 +668,7 @@ class SalaryIncome extends Equatable {
       ),
       creationDate: DateTime.parse(json['creationDate'] as String),
       updateDate: DateTime.parse(json['updateDate'] as String),
+      // 不传递netIncome，让构造函数重新计算以修复旧数据错误
     );
   }
   final String id;
@@ -599,6 +682,7 @@ class SalaryIncome extends Equatable {
   final double mealAllowance; // 餐补
   final double transportationAllowance; // 交通补贴
   final double otherAllowance; // 其他补贴
+  final Map<int, AllowanceRecord>? monthlyAllowances; // 月度津贴记录 {月份: 津贴记录}
 
   // 奖金和福利
   final List<BonusItem> bonuses; // 奖金项目列表
@@ -609,6 +693,7 @@ class SalaryIncome extends Equatable {
   final double housingFund; // 公积金
   final double otherDeductions; // 其他扣除
   final double specialDeductionMonthly; // 专项附加扣除
+  final double otherTaxDeductions; // 其他税收扣除
 
   // 计算字段
   final double grossIncome; // 税前收入
@@ -636,12 +721,14 @@ class SalaryIncome extends Equatable {
     double? mealAllowance,
     double? transportationAllowance,
     double? otherAllowance,
+    Map<int, AllowanceRecord>? monthlyAllowances, // 月度津贴记录
     List<BonusItem>? bonuses,
     double? personalIncomeTax,
     double? socialInsurance,
     double? housingFund,
     double? otherDeductions,
     double? specialDeductionMonthly,
+    double? otherTaxDeductions, // 其他税收扣除
     int? salaryDay,
     BudgetPeriod? period,
     DateTime? lastSalaryDate,
@@ -661,6 +748,8 @@ class SalaryIncome extends Equatable {
         transportationAllowance:
             transportationAllowance ?? this.transportationAllowance,
         otherAllowance: otherAllowance ?? this.otherAllowance,
+        monthlyAllowances:
+            monthlyAllowances ?? this.monthlyAllowances, // 月度津贴记录
         bonuses: bonuses ?? this.bonuses,
         personalIncomeTax: personalIncomeTax ?? this.personalIncomeTax,
         socialInsurance: socialInsurance ?? this.socialInsurance,
@@ -668,6 +757,8 @@ class SalaryIncome extends Equatable {
         otherDeductions: otherDeductions ?? this.otherDeductions,
         specialDeductionMonthly:
             specialDeductionMonthly ?? this.specialDeductionMonthly,
+        otherTaxDeductions:
+            otherTaxDeductions ?? this.otherTaxDeductions, // 其他税收扣除
         salaryDay: salaryDay ?? this.salaryDay,
         period: period ?? this.period,
         lastSalaryDate: lastSalaryDate ?? this.lastSalaryDate,
@@ -744,12 +835,16 @@ class SalaryIncome extends Equatable {
         'mealAllowance': mealAllowance,
         'transportationAllowance': transportationAllowance,
         'otherAllowance': otherAllowance,
+        'monthlyAllowances': monthlyAllowances?.map(
+          (key, value) => MapEntry(key.toString(), value.toJson()),
+        ), // 月度津贴记录
         'bonuses': bonuses.map((bonus) => bonus.toJson()).toList(),
         'personalIncomeTax': personalIncomeTax,
         'socialInsurance': socialInsurance,
         'housingFund': housingFund,
         'otherDeductions': otherDeductions,
         'specialDeductionMonthly': specialDeductionMonthly,
+        'otherTaxDeductions': otherTaxDeductions, // 其他税收扣除
         'grossIncome': grossIncome,
         'netIncome': netIncome,
         'totalDeductions': totalDeductions,

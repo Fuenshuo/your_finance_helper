@@ -6,22 +6,28 @@ import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 class TaxDeductionsWidget extends StatefulWidget {
   const TaxDeductionsWidget({
+    required this.personalIncomeTaxController,
     required this.socialInsuranceController,
     required this.housingFundController,
     required this.otherDeductionsController,
     required this.specialDeductionController,
     required this.otherTaxFreeIncomeController,
+    required this.otherTaxDeductionsController, // 其他税收扣除
     required this.specialDeductionMonthly,
     required this.onSpecialDeductionChanged,
+    required this.onCalculateTax,
     super.key,
   });
+  final TextEditingController personalIncomeTaxController;
   final TextEditingController socialInsuranceController;
   final TextEditingController housingFundController;
   final TextEditingController otherDeductionsController;
   final TextEditingController specialDeductionController;
   final TextEditingController otherTaxFreeIncomeController;
+  final TextEditingController otherTaxDeductionsController; // 其他税收扣除
   final double specialDeductionMonthly;
   final Function(double) onSpecialDeductionChanged;
+  final VoidCallback onCalculateTax;
 
   @override
   State<TaxDeductionsWidget> createState() => _TaxDeductionsWidgetState();
@@ -42,6 +48,74 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
+                ),
+                SizedBox(height: context.spacing16),
+
+                // 个税
+                Container(
+                  padding: EdgeInsets.all(context.spacing12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.red.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.red,
+                          ),
+                          SizedBox(width: context.spacing8),
+                          Expanded(
+                            child: Text(
+                              '个人所得税（月均）',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.red.shade700,
+                                  ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: widget.onCalculateTax,
+                            icon: const Icon(Icons.calculate, size: 16),
+                            label: const Text('自动计算'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: context.spacing12,
+                                vertical: context.spacing8,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: context.spacing12),
+                      AmountInputField(
+                        controller: widget.personalIncomeTaxController,
+                        labelText: '月均个税',
+                        hintText: '每月个税扣除金额',
+                        prefixIcon:
+                            const Icon(Icons.money_off, color: Colors.red),
+                      ),
+                      SizedBox(height: context.spacing8),
+                      Text(
+                        '💡 建议使用"自动计算"按钮，根据您的收入和扣除项智能计算个税',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.red.shade600,
+                              fontSize: 12,
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: context.spacing16),
 
@@ -151,6 +225,19 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                   prefixIcon: const Icon(
                     Icons.remove_circle,
                     color: Colors.grey,
+                  ),
+                ),
+
+                SizedBox(height: context.spacing16),
+
+                // 其他税收扣除
+                AmountInputField(
+                  controller: widget.otherTaxDeductionsController, // 其他税收扣除
+                  labelText: '其他税收扣除',
+                  hintText: '其他可扣除的税收项目',
+                  prefixIcon: const Icon(
+                    Icons.remove_circle_outline,
+                    color: Colors.brown,
                   ),
                 ),
 

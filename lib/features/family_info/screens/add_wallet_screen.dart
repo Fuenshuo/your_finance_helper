@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
@@ -99,7 +100,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
 
                       // 账户类型
                       DropdownButtonFormField<AccountType>(
-                        value: _selectedType,
+                        initialValue: _selectedType,
                         decoration: const InputDecoration(
                           labelText: '账户类型 *',
                           prefixIcon: Icon(Icons.category),
@@ -125,7 +126,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
 
                       // 账户状态
                       DropdownButtonFormField<AccountStatus>(
-                        value: _selectedStatus,
+                        initialValue: _selectedStatus,
                         decoration: const InputDecoration(
                           labelText: '账户状态',
                           prefixIcon: Icon(Icons.info),
@@ -188,10 +189,12 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                           prefixText: '¥',
                         ),
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                          decimal: true,
+                        ),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d+\.?\d{0,2}')),
+                            RegExp(r'^\d+\.?\d{0,2}'),
+                          ),
                         ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -209,20 +212,28 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
 
                       // 币种
                       DropdownButtonFormField<String>(
-                        value: _selectedCurrency,
+                        initialValue: _selectedCurrency,
                         decoration: const InputDecoration(
                           labelText: '币种',
                           prefixIcon: Icon(Icons.currency_exchange),
                         ),
                         items: const [
                           DropdownMenuItem(
-                              value: 'CNY', child: Text('人民币 (CNY)')),
+                            value: 'CNY',
+                            child: Text('人民币 (CNY)'),
+                          ),
                           DropdownMenuItem(
-                              value: 'USD', child: Text('美元 (USD)')),
+                            value: 'USD',
+                            child: Text('美元 (USD)'),
+                          ),
                           DropdownMenuItem(
-                              value: 'EUR', child: Text('欧元 (EUR)')),
+                            value: 'EUR',
+                            child: Text('欧元 (EUR)'),
+                          ),
                           DropdownMenuItem(
-                              value: 'JPY', child: Text('日元 (JPY)')),
+                            value: 'JPY',
+                            child: Text('日元 (JPY)'),
+                          ),
                         ],
                         onChanged: (value) {
                           if (value != null) {
@@ -245,10 +256,12 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                             prefixText: '¥',
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}')),
+                              RegExp(r'^\d+\.?\d{0,2}'),
+                            ),
                           ],
                         ),
                       ],
@@ -358,7 +371,8 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                             prefixIcon: Icon(Icons.percent),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                         ),
                       ],
                     ),
@@ -430,7 +444,8 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                       backgroundColor: context.primaryAction,
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(
-                          vertical: context.responsiveSpacing16),
+                        vertical: context.responsiveSpacing16,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(context.responsiveSpacing12),
@@ -447,10 +462,12 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
         ),
       );
 
-  void _saveAccount() {
+  Future<void> _saveAccount() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final initialBalance = double.tryParse(_balanceController.text) ?? 0.0;
 
     final account = Account(
       name: _nameController.text.trim(),
@@ -459,7 +476,6 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
           : null,
       type: _selectedType,
       status: _selectedStatus,
-      balance: double.tryParse(_balanceController.text) ?? 0.0,
       currency: _selectedCurrency,
       bankName: _bankNameController.text.isNotEmpty
           ? _bankNameController.text.trim()
@@ -483,7 +499,18 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
 
     // 保存账户
     final accountProvider = context.read<AccountProvider>();
-    accountProvider.addAccount(account);
+    final transactionProvider = context.read<TransactionProvider>();
+
+    await accountProvider.addAccount(account);
+
+    // 如果设置了初始余额，创建初始化交易
+    if (initialBalance > 0) {
+      await accountProvider.createAccountInitializationTransaction(
+        account.id,
+        initialBalance,
+        transactionProvider,
+      );
+    }
 
     // 返回上一页
     Navigator.of(context).pop();
@@ -497,4 +524,3 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
     );
   }
 }
-

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
 
 /// 响应式文本样式工具类
 class ResponsiveTextStyles {
@@ -75,8 +75,10 @@ class ResponsiveTextStyles {
       );
 
   // 金额显示样式
-  static TextStyle getAmountStyle(BuildContext context,
-          {bool isPositive = true}) =>
+  static TextStyle getAmountStyle(
+    BuildContext context, {
+    bool isPositive = true,
+  }) =>
       TextStyle(
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 18),
@@ -85,8 +87,10 @@ class ResponsiveTextStyles {
       );
 
   // 大金额显示样式
-  static TextStyle getLargeAmountStyle(BuildContext context,
-          {bool isPositive = true}) =>
+  static TextStyle getLargeAmountStyle(
+    BuildContext context, {
+    bool isPositive = true,
+  }) =>
       TextStyle(
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 24),
@@ -95,8 +99,10 @@ class ResponsiveTextStyles {
       );
 
   // StatCard专用金额样式（移动端优化）
-  static TextStyle getStatCardAmountStyle(BuildContext context,
-          {bool isPositive = true}) =>
+  static TextStyle getStatCardAmountStyle(
+    BuildContext context, {
+    bool isPositive = true,
+  }) =>
       TextStyle(
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 16),

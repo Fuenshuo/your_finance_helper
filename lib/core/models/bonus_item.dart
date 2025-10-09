@@ -86,6 +86,8 @@ class BonusItem extends Equatable {
     this.description,
     this.quarterlyPaymentMonths, // 季度奖金发放月份配置
     this.thirteenthSalaryMonth, // 十三薪发放月份
+    this.awardDate, // 奖金授予日期（奖金什么时候公布的）
+    this.attributionDate, // 奖金归属日期（奖金什么时候发放的）
   });
 
   /// 创建新的奖金项目
@@ -100,6 +102,8 @@ class BonusItem extends Equatable {
     String? description,
     List<int>? quarterlyPaymentMonths, // 季度奖金发放月份配置
     int? thirteenthSalaryMonth, // 十三薪发放月份
+    DateTime? awardDate, // 奖金授予日期
+    DateTime? attributionDate, // 奖金归属日期
   }) {
     final now = DateTime.now();
     return BonusItem(
@@ -114,9 +118,11 @@ class BonusItem extends Equatable {
       description: description,
       quarterlyPaymentMonths: quarterlyPaymentMonths ??
           (type == BonusType.quarterlyBonus
-              ? [3, 6, 9, 12]
-              : null), // 默认3、6、9、12月
+              ? <int>[] // 新增时默认为空，让用户自己选择
+              : null),
       thirteenthSalaryMonth: thirteenthSalaryMonth,
+      awardDate: awardDate,
+      attributionDate: attributionDate,
       creationDate: now,
       updateDate: now,
     );
@@ -144,13 +150,19 @@ class BonusItem extends Equatable {
       quarterlyPaymentMonths: json['quarterlyPaymentMonths'] != null
           ? List<int>.from(json['quarterlyPaymentMonths'] as List)
           : (type == BonusType.quarterlyBonus
-              ? [3, 6, 9, 12]
-              : null), // 默认3、6、9、12月
+              ? BonusItem.calculateQuarterlyPaymentMonths(startDate)
+              : null), // 根据开始日期计算发放月份
       thirteenthSalaryMonth: json['thirteenthSalaryMonth'] != null
           ? (json['thirteenthSalaryMonth'] as num).toInt()
           : (type == BonusType.thirteenthSalary
               ? startDate.month
               : null), // 默认使用startDate的月份
+      awardDate: json['awardDate'] != null
+          ? DateTime.parse(json['awardDate'] as String)
+          : null, // 奖金授予日期
+      attributionDate: json['attributionDate'] != null
+          ? DateTime.parse(json['attributionDate'] as String)
+          : null, // 奖金归属日期
       creationDate: DateTime.parse(json['creationDate'] as String),
       updateDate: DateTime.parse(json['updateDate'] as String),
     );
@@ -168,6 +180,8 @@ class BonusItem extends Equatable {
   final int? thirteenthSalaryMonth; // 十三薪发放月份
   final DateTime creationDate;
   final DateTime updateDate;
+  final DateTime? awardDate; // 奖金授予日期（奖金什么时候公布的）
+  final DateTime? attributionDate; // 奖金归属日期（奖金什么时候发放的）
 
   /// 获取奖金类型显示名称
   String get typeDisplayName {
@@ -204,14 +218,34 @@ class BonusItem extends Equatable {
   /// 计算指定年月的奖金金额
   double calculateMonthlyBonus(int year, int month) {
     final date = DateTime(year, month);
+    print('🎁 计算奖金月份: ${name}, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency');
 
     // 检查奖金是否在指定日期有效
-    if (startDate.isAfter(date)) {
-      return 0; // 奖金开始日期在目标日期之后
-    }
+    // 对于十三薪和年终奖，我们特殊处理日期检查
+    if (type == BonusType.thirteenthSalary || type == BonusType.doublePayBonus) {
+      // 特殊处理十三薪和双薪
+    } else if (type == BonusType.yearEndBonus && frequency == BonusFrequency.oneTime) {
+      // 特殊处理一次性年终奖 - 只需检查年份
+      if (startDate.year > year) {
+        print('  奖金开始年份在目标年份之后，返回0');
+        return 0;
+      }
+      
+      if (endDate != null && endDate!.year < year) {
+        print('  奖金结束年份在目标年份之前，返回0');
+        return 0;
+      }
+    } else {
+      // 其他奖金的日期检查
+      if (startDate.isAfter(date)) {
+        print('  奖金开始日期在目标日期之后，返回0');
+        return 0; // 奖金开始日期在目标日期之后
+      }
 
-    if (endDate != null && endDate!.isBefore(date)) {
-      return 0; // 奖金结束日期在目标日期之前
+      if (endDate != null && endDate!.isBefore(date)) {
+        print('  奖金结束日期在目标日期之前，返回0');
+        return 0; // 奖金结束日期在目标日期之前
+      }
     }
 
     switch (frequency) {
@@ -219,55 +253,77 @@ class BonusItem extends Equatable {
         // 一次性奖金：只在生效月份发放
         if (type == BonusType.thirteenthSalary ||
             type == BonusType.doublePayBonus) {
-          // 十三薪和回奖金：金额应该等于基本工资，这里返回全额，后续在计算时处理
+          // 十三薪和回奖金：使用指定的发放月份
           final bonusMonth = type == BonusType.thirteenthSalary &&
                   thirteenthSalaryMonth != null
               ? thirteenthSalaryMonth!
-              : startDate.month;
-          return startDate.year == year && bonusMonth == month ? amount : 0.0;
+              : (attributionDate ?? startDate).month; // 如果没有归属日期，则使用开始日期的月份
+              
+          final result = (attributionDate ?? startDate).year <= year && bonusMonth == month ? amount : 0.0;
+          print('  一次性奖金(十三薪/回奖金): 月份=$bonusMonth, 结果=$result');
+          return result;
+        } else if (type == BonusType.yearEndBonus) {
+          // 一次性年终奖：在归属日期指定的月份发放
+          // attributionDate表示奖金归属的日期，例如2025-04-15表示2025年4月获得的奖金
+          final targetDate = attributionDate ?? startDate; // 如果没有归属日期，则使用开始日期
+          final result = targetDate.year == year && targetDate.month == month ? amount : 0.0;
+          print('  一次性年终奖: 结果=$result');
+          return result;
         }
-        return startDate.year == year && startDate.month == month
-            ? amount
-            : 0.0;
+        final result = startDate.year == year && startDate.month == month ? amount : 0.0;
+        print('  一次性奖金: 结果=$result');
+        return result;
       case BonusFrequency.monthly:
         // 月度奖金：每月发放
+        print('  月度奖金: 返回=$amount');
         return amount;
       case BonusFrequency.quarterly:
         // 季度奖金：使用配置的发放月份
         final quarterlyMonths = quarterlyPaymentMonths ?? [3, 6, 9, 12];
+        print('  季度奖金配置月份: $quarterlyMonths');
 
         // 如果当前月份不是配置的季度发放月份，返回0
         if (!quarterlyMonths.contains(month)) {
+          print('  当前月份不在季度发放月份中，返回0');
+          return 0.0;
+        }
+
+        // 检查是否已经过了发放次数
+        if (paymentCount <= 0) {
+          print('  发放次数为0，返回0');
+          return 0.0;
+        }
+
+        // 计算到目前为止应该发放的次数
+        var expectedPayments = 0;
+        for (final qMonth in quarterlyMonths) {
+          if (qMonth < month || (qMonth == month && startDate.year <= year)) {
+            expectedPayments++;
+          }
+        }
+        
+        // 如果已经超过了发放次数，返回0
+        if (expectedPayments > paymentCount) {
+          print('  已超过发放次数($expectedPayments > $paymentCount)，返回0');
           return 0.0;
         }
 
         final quarterlyAmount = amount / paymentCount; // 每次发放的季度金额
-
-        // 计算从开始日期到指定年月的季度差
-        final startYear = startDate.year;
-        final startQuarter = ((startDate.month - 1) ~/ 3) + 1; // 开始季度 (1-4)
-        final targetQuarter = ((month - 1) ~/ 3) + 1; // 目标季度 (1-4)
-        final quartersSinceStart =
-            (year - startYear) * 4 + (targetQuarter - startQuarter);
-
-        // 如果还没到开始发放的季度，返回0
-        if (quartersSinceStart < 0) {
-          return 0.0;
-        }
-
-        // 如果已经发放完所有季度，返回0
-        if (quartersSinceStart >= paymentCount) {
-          return 0.0;
-        }
+        print('  季度奖金: 每次金额=$quarterlyAmount, 发放次数=$paymentCount');
 
         // 返回季度奖金金额
+        print('  季度奖金: 返回=$quarterlyAmount');
         return quarterlyAmount;
       case BonusFrequency.semiAnnual:
         // 半年奖金：上半年6月，下半年12月
-        return (month == 6 || month == 12) ? amount : 0.0;
+        final result = (month == 6 || month == 12) ? amount : 0.0;
+        print('  半年奖金: 月份=$month, 结果=$result');
+        return result;
       case BonusFrequency.annual:
         // 年度奖金：12月发放
-        return month == 12 ? amount : 0.0;
+        final result = month == 12 ? amount : 0.0;
+        print('  年度奖金: 月份=$month, 结果=$result');
+        return result;
     }
   }
 
@@ -288,11 +344,15 @@ class BonusItem extends Equatable {
 
     switch (frequency) {
       case BonusFrequency.oneTime:
-        // 一次性奖金：检查是否已经发放
-        if (startDate.isBefore(now) || startDate.isAtSameMomentAs(now)) {
-          return amount; // 已发放，返回全额
+        // 一次性奖金：检查是否在有效年度内
+        if (startDate.year <= year && (endDate == null || endDate!.year >= year)) {
+          // 检查是否已发放或在年度内
+          if (startDate.isBefore(DateTime(year + 1, 1, 1)) && 
+              (endDate == null || endDate!.isAfter(DateTime(year, 1, 1)))) {
+            return amount; // 在年度内，返回全额
+          }
         }
-        return 0; // 未发放，不计入收入
+        return 0; // 不在年度内，不计入收入
 
       case BonusFrequency.annual:
         // 年度奖金：检查是否已经发放
@@ -321,164 +381,31 @@ class BonusItem extends Equatable {
     final quarterlyMonths = quarterlyPaymentMonths ?? [3, 6, 9, 12];
     const salaryDay = 15; // 假设每月15日发放
 
-    // 如果当前日期在开始日期之前，返回0
-    if (currentDate.isBefore(startDate)) {
+    // 如果奖金开始日期在当前日期之后，返回0
+    if (startDate.isAfter(currentDate)) {
       return 0.0;
     }
 
-    // 如果当前月份不是季度发放月份，返回0
-    if (!quarterlyMonths.contains(currentDate.month)) {
-      // 计算下个季度发放信息用于预览
-      var nextQuarterMonth = 0;
-      var nextQuarterYear = currentDate.year;
-
-      for (final month in quarterlyMonths) {
-        if (month > currentDate.month) {
-          nextQuarterMonth = month;
-          break;
-        }
-      }
-
-      if (nextQuarterMonth == 0) {
-        nextQuarterMonth = quarterlyMonths[0];
-        nextQuarterYear++;
-      }
-
-      // 计算到下个季度的发放次数
-      var nextPaidCount = 0;
-      var tempYear = startDate.year;
-      var tempMonth = startDate.month;
-
-      // 找到第一个发放月份
-      var tempFound = false;
-      for (var i = 0; i < quarterlyMonths.length; i++) {
-        final qMonth = quarterlyMonths[i];
-        if (qMonth > startDate.month) {
-          tempMonth = qMonth;
-          tempFound = true;
-          break;
-        } else if (qMonth == startDate.month) {
-          if (startDate.day <= salaryDay) {
-            tempMonth = qMonth;
-            tempFound = true;
-          } else {
-            if (i == quarterlyMonths.length - 1) {
-              tempYear++;
-              tempMonth = quarterlyMonths[0];
-            } else {
-              tempMonth = quarterlyMonths[i + 1];
-            }
-            tempFound = true;
-          }
-          break;
-        }
-      }
-
-      if (!tempFound) {
-        tempYear++;
-        tempMonth = quarterlyMonths[0];
-      }
-
-      // 计算到下个季度的发放次数
-      while (tempYear < nextQuarterYear ||
-          (tempYear == nextQuarterYear && tempMonth <= nextQuarterMonth)) {
-        final quarterlyDate = DateTime(tempYear, tempMonth, salaryDay);
-        if (!quarterlyDate.isBefore(startDate)) {
-          nextPaidCount++;
-        }
-
-        var nextIdx = quarterlyMonths.indexOf(tempMonth) + 1;
-        if (nextIdx >= quarterlyMonths.length) {
-          nextIdx = 0;
-          tempYear++;
-        }
-        tempMonth = quarterlyMonths[nextIdx];
-
-        if (nextPaidCount >= paymentCount) break;
-        if (tempYear > currentDate.year + 10) break;
-      }
-
-      // 显示下个季度发放预览
-      if (nextPaidCount <= paymentCount) {
-        final previewAmount = amount / paymentCount;
-      }
-
-      return 0.0;
-    }
-
-    // 计算当前是第几个季度发放 (需要在预览逻辑之前计算)
+    // 计算已发放的季度奖金次数
     var paidCount = 0;
-    var checkYear = startDate.year;
-    var checkMonth = startDate.month;
-
-    // 找到第一个季度发放月份
-    var foundFirstQuarterlyMonth = false;
-    for (var i = 0; i < quarterlyMonths.length; i++) {
-      final quarterlyMonth = quarterlyMonths[i];
-
-      if (quarterlyMonth > startDate.month) {
-        checkMonth = quarterlyMonth;
-        foundFirstQuarterlyMonth = true;
-        break;
-      } else if (quarterlyMonth == startDate.month) {
-        if (startDate.day <= salaryDay) {
-          checkMonth = quarterlyMonth;
-          foundFirstQuarterlyMonth = true;
-        } else {
-          if (i == quarterlyMonths.length - 1) {
-            checkYear++;
-            checkMonth = quarterlyMonths[0];
-          } else {
-            checkMonth = quarterlyMonths[i + 1];
-          }
-          foundFirstQuarterlyMonth = true;
+    
+    // 遍历年内的每个季度发放月份
+    for (final month in quarterlyMonths) {
+      final paymentDate = DateTime(year, month, salaryDay);
+      
+      // 检查这个发放日期是否已过且在奖金有效期内
+      if (paymentDate.isBefore(currentDate) || paymentDate.isAtSameMomentAs(currentDate)) {
+        // 检查这个发放日期是否在奖金的有效期内
+        if (!paymentDate.isBefore(startDate) && 
+            (endDate == null || !paymentDate.isAfter(endDate!))) {
+          paidCount++;
         }
-        break;
       }
     }
 
-    if (!foundFirstQuarterlyMonth) {
-      checkYear++;
-      checkMonth = quarterlyMonths[0];
-    }
-
-    // 计算已经过去的季度发放次数
-    while (checkYear < currentDate.year ||
-        (checkYear == currentDate.year && checkMonth <= currentDate.month)) {
-      final quarterlyDate = DateTime(checkYear, checkMonth, salaryDay);
-      if (!quarterlyDate.isBefore(startDate)) {
-        paidCount++;
-      }
-
-      var nextIdx = quarterlyMonths.indexOf(checkMonth) + 1;
-      if (nextIdx >= quarterlyMonths.length) {
-        nextIdx = 0;
-        checkYear++;
-      }
-      checkMonth = quarterlyMonths[nextIdx];
-
-      if (paidCount >= paymentCount) break;
-      if (checkYear > currentDate.year + 10) break;
-    }
-
-    // 如果当前日期还没到发放日，返回0
-    if (currentDate.day < salaryDay) {
-      return 0.0;
-    }
-
-    // 如果还没到发放次数，返回0
-    if (paidCount <= 0 || paidCount > paymentCount) {
-      return 0.0;
-    }
-
-    // 计算季度奖金的税前金额
-    // 按照季度奖金总额除以发放次数得到每季度应发金额
+    // 计算每季度应发金额
     final baseAmount = amount / paymentCount;
-    final paymentAmount = baseAmount; // 税前金额
-
-    // 注意：根据税务文档，季度奖金应与工资收入合并计税
-    // 此处仅计算基础金额，实际税额在工资计算时一并处理
-    return paymentAmount;
+    return baseAmount * paidCount;
   }
 
   /// 计算月度奖金已发放金额
@@ -603,6 +530,8 @@ class BonusItem extends Equatable {
     int? thirteenthSalaryMonth,
     DateTime? creationDate,
     DateTime? updateDate,
+    DateTime? awardDate, // 奖金授予日期
+    DateTime? attributionDate, // 奖金归属日期
   }) =>
       BonusItem(
         id: id ?? this.id,
@@ -618,6 +547,8 @@ class BonusItem extends Equatable {
             quarterlyPaymentMonths ?? this.quarterlyPaymentMonths,
         thirteenthSalaryMonth:
             thirteenthSalaryMonth ?? this.thirteenthSalaryMonth,
+        awardDate: awardDate ?? this.awardDate,
+        attributionDate: attributionDate ?? this.attributionDate,
         creationDate: creationDate ?? this.creationDate,
         updateDate: updateDate ?? DateTime.now(),
       );
@@ -636,6 +567,8 @@ class BonusItem extends Equatable {
       'description': description,
       'quarterlyPaymentMonths': quarterlyPaymentMonths,
       'thirteenthSalaryMonth': thirteenthSalaryMonth,
+      'awardDate': awardDate?.toIso8601String(), // 奖金授予日期
+      'attributionDate': attributionDate?.toIso8601String(), // 奖金归属日期
       'creationDate': creationDate.toIso8601String(),
       'updateDate': updateDate.toIso8601String(),
     };
@@ -658,5 +591,22 @@ class BonusItem extends Equatable {
         thirteenthSalaryMonth,
         creationDate,
         updateDate,
+        awardDate, // 奖金授予日期
+        attributionDate, // 奖金归属日期
       ];
+
+  /// 根据开始日期计算季度奖金的发放月份
+  /// 从开始月份开始，每3个月发放一次
+  static List<int> calculateQuarterlyPaymentMonths(DateTime startDate) {
+    final startMonth = startDate.month;
+    final months = <int>[];
+
+    // 从开始月份开始，每3个月添加一次
+    for (var i = 0; i < 4; i++) {
+      final month = ((startMonth - 1 + i * 3) % 12) + 1;
+      months.add(month);
+    }
+
+    return months;
+  }
 }

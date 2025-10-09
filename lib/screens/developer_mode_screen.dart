@@ -4,6 +4,7 @@ import 'package:your_finance_flutter/core/services/data_migration_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/ios_animation_showcase.dart';
 
 /// 开发者模式页面
 class DeveloperModeScreen extends StatefulWidget {
@@ -323,7 +324,8 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.orange,
                             borderRadius: BorderRadius.circular(12),
@@ -392,6 +394,50 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                       '⚠️ 此操作将重新执行所有数据迁移，可能恢复丢失的工资数据',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: const Color(0xFFFF6B6B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: context.spacing16),
+
+              // iOS动效展示
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'iOS动效展示',
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: context.spacing12),
+                    Text(
+                      '体验完整的iOS风格动效系统，基于Notion动效标杆实现',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.secondaryText,
+                      ),
+                    ),
+                    SizedBox(height: context.spacing16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const IOSAnimationShowcase(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.animation),
+                        label: const Text('进入动效展示'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                     ),
                   ],

@@ -41,6 +41,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
   final _otherDeductionsController = TextEditingController();
   final _specialDeductionController = TextEditingController();
   final _otherTaxFreeIncomeController = TextEditingController();
+  final _otherTaxDeductionsController = TextEditingController(); // 其他税收扣除
 
   // State variables
   bool _isLoading = false;
@@ -88,6 +89,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
     _otherDeductionsController.dispose();
     _specialDeductionController.dispose();
     _otherTaxFreeIncomeController.dispose();
+    _otherTaxDeductionsController.dispose(); // 其他税收扣除
   }
 
   void _calculateAutoCumulative() {
@@ -606,6 +608,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     otherDeductionsController: _otherDeductionsController,
                     specialDeductionController: _specialDeductionController,
                     otherTaxFreeIncomeController: _otherTaxFreeIncomeController,
+                    otherTaxDeductionsController: _otherTaxDeductionsController, // 其他税收扣除
                     autoCalculateTax: _autoCalculateTax,
                     specialDeductionMonthly: _specialDeductionMonthly,
                     onAutoCalculateTaxChanged: (value) =>
@@ -640,6 +643,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                         double.tryParse(_housingFundController.text) ?? 0,
                     otherDeductions:
                         double.tryParse(_otherDeductionsController.text) ?? 0,
+                    otherTaxDeductions:
+                        double.tryParse(_otherTaxDeductionsController.text) ?? 0, // 其他税收扣除
                     bonuses: _bonuses,
                     salaryDay: _salaryDay,
                   ),
