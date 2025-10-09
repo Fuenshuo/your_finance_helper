@@ -3,6 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/ios_animation_showcase.dart';
 

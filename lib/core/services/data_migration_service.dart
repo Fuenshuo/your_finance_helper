@@ -73,4 +73,17 @@ class DataMigrationService {
       // 这个迁移将在Provider初始化后通过 runMigrations 执行
     }
   }
+
+  /// 强制重新执行数据迁移 (开发者模式专用)
+  Future<void> forceReMigration() async {
+    print('🔄 强制重新执行数据迁移...');
+    try {
+      // 重置迁移版本为0
+      await _setCurrentMigrationVersion(0);
+      print('✅ 迁移版本已重置，将在下次应用启动时重新执行迁移');
+    } catch (e) {
+      print('❌ 强制重新迁移失败: $e');
+      rethrow;
+    }
+  }
 }

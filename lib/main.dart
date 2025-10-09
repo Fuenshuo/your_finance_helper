@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
@@ -7,7 +8,7 @@ import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/income_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
-import 'package:your_finance_flutter/screens/home_screen.dart';
+import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
@@ -81,10 +82,10 @@ class MyApp extends StatelessWidget {
             create: (context) => ExpensePlanProvider()..initialize(),
           ),
         ],
-        child: MaterialApp(
+        child: MaterialApp.router(
           title: '家庭资产记账',
           theme: AppTheme.lightTheme,
-          home: const HomeScreen(),
+          routerConfig: appRouter,
           debugShowCheckedModeBanner: false,
           // 添加国际化支持
           localizationsDelegates: const [
