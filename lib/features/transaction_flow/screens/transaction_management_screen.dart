@@ -319,7 +319,9 @@ class _TransactionManagementScreenState
                           .take(5)
                           .map(
                             (transaction) => _buildTransactionListItem(
-                                transaction, accounts),
+                              transaction,
+                              accounts,
+                            ),
                           ),
                       if (transactions.isEmpty)
                         const Padding(

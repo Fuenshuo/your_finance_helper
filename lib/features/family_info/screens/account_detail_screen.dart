@@ -429,7 +429,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(), // 禁用滑动切换，防止与Dismissible冲突
+                physics:
+                    const NeverScrollableScrollPhysics(), // 禁用滑动切换，防止与Dismissible冲突
                 children: [
                   _buildOverviewTab(),
                   _buildTransactionsTab(),
@@ -777,7 +778,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             padding: EdgeInsets.all(context.responsiveSpacing16),
             itemCount: accountTransactions.length,
             itemBuilder: (context, index) =>
-                _buildTransactionItem(accountTransactions[index]),
+                _buildDismissibleTransactionItem(accountTransactions[index]),
           );
         },
       );
@@ -914,6 +915,108 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
           ),
         ],
       );
+
+  // ===== 左滑删除功能的交易项 =====
+  Widget _buildDismissibleTransactionItem(Transaction transaction) {
+    final transactionItem = _buildTransactionItem(transaction);
+
+    return Dismissible(
+      key: Key('transaction-${transaction.id}'),
+      direction: DismissDirection.endToStart, // 从右向左滑动
+      dismissThresholds: const {
+        DismissDirection.endToStart: 0.3, // 需要滑动30%才触发删除
+      },
+      movementDuration: const Duration(milliseconds: 200), // 动画时长
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: context.responsiveSpacing16),
+        decoration: BoxDecoration(
+          color: context.errorColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          Icons.delete_outline,
+          color: context.errorColor,
+          size: 28,
+        ),
+      ),
+      secondaryBackground: Container(
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: context.responsiveSpacing16),
+        decoration: BoxDecoration(
+          color: context.errorColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+          size: 28,
+        ),
+      ),
+      confirmDismiss: (direction) => _showDeleteTransactionDialog(transaction),
+      onDismissed: (direction) => _deleteTransaction(transaction),
+      child: transactionItem,
+    );
+  }
+
+  // 显示删除交易确认对话框
+  Future<bool?> _showDeleteTransactionDialog(Transaction transaction) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除交易'),
+        content: Text('确定要删除"${transaction.description}"吗？\n\n此操作无法撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: context.errorColor,
+            ),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 执行删除交易
+  Future<void> _deleteTransaction(Transaction transaction) async {
+    try {
+      final transactionProvider =
+          Provider.of<TransactionProvider>(context, listen: false);
+
+      // 删除交易
+      await transactionProvider.deleteTransaction(transaction.id);
+
+      // 触发动效显示余额变化
+      _onTransactionsChanged();
+
+      // 显示成功提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('交易已删除'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // 显示错误提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('删除失败: $e'),
+            backgroundColor: context.errorColor,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
 
   Widget _buildTransactionItem(Transaction transaction) {
     final isNewTransaction = transaction.id == _newTransactionId;
