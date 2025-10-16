@@ -432,6 +432,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     return Dismissible(
       key: Key('transaction-${transaction.id}'),
       direction: DismissDirection.endToStart, // 从右向左滑动
+      dismissThresholds: const {
+        DismissDirection.endToStart: 0.3, // 需要滑动30%才触发删除
+      },
+      movementDuration: const Duration(milliseconds: 200), // 动画时长
       background: Container(
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: context.responsiveSpacing16),
@@ -503,7 +507,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
           .where(
             (t) =>
                 t.description.toLowerCase().contains(searchText) ||
-                t.notes?.toLowerCase().contains(searchText) ?? false,
+                    t.notes?.toLowerCase().contains(searchText) ??
+                false,
           )
           .toList();
     }
@@ -679,28 +684,27 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   }
 
   // 显示删除确认对话框
-  Future<bool?> _showDeleteConfirmDialog(Transaction transaction) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除交易'),
-        content: Text('确定要删除"${transaction.description}"吗？\n\n此操作无法撤销。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.errorColor,
+  Future<bool?> _showDeleteConfirmDialog(Transaction transaction) async =>
+      showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('删除交易'),
+          content: Text('确定要删除"${transaction.description}"吗？\n\n此操作无法撤销。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('取消'),
             ),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-  }
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: context.errorColor,
+              ),
+              child: const Text('删除'),
+            ),
+          ],
+        ),
+      );
 
   // 执行删除交易
   void _deleteTransaction(Transaction transaction) {

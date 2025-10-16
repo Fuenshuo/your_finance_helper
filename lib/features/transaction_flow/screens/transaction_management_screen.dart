@@ -62,6 +62,7 @@ class _TransactionManagementScreenState
         ),
         body: TabBarView(
           controller: _tabController,
+          physics: const NeverScrollableScrollPhysics(), // 禁用滑动切换，防止与Dismissible冲突
           children: [
             _buildOverviewTab(),
             _buildTransactionsTab(),
