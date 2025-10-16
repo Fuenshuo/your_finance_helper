@@ -5,6 +5,7 @@ import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/providers/riverpod_providers.dart';
 import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/services/dio_http_service.dart';
+import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 /// Demo screen showcasing Awesome Flutter Tech Stack Integration
@@ -14,10 +15,12 @@ class RiverpodAssetDemoScreen extends ConsumerStatefulWidget {
   const RiverpodAssetDemoScreen({super.key});
 
   @override
-  ConsumerState<RiverpodAssetDemoScreen> createState() => _RiverpodAssetDemoScreenState();
+  ConsumerState<RiverpodAssetDemoScreen> createState() =>
+      _RiverpodAssetDemoScreenState();
 }
 
-class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScreen> {
+class _RiverpodAssetDemoScreenState
+    extends ConsumerState<RiverpodAssetDemoScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
@@ -98,8 +101,8 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildSummaryCard('总资产', totalAssets, Colors.blue, '¥'),
-                _buildSummaryCard('资产数量', assetCount.toDouble(), Colors.orange, ''),
+                _buildSummaryCard(totalAssets, Colors.blue, '¥总资产'),
+                _buildSummaryCard(assetCount.toDouble(), Colors.orange, '资产数量'),
               ],
             ),
           ),
@@ -109,9 +112,8 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
 
           // Assets List
           Expanded(
-            child: assets.isEmpty
-                ? _buildEmptyState()
-                : _buildAssetsList(assets),
+            child:
+                assets.isEmpty ? _buildEmptyState() : _buildAssetsList(assets),
           ),
         ],
       ),
@@ -127,8 +129,10 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
     );
   }
 
-  Widget _buildSummaryCard(double value, Color color, String prefix) {
-    final displayValue = '${prefix}${value.toStringAsFixed(2)}';
+  Widget _buildSummaryCard(double value, Color color, String label) {
+    final displayValue = label.startsWith('¥')
+        ? '$label${value.toStringAsFixed(2)}'
+        : '${value.toStringAsFixed(0)} $label';
 
     return AppCard(
       child: Padding(
@@ -149,126 +153,116 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
     );
   }
 
-  Widget _buildAddAssetForm(AssetCrudService crudService) {
-    return AppCard(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '添加新资产',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: '资产名称',
-                  hintText: '请输入资产名称',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '资产名称不能为空';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: '资产金额',
-                  hintText: '请输入金额',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '金额不能为空';
-                  }
-                  final amount = double.tryParse(value);
-                  if (amount == null) {
-                    return '请输入有效的金额';
-                  }
-                  if (amount < 0) {
-                    return '金额不能为负数';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => setState(() => _isAddingAsset = false),
-                      child: const Text('取消'),
-                    ),
+  Widget _buildAddAssetForm(AssetCrudService crudService) => AppCard(
+        margin: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '添加新资产',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _saveAsset(crudService),
-                      child: const Text('添加资产'),
-                    ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: '资产名称',
+                    hintText: '请输入资产名称',
+                    border: OutlineInputBorder(),
                   ),
-                ],
-              ),
-            ],
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return '资产名称不能为空';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _amountController,
+                  decoration: const InputDecoration(
+                    labelText: '资产金额',
+                    hintText: '请输入金额',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return '金额不能为空';
+                    }
+                    final amount = double.tryParse(value);
+                    if (amount == null) {
+                      return '请输入有效的金额';
+                    }
+                    if (amount < 0) {
+                      return '金额不能为负数';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => setState(() => _isAddingAsset = false),
+                        child: const Text('取消'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _saveAsset(crudService),
+                        child: const Text('添加资产'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.account_balance_wallet_outlined,
-            size: 80,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '暂无资产',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '点击下方按钮添加您的第一笔资产',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+  Widget _buildEmptyState() => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 80,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 24),
+            Text(
+              '暂无资产',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '点击下方按钮添加您的第一笔资产',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
 
-  Widget _buildAssetsList(List<AssetItem> assets) {
-    final settings = ref.watch(assetSettingsProvider);
-
-    return ListView.builder(
+  Widget _buildAssetsList(List<AssetItem> assets) => ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: assets.length,
-      itemBuilder: (context, index) {
-        final asset = assets[index];
-        final displayAmount = settings.isAmountHidden ? '***' : asset.amount.toStringAsFixed(2);
+        itemBuilder: (context, index) {
+          final asset = assets[index];
+          final displayAmount = asset.amount.toStringAsFixed(2);
 
         return AppCard(
           margin: const EdgeInsets.only(bottom: 12),
@@ -281,7 +275,8 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
               ),
             ),
             title: Text(asset.name),
-            subtitle: Text('${asset.category.displayName} • ${asset.subCategory ?? '无子类别'}'),
+            subtitle: Text(
+                '${asset.category.displayName} • ${asset.subCategory ?? '无子类别'}',),
             trailing: Text(
               '¥$displayAmount',
               style: TextStyle(
@@ -294,13 +289,10 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
         );
       },
     );
-  }
 
   void _saveAsset(AssetCrudService crudService) {
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请检查表单填写')),
-      );
+      unifiedNotifications.showWarning(context, '请检查表单填写');
       return;
     }
 
@@ -316,8 +308,9 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
 
     crudService.addAsset(asset);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('资产 "${asset.name}" 添加成功')),
+    unifiedNotifications.showSuccess(
+      context,
+      '资产 "${asset.name}" 添加成功',
     );
 
     setState(() => _isAddingAsset = false);
@@ -337,7 +330,8 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
           children: [
             Text('金额: ¥${asset.amount.toStringAsFixed(2)}'),
             Text('类别: ${asset.category.displayName}'),
-            if (asset.subCategory != null) Text('子类别: ${asset.subCategory}'),
+            if (asset.subCategory.isNotEmpty)
+              Text('子类别: ${asset.subCategory}'),
             Text('创建时间: ${asset.creationDate.toString().split('.')[0]}'),
           ],
         ),
@@ -367,11 +361,9 @@ class _RiverpodAssetDemoScreenState extends ConsumerState<RiverpodAssetDemoScree
             '准备好用于云同步功能';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('🌐 Dio HTTP服务测试成功'),
-          backgroundColor: Colors.green,
-        ),
+      unifiedNotifications.showSuccess(
+        context,
+        '🌐 Dio HTTP服务测试成功',
       );
     } catch (e) {
       setState(() {

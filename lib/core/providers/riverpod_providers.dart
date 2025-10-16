@@ -2,7 +2,6 @@
 // Riverpod Providers for Asset Management (Working Demo Version)
 // ============================================================================
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/services/drift_database_service.dart';
@@ -13,17 +12,39 @@ import 'package:your_finance_flutter/core/utils/logger.dart';
 // ============================================================================
 
 /// Initialized database service provider
-final databaseServiceProvider = FutureProvider<DriftDatabaseService>((ref) async {
-  return DriftDatabaseService.getInstance();
-});
+final databaseServiceProvider = FutureProvider<DriftDatabaseService>(
+  (ref) async => DriftDatabaseService.getInstance(),
+);
 
 // ============================================================================
-// Simple Asset Management (Working Version)
+// Database-Backed Asset Management
 // ============================================================================
 
-/// Simple asset list provider using in-memory list for demo
-final assetsProvider = StateNotifierProvider<AssetsNotifier, List<AssetItem>>((ref) {
-  return AssetsNotifier();
+/// Database-backed asset list provider that loads from Drift
+final assetsProvider =
+    StateNotifierProvider<AssetsNotifier, List<AssetItem>>((ref) {
+  final notifier = AssetsNotifier();
+
+  // Load data from database on initialization
+  ref.listen<AsyncValue<DriftDatabaseService>>(databaseServiceProvider,
+      (previous, next) {
+    next.whenData((db) async {
+      try {
+        final assets = await db.getAssets();
+        if (assets.isNotEmpty) {
+          notifier.loadFromDatabase(assets);
+        }
+      } catch (e) {
+        Log.business(
+          'Riverpod',
+          'Failed to load assets from database',
+          {'error': e.toString()},
+        );
+      }
+    });
+  });
+
+  return notifier;
 });
 
 /// Total assets calculation provider
@@ -48,7 +69,11 @@ class AssetsNotifier extends StateNotifier<List<AssetItem>> {
   /// Add a new asset
   void addAsset(AssetItem asset) {
     state = [...state, asset];
-    Log.business('AssetsNotifier', 'Asset added', {'name': asset.name, 'amount': asset.amount});
+    Log.business(
+      'AssetsNotifier',
+      'Asset added',
+      {'name': asset.name, 'amount': asset.amount},
+    );
   }
 
   /// Remove an asset by ID
@@ -59,9 +84,11 @@ class AssetsNotifier extends StateNotifier<List<AssetItem>> {
 
   /// Update an existing asset
   void updateAsset(AssetItem updatedAsset) {
-    state = state.map((asset) =>
-      asset.id == updatedAsset.id ? updatedAsset : asset
-    ).toList();
+    state = state
+        .map(
+          (asset) => asset.id == updatedAsset.id ? updatedAsset : asset,
+        )
+        .toList();
     Log.business('AssetsNotifier', 'Asset updated', {'id': updatedAsset.id});
   }
 
@@ -71,10 +98,20 @@ class AssetsNotifier extends StateNotifier<List<AssetItem>> {
     Log.business('AssetsNotifier', 'All assets cleared');
   }
 
-  /// Load assets from database (for future integration)
-  Future<void> loadFromDatabase() async {
-    // TODO: Implement database loading
-    Log.business('AssetsNotifier', 'Load from database called (not implemented yet)');
+  /// Load assets from database
+  void loadFromDatabase(List<AssetItem> assets) {
+    state = assets;
+    Log.business(
+      'AssetsNotifier',
+      'Loaded assets from database',
+      {'count': assets.length},
+    );
+  }
+
+  /// Load assets from database (async version for future use)
+  Future<void> loadFromDatabaseAsync() async {
+    // This method can be used if we need async loading in the future
+    Log.business('AssetsNotifier', 'Async database loading not implemented');
   }
 }
 
@@ -89,9 +126,8 @@ final assetCrudProvider = Provider<AssetCrudService>((ref) {
 });
 
 class AssetCrudService {
-  final AssetsNotifier _assetsNotifier;
-
   AssetCrudService(this._assetsNotifier);
+  final AssetsNotifier _assetsNotifier;
 
   /// Add a new asset
   Future<void> addAsset(AssetItem asset) async {
@@ -108,9 +144,5 @@ class AssetCrudService {
   }
 
   /// Export all assets
-  List<AssetItem> exportAssets() {
-    return _assetsNotifier.state;
-  }
+  List<AssetItem> exportAssets() => _assetsNotifier.state;
 }
-
-

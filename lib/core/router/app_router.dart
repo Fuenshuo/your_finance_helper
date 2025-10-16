@@ -16,14 +16,15 @@ import 'package:your_finance_flutter/features/transaction_flow/screens/add_trans
 // Transaction Flow Screens
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_flow_home_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_records_screen.dart';
-import 'package:your_finance_flutter/screens/debug_screen.dart';
-import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
+import 'package:your_finance_flutter/notification_system_demo.dart';
 // ============================================================================
 // Screen Imports
 // ============================================================================
 
 // Main Screens
 import 'package:your_finance_flutter/riverpod_asset_demo_screen.dart';
+import 'package:your_finance_flutter/screens/debug_screen.dart';
+import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
 import 'package:your_finance_flutter/screens/home_screen.dart';
 import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
 import 'package:your_finance_flutter/screens/onboarding_screen.dart';
@@ -41,6 +42,7 @@ class AppRoutes {
   static const String debug = '/debug';
   static const String developer = '/developer';
   static const String riverpodDemo = '/riverpod-demo';
+  static const String notificationDemo = '/notification-demo';
 
   // Family Info Routes
   static const String familyInfo = '/family-info';
@@ -103,6 +105,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.riverpodDemo,
       builder: (context, state) => const RiverpodAssetDemoScreen(),
+    ),
+
+    GoRoute(
+      path: AppRoutes.notificationDemo,
+      builder: (context, state) => const NotificationSystemDemo(),
     ),
 
     // Main Navigation
@@ -174,7 +181,6 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.mortgageCalculator,
       builder: (context, state) => const MortgageCalculatorScreen(),
     ),
-
 
     // Transaction Flow Routes
     GoRoute(
@@ -261,4 +267,7 @@ extension GoRouterExtensions on BuildContext {
 
   /// Navigate to Riverpod demo
   void goRiverpodDemo() => go(AppRoutes.riverpodDemo);
+
+  /// Navigate to notification demo
+  void goNotificationDemo() => go(AppRoutes.notificationDemo);
 }

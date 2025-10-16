@@ -1,13 +1,13 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/account_edit_screen.dart';
@@ -36,91 +36,89 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     decimalDigits: 2,
   );
 
-  // 翻转器特效动画相关
-  late AnimationController _flipperAnimationController;
-  late Animation<double> _changeAmountSlideAnimation; // +/- 金额底部向上弹出
-  late Animation<double> _changeAmountOpacityAnimation; // +/- 金额淡出
-  late Animation<double> _balanceFlipAnimation; // 余额数字翻转
-  late Animation<double> _balanceOpacityAnimation; // 余额数字透明度
-  late Animation<double> _transactionInsertAnimation; // 交易记录插入
-  late Animation<double> _transactionHighlightAnimation; // 交易记录高亮
+  // ===== v1.1.0 新动效系统 =====
+  late final IOSAnimationSystem _animationSystem;
+  late AnimationController _transactionAnimationController;
+  late Animation<double> _balanceProgressAnimation;
+  late Animation<double> _amountScaleAnimation;
+  late Animation<double> _transactionSlideAnimation;
+  late Animation<double> _highlightAnimation;
 
-  // 动画状态
-  bool _isFlipperAnimationRunning = false;
-  bool _isBalanceInitialized = false; // 余额是否已初始化
+  bool _isBalanceInitialized = false;
   double _previousBalance = 0.0;
   double _currentBalance = 0.0;
-  double _balanceChange = 0.0;
-  TransactionType? _lastTransactionType;
   String? _newTransactionId;
+  bool _isTransactionAnimationRunning = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // 初始化翻转器特效动画控制器
-    _flipperAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 3500), // 总动画时长3.5秒，让动画更舒缓
+    // ===== v1.1.0 初始化新动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册账户详情专用动画曲线
+    IOSAnimationSystem.registerCustomCurve('balance-flip', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('amount-bounce', Curves.bounceOut);
+    IOSAnimationSystem.registerCustomCurve(
+      'transaction-slide',
+      Curves.easeOutCubic,
+    );
+    IOSAnimationSystem.registerCustomCurve('highlight-pulse', Curves.easeInOut);
+
+    // 初始化交易动画控制器 (总时长3.5秒，与原版保持一致)
+    _transactionAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 3500),
       vsync: this,
     );
 
-    // +/- 金额从小到大弹性出现动画 (0-0.4秒) - 提前出现时间
-    _changeAmountSlideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // 余额数字过渡动画 (0.8-3.0秒)
+    _balanceProgressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _flipperAnimationController,
-        curve: const Interval(
-          0.0,
-          0.11,
-          curve: Curves.elasticOut,
-        ), // 0-0.4秒，小到大弹性出现
+        parent: _transactionAnimationController,
+        curve: const Interval(0.23, 0.86, curve: Curves.easeInOut),
       ),
     );
 
-    // +/- 金额保持显示动画 (0.4-3.5秒) - 整个动画过程中保持可见
-    _changeAmountOpacityAnimation = Tween<double>(begin: 1.0, end: 1.0).animate(
+    // +/- 金额缩放动画 (0-0.4秒)
+    _amountScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _flipperAnimationController,
-        curve: const Interval(0.11, 1.0), // 0.4秒-结束保持完全可见
+        parent: _transactionAnimationController,
+        curve: const Interval(0.0, 0.11, curve: Curves.elasticOut),
       ),
     );
 
-    // 余额数字翻转动画 (0.8-3.0秒) - 真正的翻转时长
-    _balanceFlipAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // 交易记录滑入动画 (0.8-2.5秒)
+    _transactionSlideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _flipperAnimationController,
-        curve: const Interval(
-          0.23,
-          0.86,
-          curve: Curves.easeInOut,
-        ), // 0.8-3.0秒真正的翻转
+        parent: _transactionAnimationController,
+        curve: const Interval(0.23, 0.71, curve: Curves.easeOut),
       ),
     );
 
-    // 余额数字透明度动画 (0.8-3.0秒)
-    _balanceOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // 高亮动画 (3.0-3.5秒)
+    _highlightAnimation = Tween<double>(begin: 0.0, end: 0.3).animate(
       CurvedAnimation(
-        parent: _flipperAnimationController,
-        curve: const Interval(0.23, 0.86, curve: Curves.easeInOut), // 0.8-3.0秒
+        parent: _transactionAnimationController,
+        curve: const Interval(0.86, 1.0, curve: Curves.easeInOut),
       ),
     );
 
-    // 交易记录插入动画 (0.8-2.5秒，同时与余额翻转)
-    _transactionInsertAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _flipperAnimationController,
-        curve: const Interval(0.23, 0.71, curve: Curves.easeOut), // 0.8-2.5秒
-      ),
-    );
+    // 添加动画监听器以确保状态同步
+    _transactionAnimationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
+        if (mounted && _isTransactionAnimationRunning) {
+          setState(() {
+            _isTransactionAnimationRunning = false;
+            _newTransactionId = null;
+          });
+        }
+      }
+    });
 
-    // 交易记录高亮动画 (3.0-3.5秒) - 最后高亮
-    _transactionHighlightAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _flipperAnimationController,
-        curve: const Interval(0.86, 1.0, curve: Curves.easeInOut), // 3.0-3.5秒
-      ),
-    );
+    print('🎨 初始化v1.1.0动效系统完成');
   }
 
   @override
@@ -155,7 +153,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _flipperAnimationController.dispose();
+    _transactionAnimationController.dispose();
+    _animationSystem.dispose();
 
     // 移除交易监听器
     if (mounted) {
@@ -204,12 +203,15 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
     print('💰 当前余额: $_currentBalance, 新余额: $newBalance');
 
-    // 检查余额是否发生变化且动画未在运行
+    // 检查余额是否发生变化且没有正在运行的动画
     if ((newBalance - _currentBalance).abs() > 0.01 &&
-        !_isFlipperAnimationRunning) {
+        !_isTransactionAnimationRunning) {
       print('📈 检测到余额变化: ${newBalance - _currentBalance}');
 
-      // 查找最新的交易（可能是刚添加的）
+      final actualAmountChange = newBalance - _currentBalance;
+      final isBalanceIncrease = actualAmountChange > 0;
+
+      // 查找相关的交易记录
       final accountTransactions = transactionProvider.transactions
           .where(
             (t) =>
@@ -218,6 +220,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
           )
           .toList()
         ..sort((a, b) => b.date.compareTo(a.date));
+
+      String? targetTransactionId;
 
       if (accountTransactions.isNotEmpty) {
         final latestTransaction = accountTransactions.first;
@@ -235,16 +239,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                     ? latestTransaction.amount
                     : 0);
 
-        final actualAmountChange = newBalance - _currentBalance;
-
         if (timeDiff <= 30 &&
             (actualAmountChange - expectedAmountChange).abs() < 0.01) {
           print(
-            '🎭 触发翻转器特效! 时间差: $timeDiff秒, 金额匹配: $actualAmountChange ≈ $expectedAmountChange',
+            '🎭 触发v1.1.0动效序列! 时间差: $timeDiff秒, 金额匹配: $actualAmountChange ≈ $expectedAmountChange',
           );
 
-          // 启动翻转器特效
-          _startFlipperAnimation(
+          // 使用v1.1.0新动效系统启动动画序列
+          _startTransactionAnimationSequence(
             previousBalance: _currentBalance,
             newBalance: newBalance,
             balanceChange: actualAmountChange,
@@ -254,49 +256,122 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
           return;
         } else {
           print(
-            '⏰ 时间差太久 ($timeDiff秒) 或金额不匹配 ($actualAmountChange ≠ $expectedAmountChange)，跳过动画',
+            '⏰ 时间差太久 ($timeDiff秒) 或金额不匹配 ($actualAmountChange ≠ $expectedAmountChange)，可能是删除操作',
           );
         }
       }
 
-      // 普通余额变化（不显示动画）
-      print('📊 普通余额变化更新');
-      setState(() {
-        _previousBalance = _currentBalance;
-        _currentBalance = newBalance;
-      });
+      // 对于非新增交易的情况（比如删除交易），也触发动效但不标记新交易ID
+      print(
+        '🎭 触发余额变化动效! 变化: $actualAmountChange (可能是删除交易)',
+      );
+
+      _startBalanceChangeAnimation(
+        previousBalance: _currentBalance,
+        newBalance: newBalance,
+        balanceChange: actualAmountChange,
+        isIncrease: isBalanceIncrease,
+      );
+      return;
     } else {
-      print('💰 余额没有变化或动画正在运行');
+      print('💰 余额没有变化或动画序列正在运行');
     }
   }
 
-  /// 启动翻转器特效动画
-  void _startFlipperAnimation({
+  /// ===== v1.1.0 新动效系统：处理余额变化动效（删除交易等） =====
+  void _startBalanceChangeAnimation({
+    required double previousBalance,
+    required double newBalance,
+    required double balanceChange,
+    required bool isIncrease,
+  }) {
+    print('🎭 启动余额变化动效');
+
+    // 安全检查：确保数据有效
+    if (previousBalance.isNaN ||
+        previousBalance.isInfinite ||
+        newBalance.isNaN ||
+        newBalance.isInfinite) {
+      print('⚠️ 检测到无效的余额数据，跳过动画');
+      setState(() {
+        _previousBalance = newBalance;
+        _currentBalance = newBalance;
+      });
+      return;
+    }
+
+    // 设置动画状态
+    setState(() {
+      _isTransactionAnimationRunning = true;
+      _previousBalance = previousBalance;
+      _currentBalance = newBalance;
+    });
+
+    // 简化版本：只有余额数字过渡和金额提示（2秒总时长）
+    _transactionAnimationController.reset();
+    _transactionAnimationController.forward().then((_) {
+      if (mounted) {
+        print('✅ 余额变化动效完成');
+        setState(() {
+          _isTransactionAnimationRunning = false;
+        });
+      }
+    }).catchError((Object error) {
+      print('❌ 余额变化动效出错: $error');
+      if (mounted) {
+        setState(() {
+          _isTransactionAnimationRunning = false;
+        });
+      }
+    });
+  }
+
+  /// ===== v1.1.0 新动效系统：启动交易动画序列 =====
+  void _startTransactionAnimationSequence({
     required double previousBalance,
     required double newBalance,
     required double balanceChange,
     required TransactionType transactionType,
     required String newTransactionId,
   }) {
-    print('🎭 启动翻转器特效动画');
+    print('🎭 启动v1.1.0交易动效序列');
+
+    // 安全检查：确保数据有效
+    if (previousBalance.isNaN ||
+        previousBalance.isInfinite ||
+        newBalance.isNaN ||
+        newBalance.isInfinite) {
+      print('⚠️ 检测到无效的余额数据，跳过动画');
+      setState(() {
+        _previousBalance = newBalance;
+        _currentBalance = newBalance;
+      });
+      return;
+    }
 
     // 设置动画状态
     setState(() {
-      _isFlipperAnimationRunning = true;
+      _isTransactionAnimationRunning = true;
       _previousBalance = previousBalance;
       _currentBalance = newBalance;
-      _balanceChange = balanceChange;
-      _lastTransactionType = transactionType;
       _newTransactionId = newTransactionId;
     });
 
-    // 启动动画
-    _flipperAnimationController.reset();
-    _flipperAnimationController.forward().then((_) {
+    // 启动动画控制器
+    _transactionAnimationController.reset();
+    _transactionAnimationController.forward().then((_) {
       if (mounted) {
-        // 动画完成后清理状态
+        print('✅ v1.1.0动效序列执行完成');
         setState(() {
-          _isFlipperAnimationRunning = false;
+          _isTransactionAnimationRunning = false;
+          _newTransactionId = null;
+        });
+      }
+    }).catchError((Object error) {
+      print('❌ v1.1.0动效序列执行出错: $error');
+      if (mounted) {
+        setState(() {
+          _isTransactionAnimationRunning = false;
           _newTransactionId = null;
         });
       }
@@ -431,96 +506,88 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             Stack(
               alignment: Alignment.center,
               children: [
-                // 余额文本 - 真正的翻转器特效
-                AnimatedBuilder(
-                  animation: _flipperAnimationController,
-                  builder: (context, child) {
-                    if (!_isFlipperAnimationRunning) {
-                      // 检查余额是否已初始化
-                      if (!_isBalanceInitialized) {
-                        // 显示加载状态
-                        return const SizedBox(
-                          height: 40,
-                          child: Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-
-                      // 正常显示当前余额
-                      return Text(
-                        _currencyFormat.format(_currentBalance),
-                        style: context.textTheme.displaySmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 32,
+                // ===== v1.1.0 余额文本显示 =====
+                if (!_isBalanceInitialized)
+                  const SizedBox(
+                    height: 40,
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                      );
-                    }
-
-                    // 真正的数字滚动翻转效果 - 像老虎机一样
-                    final balanceProgress = _balanceFlipAnimation.value;
-                    final balanceOpacity = _balanceOpacityAnimation.value;
-
-                    return Opacity(
-                      opacity: balanceOpacity,
-                      child: _buildSimpleNumberTransition(
-                        fromValue: _previousBalance,
-                        toValue: _currentBalance,
-                        progress: balanceProgress,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  )
+                else
+                  _isTransactionAnimationRunning
+                      // 动画过程中显示数字过渡
+                      ? AnimatedBuilder(
+                          animation: _transactionAnimationController,
+                          builder: (context, child) {
+                            final progress = _balanceProgressAnimation.value;
+                            final displayValue = _previousBalance +
+                                (_currentBalance - _previousBalance) * progress;
 
-                // +/- 金额动画 - 优雅飘入效果，不会遮挡余额
-                if (_isFlipperAnimationRunning)
+                            return Text(
+                              _currencyFormat.format(displayValue),
+                              style: context.textTheme.displaySmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 32,
+                              ),
+                            );
+                          },
+                        )
+                      // 正常状态显示当前余额
+                      : Text(
+                          _currencyFormat.format(_currentBalance),
+                          style: context.textTheme.displaySmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                          ),
+                        ),
+
+                // ===== v1.1.0 +/- 金额显示 =====
+                if (_isTransactionAnimationRunning)
                   AnimatedBuilder(
-                    animation: _flipperAnimationController,
+                    animation: _transactionAnimationController,
                     builder: (context, child) {
-                      final scaleProgress = _changeAmountSlideAnimation.value;
-                      final opacityProgress =
-                          _changeAmountOpacityAnimation.value;
+                      final progress = _amountScaleAnimation.value;
+                      final clampedProgress = progress.clamp(0.0, 1.0);
 
-                      if (scaleProgress <= 0.0) {
-                        return const SizedBox();
-                      }
+                      if (clampedProgress <= 0.0) return const SizedBox();
 
+                      final balanceChange = _currentBalance - _previousBalance;
                       final changeColor =
-                          _lastTransactionType == TransactionType.income
-                              ? Colors.green
-                              : Colors.red;
-
-                      // 优雅的飘入动画 - 从上方飘入，停留在合适位置
-                      final slideOffset = (1.0 - scaleProgress) * -40; // 从上方飘入
+                          balanceChange >= 0 ? Colors.green : Colors.red;
+                      final slideOffset = (1.0 - clampedProgress) * -40;
 
                       return Positioned(
-                        top: slideOffset - 45, // 位置在余额上方，不会遮挡
+                        top: slideOffset - 45,
                         child: Transform.scale(
-                          scale: scaleProgress.clamp(0.6, 1.0), // 最小缩放到0.6，避免太小
+                          scale: clampedProgress.clamp(0.6, 1.0),
                           child: Opacity(
-                            opacity: opacityProgress,
+                            opacity: clampedProgress,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: changeColor
-                                    .withOpacity(opacityProgress * 0.95),
+                                color: changeColor.withOpacity(
+                                  (clampedProgress * 0.95).clamp(0.0, 1.0),
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: changeColor
-                                        .withOpacity(opacityProgress * 0.4),
+                                    color: changeColor.withOpacity(
+                                      (clampedProgress * 0.4).clamp(0.0, 1.0),
+                                    ),
                                     blurRadius: 12,
                                     spreadRadius: 1,
                                   ),
@@ -530,11 +597,12 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                                 ),
                               ),
                               child: Text(
-                                '${_balanceChange >= 0 ? '+' : ''}${_currencyFormat.format(_balanceChange)}',
+                                '${balanceChange >= 0 ? '+' : ''}'
+                                '${_currencyFormat.format(balanceChange)}',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18, // 固定较大字体
-                                  fontWeight: FontWeight.w600, // 稍微减轻字体粗细
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                   shadows: [
                                     Shadow(
                                       color: Colors.black.withOpacity(0.3),
@@ -849,12 +917,85 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   Widget _buildTransactionItem(Transaction transaction) {
     final isNewTransaction = transaction.id == _newTransactionId;
 
-    return AnimatedBuilder(
-      animation: _flipperAnimationController,
-      builder: (context, child) {
-        if (!_isFlipperAnimationRunning || !isNewTransaction) {
-          // 正常显示交易项
-          return Container(
+    return _isTransactionAnimationRunning && isNewTransaction
+        // ===== v1.1.0 新交易动效 =====
+        ? AnimatedBuilder(
+            animation: _transactionAnimationController,
+            builder: (context, child) {
+              // 计算动画进度 - 交易记录插入动画 (0.8-2.5秒)
+              final insertProgress =
+                  _transactionSlideAnimation.value.clamp(0.0, 1.0);
+              final highlightProgress =
+                  _highlightAnimation.value.clamp(0.0, 1.0);
+
+              // 计算插入位置和透明度
+              final slideOffset = (1.0 - insertProgress) * 100; // 从右侧滑入
+              final opacity = insertProgress;
+
+              // 计算高亮效果
+              final highlightColor = highlightProgress > 0.0
+                  ? Colors.yellow.shade400
+                      .withOpacity((highlightProgress * 0.3).clamp(0.0, 1.0))
+                  : Colors.transparent;
+
+              return Container(
+                margin: EdgeInsets.only(bottom: context.spacing8),
+                child: Transform.translate(
+                  offset: Offset(slideOffset, 0), // 从右侧滑入
+                  child: Opacity(
+                    opacity: opacity,
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      color: highlightColor,
+                      child: ListTile(
+                        leading: Container(
+                          padding: EdgeInsets.all(context.responsiveSpacing8),
+                          decoration: BoxDecoration(
+                            color: transaction.type == TransactionType.income
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            transaction.type == TransactionType.income
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward,
+                            color: transaction.type == TransactionType.income
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                        ),
+                        title: Text(
+                          transaction.description,
+                          style: context.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          DateFormat('MM-dd HH:mm').format(transaction.date),
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: context.secondaryText,
+                          ),
+                        ),
+                        trailing: Text(
+                          '${transaction.type == TransactionType.income ? '+' : '-'}${_currencyFormat.format(transaction.amount)}',
+                          style: context.textTheme.bodyLarge?.copyWith(
+                            color: transaction.type == TransactionType.income
+                                ? Colors.green
+                                : Colors.red,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        onTap: () => _showTransactionDetail(transaction),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          )
+        // ===== 正常显示交易项 =====
+        : Container(
             margin: EdgeInsets.only(bottom: context.spacing8),
             child: Card(
               margin: EdgeInsets.zero,
@@ -901,294 +1042,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               ),
             ),
           );
-        }
-
-        // 翻转器特效 - 交易记录插入动画和高亮
-        final insertProgress = _transactionInsertAnimation.value;
-        final highlightProgress = _transactionHighlightAnimation.value;
-
-        // 计算插入位置和透明度
-        final slideOffset = (1.0 - insertProgress) * 100; // 从右侧滑入
-        final opacity = insertProgress;
-
-        // 计算高亮效果
-        final highlightColor = highlightProgress > 0.0
-            ? Colors.yellow.shade400.withOpacity(highlightProgress * 0.3)
-            : Colors.transparent;
-
-        return Container(
-          margin: EdgeInsets.only(bottom: context.spacing8),
-          child: Transform.translate(
-            offset: Offset(slideOffset, 0), // 从右侧滑入
-            child: Opacity(
-              opacity: opacity,
-              child: Card(
-                margin: EdgeInsets.zero,
-                color: highlightColor,
-                child: ListTile(
-                  leading: Container(
-                    padding: EdgeInsets.all(context.responsiveSpacing8),
-                    decoration: BoxDecoration(
-                      color: transaction.type == TransactionType.income
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      transaction.type == TransactionType.income
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                      color: transaction.type == TransactionType.income
-                          ? Colors.green
-                          : Colors.red,
-                    ),
-                  ),
-                  title: Text(
-                    transaction.description,
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  subtitle: Text(
-                    DateFormat('MM-dd HH:mm').format(transaction.date),
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: context.secondaryText,
-                    ),
-                  ),
-                  trailing: Text(
-                    '${transaction.type == TransactionType.income ? '+' : '-'}${_currencyFormat.format(transaction.amount)}',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: transaction.type == TransactionType.income
-                          ? Colors.green
-                          : Colors.red,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onTap: () => _showTransactionDetail(transaction),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
-
-  // 简洁的数字过渡动画 - 老虎机风格的简单版本
-  Widget _buildSimpleNumberTransition({
-    required double fromValue,
-    required double toValue,
-    required double progress,
-  }) {
-    final fromText = _currencyFormat.format(fromValue);
-    final toText = _currencyFormat.format(toValue);
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // 原金额 - 淡出
-        Opacity(
-          opacity: (1.0 - progress * 0.8).clamp(0.0, 1.0),
-          child: Text(
-            fromText,
-            style: context.textTheme.displaySmall?.copyWith(
-              color: Colors.white.withOpacity(0.7),
-              fontWeight: FontWeight.bold,
-              fontSize: 32,
-            ),
-          ),
-        ),
-
-        // 新金额 - 从下方滑入
-        Opacity(
-          opacity: progress,
-          child: Transform.translate(
-            offset: Offset(0, (1.0 - progress) * 30), // 从下方滑入
-            child: Text(
-              toText,
-              style: context.textTheme.displaySmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 32,
-              ),
-            ),
-          ),
-        ),
-
-        // 老虎机滚动效果 - 在数字变化过程中显示
-        if (progress > 0.3 && progress < 0.9)
-          Opacity(
-            opacity: progress < 0.6
-                ? (progress - 0.3) * 3.33
-                : (0.9 - progress) * 3.33,
-            child: _buildRollingNumbers(fromValue, toValue, progress),
-          ),
-      ],
-    );
-  }
-
-  // 生成真正的老虎机数字滚动效果
-  Widget _buildRollingNumbers(
-    double fromValue,
-    double toValue,
-    double progress,
-  ) {
-    final fromText = _currencyFormat.format(fromValue);
-    final toText = _currencyFormat.format(toValue);
-
-    // 找到两个数字字符串中较长的那个
-    final maxLength = math.max(fromText.length, toText.length);
-
-    // 对齐字符串长度（在前面补空格）
-    final paddedFromText = fromText.padLeft(maxLength);
-    final paddedToText = toText.padLeft(maxLength);
-
-    final digits = <Widget>[];
-
-    for (var i = 0; i < maxLength; i++) {
-      final fromChar = paddedFromText[i];
-      final toChar = paddedToText[i];
-
-      // 如果是数字，进行滚动动画；如果是符号，直接显示
-      if (RegExp(r'\d').hasMatch(fromChar) && RegExp(r'\d').hasMatch(toChar)) {
-        digits.add(_buildRollingDigit(fromChar, toChar, progress));
-      } else {
-        digits.add(
-          Text(
-            toChar,
-            style: context.textTheme.displaySmall?.copyWith(
-              color: Colors.white.withOpacity(0.5),
-              fontWeight: FontWeight.bold,
-              fontSize: 32,
-            ),
-          ),
-        );
-      }
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: digits,
-    );
-  }
-
-  // 单个数字的滚动效果
-  Widget _buildRollingDigit(String fromDigit, String toDigit, double progress) {
-    final fromNum = int.parse(fromDigit);
-    final toNum = int.parse(toDigit);
-
-    // 计算滚动进度 - 让滚动更快更明显
-    final scrollProgress = progress * 25; // 增加滚动距离
-
-    // 计算当前应该显示的数字序列的偏移
-    final baseNum = fromNum;
-    final targetNum = toNum;
-
-    // 计算从起始数字滚动到目标数字需要的步数
-    final stepsToTarget = (targetNum - baseNum + 10) % 10;
-    final currentStep = (scrollProgress % (stepsToTarget + 15)).round(); // 多滚几圈
-
-    // 当前显示的数字
-    final currentNum = (baseNum + currentStep) % 10;
-
-    return Container(
-      width: 32,
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 4,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // 滚动数字序列 - 显示更多数字
-            ...List.generate(17, (index) {
-              final i = index - 8; // 从 -8 到 8
-              final digitNum = (currentNum + i + 20) % 10; // 循环0-9
-              final yOffset = i * 40.0; // 每个数字40像素高
-
-              // 创建数字消失和出现的渐变效果
-              final distance = i.abs();
-              final opacity = distance == 0
-                  ? 1.0
-                  : distance == 1
-                      ? 0.8
-                      : distance == 2
-                          ? 0.4
-                          : 0.1;
-
-              return Positioned(
-                top: yOffset + 6, // 居中偏移
-                child: Opacity(
-                  opacity: opacity,
-                  child: Text(
-                    digitNum.toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: distance == 0 ? 32 : 28 - distance * 2,
-                      fontWeight: FontWeight.bold,
-                      shadows: distance == 0
-                          ? [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.6),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
-                    ),
-                  ),
-                ),
-              );
-            }),
-
-            // 中间高亮线条
-            Positioned(
-              top: 14,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 2,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Colors.white.withOpacity(0.8),
-                      Colors.white.withOpacity(0.8),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 静态字符显示
-  Widget _buildStaticCharacter(String char) => Text(
-        char,
-        style: context.textTheme.displaySmall?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 32,
-        ),
-      );
 
   IconData _getAccountIcon(AccountType type) {
     switch (type) {
@@ -1287,33 +1141,19 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     );
   }
 
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除账户'),
-        content: Text(
-          '确定要删除账户"${widget.account.name}"吗？\n\n'
+  Future<void> _showDeleteAccountDialog() async {
+    final confirmed = await unifiedNotifications.showConfirmation(
+      context,
+      title: '删除账户',
+      message: '确定要删除账户"${widget.account.name}"吗？\n\n'
           '这将同时删除所有与该账户相关的交易记录，且此操作不可撤销。',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _deleteAccount();
-              Navigator.of(context).pop(); // 关闭对话框
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
+      confirmLabel: '删除',
+      confirmColor: Colors.red,
     );
+
+    if (confirmed ?? false) {
+      await _deleteAccount();
+    }
   }
 
   Future<void> _deleteAccount() async {
@@ -1339,16 +1179,12 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       await accountProvider.deleteAccount(widget.account.id);
 
       // 显示成功消息
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('账户已删除')),
-      );
+      unifiedNotifications.showSuccess(context, '账户已删除');
 
       // 返回上一页
       Navigator.of(context).pop();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('删除失败: $e')),
-      );
+      unifiedNotifications.showError(context, '删除失败: $e');
     }
   }
 

@@ -76,6 +76,546 @@ class AppAnimations {
         duration: duration,
       );
 
+  // ===== 输入反馈动画 =====
+
+  /// 输入框聚焦发光动画
+  static Widget animatedInputFocus({
+    required Widget child,
+    required bool hasFocus,
+    Color focusColor = Colors.blue,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedInputFocus(
+        hasFocus: hasFocus,
+        focusColor: focusColor,
+        duration: duration,
+        child: child,
+      );
+
+  /// 密码字符遮罩切换动画
+  static Widget animatedPasswordMask({
+    required String text,
+    required bool obscureText,
+    TextStyle? style,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedPasswordMask(
+        text: text,
+        obscureText: obscureText,
+        style: style,
+        duration: duration,
+      );
+
+  /// 搜索框提示文字动画
+  static Widget animatedSearchHint({
+    required String hintText,
+    required String currentText,
+    TextStyle? style,
+    Duration duration = const Duration(milliseconds: 250),
+  }) =>
+      _AnimatedSearchHint(
+        hintText: hintText,
+        currentText: currentText,
+        style: style,
+        duration: duration,
+      );
+
+  /// 数字千分位格式化动画
+  static Widget animatedNumberFormat({
+    required double value,
+    TextStyle? style,
+    Duration duration = const Duration(milliseconds: 600),
+  }) =>
+      _AnimatedNumberFormat(
+        value: value,
+        style: style,
+        duration: duration,
+      );
+
+  /// 输入错误抖动反馈
+  static Widget animatedInputError({
+    required Widget child,
+    required bool hasError,
+    Duration duration = const Duration(milliseconds: 500),
+  }) =>
+      _AnimatedInputError(
+        hasError: hasError,
+        duration: duration,
+        child: child,
+      );
+
+  /// 日期选择高亮动画
+  static Widget animatedDateHighlight({
+    required Widget child,
+    required bool isSelected,
+    required bool isToday,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedDateHighlight(
+        isSelected: isSelected,
+        isToday: isToday,
+        duration: duration,
+        child: child,
+      );
+
+  /// 滑块数值跟随动画
+  static Widget animatedSliderValue({
+    required double value,
+    required double min,
+    required double max,
+    TextStyle? style,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedSliderValue(
+        value: value,
+        min: min,
+        max: max,
+        style: style,
+        duration: duration,
+      );
+
+  /// 标签输入出现动画
+  static Widget animatedTagAppear({
+    required List<String> tags,
+    TextStyle? style,
+    Duration duration = const Duration(milliseconds: 400),
+  }) =>
+      _AnimatedTagAppear(
+        tags: tags,
+        style: style,
+        duration: duration,
+      );
+
+  /// 多选框勾选动画
+  static Widget animatedCheckbox({
+    required bool value,
+    required ValueChanged<bool?>? onChanged,
+    Color? activeColor,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedCheckbox(
+        value: value,
+        onChanged: onChanged,
+        activeColor: activeColor,
+        duration: duration,
+      );
+
+  /// 单选按钮组切换动画
+  static Widget animatedRadioGroup<T>({
+    required T? value,
+    required T groupValue,
+    required ValueChanged<T?>? onChanged,
+    Widget? title,
+    Duration duration = const Duration(milliseconds: 250),
+  }) =>
+      _AnimatedRadioGroup<T>(
+        value: value,
+        groupValue: groupValue,
+        onChanged: onChanged,
+        title: title,
+        duration: duration,
+      );
+
+  // ===== 状态变化动画 =====
+
+  /// 进度条填充动画
+  static Widget animatedProgressFill({
+    required double progress,
+    double height = 4,
+    Color fillColor = Colors.blue,
+    Color backgroundColor = Colors.grey,
+    Duration duration = const Duration(milliseconds: 1000),
+  }) =>
+      _AnimatedProgressFill(
+        progress: progress,
+        height: height,
+        fillColor: fillColor,
+        backgroundColor: backgroundColor,
+        duration: duration,
+      );
+
+  /// 统计卡片数据更新动画
+  static Widget animatedStatCard({
+    required Widget child,
+    required bool shouldAnimate,
+    Duration duration = const Duration(milliseconds: 600),
+  }) =>
+      _AnimatedStatCard(
+        shouldAnimate: shouldAnimate,
+        duration: duration,
+        child: child,
+      );
+
+  /// 图表数据点亮动画
+  static Widget animatedChartHighlight({
+    required Widget child,
+    required bool isHighlighted,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedChartHighlight(
+        isHighlighted: isHighlighted,
+        duration: duration,
+        child: child,
+      );
+
+  /// 余额数字滚动动画
+  static Widget animatedBalanceRoll({
+    required double value,
+    TextStyle? style,
+    Duration duration = const Duration(milliseconds: 800),
+  }) =>
+      _AnimatedBalanceRoll(
+        value: value,
+        style: style,
+        duration: duration,
+      );
+
+  /// 环形进度条动画
+  static Widget animatedCircularProgress({
+    required double progress,
+    double size = 100,
+    double strokeWidth = 8,
+    Color progressColor = Colors.blue,
+    Color backgroundColor = Colors.grey,
+    Duration duration = const Duration(milliseconds: 1200),
+  }) =>
+      _AnimatedCircularProgress(
+        progress: progress,
+        size: size,
+        strokeWidth: strokeWidth,
+        progressColor: progressColor,
+        backgroundColor: backgroundColor,
+        duration: duration,
+      );
+
+  /// 等级提升动画
+  static Widget animatedLevelUp({
+    required Widget child,
+    required bool shouldAnimate,
+    Duration duration = const Duration(milliseconds: 1000),
+  }) =>
+      _AnimatedLevelUp(
+        shouldAnimate: shouldAnimate,
+        duration: duration,
+        child: child,
+      );
+
+  /// 状态指示器颜色动画
+  static Widget animatedStatusIndicator({
+    required StatusType status,
+    double size = 12,
+    Duration duration = const Duration(milliseconds: 400),
+  }) =>
+      _AnimatedStatusIndicator(
+        status: status,
+        size: size,
+        duration: duration,
+      );
+
+  /// 通知徽章数字动画
+  static Widget animatedBadge({
+    required int count,
+    Color badgeColor = Colors.red,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedBadge(
+        count: count,
+        badgeColor: badgeColor,
+        duration: duration,
+      );
+
+  /// 时间线事件展开动画
+  static Widget animatedTimelineEvent({
+    required Widget child,
+    required bool isExpanded,
+    Duration duration = const Duration(milliseconds: 500),
+  }) =>
+      _AnimatedTimelineEvent(
+        isExpanded: isExpanded,
+        duration: duration,
+        child: child,
+      );
+
+  // ===== 列表操作动画 =====
+
+  /// 滑动删除预览动画
+  static Widget animatedSwipeDelete({
+    required Widget child,
+    required bool isDeleting,
+    VoidCallback? onDelete,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedSwipeDelete(
+        isDeleting: isDeleting,
+        onDelete: onDelete,
+        duration: duration,
+        child: child,
+      );
+
+  /// 拖拽排序动画
+  static Widget animatedDragSort({
+    required Widget child,
+    required bool isDragging,
+    required Offset dragOffset,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedDragSort(
+        isDragging: isDragging,
+        dragOffset: dragOffset,
+        duration: duration,
+        child: child,
+      );
+
+  /// 列表项展开动画
+  static Widget animatedListExpand({
+    required Widget child,
+    required bool isExpanded,
+    Duration duration = const Duration(milliseconds: 400),
+  }) =>
+      _AnimatedListExpand(
+        isExpanded: isExpanded,
+        duration: duration,
+        child: child,
+      );
+
+  /// 置顶动画
+  static Widget animatedPinToTop({
+    required Widget child,
+    required bool isPinned,
+    Duration duration = const Duration(milliseconds: 600),
+  }) =>
+      _AnimatedPinToTop(
+        isPinned: isPinned,
+        duration: duration,
+        child: child,
+      );
+
+  /// 批量选择模式动画
+  static Widget animatedBulkSelect({
+    required Widget child,
+    required bool isSelecting,
+    required bool isSelected,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedBulkSelect(
+        isSelecting: isSelecting,
+        isSelected: isSelected,
+        duration: duration,
+        child: child,
+      );
+
+  /// 收藏动画
+  static Widget animatedFavorite({
+    required Widget child,
+    required bool isFavorited,
+    Duration duration = const Duration(milliseconds: 500),
+  }) =>
+      _AnimatedFavorite(
+        isFavorited: isFavorited,
+        duration: duration,
+        child: child,
+      );
+
+  /// 列表筛选动画
+  static Widget animatedListFilter({
+    required List<Widget> children,
+    required bool isFiltering,
+    Duration duration = const Duration(milliseconds: 400),
+  }) =>
+      _AnimatedListFilter(
+        isFiltering: isFiltering,
+        duration: duration,
+        children: children,
+      );
+
+  /// 优先级标记动画
+  static Widget animatedPriorityTag({
+    required Widget child,
+    required PriorityLevel priority,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedPriorityTag(
+        priority: priority,
+        duration: duration,
+        child: child,
+      );
+
+  /// 搜索结果高亮动画
+  static Widget animatedSearchHighlight({
+    required Widget child,
+    required bool isHighlighted,
+    Color highlightColor = Colors.yellow,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedSearchHighlight(
+        isHighlighted: isHighlighted,
+        highlightColor: highlightColor,
+        duration: duration,
+        child: child,
+      );
+
+  // ===== 交互选择动画 =====
+
+  /// 下拉菜单展开动画
+  static Widget animatedDropdown({
+    required Widget child,
+    required bool isExpanded,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedDropdown(
+        isExpanded: isExpanded,
+        duration: duration,
+        child: child,
+      );
+
+  /// 标签页指示器动画
+  static Widget animatedTabIndicator({
+    required int currentIndex,
+    required int tabCount,
+    required double tabWidth,
+    Color indicatorColor = Colors.blue,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedTabIndicator(
+        currentIndex: currentIndex,
+        tabCount: tabCount,
+        tabWidth: tabWidth,
+        indicatorColor: indicatorColor,
+        duration: duration,
+      );
+
+  /// 分段选择器动画
+  static Widget animatedSegmentedControl({
+    required List<String> segments,
+    required int selectedIndex,
+    required ValueChanged<int> onChanged,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedSegmentedControl(
+        segments: segments,
+        selectedIndex: selectedIndex,
+        onChanged: onChanged,
+        duration: duration,
+      );
+
+  /// 颜色选择器动画
+  static Widget animatedColorPicker({
+    required List<Color> colors,
+    required int? selectedIndex,
+    required ValueChanged<int> onColorSelected,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedColorPicker(
+        colors: colors,
+        selectedIndex: selectedIndex,
+        onColorSelected: onColorSelected,
+        duration: duration,
+      );
+
+  /// 星级评分动画
+  static Widget animatedStarRating({
+    required int rating,
+    required int maxRating,
+    required ValueChanged<int> onRatingChanged,
+    Color activeColor = Colors.amber,
+    Color inactiveColor = Colors.grey,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedStarRating(
+        rating: rating,
+        maxRating: maxRating,
+        onRatingChanged: onRatingChanged,
+        activeColor: activeColor,
+        inactiveColor: inactiveColor,
+        duration: duration,
+      );
+
+  /// 步进器动画
+  static Widget animatedStepper({
+    required int value,
+    required int min,
+    required int max,
+    required ValueChanged<int> onChanged,
+    Duration duration = const Duration(milliseconds: 150),
+  }) =>
+      _AnimatedStepper(
+        value: value,
+        min: min,
+        max: max,
+        onChanged: onChanged,
+        duration: duration,
+      );
+
+  /// 开关切换动画
+  static Widget animatedSwitch({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    Color activeColor = Colors.blue,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedSwitch(
+        value: value,
+        onChanged: onChanged,
+        activeColor: activeColor,
+        duration: duration,
+      );
+
+  /// 范围滑块动画
+  static Widget animatedRangeSlider({
+    required RangeValues values,
+    required RangeValues min,
+    required RangeValues max,
+    required ValueChanged<RangeValues> onChanged,
+    Duration duration = const Duration(milliseconds: 200),
+  }) =>
+      _AnimatedRangeSlider(
+        values: values,
+        min: min,
+        max: max,
+        onChanged: onChanged,
+        duration: duration,
+      );
+
+  /// 级联选择器动画
+  static Widget animatedCascadingSelect({
+    required List<String> options,
+    required List<bool> expandedStates,
+    required ValueChanged<int> onToggle,
+    Duration duration = const Duration(milliseconds: 300),
+  }) =>
+      _AnimatedCascadingSelect(
+        options: options,
+        expandedStates: expandedStates,
+        onToggle: onToggle,
+        duration: duration,
+      );
+
+  /// 过滤面板动画
+  static Widget animatedFilterPanel({
+    required Widget child,
+    required bool isOpen,
+    Duration duration = const Duration(milliseconds: 400),
+  }) =>
+      _AnimatedFilterPanel(
+        isOpen: isOpen,
+        duration: duration,
+        child: child,
+      );
+
+  /// 快速选择菜单动画
+  static Widget animatedQuickSelect({
+    required Widget child,
+    required bool isVisible,
+    required Offset position,
+    Duration duration = const Duration(milliseconds: 250),
+  }) =>
+      _AnimatedQuickSelect(
+        isVisible: isVisible,
+        position: position,
+        duration: duration,
+        child: child,
+      );
+
   /// 整数计数动画
   static Widget animatedIntegerCounter({
     required int value,
@@ -249,22 +789,6 @@ class AppAnimations {
       );
 
   // ===== 进度和指标器动画 =====
-
-  /// 圆环进度条动画
-  static Widget animatedCircularProgress({
-    required double progress,
-    Color? color,
-    double size = 100.0,
-    double strokeWidth = 8.0,
-    Duration duration = const Duration(milliseconds: 800),
-  }) =>
-      _AnimatedCircularProgress(
-        progress: progress,
-        color: color,
-        size: size,
-        strokeWidth: strokeWidth,
-        duration: duration,
-      );
 
   /// 条形进度条动画
   static Widget animatedLinearProgress({
@@ -2395,13 +2919,15 @@ class _AnimatedCircularProgress extends StatefulWidget {
     required this.progress,
     required this.size,
     required this.strokeWidth,
+    required this.progressColor,
+    required this.backgroundColor,
     required this.duration,
-    this.color,
   });
   final double progress;
-  final Color? color;
   final double size;
   final double strokeWidth;
+  final Color progressColor;
+  final Color backgroundColor;
   final Duration duration;
 
   @override
@@ -2470,10 +2996,8 @@ class _AnimatedCircularProgressState extends State<_AnimatedCircularProgress>
             children: [
               CircularProgressIndicator(
                 value: _progressAnimation.value,
-                backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  widget.color ?? Theme.of(context).primaryColor,
-                ),
+                backgroundColor: widget.backgroundColor.withValues(alpha: 0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(widget.progressColor),
                 strokeWidth: widget.strokeWidth,
               ),
               Text(
@@ -2481,7 +3005,7 @@ class _AnimatedCircularProgressState extends State<_AnimatedCircularProgress>
                 style: TextStyle(
                   fontSize: widget.size * 0.15,
                   fontWeight: FontWeight.bold,
-                  color: widget.color ?? Theme.of(context).primaryColor,
+                  color: widget.progressColor,
                 ),
               ),
             ],
@@ -6663,6 +7187,3597 @@ class _AnimatedWalletShakeState extends State<_AnimatedWalletShake>
           child: Transform.scale(
             scale: widget.shouldShake ? _scaleAnimation.value : 1.0,
             child: widget.child,
+          ),
+        ),
+      );
+}
+
+// ===== 输入反馈动画组件实现 =====
+
+/// 输入框聚焦发光动画
+class _AnimatedInputFocus extends StatefulWidget {
+  const _AnimatedInputFocus({
+    required this.child,
+    required this.hasFocus,
+    required this.focusColor,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool hasFocus;
+  final Color focusColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedInputFocus> createState() => _AnimatedInputFocusState();
+}
+
+class _AnimatedInputFocusState extends State<_AnimatedInputFocus>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.hasFocus) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedInputFocus oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.hasFocus != oldWidget.hasFocus) {
+      if (widget.hasFocus) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _glowAnimation,
+        builder: (context, child) => Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: widget.hasFocus
+                ? [
+                    BoxShadow(
+                      color: widget.focusColor
+                          .withValues(alpha: 0.3 * _glowAnimation.value),
+                      blurRadius: 8 * _glowAnimation.value,
+                      spreadRadius: 2 * _glowAnimation.value,
+                    ),
+                  ]
+                : null,
+          ),
+          child: widget.child,
+        ),
+      );
+}
+
+/// 密码字符遮罩切换动画
+class _AnimatedPasswordMask extends StatefulWidget {
+  const _AnimatedPasswordMask({
+    required this.text,
+    required this.obscureText,
+    required this.style,
+    required this.duration,
+  });
+
+  final String text;
+  final bool obscureText;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  State<_AnimatedPasswordMask> createState() => _AnimatedPasswordMaskState();
+}
+
+class _AnimatedPasswordMaskState extends State<_AnimatedPasswordMask>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedPasswordMask oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.obscureText != oldWidget.obscureText) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String _getDisplayText() {
+    if (!widget.obscureText) return widget.text;
+    return '•' * widget.text.length;
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _opacityAnimation,
+        builder: (context, child) => Opacity(
+          opacity: widget.obscureText
+              ? _opacityAnimation.value
+              : 1.0 - _opacityAnimation.value,
+          child: Text(
+            _getDisplayText(),
+            style: widget.style,
+          ),
+        ),
+      );
+}
+
+/// 搜索框提示文字动画
+class _AnimatedSearchHint extends StatefulWidget {
+  const _AnimatedSearchHint({
+    required this.hintText,
+    required this.currentText,
+    required this.style,
+    required this.duration,
+  });
+
+  final String hintText;
+  final String currentText;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  State<_AnimatedSearchHint> createState() => _AnimatedSearchHintState();
+}
+
+class _AnimatedSearchHintState extends State<_AnimatedSearchHint>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedSearchHint oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentText.isEmpty != oldWidget.currentText.isEmpty) {
+      if (widget.currentText.isEmpty) {
+        _controller.reverse();
+      } else {
+        _controller.forward();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _opacityAnimation,
+        builder: (context, child) => Opacity(
+          opacity: widget.currentText.isEmpty ? 1.0 : _opacityAnimation.value,
+          child: Text(
+            widget.hintText,
+            style: widget.style?.copyWith(
+              color: widget.style?.color?.withValues(
+                  alpha: widget.currentText.isEmpty
+                      ? 1.0
+                      : _opacityAnimation.value),
+            ),
+          ),
+        ),
+      );
+}
+
+/// 数字千分位格式化动画
+class _AnimatedNumberFormat extends StatefulWidget {
+  const _AnimatedNumberFormat({
+    required this.value,
+    required this.style,
+    required this.duration,
+  });
+
+  final double value;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  State<_AnimatedNumberFormat> createState() => _AnimatedNumberFormatState();
+}
+
+class _AnimatedNumberFormatState extends State<_AnimatedNumberFormat>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  String _previousFormatted = '';
+  String _currentFormatted = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _updateFormattedValue();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedNumberFormat oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _previousFormatted = _currentFormatted;
+      _updateFormattedValue();
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  void _updateFormattedValue() {
+    _currentFormatted = _formatNumber(widget.value);
+  }
+
+  String _formatNumber(double value) {
+    final intPart = value.toInt();
+    final decimalPart = ((value - intPart) * 100).round();
+    final intStr = intPart.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+        );
+    return decimalPart > 0 ? '$intStr.$decimalPart' : intStr;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Text(
+            _currentFormatted,
+            style: widget.style,
+          ),
+        ),
+      );
+}
+
+/// 输入错误抖动反馈
+class _AnimatedInputError extends StatefulWidget {
+  const _AnimatedInputError({
+    required this.child,
+    required this.hasError,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool hasError;
+  final Duration duration;
+
+  @override
+  State<_AnimatedInputError> createState() => _AnimatedInputErrorState();
+}
+
+class _AnimatedInputErrorState extends State<_AnimatedInputError>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _shakeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: -10.0),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: -10.0, end: 10.0),
+        weight: 2,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 10.0, end: -10.0),
+        weight: 2,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: -10.0, end: 0.0),
+        weight: 1,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedInputError oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.hasError && !oldWidget.hasError) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _shakeAnimation,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(_shakeAnimation.value, 0),
+          child: widget.child,
+        ),
+      );
+}
+
+/// 日期选择高亮动画
+class _AnimatedDateHighlight extends StatefulWidget {
+  const _AnimatedDateHighlight({
+    required this.child,
+    required this.isSelected,
+    required this.isToday,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isSelected;
+  final bool isToday;
+  final Duration duration;
+
+  @override
+  State<_AnimatedDateHighlight> createState() => _AnimatedDateHighlightState();
+}
+
+class _AnimatedDateHighlightState extends State<_AnimatedDateHighlight>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: widget.isSelected ? 1.2 : (widget.isToday ? 1.1 : 1.0),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _colorAnimation = ColorTween(
+      begin: Colors.transparent,
+      end: widget.isSelected
+          ? Colors.blue
+          : (widget.isToday ? Colors.orange : Colors.transparent),
+    ).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedDateHighlight oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSelected != oldWidget.isSelected ||
+        widget.isToday != oldWidget.isToday) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _colorAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _colorAnimation.value?.withValues(alpha: 0.2),
+            ),
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 滑块数值跟随动画
+class _AnimatedSliderValue extends StatefulWidget {
+  const _AnimatedSliderValue({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.style,
+    required this.duration,
+  });
+
+  final double value;
+  final double min;
+  final double max;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  State<_AnimatedSliderValue> createState() => _AnimatedSliderValueState();
+}
+
+class _AnimatedSliderValueState extends State<_AnimatedSliderValue>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _positionAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _positionAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset(_calculatePosition(), -40),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedSliderValue oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _positionAnimation = Tween<Offset>(
+        begin: _positionAnimation.value,
+        end: Offset(_calculatePosition(), -40),
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeOut,
+        ),
+      );
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  double _calculatePosition() {
+    final percentage = (widget.value - widget.min) / (widget.max - widget.min);
+    return (percentage - 0.5) * 200; // 假设滑块宽度为200
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _positionAnimation,
+        builder: (context, child) => Transform.translate(
+          offset: _positionAnimation.value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black87,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              widget.value.toStringAsFixed(1),
+              style: widget.style?.copyWith(color: Colors.white) ??
+                  const TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      );
+}
+
+/// 标签输入出现动画
+class _AnimatedTagAppear extends StatefulWidget {
+  const _AnimatedTagAppear({
+    required this.tags,
+    required this.style,
+    required this.duration,
+  });
+
+  final List<String> tags;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  State<_AnimatedTagAppear> createState() => _AnimatedTagAppearState();
+}
+
+class _AnimatedTagAppearState extends State<_AnimatedTagAppear>
+    with TickerProviderStateMixin {
+  final List<AnimationController> _controllers = [];
+  final List<Animation<double>> _scaleAnimations = [];
+  final List<Animation<Offset>> _slideAnimations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimations();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedTagAppear oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.tags.length != oldWidget.tags.length) {
+      _disposeAnimations();
+      _initializeAnimations();
+    }
+  }
+
+  void _initializeAnimations() {
+    for (var i = 0; i < widget.tags.length; i++) {
+      final controller = AnimationController(
+        duration: widget.duration,
+        vsync: this,
+      );
+
+      final scaleAnimation = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(
+        CurvedAnimation(
+          parent: controller,
+          curve: Curves.elasticOut,
+        ),
+      );
+
+      final slideAnimation = Tween<Offset>(
+        begin: const Offset(0, 1),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: controller,
+          curve: Curves.easeOut,
+        ),
+      );
+
+      _controllers.add(controller);
+      _scaleAnimations.add(scaleAnimation);
+      _slideAnimations.add(slideAnimation);
+
+      // 错开动画开始时间
+      Future.delayed(Duration(milliseconds: i * 100), () {
+        if (mounted) controller.forward();
+      });
+    }
+  }
+
+  void _disposeAnimations() {
+    for (final controller in _controllers) {
+      controller.dispose();
+    }
+    _controllers.clear();
+    _scaleAnimations.clear();
+    _slideAnimations.clear();
+  }
+
+  @override
+  void dispose() {
+    _disposeAnimations();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: List.generate(widget.tags.length, (index) {
+          if (index >= _controllers.length) return const SizedBox.shrink();
+
+          return AnimatedBuilder(
+            animation: Listenable.merge(
+                [_scaleAnimations[index], _slideAnimations[index]]),
+            builder: (context, child) => Transform.translate(
+              offset: _slideAnimations[index].value,
+              child: Transform.scale(
+                scale: _scaleAnimations[index].value,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border:
+                        Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    widget.tags[index],
+                    style: widget.style,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      );
+}
+
+/// 多选框勾选动画
+class _AnimatedCheckbox extends StatefulWidget {
+  const _AnimatedCheckbox({
+    required this.value,
+    required this.onChanged,
+    required this.activeColor,
+    required this.duration,
+  });
+
+  final bool value;
+  final ValueChanged<bool?>? onChanged;
+  final Color? activeColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedCheckbox> createState() => _AnimatedCheckboxState();
+}
+
+class _AnimatedCheckboxState extends State<_AnimatedCheckbox>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _checkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _checkAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.value) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedCheckbox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      if (widget.value) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: () => widget.onChanged?.call(!widget.value),
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_scaleAnimation, _checkAnimation]),
+          builder: (context, child) => Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: widget.value
+                      ? (widget.activeColor ?? Colors.blue)
+                      : Colors.grey,
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(4),
+                color: widget.value
+                    ? (widget.activeColor ?? Colors.blue).withValues(alpha: 0.1)
+                    : Colors.transparent,
+              ),
+              child: widget.value
+                  ? Icon(
+                      Icons.check,
+                      size: 16 * _checkAnimation.value,
+                      color: widget.activeColor ?? Colors.blue,
+                    )
+                  : null,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 单选按钮组切换动画
+class _AnimatedRadioGroup<T> extends StatefulWidget {
+  const _AnimatedRadioGroup({
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+    required this.title,
+    required this.duration,
+  });
+
+  final T? value;
+  final T groupValue;
+  final ValueChanged<T?>? onChanged;
+  final Widget? title;
+  final Duration duration;
+
+  @override
+  State<_AnimatedRadioGroup<T>> createState() => _AnimatedRadioGroupState<T>();
+}
+
+class _AnimatedRadioGroupState<T> extends State<_AnimatedRadioGroup<T>>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _colorAnimation = ColorTween(
+      begin: Colors.grey,
+      end: Colors.blue,
+    ).animate(_controller);
+
+    if (widget.value == widget.groupValue) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedRadioGroup<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value ||
+        widget.groupValue != oldWidget.groupValue) {
+      if (widget.value == widget.groupValue) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: () => widget.onChanged?.call(widget.value),
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_scaleAnimation, _colorAnimation]),
+          builder: (context, child) => Row(
+            children: [
+              Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _colorAnimation.value ?? Colors.grey,
+                      width: 2,
+                    ),
+                  ),
+                  child: widget.value == widget.groupValue
+                      ? Container(
+                          margin: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _colorAnimation.value,
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+              if (widget.title != null) ...[
+                const SizedBox(width: 8),
+                DefaultTextStyle(
+                  style: TextStyle(
+                    color: _colorAnimation.value,
+                    fontWeight: widget.value == widget.groupValue
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                  child: widget.title!,
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+}
+
+// ===== 状态变化动画组件实现 =====
+
+/// 进度条填充动画
+class _AnimatedProgressFill extends StatefulWidget {
+  const _AnimatedProgressFill({
+    required this.progress,
+    required this.height,
+    required this.fillColor,
+    required this.backgroundColor,
+    required this.duration,
+  });
+
+  final double progress;
+  final double height;
+  final Color fillColor;
+  final Color backgroundColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedProgressFill> createState() => _AnimatedProgressFillState();
+}
+
+class _AnimatedProgressFillState extends State<_AnimatedProgressFill>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _progressAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _progressAnimation = Tween<double>(
+      begin: 0.0,
+      end: widget.progress,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedProgressFill oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.progress != oldWidget.progress) {
+      _progressAnimation = Tween<double>(
+        begin: _progressAnimation.value,
+        end: widget.progress,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _progressAnimation,
+        builder: (context, child) => Container(
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: widget.backgroundColor.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(widget.height / 2),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: _progressAnimation.value,
+            child: Container(
+              decoration: BoxDecoration(
+                color: widget.fillColor,
+                borderRadius: BorderRadius.circular(widget.height / 2),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+/// 统计卡片数据更新动画
+class _AnimatedStatCard extends StatefulWidget {
+  const _AnimatedStatCard({
+    required this.child,
+    required this.shouldAnimate,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool shouldAnimate;
+  final Duration duration;
+
+  @override
+  State<_AnimatedStatCard> createState() => _AnimatedStatCardState();
+}
+
+class _AnimatedStatCardState extends State<_AnimatedStatCard>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.8,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedStatCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shouldAnimate && !oldWidget.shouldAnimate) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _opacityAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Opacity(
+            opacity: _opacityAnimation.value,
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 图表数据点亮动画
+class _AnimatedChartHighlight extends StatefulWidget {
+  const _AnimatedChartHighlight({
+    required this.child,
+    required this.isHighlighted,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isHighlighted;
+  final Duration duration;
+
+  @override
+  State<_AnimatedChartHighlight> createState() =>
+      _AnimatedChartHighlightState();
+}
+
+class _AnimatedChartHighlightState extends State<_AnimatedChartHighlight>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _colorAnimation = ColorTween(
+      begin: Colors.grey,
+      end: Colors.blue,
+    ).animate(_controller);
+
+    if (widget.isHighlighted) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedChartHighlight oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isHighlighted != oldWidget.isHighlighted) {
+      if (widget.isHighlighted) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _colorAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _colorAnimation.value?.withValues(alpha: 0.2),
+            ),
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 余额数字滚动动画
+class _AnimatedBalanceRoll extends StatefulWidget {
+  const _AnimatedBalanceRoll({
+    required this.value,
+    required this.style,
+    required this.duration,
+  });
+
+  final double value;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  State<_AnimatedBalanceRoll> createState() => _AnimatedBalanceRollState();
+}
+
+class _AnimatedBalanceRollState extends State<_AnimatedBalanceRoll>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _valueAnimation;
+  double _previousValue = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _valueAnimation = Tween<double>(
+      begin: widget.value,
+      end: widget.value,
+    ).animate(_controller);
+
+    _previousValue = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBalanceRoll oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _valueAnimation = Tween<double>(
+        begin: _previousValue,
+        end: widget.value,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+      _controller.forward(from: 0.0);
+      _previousValue = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _valueAnimation,
+        builder: (context, child) => Text(
+          '¥${_valueAnimation.value.toStringAsFixed(2)}',
+          style: widget.style,
+        ),
+      );
+}
+
+class _AnimatedStatusIndicatorState extends State<_AnimatedStatusIndicator>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _colorAnimation =
+        AlwaysStoppedAnimation<Color>(_getStatusColor(widget.status));
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.status == StatusType.loading) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedStatusIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.status != oldWidget.status) {
+      _colorAnimation = ColorTween(
+        begin: _getStatusColor(oldWidget.status),
+        end: _getStatusColor(widget.status),
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+
+      if (widget.status == StatusType.loading) {
+        _controller.repeat(reverse: true);
+      } else {
+        _controller.stop();
+        _controller.value = 1.0;
+      }
+
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  Color _getStatusColor(StatusType status) {
+    switch (status) {
+      case StatusType.loading:
+        return Colors.blue;
+      case StatusType.success:
+        return Colors.green;
+      case StatusType.error:
+        return Colors.red;
+      case StatusType.warning:
+        return Colors.orange;
+      case StatusType.info:
+        return Colors.grey;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_colorAnimation, _pulseAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale:
+              widget.status == StatusType.loading ? _pulseAnimation.value : 1.0,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              color: _colorAnimation.value,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 通知徽章数字动画
+class _AnimatedBadge extends StatefulWidget {
+  const _AnimatedBadge({
+    required this.count,
+    required this.badgeColor,
+    required this.duration,
+  });
+
+  final int count;
+  final Color badgeColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedBadge> createState() => _AnimatedBadgeState();
+}
+
+class _AnimatedBadgeState extends State<_AnimatedBadge>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  int _previousCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.5,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _previousCount = widget.count;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.count != oldWidget.count) {
+      _controller.forward(from: 0.0);
+      _previousCount = widget.count;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.count == 0
+      ? const SizedBox.shrink()
+      : AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) => Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: widget.badgeColor,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                widget.count.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        );
+}
+
+/// 时间线事件展开动画
+class _AnimatedTimelineEvent extends StatefulWidget {
+  const _AnimatedTimelineEvent({
+    required this.child,
+    required this.isExpanded,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isExpanded;
+  final Duration duration;
+
+  @override
+  State<_AnimatedTimelineEvent> createState() => _AnimatedTimelineEventState();
+}
+
+class _AnimatedTimelineEventState extends State<_AnimatedTimelineEvent>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _heightAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _heightAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isExpanded) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedTimelineEvent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded != oldWidget.isExpanded) {
+      if (widget.isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_heightAnimation, _opacityAnimation]),
+        builder: (context, child) => ClipRect(
+          child: Align(
+            heightFactor: _heightAnimation.value,
+            child: Opacity(
+              opacity: _opacityAnimation.value,
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+}
+
+// ===== 列表操作动画组件实现 =====
+
+/// 滑动删除预览动画
+class _AnimatedSwipeDelete extends StatefulWidget {
+  const _AnimatedSwipeDelete({
+    required this.child,
+    required this.isDeleting,
+    required this.onDelete,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isDeleting;
+  final VoidCallback? onDelete;
+  final Duration duration;
+
+  @override
+  State<_AnimatedSwipeDelete> createState() => _AnimatedSwipeDeleteState();
+}
+
+class _AnimatedSwipeDeleteState extends State<_AnimatedSwipeDelete>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(-1.0, 0.0),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isDeleting) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedSwipeDelete oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isDeleting != oldWidget.isDeleting) {
+      if (widget.isDeleting) {
+        _controller.forward().then((_) => widget.onDelete?.call());
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_slideAnimation, _opacityAnimation]),
+        builder: (context, child) => Transform.translate(
+          offset: _slideAnimation.value,
+          child: Opacity(
+            opacity: _opacityAnimation.value,
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 拖拽排序动画
+class _AnimatedDragSort extends StatefulWidget {
+  const _AnimatedDragSort({
+    required this.child,
+    required this.isDragging,
+    required this.dragOffset,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isDragging;
+  final Offset dragOffset;
+  final Duration duration;
+
+  @override
+  State<_AnimatedDragSort> createState() => _AnimatedDragSortState();
+}
+
+class _AnimatedDragSortState extends State<_AnimatedDragSort>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 0.05,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isDragging) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedDragSort oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isDragging != oldWidget.isDragging) {
+      if (widget.isDragging) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _rotationAnimation]),
+        builder: (context, child) => Transform.translate(
+          offset: widget.dragOffset,
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Transform.rotate(
+              angle: _rotationAnimation.value,
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 列表项展开动画
+class _AnimatedListExpand extends StatefulWidget {
+  const _AnimatedListExpand({
+    required this.child,
+    required this.isExpanded,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isExpanded;
+  final Duration duration;
+
+  @override
+  State<_AnimatedListExpand> createState() => _AnimatedListExpandState();
+}
+
+class _AnimatedListExpandState extends State<_AnimatedListExpand>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _heightAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _heightAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isExpanded) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedListExpand oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded != oldWidget.isExpanded) {
+      if (widget.isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_heightAnimation, _opacityAnimation]),
+        builder: (context, child) => ClipRect(
+          child: Align(
+            heightFactor: _heightAnimation.value,
+            child: Opacity(
+              opacity: _opacityAnimation.value,
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 置顶动画
+class _AnimatedPinToTop extends StatefulWidget {
+  const _AnimatedPinToTop({
+    required this.child,
+    required this.isPinned,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isPinned;
+  final Duration duration;
+
+  @override
+  State<_AnimatedPinToTop> createState() => _AnimatedPinToTopState();
+}
+
+class _AnimatedPinToTopState extends State<_AnimatedPinToTop>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -1),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    if (widget.isPinned) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedPinToTop oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPinned != oldWidget.isPinned) {
+      if (widget.isPinned) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_slideAnimation, _scaleAnimation]),
+        builder: (context, child) => Transform.translate(
+          offset: _slideAnimation.value,
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: widget.isPinned
+                    ? [
+                        BoxShadow(
+                          color: Colors.blue.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 批量选择模式动画
+class _AnimatedBulkSelect extends StatefulWidget {
+  const _AnimatedBulkSelect({
+    required this.child,
+    required this.isSelecting,
+    required this.isSelected,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isSelecting;
+  final bool isSelected;
+  final Duration duration;
+
+  @override
+  State<_AnimatedBulkSelect> createState() => _AnimatedBulkSelectState();
+}
+
+class _AnimatedBulkSelectState extends State<_AnimatedBulkSelect>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _backgroundAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: widget.isSelected ? 1.1 : 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _backgroundAnimation = ColorTween(
+      begin: Colors.transparent,
+      end: widget.isSelected
+          ? Colors.blue.withValues(alpha: 0.1)
+          : Colors.transparent,
+    ).animate(_controller);
+
+    _updateAnimation();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBulkSelect oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSelecting != oldWidget.isSelecting ||
+        widget.isSelected != oldWidget.isSelected) {
+      _updateAnimation();
+    }
+  }
+
+  void _updateAnimation() {
+    if (widget.isSelecting) {
+      if (widget.isSelected) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _backgroundAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale: widget.isSelecting ? _scaleAnimation.value : 1.0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: _backgroundAnimation.value,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 收藏动画
+class _AnimatedFavorite extends StatefulWidget {
+  const _AnimatedFavorite({
+    required this.child,
+    required this.isFavorited,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isFavorited;
+  final Duration duration;
+
+  @override
+  State<_AnimatedFavorite> createState() => _AnimatedFavoriteState();
+}
+
+class _AnimatedFavoriteState extends State<_AnimatedFavorite>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 1.3),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.3, end: 1.0),
+        weight: 2,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 1.1),
+        weight: 1,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _colorAnimation = ColorTween(
+      begin: Colors.grey,
+      end: Colors.red,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isFavorited) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedFavorite oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isFavorited != oldWidget.isFavorited) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _colorAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: IconTheme(
+            data: IconThemeData(
+              color: _colorAnimation.value,
+            ),
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 列表筛选动画
+class _AnimatedListFilter extends StatefulWidget {
+  const _AnimatedListFilter({
+    required this.children,
+    required this.isFiltering,
+    required this.duration,
+  });
+
+  final List<Widget> children;
+  final bool isFiltering;
+  final Duration duration;
+
+  @override
+  State<_AnimatedListFilter> createState() => _AnimatedListFilterState();
+}
+
+class _AnimatedListFilterState extends State<_AnimatedListFilter>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<Animation<double>> _opacityAnimations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _initializeAnimations();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedListFilter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.children.length != oldWidget.children.length) {
+      _disposeAnimations();
+      _initializeAnimations();
+    }
+
+    if (widget.isFiltering != oldWidget.isFiltering) {
+      if (widget.isFiltering) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _initializeAnimations() {
+    _opacityAnimations = List.generate(
+      widget.children.length,
+      (index) => Tween<double>(
+        begin: 1.0,
+        end: 0.3,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      ),
+    );
+  }
+
+  void _disposeAnimations() {
+    // No need to dispose individual animations as they are recreated
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) => Column(
+          children: List.generate(widget.children.length, (index) {
+            final opacity =
+                widget.isFiltering ? _opacityAnimations[index].value : 1.0;
+            return Opacity(
+              opacity: opacity,
+              child: Transform.scale(
+                scale: opacity,
+                child: widget.children[index],
+              ),
+            );
+          }),
+        ),
+      );
+}
+
+/// 优先级标记动画
+class _AnimatedPriorityTag extends StatefulWidget {
+  const _AnimatedPriorityTag({
+    required this.child,
+    required this.priority,
+    required this.duration,
+  });
+
+  final Widget child;
+  final PriorityLevel priority;
+  final Duration duration;
+
+  @override
+  State<_AnimatedPriorityTag> createState() => _AnimatedPriorityTagState();
+}
+
+class _AnimatedPriorityTagState extends State<_AnimatedPriorityTag>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _colorAnimation =
+        AlwaysStoppedAnimation<Color>(_getPriorityColor(widget.priority));
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: widget.priority == PriorityLevel.urgent ? 1.2 : 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.priority == PriorityLevel.urgent) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedPriorityTag oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.priority != oldWidget.priority) {
+      _colorAnimation = ColorTween(
+        begin: _getPriorityColor(oldWidget.priority),
+        end: _getPriorityColor(widget.priority),
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+
+      if (widget.priority == PriorityLevel.urgent) {
+        _controller.repeat(reverse: true);
+      } else {
+        _controller.stop();
+        _controller.value = 1.0;
+      }
+
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  Color _getPriorityColor(PriorityLevel priority) {
+    switch (priority) {
+      case PriorityLevel.low:
+        return Colors.grey;
+      case PriorityLevel.medium:
+        return Colors.blue;
+      case PriorityLevel.high:
+        return Colors.orange;
+      case PriorityLevel.urgent:
+        return Colors.red;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_colorAnimation, _pulseAnimation]),
+        builder: (context, child) => Transform.scale(
+          scale: _pulseAnimation.value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: _colorAnimation.value?.withValues(alpha: 0.1),
+              border: Border.all(color: _colorAnimation.value ?? Colors.grey),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: widget.child,
+          ),
+        ),
+      );
+}
+
+/// 搜索结果高亮动画
+class _AnimatedSearchHighlight extends StatefulWidget {
+  const _AnimatedSearchHighlight({
+    required this.child,
+    required this.isHighlighted,
+    required this.highlightColor,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isHighlighted;
+  final Color highlightColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedSearchHighlight> createState() =>
+      _AnimatedSearchHighlightState();
+}
+
+class _AnimatedSearchHighlightState extends State<_AnimatedSearchHighlight>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _backgroundAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _backgroundAnimation = ColorTween(
+      begin: Colors.transparent,
+      end: widget.highlightColor,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isHighlighted) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedSearchHighlight oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isHighlighted != oldWidget.isHighlighted) {
+      if (widget.isHighlighted) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _backgroundAnimation,
+        builder: (context, child) => Container(
+          color: _backgroundAnimation.value?.withValues(alpha: 0.3),
+          child: widget.child,
+        ),
+      );
+}
+
+// ===== 交互选择动画组件实现 =====
+
+/// 下拉菜单展开动画
+class _AnimatedDropdown extends StatefulWidget {
+  const _AnimatedDropdown({
+    required this.child,
+    required this.isExpanded,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isExpanded;
+  final Duration duration;
+
+  @override
+  State<_AnimatedDropdown> createState() => _AnimatedDropdownState();
+}
+
+class _AnimatedDropdownState extends State<_AnimatedDropdown>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _heightAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _heightAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    if (widget.isExpanded) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded != oldWidget.isExpanded) {
+      if (widget.isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_heightAnimation, _opacityAnimation]),
+        builder: (context, child) => ClipRect(
+          child: Align(
+            heightFactor: _heightAnimation.value,
+            child: Opacity(
+              opacity: _opacityAnimation.value,
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 标签页指示器动画
+class _AnimatedTabIndicator extends StatefulWidget {
+  const _AnimatedTabIndicator({
+    required this.currentIndex,
+    required this.tabCount,
+    required this.tabWidth,
+    required this.indicatorColor,
+    required this.duration,
+  });
+
+  final int currentIndex;
+  final int tabCount;
+  final double tabWidth;
+  final Color indicatorColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedTabIndicator> createState() => _AnimatedTabIndicatorState();
+}
+
+class _AnimatedTabIndicatorState extends State<_AnimatedTabIndicator>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _positionAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _positionAnimation = Tween<double>(
+      begin: widget.currentIndex * widget.tabWidth,
+      end: widget.currentIndex * widget.tabWidth,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedTabIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentIndex != oldWidget.currentIndex ||
+        widget.tabWidth != oldWidget.tabWidth) {
+      _positionAnimation = Tween<double>(
+        begin: _positionAnimation.value,
+        end: widget.currentIndex * widget.tabWidth,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _positionAnimation,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(_positionAnimation.value, 0),
+          child: Container(
+            width: widget.tabWidth,
+            height: 3,
+            decoration: BoxDecoration(
+              color: widget.indicatorColor,
+              borderRadius: BorderRadius.circular(1.5),
+            ),
+          ),
+        ),
+      );
+}
+
+/// 分段选择器动画
+class _AnimatedSegmentedControl extends StatefulWidget {
+  const _AnimatedSegmentedControl({
+    required this.segments,
+    required this.selectedIndex,
+    required this.onChanged,
+    required this.duration,
+  });
+
+  final List<String> segments;
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+  final Duration duration;
+
+  @override
+  State<_AnimatedSegmentedControl> createState() =>
+      _AnimatedSegmentedControlState();
+}
+
+class _AnimatedSegmentedControlState extends State<_AnimatedSegmentedControl>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _positionAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _positionAnimation = Tween<double>(
+      begin: widget.selectedIndex.toDouble(),
+      end: widget.selectedIndex.toDouble(),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedSegmentedControl oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      _positionAnimation = Tween<double>(
+        begin: _positionAnimation.value,
+        end: widget.selectedIndex.toDouble(),
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _positionAnimation,
+        builder: (context, child) => Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: List.generate(widget.segments.length, (index) {
+              final isSelected = index == widget.selectedIndex;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => widget.onChanged(index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      widget.segments[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isSelected ? Colors.blue : Colors.grey[600],
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      );
+}
+
+/// 颜色选择器动画
+class _AnimatedColorPicker extends StatefulWidget {
+  const _AnimatedColorPicker({
+    required this.colors,
+    required this.selectedIndex,
+    required this.onColorSelected,
+    required this.duration,
+  });
+
+  final List<Color> colors;
+  final int? selectedIndex;
+  final ValueChanged<int> onColorSelected;
+  final Duration duration;
+
+  @override
+  State<_AnimatedColorPicker> createState() => _AnimatedColorPickerState();
+}
+
+class _AnimatedColorPickerState extends State<_AnimatedColorPicker>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    if (widget.selectedIndex != null) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedColorPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) => Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: List.generate(widget.colors.length, (index) {
+            final isSelected = index == widget.selectedIndex;
+            return GestureDetector(
+              onTap: () => widget.onColorSelected(index),
+              child: Transform.scale(
+                scale: isSelected ? _scaleAnimation.value : 1.0,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: widget.colors[index],
+                    shape: BoxShape.circle,
+                    border: isSelected
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : null,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      );
+}
+
+/// 星级评分动画
+class _AnimatedStarRating extends StatefulWidget {
+  const _AnimatedStarRating({
+    required this.rating,
+    required this.maxRating,
+    required this.onRatingChanged,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.duration,
+  });
+
+  final int rating;
+  final int maxRating;
+  final ValueChanged<int> onRatingChanged;
+  final Color activeColor;
+  final Color inactiveColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedStarRating> createState() => _AnimatedStarRatingState();
+}
+
+class _AnimatedStarRatingState extends State<_AnimatedStarRating>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedStarRating oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.rating != oldWidget.rating) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(widget.maxRating, (index) {
+          final isActive = index < widget.rating;
+          return GestureDetector(
+            onTap: () => widget.onRatingChanged(index + 1),
+            child: AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) => Transform.scale(
+                scale: isActive ? _scaleAnimation.value : 1.0,
+                child: Icon(
+                  isActive ? Icons.star : Icons.star_border,
+                  color: isActive ? widget.activeColor : widget.inactiveColor,
+                  size: 32,
+                ),
+              ),
+            ),
+          );
+        }),
+      );
+}
+
+/// 步进器动画
+class _AnimatedStepper extends StatefulWidget {
+  const _AnimatedStepper({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    required this.duration,
+  });
+
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+  final Duration duration;
+
+  @override
+  State<_AnimatedStepper> createState() => _AnimatedStepperState();
+}
+
+class _AnimatedStepperState extends State<_AnimatedStepper>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _controller.value = 1.0;
+  }
+
+  void _animateChange() {
+    _controller.forward(from: 0.0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: widget.value > widget.min
+                  ? () {
+                      widget.onChanged(widget.value - 1);
+                      _animateChange();
+                    }
+                  : null,
+              icon: const Icon(Icons.remove),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Text(
+                  widget.value.toString(),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: widget.value < widget.max
+                  ? () {
+                      widget.onChanged(widget.value + 1);
+                      _animateChange();
+                    }
+                  : null,
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      );
+}
+
+/// 开关切换动画
+class _AnimatedSwitch extends StatefulWidget {
+  const _AnimatedSwitch({
+    required this.value,
+    required this.onChanged,
+    required this.activeColor,
+    required this.duration,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final Color activeColor;
+  final Duration duration;
+
+  @override
+  State<_AnimatedSwitch> createState() => _AnimatedSwitchState();
+}
+
+class _AnimatedSwitchState extends State<_AnimatedSwitch>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _positionAnimation;
+  late Animation<Color?> _backgroundAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _positionAnimation = Tween<double>(
+      begin: widget.value ? 20 : 0,
+      end: widget.value ? 20 : 0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _backgroundAnimation = ColorTween(
+      begin: widget.value ? widget.activeColor : Colors.grey,
+      end: widget.value ? widget.activeColor : Colors.grey,
+    ).animate(_controller);
+
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedSwitch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _positionAnimation = Tween<double>(
+        begin: _positionAnimation.value,
+        end: widget.value ? 20 : 0,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+
+      _backgroundAnimation = ColorTween(
+        begin: _backgroundAnimation.value,
+        end: widget.value ? widget.activeColor : Colors.grey,
+      ).animate(_controller);
+
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: () => widget.onChanged(!widget.value),
+        child: AnimatedBuilder(
+          animation:
+              Listenable.merge([_positionAnimation, _backgroundAnimation]),
+          builder: (context, child) => Container(
+            width: 44,
+            height: 24,
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: _backgroundAnimation.value,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Transform.translate(
+              offset: Offset(_positionAnimation.value, 0),
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+/// 范围滑块动画
+class _AnimatedRangeSlider extends StatefulWidget {
+  const _AnimatedRangeSlider({
+    required this.values,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    required this.duration,
+  });
+
+  final RangeValues values;
+  final RangeValues min;
+  final RangeValues max;
+  final ValueChanged<RangeValues> onChanged;
+  final Duration duration;
+
+  @override
+  State<_AnimatedRangeSlider> createState() => _AnimatedRangeSliderState();
+}
+
+class _AnimatedRangeSliderState extends State<_AnimatedRangeSlider>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<RangeValues> _valuesAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _valuesAnimation = Tween<RangeValues>(
+      begin: widget.values,
+      end: widget.values,
+    ).animate(_controller);
+
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedRangeSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.values != oldWidget.values) {
+      _valuesAnimation = Tween<RangeValues>(
+        begin: _valuesAnimation.value,
+        end: widget.values,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOut,
+        ),
+      );
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _valuesAnimation,
+        builder: (context, child) => RangeSlider(
+          values: _valuesAnimation.value,
+          min: widget.min.start,
+          max: widget.max.end,
+          onChanged: widget.onChanged,
+        ),
+      );
+}
+
+/// 级联选择器动画
+class _AnimatedCascadingSelect extends StatefulWidget {
+  const _AnimatedCascadingSelect({
+    required this.options,
+    required this.expandedStates,
+    required this.onToggle,
+    required this.duration,
+  });
+
+  final List<String> options;
+  final List<bool> expandedStates;
+  final ValueChanged<int> onToggle;
+  final Duration duration;
+
+  @override
+  State<_AnimatedCascadingSelect> createState() =>
+      _AnimatedCascadingSelectState();
+}
+
+class _AnimatedCascadingSelectState extends State<_AnimatedCascadingSelect>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _heightAnimations;
+  late List<Animation<double>> _opacityAnimations;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimations();
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedCascadingSelect oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.options.length != oldWidget.options.length) {
+      _disposeAnimations();
+      _initializeAnimations();
+    }
+  }
+
+  void _initializeAnimations() {
+    _controllers = List.generate(
+      widget.options.length,
+      (index) => AnimationController(
+        duration: widget.duration,
+        vsync: this,
+      ),
+    );
+
+    _heightAnimations = List.generate(
+      widget.options.length,
+      (index) => Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(
+        CurvedAnimation(
+          parent: _controllers[index],
+          curve: Curves.easeInOut,
+        ),
+      ),
+    );
+
+    _opacityAnimations = List.generate(
+      widget.options.length,
+      (index) => Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(
+        CurvedAnimation(
+          parent: _controllers[index],
+          curve: Curves.easeInOut,
+        ),
+      ),
+    );
+
+    for (var i = 0; i < widget.expandedStates.length; i++) {
+      if (widget.expandedStates[i]) {
+        _controllers[i].value = 1.0;
+      }
+    }
+  }
+
+  void _disposeAnimations() {
+    for (final controller in _controllers) {
+      controller.dispose();
+    }
+    _controllers.clear();
+    _heightAnimations.clear();
+    _opacityAnimations.clear();
+  }
+
+  @override
+  void dispose() {
+    _disposeAnimations();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: List.generate(widget.options.length, (index) {
+          final isExpanded = widget.expandedStates[index];
+          return Column(
+            children: [
+              ListTile(
+                title: Text(widget.options[index]),
+                trailing: Icon(
+                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                ),
+                onTap: () => widget.onToggle(index),
+              ),
+              if (index < _controllers.length)
+                AnimatedBuilder(
+                  animation: Listenable.merge([
+                    _heightAnimations[index],
+                    _opacityAnimations[index],
+                  ]),
+                  builder: (context, child) => ClipRect(
+                    child: Align(
+                      heightFactor:
+                          isExpanded ? _heightAnimations[index].value : 0.0,
+                      child: Opacity(
+                        opacity:
+                            isExpanded ? _opacityAnimations[index].value : 0.0,
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 16),
+                          padding: const EdgeInsets.all(16),
+                          color: Colors.grey[100],
+                          child: const Text('子选项内容'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }),
+      );
+}
+
+/// 过滤面板动画
+class _AnimatedFilterPanel extends StatefulWidget {
+  const _AnimatedFilterPanel({
+    required this.child,
+    required this.isOpen,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isOpen;
+  final Duration duration;
+
+  @override
+  State<_AnimatedFilterPanel> createState() => _AnimatedFilterPanelState();
+}
+
+class _AnimatedFilterPanelState extends State<_AnimatedFilterPanel>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_controller);
+
+    if (widget.isOpen) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedFilterPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isOpen != oldWidget.isOpen) {
+      if (widget.isOpen) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge([_slideAnimation, _opacityAnimation]),
+        builder: (context, child) => Transform.translate(
+          offset: _slideAnimation.value,
+          child: Opacity(
+            opacity: _opacityAnimation.value,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: widget.child,
+            ),
+          ),
+        ),
+      );
+}
+
+/// 快速选择菜单动画
+class _AnimatedQuickSelect extends StatefulWidget {
+  const _AnimatedQuickSelect({
+    required this.child,
+    required this.isVisible,
+    required this.position,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool isVisible;
+  final Offset position;
+  final Duration duration;
+
+  @override
+  State<_AnimatedQuickSelect> createState() => _AnimatedQuickSelectState();
+}
+
+class _AnimatedQuickSelectState extends State<_AnimatedQuickSelect>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    if (widget.isVisible) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedQuickSelect oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.isVisible
+      ? Positioned(
+          left: widget.position.dx,
+          top: widget.position.dy,
+          child: AnimatedBuilder(
+            animation: Listenable.merge([_scaleAnimation, _opacityAnimation]),
+            builder: (context, child) => Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Opacity(
+                opacity: _opacityAnimation.value,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: widget.child,
+                ),
+              ),
+            ),
+          ),
+        )
+      : const SizedBox.shrink();
+}
+
+/// 状态指示器颜色动画
+class _AnimatedStatusIndicator extends StatefulWidget {
+  const _AnimatedStatusIndicator({
+    required this.status,
+    required this.size,
+    required this.duration,
+  });
+
+  final StatusType status;
+  final double size;
+  final Duration duration;
+
+  @override
+  State<_AnimatedStatusIndicator> createState() =>
+      _AnimatedStatusIndicatorState();
+}
+
+/// 等级提升动画
+class _AnimatedLevelUp extends StatefulWidget {
+  const _AnimatedLevelUp({
+    required this.child,
+    required this.shouldAnimate,
+    required this.duration,
+  });
+
+  final Widget child;
+  final bool shouldAnimate;
+  final Duration duration;
+
+  @override
+  State<_AnimatedLevelUp> createState() => _AnimatedLevelUpState();
+}
+
+class _AnimatedLevelUpState extends State<_AnimatedLevelUp>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 1.5),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.5, end: 1.2),
+        weight: 2,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.2, end: 1.0),
+        weight: 1,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 2 * 3.14159, // 360 degrees
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.bounceOut,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedLevelUp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shouldAnimate && !oldWidget.shouldAnimate) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: Listenable.merge(
+            [_scaleAnimation, _rotationAnimation, _slideAnimation]),
+        builder: (context, child) => Transform.translate(
+          offset: _slideAnimation.value,
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Transform.rotate(
+              angle: _rotationAnimation.value,
+              child: widget.child,
+            ),
           ),
         ),
       );

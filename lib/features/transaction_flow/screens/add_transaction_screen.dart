@@ -8,6 +8,7 @@ import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
@@ -962,57 +963,32 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       case TransactionType.income:
         if (_selectedAccountId == null) {
           print('❌ 收入未选择目标账户');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('请选择目标账户'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          unifiedNotifications.showError(context, '请选择目标账户');
           return;
         }
 
       case TransactionType.expense:
         if (_selectedAccountId == null) {
           print('❌ 支出未选择来源账户');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('请选择来源账户'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          unifiedNotifications.showError(context, '请选择来源账户');
           return;
         }
 
       case TransactionType.transfer:
         if (_selectedFromAccountId == null) {
           print('❌ 转账未选择来源账户');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('请选择来源账户'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          unifiedNotifications.showError(context, '请选择来源账户');
           return;
         }
         if (_selectedToAccountId == null) {
           print('❌ 转账未选择目标账户');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('请选择目标账户'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          unifiedNotifications.showError(context, '请选择目标账户');
           return;
         }
         // 转账不能在同一账户间进行
         if (_selectedFromAccountId == _selectedToAccountId) {
           print('❌ 转账来源和目标账户不能相同');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('来源账户和目标账户不能相同'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          unifiedNotifications.showError(context, '来源账户和目标账户不能相同');
           return;
         }
     }

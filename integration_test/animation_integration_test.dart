@@ -32,7 +32,7 @@ void main() {
       // 直接导航到动画演示页面
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.AnimationDemoPage(),
+          home: app.IOSAnimationShowcase(),
         ),
       );
 
@@ -58,7 +58,7 @@ void main() {
     testWidgets('Amount pulse animation dialog works', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.AnimationDemoPage(),
+          home: app.IOSAnimationShowcase(),
         ),
       );
 
@@ -83,7 +83,7 @@ void main() {
     testWidgets('Category select animation works', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.AnimationDemoPage(),
+          home: app.IOSAnimationShowcase(),
         ),
       );
 
@@ -112,7 +112,7 @@ void main() {
     testWidgets('Keypad animation works', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.AnimationDemoPage(),
+          home: app.IOSAnimationShowcase(),
         ),
       );
 

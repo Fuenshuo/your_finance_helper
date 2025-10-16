@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/glass_notification.dart';
 
 /// 通知管理器 - 管理应用的全局通知显示
@@ -43,16 +44,10 @@ class NotificationManager {
     String featureName, {
     String? additionalInfo,
   }) {
-    final message = additionalInfo != null
-        ? '$featureName 功能正在开发中\n$additionalInfo'
-        : '$featureName 功能正在开发中';
-
-    showNotification(
+    unifiedNotifications.showDevelopment(
       context,
-      message: message,
-      duration: const Duration(seconds: 2),
-      icon: Icons.build_circle_outlined,
-      // 使用默认透明背景，不设置backgroundColor和textColor
+      featureName,
+      additionalInfo: additionalInfo,
     );
   }
 
@@ -62,13 +57,7 @@ class NotificationManager {
     String message, {
     Duration duration = const Duration(seconds: 2),
   }) {
-    showNotification(
-      context,
-      message: message,
-      duration: duration,
-      icon: Icons.check_circle_outline,
-      // 使用默认透明背景
-    );
+    unifiedNotifications.showSuccess(context, message, duration: duration);
   }
 
   /// 显示警告提示
@@ -77,13 +66,7 @@ class NotificationManager {
     String message, {
     Duration duration = const Duration(seconds: 3),
   }) {
-    showNotification(
-      context,
-      message: message,
-      duration: duration,
-      icon: Icons.warning_amber_outlined,
-      // 使用默认透明背景
-    );
+    unifiedNotifications.showWarning(context, message, duration: duration);
   }
 
   /// 显示错误提示
@@ -92,13 +75,16 @@ class NotificationManager {
     String message, {
     Duration duration = const Duration(seconds: 4),
   }) {
-    showNotification(
-      context,
-      message: message,
-      duration: duration,
-      icon: Icons.error_outline,
-      // 使用默认透明背景
-    );
+    unifiedNotifications.showError(context, message, duration: duration);
+  }
+
+  /// 显示信息提示
+  void showInfo(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    unifiedNotifications.showInfo(context, message, duration: duration);
   }
 
   /// 处理通知队列
@@ -126,6 +112,28 @@ class NotificationManager {
       },
     );
   }
+
+  /// 显示确认对话框
+  Future<bool?> showConfirmation(
+    BuildContext context, {
+    required String title,
+    required String message,
+    String confirmLabel = '确定',
+    String cancelLabel = '取消',
+    Color? confirmColor,
+  }) =>
+      unifiedNotifications.showConfirmation(
+        context,
+        title: title,
+        message: message,
+        confirmLabel: confirmLabel,
+        cancelLabel: cancelLabel,
+        confirmColor: confirmColor,
+      );
+
+  /// 显示删除确认对话框
+  Future<bool?> showDeleteConfirmation(BuildContext context, String itemName) =>
+      unifiedNotifications.showDeleteConfirmation(context, itemName);
 
   /// 清空通知队列
   void clearQueue() {

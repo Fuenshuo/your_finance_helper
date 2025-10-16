@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/income_plan_provider.dart';
-// Riverpod providers imported via MaterialApp wrapper
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
@@ -46,7 +45,11 @@ void main() async {
   );
 
   // Database initialization will be added after full Drift integration
-  Log.business('App', 'Application Startup', {'phase': 'database_init', 'status': 'simplified_for_demo'});
+  Log.business(
+    'App',
+    'Application Startup',
+    {'phase': 'database_init', 'status': 'simplified_for_demo'},
+  );
 
   // 执行数据迁移
   Log.business('App', 'Application Startup', {'phase': 'migration'});
@@ -58,56 +61,54 @@ void main() async {
   // 监听应用生命周期，清理资源
   WidgetsBinding.instance.addObserver(AppLifecycleObserver());
 
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(
+    ProviderScope(
+      child: provider.MultiProvider(
+        providers: [
+          provider.ChangeNotifierProvider(
+              create: (_) => AccountProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AssetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => BudgetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => IncomePlanProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ExpensePlanProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => TransactionProvider()..initialize()),
+        ],
+        child: const MyApp(),
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (context) => AssetProvider()..initialize(),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => BudgetProvider()..initialize(),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => TransactionProvider()..initialize(),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => AccountProvider()..initialize(),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => IncomePlanProvider()..initialize(),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => ExpensePlanProvider()..initialize(),
-          ),
+  Widget build(BuildContext context) => MaterialApp.router(
+        title: '家庭资产记账',
+        theme: AppTheme.lightTheme,
+        routerConfig: appRouter,
+        debugShowCheckedModeBanner: false,
+        // 添加国际化支持
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
         ],
-        child: MaterialApp.router(
-          title: '家庭资产记账',
-          theme: AppTheme.lightTheme,
-          routerConfig: appRouter,
-          debugShowCheckedModeBanner: false,
-          // 添加国际化支持
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('zh', 'CN'),
-            Locale('en', 'US'),
-          ],
-          locale: const Locale('zh', 'CN'),
-          // 修复Web端图标主题问题
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.noScaling),
-            child: child!,
-          ),
+        supportedLocales: const [
+          Locale('zh', 'CN'),
+          Locale('en', 'US'),
+        ],
+        locale: const Locale('zh', 'CN'),
+        // 修复Web端图标主题问题
+        builder: (context, child) => MediaQuery(
+          data:
+              MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+          child: child!,
         ),
       );
 }

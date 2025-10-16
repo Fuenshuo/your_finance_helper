@@ -635,21 +635,23 @@ class DashboardPage extends StatelessWidget {
 
 ## 🚀 版本规划
 
-### 当前版本: v1.0.0 (企业就绪)
+### 当前版本: v1.1.0 (企业增强)
 
-✅ **已实现特性:**
+✅ **已实现特性 (v1.0.0):**
 - 完整的iOS动效组件库
 - 企业级性能监控
 - 错误处理和资源管理
 - 主题系统和无障碍支持
 - 完整的测试覆盖
 
-### 未来规划
+✅ **新增特性 (v1.1.0):**
+- 🔄 高级动画序列编排器 - 支持复杂动画编排
+- 🎨 自定义缓动曲线系统 - 扩展动画表现力
+- 📱 iOS 18深度和材质动画 - 最新系统特性
+- 🎯 完整动画组件库 - 72种动画特效
+- ⚡ 优化性能监控 - 更详细的动画指标
 
-#### v1.1.0 (Q2 2025)
-- 🔄 高级动画序列编排器
-- 🎨 自定义缓动曲线支持
-- 📱 更多iOS 18特性支持
+### 未来规划
 
 #### v1.2.0 (Q3 2025)
 - 🌐 Web和桌面平台优化
@@ -673,10 +675,180 @@ class DashboardPage extends StatelessWidget {
 - 💡 **功能建议**: [企业产品规划系统]
 - 📊 **性能问题**: [企业监控仪表板]
 
+## 🎯 v1.1.0 新功能详解
+
+### 🔄 高级动画序列编排器
+
+v1.1.0引入了强大的动画序列编排系统，支持复杂的动画编排和流程控制：
+
+#### 基本用法
+```dart
+final builder = animationSystem.createSequenceBuilder(vsync: this);
+
+// 配置序列参数
+builder.configure(IOSAnimationSequenceConfig(
+  enablePerformanceMonitoring: true,
+  loop: false,
+));
+
+// 添加动画步骤
+builder
+  .addStep(IOSAnimationStep(
+    spec: IOSAnimationSpec.buttonTap,
+    delay: const Duration(milliseconds: 100),
+  ))
+  .addDelay(const Duration(milliseconds: 200))
+  .addStep(IOSAnimationStep(spec: IOSAnimationSpec.successFeedback));
+
+// 执行序列
+await builder.execute(
+  onComplete: () => print('序列完成'),
+  onStepComplete: (step, success) => print('步骤 $step: $success'),
+);
+```
+
+#### 并行动画支持
+```dart
+builder.addParallel([
+  IOSAnimationStep(spec: IOSAnimationSpec(type: AnimationType.scale, ...)),
+  IOSAnimationStep(spec: IOSAnimationSpec(type: AnimationType.rotate, ...)),
+  IOSAnimationStep(spec: IOSAnimationSpec(type: AnimationType.fade, ...)),
+]);
+```
+
+#### 可复用序列
+```dart
+final sequence = builder.build();
+await sequence.execute(animationSystem, vsync);
+```
+
+### 🎨 自定义缓动曲线系统
+
+扩展动画表现力，支持自定义缓动曲线：
+
+#### 注册自定义曲线
+```dart
+IOSAnimationSystem.registerCustomCurve('bounce-gentle', Curves.elasticOut);
+IOSAnimationSystem.registerCustomCurve('smooth-entrance', Curves.easeOutCubic);
+```
+
+#### 使用自定义曲线
+```dart
+final customCurve = IOSAnimationSystem.getCustomCurve('bounce-gentle');
+
+await animationSystem.executeAnimation(
+  animationId: 'custom-animation',
+  vsync: this,
+  spec: IOSAnimationSpec(
+    type: AnimationType.scale,
+    duration: const Duration(milliseconds: 800),
+    curve: customCurve,
+    begin: 1.0,
+    end: 1.3,
+  ),
+);
+```
+
+#### 查看所有可用曲线
+```dart
+final allCurves = IOSAnimationSystem.getAllCurves();
+// 返回预定义曲线 + 自定义曲线的Map
+```
+
+### 📱 iOS 18 特性集成
+
+最新iOS 18的深度和材质动画支持：
+
+#### 深度动画
+```dart
+await animationSystem.executeDepthAnimation(
+  animationId: 'depth-effect',
+  vsync: this,
+  target: myWidget,
+  depth: 0.15,        // 深度强度
+  duration: const Duration(milliseconds: 600),
+  curve: Curves.easeInOutCubic,
+);
+```
+
+#### 材质动画
+```dart
+await animationSystem.executeMaterialAnimation(
+  animationId: 'material-effect',
+  vsync: this,
+  target: myWidget,
+  intensity: 1.2,      // 材质强度
+  duration: const Duration(milliseconds: 1000),
+);
+```
+
+### 🎯 完整动画组件库 (72种)
+
+v1.1.0提供了完整的动画组件库：
+
+#### 输入反馈动画 (12种)
+- `animatedInputFocus` - 输入框聚焦发光
+- `animatedPasswordMask` - 密码字符遮罩切换
+- `animatedSearchHint` - 搜索框提示文字
+- `animatedNumberFormat` - 数字千分位格式化
+- `animatedInputError` - 输入错误抖动反馈
+- `animatedDateHighlight` - 日期选择高亮
+- `animatedSliderValue` - 滑块数值跟随
+- `animatedTagAppear` - 标签输入出现
+- `animatedCheckbox` - 多选框勾选
+- `animatedRadioGroup` - 单选按钮组切换
+- `animatedAmountBounce` - 金额输入跳动
+- `animatedKeypadButton` - 数字键盘按键
+
+#### 状态变化动画 (11种)
+- `animatedProgressFill` - 进度条填充
+- `animatedStatCard` - 统计卡片数据更新
+- `animatedChartHighlight` - 图表数据点亮
+- `animatedBalanceRoll` - 余额数字滚动
+- `animatedCircularProgress` - 环形进度条
+- `animatedLevelUp` - 等级提升
+- `animatedStatusIndicator` - 状态指示器颜色
+- `animatedBadge` - 通知徽章数字
+- `animatedTimelineEvent` - 时间线事件展开
+- `animatedAmountPulse` - 金额脉冲
+- `animatedAmountColor` - 金额颜色渐变
+
+#### 列表操作动画 (11种)
+- `animatedSwipeDelete` - 滑动删除预览
+- `animatedDragSort` - 拖拽排序
+- `animatedListExpand` - 列表项展开
+- `animatedPinToTop` - 置顶动画
+- `animatedBulkSelect` - 批量选择模式
+- `animatedFavorite` - 收藏动画
+- `animatedListFilter` - 列表筛选
+- `animatedPriorityTag` - 优先级标记
+- `animatedSearchHighlight` - 搜索结果高亮
+- `animatedListInsert` - 列表项插入
+- `animatedListDelete` - 列表项删除
+
+#### 交互选择动画 (11种)
+- `animatedDropdown` - 下拉菜单展开
+- `animatedTabIndicator` - 标签页指示器
+- `animatedSegmentedControl` - 分段选择器
+- `animatedColorPicker` - 颜色选择器
+- `animatedStarRating` - 星级评分
+- `animatedStepper` - 步进器
+- `animatedSwitch` - 开关切换
+- `animatedRangeSlider` - 范围滑块
+- `animatedCascadingSelect` - 级联选择器
+- `animatedFilterPanel` - 过滤面板
+- `animatedQuickSelect` - 快速选择菜单
+
 ---
 
-**🎉 恭喜您成功集成企业级iOS动效系统！**
+**🎉 恭喜您成功升级到iOS动效系统 v1.1.0！**
 
-本系统为您的企业应用提供了Notion标杆级的动效体验，确保用户获得流畅、专业、现代的交互体验。系统经过严格的企业级测试和优化，可以放心地在生产环境中部署。
+企业级iOS动效系统现已完全集成v1.1.0的先进特性，为您的应用提供了：
+- 🔄 **高级动画序列编排器** - 复杂动画流程的精确控制
+- 🎨 **自定义缓动曲线系统** - 无与伦比的动画表现力
+- 📱 **iOS 18深度和材质动画** - 最新的系统特性支持
+- 🎯 **72种完整动画组件** - 覆盖所有交互场景
+
+系统经过严格的企业级测试和优化，可以放心地在生产环境中部署。
 
 **🚀 现在就开始使用，让您的应用拥有世界级的动效体验！**

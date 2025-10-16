@@ -1,6 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/core/services/drift_database_service.dart';
+import 'package:your_finance_flutter/core/services/legacy_import/adapters/assets_adapter.dart';
+import 'package:your_finance_flutter/core/services/legacy_import/file_locator.dart';
+import 'package:your_finance_flutter/core/services/legacy_import/import_report.dart';
 
 /// 数据迁移服务
 /// 负责处理应用版本升级时的数据迁移工作
@@ -22,19 +31,19 @@ class DataMigrationService {
   Future<void> checkAndMigrateData() async {
     try {
       final currentVersion = await _getCurrentMigrationVersion();
+
       if (currentVersion >= _currentVersion) {
-        print('✅ 数据已是最新版本 v$currentVersion');
+        // Even if we're at the latest version, check if we need to import legacy data
+        // This handles the case where the user manually triggered import
+        await _importLegacyJsonIfPresent();
         return;
       }
-
-      print('🔄 开始数据迁移: v$currentVersion -> v$_currentVersion');
 
       // 执行迁移逻辑
       await _performMigrations(currentVersion);
 
       // 更新迁移版本
       await _setCurrentMigrationVersion(_currentVersion);
-      print('✅ 数据迁移完成');
     } catch (e) {
       print('❌ 数据迁移失败: $e');
       // 迁移失败不应该阻止应用启动
@@ -72,6 +81,9 @@ class DataMigrationService {
       print('📊 执行 v4 迁移: 账户余额到交易迁移');
       // 这个迁移将在Provider初始化后通过 runMigrations 执行
     }
+
+    // New: Legacy JSON → Drift import (idempotent)
+    await _importLegacyJsonIfPresent();
   }
 
   /// 强制重新执行数据迁移 (开发者模式专用)
@@ -85,5 +97,145 @@ class DataMigrationService {
       print('❌ 强制重新迁移失败: $e');
       rethrow;
     }
+  }
+
+  /// 手动导入遗留JSON数据 (开发者模式专用)
+  Future<ImportReport> importLegacyData({bool dryRun = true}) async {
+    print('🔄 开始${dryRun ? '预览' : '导入'}遗留数据...');
+    final report = ImportReport();
+    final backupDir = await LegacyFileLocator.createBackupDir();
+
+    // Assets
+    final assetsFile = await LegacyFileLocator.tryGetFile('assets.json');
+    if (assetsFile != null) {
+      print('📁 发现资产数据文件: ${assetsFile.path}');
+      await _backupFile(assetsFile, backupDir);
+      final items = await LegacyAssetsAdapter.parse(assetsFile);
+      report.modules['assets']!.total = items.length;
+      print('📊 解析出 ${items.length} 条资产记录');
+
+      if (!dryRun) {
+        try {
+          final db = await DriftDatabaseService.getInstance();
+          await db.upsertAssets(items);
+          report.modules['assets']!.imported = items.length;
+          print('✅ 成功导入 ${items.length} 条资产记录');
+        } catch (e) {
+          report.modules['assets']!.failed = items.length;
+          report.errors.add('Assets import failed: $e');
+          print('❌ 资产导入失败: $e');
+        }
+      }
+    } else {
+      print('⚠️ 未找到资产数据文件');
+    }
+
+    // Save report
+    await _saveReport(report);
+    print('📄 ${dryRun ? '预览' : '导入'}报告已保存');
+
+    return report;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Legacy JSON Import Orchestration
+  // ---------------------------------------------------------------------------
+  Future<void> _importLegacyJsonIfPresent({bool dryRun = false}) async {
+    final report = ImportReport();
+    final backupDir = await LegacyFileLocator.createBackupDir();
+
+    print('🔍 开始扫描遗留数据...');
+
+    // Import from SharedPreferences (current app data)
+    await _importFromSharedPreferences(report, dryRun);
+
+    // Import from legacy JSON files if they exist
+    await _importFromLegacyFiles(report, backupDir, dryRun);
+
+    print('📋 遗留数据导入完成');
+    print('📄 导入报告已保存');
+
+    // Save report
+    await _saveReport(report);
+  }
+
+  /// Import data from SharedPreferences (current app storage)
+  Future<void> _importFromSharedPreferences(
+    ImportReport report,
+    bool dryRun,
+  ) async {
+    print('📱 检查SharedPreferences数据...');
+
+    // Assets from SharedPreferences
+    final assetsJson = _prefs!.getString('assets_data');
+    if (assetsJson != null && assetsJson.isNotEmpty) {
+      print('💾 发现SharedPreferences资产数据');
+      final items =
+          await LegacyAssetsAdapter.parseSharedPreferences(assetsJson);
+      report.modules['assets']!.total += items.length;
+      print('📊 SharedPreferences资产记录: ${items.length}');
+
+      if (!dryRun) {
+        try {
+          final db = await DriftDatabaseService.getInstance();
+          await db.upsertAssets(items);
+          report.modules['assets']!.imported += items.length;
+          print('✅ SharedPreferences资产数据导入成功');
+        } catch (e) {
+          report.modules['assets']!.failed += items.length;
+          report.errors.add('SharedPreferences assets import failed: $e');
+          print('❌ SharedPreferences资产数据导入失败: $e');
+        }
+      }
+    }
+  }
+
+  /// Import data from legacy JSON files
+  Future<void> _importFromLegacyFiles(
+    ImportReport report,
+    Directory backupDir,
+    bool dryRun,
+  ) async {
+    print('📁 检查遗留JSON文件...');
+
+    // Assets from JSON files
+    final assetsFile = await LegacyFileLocator.tryGetFile('assets.json');
+    if (assetsFile != null) {
+      print('📁 发现资产JSON文件: ${assetsFile.path}');
+      await _backupFile(assetsFile, backupDir);
+      final items = await LegacyAssetsAdapter.parse(assetsFile);
+      report.modules['assets']!.total += items.length;
+      print('📊 JSON文件资产记录: ${items.length}');
+
+      if (!dryRun) {
+        try {
+          final db = await DriftDatabaseService.getInstance();
+          await db.upsertAssets(items);
+          report.modules['assets']!.imported += items.length;
+          print('✅ JSON文件资产数据导入成功');
+        } catch (e) {
+          report.modules['assets']!.failed += items.length;
+          report.errors.add('JSON assets import failed: $e');
+          print('❌ JSON文件资产数据导入失败: $e');
+        }
+      }
+    }
+  }
+
+  Future<void> _backupFile(File src, Directory backupDir) async {
+    try {
+      final name = p.basename(src.path);
+      await src.copy(p.join(backupDir.path, name));
+    } catch (_) {}
+  }
+
+  Future<void> _saveReport(ImportReport report) async {
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final out = File(p.join(docs.path, 'migration_report.json'));
+      await out.writeAsString(
+        const JsonEncoder.withIndent('  ').convert(report.toJson()),
+      );
+    } catch (_) {}
   }
 }

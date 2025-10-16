@@ -4,6 +4,7 @@ import 'package:your_finance_flutter/core/models/asset_history.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/services/asset_history_service.dart';
 import 'package:your_finance_flutter/core/services/depreciation_service.dart';
+import 'package:your_finance_flutter/core/services/drift_database_service.dart';
 import 'package:your_finance_flutter/core/services/hybrid_storage_service.dart';
 
 class AssetProvider with ChangeNotifier {
@@ -29,17 +30,33 @@ class AssetProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 加载资产数据
+  // 加载资产数据 - 优先从Drift加载，如果失败则从SharedPreferences加载
   Future<void> loadAssets() async {
-    if (_storageService == null) {
-      print('❌ 存储服务未初始化');
-      return;
-    }
-
     print('🔄 开始加载资产数据...');
     try {
+      // 首先尝试从Drift数据库加载
+      try {
+        final driftService = await DriftDatabaseService.getInstance();
+        final driftAssets = await driftService.getAssets();
+        if (driftAssets.isNotEmpty) {
+          _assets = driftAssets;
+          print('✅ 从Drift数据库加载资产数据成功，共${_assets.length}个资产');
+          _isInitialized = true;
+          notifyListeners();
+          return;
+        }
+      } catch (e) {
+        print('⚠️ Drift数据库加载失败，尝试从SharedPreferences加载: $e');
+      }
+
+      // 如果Drift加载失败或为空，从SharedPreferences加载
+      if (_storageService == null) {
+        print('❌ 存储服务未初始化');
+        return;
+      }
+
       _assets = await _storageService!.getAssets();
-      print('✅ 资产数据加载完成，共${_assets.length}个资产');
+      print('✅ 从SharedPreferences加载资产数据，共${_assets.length}个资产');
 
       // 打印每个资产的详细信息
       for (var i = 0; i < _assets.length; i++) {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:your_finance_flutter/core/animations/animation_config.dart';
 import 'package:your_finance_flutter/core/animations/animation_engine.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_sequence_builder.dart';
 
 /// 企业级iOS动效系统
 /// 集成flutter_animate和自定义动效，提供企业级稳定性和性能
@@ -20,6 +21,143 @@ class IOSAnimationSystem {
 
   /// 全局动效配置
   static const IOSAnimationTheme defaultTheme = IOSAnimationTheme();
+
+  // ===== v1.1.0 新功能：高级动画序列编排器 =====
+
+  /// 创建高级动画序列构建器
+  IOSAnimationSequenceBuilder createSequenceBuilder({
+    required TickerProvider vsync,
+    String? sequenceId,
+  }) =>
+      IOSAnimationSequenceBuilder(
+        vsync: vsync,
+        system: this,
+        sequenceId:
+            sequenceId ?? 'sequence_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+  // ===== v1.1.0 新功能：自定义缓动曲线 =====
+
+  /// 注册自定义缓动曲线
+  static final Map<String, Curve> _customCurves = {};
+
+  static void registerCustomCurve(String name, Curve curve) {
+    _customCurves[name] = curve;
+  }
+
+  static Curve? getCustomCurve(String name) => _customCurves[name];
+
+  /// 获取所有可用曲线（包括预定义和自定义）
+  static Map<String, Curve> getAllCurves() => {
+        ..._predefinedCurves,
+        ..._customCurves,
+      };
+
+  static const Map<String, Curve> _predefinedCurves = {
+    'linear': Curves.linear,
+    'ease': Curves.ease,
+    'easeIn': Curves.easeIn,
+    'easeOut': Curves.easeOut,
+    'easeInOut': Curves.easeInOut,
+    'bounceIn': Curves.bounceIn,
+    'bounceOut': Curves.bounceOut,
+    'bounceInOut': Curves.bounceInOut,
+    'elasticIn': Curves.elasticIn,
+    'elasticOut': Curves.elasticOut,
+    'elasticInOut': Curves.elasticInOut,
+    'fastOutSlowIn': Curves.fastOutSlowIn,
+    'slowMiddle': Curves.slowMiddle,
+    'decelerate': Curves.decelerate,
+  };
+
+  // ===== v1.1.0 新功能：iOS 18特性 =====
+
+  /// iOS 18 风格的深度动画
+  Future<void> executeDepthAnimation({
+    required String animationId,
+    required TickerProvider vsync,
+    required Widget target,
+    double depth = 0.1,
+    Duration duration = const Duration(milliseconds: 600),
+    Curve curve = Curves.easeInOutCubic,
+  }) async {
+    if (!_currentTheme.enableAnimations) return;
+
+    _recordAnimationStart(animationId);
+
+    try {
+      final controller = AnimationController(
+        duration: _currentTheme.adjustDuration(duration),
+        vsync: vsync,
+      );
+
+      final depthAnimation = Tween<double>(
+        begin: 0.0,
+        end: depth,
+      ).animate(
+        CurvedAnimation(
+          parent: controller,
+          curve: curve,
+        ),
+      );
+
+      await controller.forward();
+      await controller.reverse();
+
+      _recordAnimationEnd(animationId, true);
+    } catch (e) {
+      _recordAnimationEnd(animationId, false);
+      rethrow;
+    }
+  }
+
+  /// iOS 18 风格的材质动画
+  Future<void> executeMaterialAnimation({
+    required String animationId,
+    required TickerProvider vsync,
+    required Widget target,
+    double intensity = 1.0,
+    Duration duration = const Duration(milliseconds: 800),
+  }) async {
+    if (!_currentTheme.enableAnimations) return;
+
+    _recordAnimationStart(animationId);
+
+    try {
+      // iOS 18风格的多层材质动画
+      final specs = [
+        IOSAnimationSpec(
+          type: AnimationType.appear,
+          duration: duration ~/ 3,
+          begin: 0.0,
+          end: intensity * 0.3,
+        ),
+        IOSAnimationSpec(
+          type: AnimationType.transform,
+          duration: duration ~/ 3,
+          begin: 1.0,
+          end: 1.0 + intensity * 0.1,
+        ),
+        IOSAnimationSpec(
+          type: AnimationType.disappear,
+          duration: duration ~/ 3,
+          begin: intensity * 0.3,
+          end: 0.0,
+        ),
+      ];
+
+      await executeSequence(
+        animationId: animationId,
+        vsync: vsync,
+        specs: specs,
+      );
+
+      _recordAnimationEnd(animationId, true);
+    } catch (e) {
+      _recordAnimationEnd(animationId, false);
+      rethrow;
+    }
+  }
 
   IOSAnimationTheme _currentTheme = defaultTheme;
   IOSAnimationTheme get currentTheme => _currentTheme;
@@ -165,7 +303,9 @@ class IOSAnimationSystem {
   }
 
   Animation<double> _createAnimation(
-      AnimationController controller, IOSAnimationSpec spec) {
+    AnimationController controller,
+    IOSAnimationSpec spec,
+  ) {
     final curve = spec.curve ?? IOSAnimationConfig.standard;
 
     return Tween<double>(
@@ -316,7 +456,8 @@ class IOSAnimationTheme {
   Duration adjustDuration(Duration duration) {
     if (!enableAnimations) return Duration.zero;
     return Duration(
-        milliseconds: (duration.inMilliseconds * animationSpeed).round());
+      milliseconds: (duration.inMilliseconds * animationSpeed).round(),
+    );
   }
 
   IOSAnimationTheme copyWith({

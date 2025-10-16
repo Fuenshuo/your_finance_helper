@@ -6,6 +6,7 @@ import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
@@ -57,12 +58,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onTap: () {
               final debugEnabled = _debugManager.handleClick();
               if (debugEnabled) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('🔧 Debug模式已开启'),
-                    backgroundColor: Colors.orange,
-                    duration: Duration(seconds: 2),
-                  ),
+                unifiedNotifications.showWarning(
+                  context,
+                  '🔧 Debug模式已开启',
+                  duration: const Duration(seconds: 2),
                 );
               }
             },
@@ -569,11 +568,10 @@ Future<bool> _checkDataIntegrity(BuildContext context) async {
 Future<void> _performDataMigration(BuildContext context) async {
   try {
     // 这里可以调用数据迁移服务
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('🔄 数据迁移中...'),
-        duration: Duration(seconds: 2),
-      ),
+    unifiedNotifications.showInfo(
+      context,
+      '🔄 数据迁移中...',
+      duration: const Duration(seconds: 2),
     );
 
     // 重新加载所有数据
@@ -581,20 +579,16 @@ Future<void> _performDataMigration(BuildContext context) async {
     // TODO: TransactionProvider需要添加公共的重新加载方法
     // await context.read<TransactionProvider>().loadTransactions();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✅ 数据迁移完成'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
+    unifiedNotifications.showSuccess(
+      context,
+      '✅ 数据迁移完成',
+      duration: const Duration(seconds: 3),
     );
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('❌ 迁移失败: $e'),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 5),
-      ),
+    unifiedNotifications.showError(
+      context,
+      '❌ 迁移失败: $e',
+      duration: const Duration(seconds: 5),
     );
   }
 }

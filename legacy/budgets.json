@@ -1,0 +1,144 @@
+[
+    {
+        "id": "budget_housing_001",
+        "name": "住房预算",
+        "description": "房租、水电、物业等",
+        "category": "housing",
+        "allocatedAmount": 4000.0,
+        "spentAmount": 3500.0,
+        "period": "monthly",
+        "startDate": "2024-10-01T00:00:00.000Z",
+        "endDate": "2024-10-31T23:59:59.000Z",
+        "status": "active",
+        "color": "#FF5722",
+        "iconName": "home",
+        "isEssential": true,
+        "warningThreshold": 0.8,
+        "limitThreshold": 0.95,
+        "tags": [
+            "住房",
+            "必需"
+        ],
+        "creationDate": "2024-09-01T00:00:00.000Z",
+        "updateDate": "2024-10-01T00:00:00.000Z"
+    },
+    {
+        "id": "budget_food_001",
+        "name": "餐饮预算",
+        "description": "早餐、午餐、晚餐、零食等",
+        "category": "food",
+        "allocatedAmount": 2500.0,
+        "spentAmount": 1285.50,
+        "period": "monthly",
+        "startDate": "2024-10-01T00:00:00.000Z",
+        "endDate": "2024-10-31T23:59:59.000Z",
+        "status": "active",
+        "color": "#4CAF50",
+        "iconName": "restaurant",
+        "isEssential": true,
+        "warningThreshold": 0.75,
+        "limitThreshold": 0.9,
+        "tags": [
+            "餐饮",
+            "必需"
+        ],
+        "creationDate": "2024-09-01T00:00:00.000Z",
+        "updateDate": "2024-10-05T18:30:00.000Z"
+    },
+    {
+        "id": "budget_transport_001",
+        "name": "交通预算",
+        "description": "地铁、公交、打车等",
+        "category": "transport",
+        "allocatedAmount": 600.0,
+        "spentAmount": 200.0,
+        "period": "monthly",
+        "startDate": "2024-10-01T00:00:00.000Z",
+        "endDate": "2024-10-31T23:59:59.000Z",
+        "status": "active",
+        "color": "#2196F3",
+        "iconName": "directions_bus",
+        "isEssential": true,
+        "warningThreshold": 0.8,
+        "limitThreshold": 0.95,
+        "tags": [
+            "交通",
+            "必需"
+        ],
+        "creationDate": "2024-09-01T00:00:00.000Z",
+        "updateDate": "2024-10-15T08:00:00.000Z"
+    },
+    {
+        "id": "budget_entertainment_001",
+        "name": "娱乐预算",
+        "description": "电影、游戏、聚会等",
+        "category": "entertainment",
+        "allocatedAmount": 800.0,
+        "spentAmount": 80.0,
+        "period": "monthly",
+        "startDate": "2024-10-01T00:00:00.000Z",
+        "endDate": "2024-10-31T23:59:59.000Z",
+        "status": "active",
+        "color": "#9C27B0",
+        "iconName": "movie",
+        "isEssential": false,
+        "warningThreshold": 0.7,
+        "limitThreshold": 0.85,
+        "tags": [
+            "娱乐",
+            "可选"
+        ],
+        "creationDate": "2024-09-01T00:00:00.000Z",
+        "updateDate": "2024-10-18T19:30:00.000Z"
+    },
+    {
+        "id": "budget_utilities_001",
+        "name": "水电物业预算",
+        "description": "水费、电费、物业费等",
+        "category": "utilities",
+        "allocatedAmount": 300.0,
+        "spentAmount": 180.50,
+        "period": "monthly",
+        "startDate": "2024-10-01T00:00:00.000Z",
+        "endDate": "2024-10-31T23:59:59.000Z",
+        "status": "active",
+        "color": "#607D8B",
+        "iconName": "bolt",
+        "isEssential": true,
+        "warningThreshold": 0.8,
+        "limitThreshold": 0.95,
+        "tags": [
+            "水电",
+            "物业",
+            "必需"
+        ],
+        "creationDate": "2024-09-01T00:00:00.000Z",
+        "updateDate": "2024-10-20T14:00:00.000Z"
+    },
+    {
+        "id": "budget_dining_001",
+        "name": "聚餐预算",
+        "description": "朋友聚餐、请客等",
+        "category": "dining",
+        "allocatedAmount": 1000.0,
+        "spentAmount": 320.0,
+        "period": "monthly",
+        "startDate": "2024-10-01T00:00:00.000Z",
+        "endDate": "2024-10-31T23:59:59.000Z",
+        "status": "active",
+        "color": "#FF9800",
+        "iconName": "local_dining",
+        "isEssential": false,
+        "warningThreshold": 0.6,
+        "limitThreshold": 0.8,
+        "tags": [
+            "聚餐",
+            "社交",
+            "可选"
+        ],
+        "creationDate": "2024-09-01T00:00:00.000Z",
+        "updateDate": "2024-10-08T20:00:00.000Z"
+    }
+]
+
+

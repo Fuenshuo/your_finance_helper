@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/ios_animation_showcase.dart';
 
@@ -61,36 +62,119 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('日志已清除')),
-      );
+      unifiedNotifications.showSuccess(context, '日志已清除');
     }
   }
 
-  /// 强制重新执行数据迁移
-  Future<void> _forceDataMigration() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ 强制数据迁移'),
-        content: const Text('此操作将重新执行所有数据迁移，可能恢复丢失的工资数据。\n\n'
-            '注意：此操作可能会覆盖现有数据，建议先备份重要数据。\n\n'
-            '确定要继续吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF6B6B),
-              foregroundColor: Colors.white,
+  /// 预览遗留数据导入
+  Future<void> _previewLegacyImport() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final migrationService = await DataMigrationService.getInstance();
+      final report = await migrationService.importLegacyData();
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('📊 导入预览'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('资产: ${report.modules['assets']!.total} 条记录'),
+                  Text('账户: ${report.modules['accounts']!.total} 条记录'),
+                  Text('交易: ${report.modules['transactions']!.total} 条记录'),
+                  Text('预算: ${report.modules['budgets']!.total} 条记录'),
+                  Text('薪资: ${report.modules['salary']!.total} 条记录'),
+                  Text('历史: ${report.modules['history']!.total} 条记录'),
+                  if (report.errors.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text(
+                      '⚠️ 发现问题:',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                    ...report.errors.map((e) => Text('• $e')),
+                  ],
+                ],
+              ),
             ),
-            child: const Text('确定执行'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('关闭'),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        unifiedNotifications.showError(
+          context,
+          '❌ 预览失败: $e',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// 执行遗留数据导入
+  Future<void> _performLegacyImport() async {
+    final confirmed = await unifiedNotifications.showConfirmation(
+      context,
+      title: '⚠️ 导入遗留数据',
+      message: '此操作将从SharedPreferences和JSON文件导入遗留数据到Drift数据库。\n\n'
+          '将导入：资产、账户、交易、预算、薪资等所有数据。\n\n'
+          '原始数据将被备份，导入的数据将与现有数据合并。\n\n'
+          '确定要继续吗？',
+      confirmLabel: '开始导入',
+      confirmColor: const Color(0xFF4CAF50),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final migrationService = await DataMigrationService.getInstance();
+      // Force re-migration to trigger legacy import
+      await migrationService.forceReMigration();
+
+      if (mounted) {
+        unifiedNotifications.showSuccess(
+          context,
+          '✅ 遗留数据导入完成，请重启应用查看结果',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        unifiedNotifications.showError(
+          context,
+          '❌ 导入失败: $e',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _forceDataMigration() async {
+    final confirmed = await unifiedNotifications.showConfirmation(
+      context,
+      title: '⚠️ 强制数据迁移',
+      message: '此操作将重新执行所有数据迁移，可能恢复丢失的工资数据。\n\n'
+          '注意：此操作可能会覆盖现有数据，建议先备份重要数据。\n\n'
+          '确定要继续吗？',
+      confirmLabel: '确定执行',
+      confirmColor: const Color(0xFFFF6B6B),
     );
 
     if (confirmed != true) return;
@@ -102,20 +186,16 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
       await migrationService.forceReMigration();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ 数据迁移完成，请重新启动应用查看结果'),
-            backgroundColor: Color(0xFF4CAF50),
-          ),
+        unifiedNotifications.showSuccess(
+          context,
+          '✅ 数据迁移完成，请重新启动应用查看结果',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ 数据迁移失败: $e'),
-            backgroundColor: const Color(0xFFFF6B6B),
-          ),
+        unifiedNotifications.showError(
+          context,
+          '❌ 数据迁移失败: $e',
         );
       }
     } finally {
@@ -326,7 +406,9 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.orange,
                             borderRadius: BorderRadius.circular(12),
@@ -352,11 +434,9 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                             onPressed: () {
                               final debugManager = DebugModeManager();
                               debugManager.forceEnableDebugMode();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('🔧 Debug模式已开启'),
-                                  backgroundColor: Colors.orange,
-                                ),
+                              unifiedNotifications.showWarning(
+                                context,
+                                '🔧 Debug模式已开启',
                               );
                             },
                             icon: const Icon(Icons.bug_report),
@@ -395,6 +475,65 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                       '⚠️ 此操作将重新执行所有数据迁移，可能恢复丢失的工资数据',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: const Color(0xFFFF6B6B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: context.spacing16),
+
+              // 遗留数据导入
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '遗留数据导入',
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: context.spacing12),
+                    Text(
+                      '从JSON文件导入遗留数据到新的Drift数据库',
+                      style: context.textTheme.bodyMedium,
+                    ),
+                    SizedBox(height: context.spacing16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _previewLegacyImport,
+                            icon: const Icon(Icons.preview),
+                            label: const Text('预览导入'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: context.spacing12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _performLegacyImport,
+                            icon: const Icon(Icons.cloud_upload),
+                            label: const Text('执行导入'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4CAF50),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: context.spacing8),
+                    Text(
+                      '📁 查找路径: legacy/ 或 应用文档目录\n'
+                      '📄 支持文件: assets.json, accounts.json, transactions.json, budgets.json, salary.json\n'
+                      '🔄 导入后数据将存储在Drift数据库中，原始文件会被备份',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF666666),
                       ),
                     ),
                   ],
