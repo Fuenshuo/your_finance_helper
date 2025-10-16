@@ -435,7 +435,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       dismissThresholds: const {
         DismissDirection.endToStart: 0.3, // 需要滑动30%才触发删除
       },
-      movementDuration: const Duration(milliseconds: 200), // 动画时长
       background: Container(
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: context.responsiveSpacing16),

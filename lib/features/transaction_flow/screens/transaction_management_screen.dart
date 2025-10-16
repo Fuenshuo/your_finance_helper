@@ -5,11 +5,11 @@ import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_list_screen.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_list_screen.dart';
 
 class TransactionManagementScreen extends StatefulWidget {
   const TransactionManagementScreen({super.key});
@@ -62,7 +62,6 @@ class _TransactionManagementScreenState
         ),
         body: TabBarView(
           controller: _tabController,
-          physics: const NeverScrollableScrollPhysics(), // 禁用滑动切换，防止与Dismissible冲突
           children: [
             _buildOverviewTab(),
             _buildTransactionsTab(),
@@ -74,8 +73,13 @@ class _TransactionManagementScreenState
   // 总览标签页
   Widget _buildOverviewTab() =>
       Consumer3<TransactionProvider, AccountProvider, BudgetProvider>(
-        builder: (context, transactionProvider, accountProvider, budgetProvider,
-            child) {
+        builder: (
+          context,
+          transactionProvider,
+          accountProvider,
+          budgetProvider,
+          child,
+        ) {
           final transactions = transactionProvider.transactions;
           final accounts = accountProvider.accounts;
 
@@ -163,7 +167,8 @@ class _TransactionManagementScreenState
                             child: StatCard(
                               title: '结余',
                               value: context.formatAmount(
-                                  thisMonthIncome - thisMonthExpense),
+                                thisMonthIncome - thisMonthExpense,
+                              ),
                               valueColor:
                                   thisMonthIncome - thisMonthExpense >= 0
                                       ? context.successColor
@@ -251,7 +256,8 @@ class _TransactionManagementScreenState
                               Icons.add_circle_outline,
                               context.successColor,
                               () => _navigateToAddTransaction(
-                                  TransactionType.income),
+                                TransactionType.income,
+                              ),
                             ),
                           ),
                           SizedBox(width: context.spacing12),
@@ -261,7 +267,8 @@ class _TransactionManagementScreenState
                               Icons.remove_circle_outline,
                               context.errorColor,
                               () => _navigateToAddTransaction(
-                                  TransactionType.expense),
+                                TransactionType.expense,
+                              ),
                             ),
                           ),
                           SizedBox(width: context.spacing12),
@@ -271,7 +278,8 @@ class _TransactionManagementScreenState
                               Icons.swap_horiz,
                               context.primaryAction,
                               () => _navigateToAddTransaction(
-                                  TransactionType.transfer),
+                                TransactionType.transfer,
+                              ),
                             ),
                           ),
                         ],
@@ -309,8 +317,10 @@ class _TransactionManagementScreenState
                       ...transactions
                           .where((t) => t.status == TransactionStatus.confirmed)
                           .take(5)
-                          .map((transaction) =>
-                              _buildTransactionListItem(transaction, accounts)),
+                          .map(
+                            (transaction) => _buildTransactionListItem(
+                                transaction, accounts),
+                          ),
                       if (transactions.isEmpty)
                         const Padding(
                           padding: EdgeInsets.all(16.0),
@@ -370,13 +380,15 @@ class _TransactionManagementScreenState
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: _getTransactionTypeColor(
-                            draft.type ?? TransactionType.income)
-                        .withOpacity(0.1),
+                      draft.type ?? TransactionType.income,
+                    ).withOpacity(0.1),
                     child: Icon(
                       _getTransactionTypeIcon(
-                          draft.type ?? TransactionType.income),
+                        draft.type ?? TransactionType.income,
+                      ),
                       color: _getTransactionTypeColor(
-                          draft.type ?? TransactionType.income),
+                        draft.type ?? TransactionType.income,
+                      ),
                     ),
                   ),
                   title: Text(draft.description),
@@ -388,7 +400,8 @@ class _TransactionManagementScreenState
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: _getTransactionTypeColor(
-                          draft.type ?? TransactionType.income),
+                        draft.type ?? TransactionType.income,
+                      ),
                     ),
                   ),
                   onTap: () => _editDraftTransaction(draft),
@@ -501,7 +514,9 @@ class _TransactionManagementScreenState
 
   // 构建交易列表项
   Widget _buildTransactionListItem(
-      Transaction transaction, List<Account> accounts) {
+    Transaction transaction,
+    List<Account> accounts,
+  ) {
     final account = accounts.firstWhere(
       (a) => a.id == transaction.fromAccountId,
       orElse: () => accounts.isNotEmpty
@@ -519,14 +534,16 @@ class _TransactionManagementScreenState
           CircleAvatar(
             radius: 16,
             backgroundColor: _getTransactionTypeColor(
-                    transaction.type ?? TransactionType.income)
-                .withOpacity(0.1),
+              transaction.type ?? TransactionType.income,
+            ).withOpacity(0.1),
             child: Icon(
               _getTransactionTypeIcon(
-                  transaction.type ?? TransactionType.income),
+                transaction.type ?? TransactionType.income,
+              ),
               size: 16,
               color: _getTransactionTypeColor(
-                  transaction.type ?? TransactionType.income),
+                transaction.type ?? TransactionType.income,
+              ),
             ),
           ),
           SizedBox(width: context.spacing12),
@@ -553,7 +570,8 @@ class _TransactionManagementScreenState
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: _getTransactionTypeColor(
-                  transaction.type ?? TransactionType.income),
+                transaction.type ?? TransactionType.income,
+              ),
             ),
           ),
         ],
