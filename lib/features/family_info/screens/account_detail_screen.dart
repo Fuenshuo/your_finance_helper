@@ -918,13 +918,11 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       );
 
   // ===== 左滑显示删除按钮的交易项 =====
-  Widget _buildDismissibleTransactionItem(Transaction transaction) {
-    return SwipeActionItem(
-      action: SwipeAction.delete(() => _deleteTransaction(transaction)),
-      child: _buildTransactionItem(transaction),
-    );
-  }
-
+  Widget _buildDismissibleTransactionItem(Transaction transaction) =>
+      SwipeActionItem(
+        action: SwipeAction.delete(() => _deleteTransaction(transaction)),
+        child: _buildTransactionItem(transaction),
+      );
 
   // 执行删除交易
   Future<void> _deleteTransaction(Transaction transaction) async {
@@ -941,9 +939,9 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       // 显示成功提示
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('交易已删除'),
-            duration: const Duration(seconds: 2),
+          const SnackBar(
+            content: Text('交易已删除'),
+            duration: Duration(seconds: 2),
           ),
         );
       }
