@@ -10,6 +10,7 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 import 'package:your_finance_flutter/features/family_info/screens/account_edit_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
@@ -916,72 +917,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
         ],
       );
 
-  // ===== 左滑删除功能的交易项 =====
+  // ===== 左滑显示删除按钮的交易项 =====
   Widget _buildDismissibleTransactionItem(Transaction transaction) {
-    final transactionItem = _buildTransactionItem(transaction);
-
-    return Dismissible(
-      key: Key('transaction-${transaction.id}'),
-      direction: DismissDirection.endToStart, // 从右向左滑动
-      dismissThresholds: const {
-        DismissDirection.endToStart: 0.3, // 需要滑动30%才触发删除
-      },
-      movementDuration: const Duration(milliseconds: 200), // 动画时长
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: context.responsiveSpacing16),
-        decoration: BoxDecoration(
-          color: context.errorColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          Icons.delete_outline,
-          color: context.errorColor,
-          size: 28,
-        ),
-      ),
-      secondaryBackground: Container(
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: context.responsiveSpacing16),
-        decoration: BoxDecoration(
-          color: context.errorColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-          size: 28,
-        ),
-      ),
-      confirmDismiss: (direction) => _showDeleteTransactionDialog(transaction),
-      onDismissed: (direction) => _deleteTransaction(transaction),
-      child: transactionItem,
+    return SwipeActionItem(
+      action: SwipeAction.delete(() => _deleteTransaction(transaction)),
+      child: _buildTransactionItem(transaction),
     );
   }
 
-  // 显示删除交易确认对话框
-  Future<bool?> _showDeleteTransactionDialog(Transaction transaction) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除交易'),
-        content: Text('确定要删除"${transaction.description}"吗？\n\n此操作无法撤销。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: context.errorColor,
-            ),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-  }
 
   // 执行删除交易
   Future<void> _deleteTransaction(Transaction transaction) async {
