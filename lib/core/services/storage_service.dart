@@ -6,6 +6,7 @@ import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/currency.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
+import 'package:your_finance_flutter/core/models/income_plan.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 
 class StorageService {
@@ -20,6 +21,7 @@ class StorageService {
   static const String _zeroBasedBudgetsKey = 'zero_based_budgets_data';
   static const String _salaryIncomesKey = 'salary_incomes_data';
   static const String _expensePlansKey = 'expense_plans_data';
+  static const String _incomePlansKey = 'income_plans_data';
 
   static StorageService? _instance;
   static SharedPreferences? _prefs;
@@ -344,6 +346,44 @@ class StorageService {
           final expensePlan =
               ExpensePlan.fromJson(json as Map<String, dynamic>);
           result.add(expensePlan);
+        } catch (e) {
+          // 跳过有问题的记录，继续加载其他记录
+        }
+      }
+
+      return result;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // 保存收入计划列表
+  Future<void> saveIncomePlans(List<dynamic> incomePlans) async {
+    try {
+      final jsonList = incomePlans.map((plan) => plan.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+      await _prefs!.setString(_incomePlansKey, jsonString);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // 加载收入计划列表
+  Future<List<dynamic>> loadIncomePlans() async {
+    try {
+      final jsonString = _prefs!.getString(_incomePlansKey);
+      if (jsonString == null) {
+        return [];
+      }
+
+      final jsonList = jsonDecode(jsonString) as List<dynamic>;
+      final result = <dynamic>[];
+
+      for (final json in jsonList) {
+        try {
+          final incomePlan =
+              IncomePlan.fromJson(json as Map<String, dynamic>);
+          result.add(incomePlan);
         } catch (e) {
           // 跳过有问题的记录，继续加载其他记录
         }

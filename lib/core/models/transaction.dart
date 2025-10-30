@@ -165,6 +165,8 @@ class Transaction extends Equatable {
     this.fromAccountId,
     this.toAccountId,
     this.envelopeBudgetId,
+    this.expensePlanId, // 关联的支出计划ID
+    this.incomePlanId, // 关联的收入计划ID
     required this.date,
     this.notes,
     this.tags = const [],
@@ -234,6 +236,8 @@ class Transaction extends Equatable {
   final String? fromAccountId;
   final String? toAccountId;
   final String? envelopeBudgetId;
+  final String? expensePlanId; // 关联的支出计划ID
+  final String? incomePlanId; // 关联的收入计划ID
 
   final DateTime date;
   final String? notes;
@@ -305,6 +309,8 @@ class Transaction extends Equatable {
       fromAccountId: json['fromAccountId'] as String?,
       toAccountId: json['toAccountId'] as String?,
       envelopeBudgetId: json['envelopeBudgetId'] as String?,
+      expensePlanId: json['expensePlanId'] as String?,
+      incomePlanId: json['incomePlanId'] as String?,
       date: DateTime.parse(json['date'] as String),
       notes: json['notes'] as String?,
       tags: List<String>.from((json['tags'] as List<dynamic>?) ?? []),
@@ -339,6 +345,8 @@ class Transaction extends Equatable {
     String? fromAccountId,
     String? toAccountId,
     String? envelopeBudgetId,
+    String? expensePlanId,
+    String? incomePlanId,
     DateTime? date,
     String? notes,
     List<String>? tags,
@@ -366,6 +374,8 @@ class Transaction extends Equatable {
         fromAccountId: fromAccountId ?? this.fromAccountId,
         toAccountId: toAccountId ?? this.toAccountId,
         envelopeBudgetId: envelopeBudgetId ?? this.envelopeBudgetId,
+        expensePlanId: expensePlanId ?? this.expensePlanId,
+        incomePlanId: incomePlanId ?? this.incomePlanId,
         date: date ?? this.date,
         notes: notes ?? this.notes,
         tags: tags ?? this.tags,

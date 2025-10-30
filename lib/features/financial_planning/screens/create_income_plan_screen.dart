@@ -9,9 +9,14 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/salary_income_setup_screen.dart';
 
-/// 创建收入计划页面
+/// 创建/编辑收入计划页面
 class CreateIncomePlanScreen extends StatefulWidget {
-  const CreateIncomePlanScreen({super.key});
+  final IncomePlan? editPlan;
+
+  const CreateIncomePlanScreen({
+    super.key,
+    this.editPlan,
+  });
 
   @override
   State<CreateIncomePlanScreen> createState() => _CreateIncomePlanScreenState();
@@ -37,13 +42,42 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
   final List<String> _wallets = ['工资卡', '储蓄卡', '投资账户'];
 
   @override
+  void initState() {
+    super.initState();
+    // 如果是编辑模式，加载现有数据
+    if (widget.editPlan != null) {
+      _loadEditData();
+    }
+  }
+
+  /// 加载编辑数据
+  void _loadEditData() {
+    final plan = widget.editPlan!;
+    _planName = plan.name;
+    _amount = plan.amount;
+    _frequency = plan.frequency.name;
+    _selectedWallet = plan.walletId;
+    _startDate = plan.startDate;
+
+    // 如果是基于工资的收入计划，设置相关数据
+    if (plan.salaryIncomeId != null) {
+      _selectedTemplate = 'salary';
+      // TODO: 加载工资收入数据
+    } else if (plan.isDetailedSalary) {
+      _selectedTemplate = 'detailed';
+    } else {
+      _selectedTemplate = 'ordinary';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.primaryBackground,
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           title: Text(
-            '创建收入计划',
+            widget.editPlan != null ? '编辑收入计划' : '创建收入计划',
             style: context.textTheme.headlineMedium,
           ),
           centerTitle: true,
@@ -354,7 +388,7 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
                             vertical: context.responsiveSpacing12,
                           ),
                         ),
-                        child: const Text('创建计划'),
+                        child: Text(widget.editPlan != null ? '保存修改' : '创建计划'),
                       ),
                     ),
                   ],
@@ -456,33 +490,59 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
 
-      // 创建收入计划对象
-      final incomePlan = IncomePlan(
-        id: const Uuid().v4(),
-        name: _planName,
-        amount: _amount,
-        frequency: _getIncomeFrequencyFromString(_frequency),
-        walletId: _selectedWallet, // TODO: 从钱包列表中获取实际的钱包ID
-        startDate: _startDate,
-        description: '通过财务计划创建的收入计划',
-        category: _selectedTemplate == 'detailed' ? '工资收入' : '其他收入',
-        creationDate: DateTime.now(),
-        updateDate: DateTime.now(),
-        salaryIncomeId: _selectedTemplate == 'detailed'
-            ? 'salary_income_id'
-            : null, // TODO: 获取实际的工资收入ID
-      );
-
-      // 保存到Provider
       final incomePlanProvider = context.read<IncomePlanProvider>();
-      incomePlanProvider.addIncomePlan(incomePlan);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('收入计划 "$_planName" 创建成功！'),
-          backgroundColor: const Color(0xFF4CAF50),
-        ),
-      );
+      if (widget.editPlan != null) {
+        // 编辑模式：更新现有计划
+        final updatedPlan = widget.editPlan!.copyWith(
+          name: _planName,
+          amount: _amount,
+          frequency: _getIncomeFrequencyFromString(_frequency),
+          walletId: _selectedWallet,
+          startDate: _startDate,
+          description: '通过财务计划编辑的收入计划',
+          category: _selectedTemplate == 'detailed' ? '工资收入' : '其他收入',
+          updateDate: DateTime.now(),
+          salaryIncomeId: _selectedTemplate == 'detailed'
+              ? 'salary_income_id'
+              : null, // TODO: 获取实际的工资收入ID
+        );
+
+        incomePlanProvider.updateIncomePlan(updatedPlan);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('收入计划 "$_planName" 修改成功！'),
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+        );
+      } else {
+        // 创建模式：创建新计划
+        final incomePlan = IncomePlan(
+          id: const Uuid().v4(),
+          name: _planName,
+          amount: _amount,
+          frequency: _getIncomeFrequencyFromString(_frequency),
+          walletId: _selectedWallet, // TODO: 从钱包列表中获取实际的钱包ID
+          startDate: _startDate,
+          description: '通过财务计划创建的收入计划',
+          category: _selectedTemplate == 'detailed' ? '工资收入' : '其他收入',
+          creationDate: DateTime.now(),
+          updateDate: DateTime.now(),
+          salaryIncomeId: _selectedTemplate == 'detailed'
+              ? 'salary_income_id'
+              : null, // TODO: 获取实际的工资收入ID
+        );
+
+        incomePlanProvider.addIncomePlan(incomePlan);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('收入计划 "$_planName" 创建成功！'),
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+        );
+      }
 
       Navigator.of(context).pop();
     }

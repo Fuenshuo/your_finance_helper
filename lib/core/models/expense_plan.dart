@@ -40,6 +40,7 @@ class ExpensePlan extends Equatable {
     required this.startDate,
     this.description = '',
     this.categoryId,
+    this.loanAccountId, // 关联的贷款账户ID（用于还款计划）
     this.endDate,
     this.status = ExpensePlanStatus.active,
     this.executionCount = 0,
@@ -60,6 +61,7 @@ class ExpensePlan extends Equatable {
     required DateTime startDate,
     String description = '',
     String? categoryId,
+    String? loanAccountId, // 关联的贷款账户ID
     DateTime? endDate,
   }) =>
       ExpensePlan(
@@ -71,6 +73,7 @@ class ExpensePlan extends Equatable {
         frequency: frequency,
         walletId: walletId,
         categoryId: categoryId,
+        loanAccountId: loanAccountId,
         startDate: startDate,
         endDate: endDate,
         creationDate: DateTime.now(),
@@ -93,6 +96,7 @@ class ExpensePlan extends Equatable {
         ),
         walletId: json['walletId'] as String,
         categoryId: json['categoryId'] as String?,
+        loanAccountId: json['loanAccountId'] as String?,
         startDate: DateTime.parse(json['startDate'] as String),
         endDate: json['endDate'] != null
             ? DateTime.parse(json['endDate'] as String)
@@ -120,6 +124,7 @@ class ExpensePlan extends Equatable {
   final ExpenseFrequency frequency;
   final String walletId;
   final String? categoryId; // 可选的支出分类
+  final String? loanAccountId; // 关联的贷款账户ID（用于还款计划）
   final DateTime startDate;
   final DateTime? endDate;
   final ExpensePlanStatus status;
@@ -138,6 +143,7 @@ class ExpensePlan extends Equatable {
     ExpenseFrequency? frequency,
     String? walletId,
     String? categoryId,
+    String? loanAccountId,
     DateTime? startDate,
     DateTime? endDate,
     ExpensePlanStatus? status,
@@ -155,6 +161,7 @@ class ExpensePlan extends Equatable {
         frequency: frequency ?? this.frequency,
         walletId: walletId ?? this.walletId,
         categoryId: categoryId ?? this.categoryId,
+        loanAccountId: loanAccountId ?? this.loanAccountId,
         startDate: startDate ?? this.startDate,
         endDate: endDate ?? this.endDate,
         status: status ?? this.status,

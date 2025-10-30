@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
 
 class IncomePlanProvider with ChangeNotifier {
@@ -30,10 +32,12 @@ class IncomePlanProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      // TODO: 从存储服务加载收入计划数据
-      // _incomePlans = await _storageService.loadIncomePlans();
-      _incomePlans = []; // 暂时为空列表
+      print('📊 开始加载收入计划数据');
+      final loadedPlans = await _storageService.loadIncomePlans();
+      _incomePlans = loadedPlans.map((plan) => plan as IncomePlan).toList();
+      print('✅ 收入计划加载完成: ${_incomePlans.length} 个');
     } catch (e) {
+      print('❌ 加载收入计划数据失败: $e');
       _error = e.toString();
     } finally {
       _isLoading = false;
@@ -44,11 +48,13 @@ class IncomePlanProvider with ChangeNotifier {
   // 添加收入计划
   Future<void> addIncomePlan(IncomePlan plan) async {
     try {
+      print('➕ 添加收入计划: ${plan.name}');
       _incomePlans.add(plan);
-      // TODO: 保存到存储服务
-      // await _storageService.saveIncomePlans(_incomePlans);
+      await _storageService.saveIncomePlans(_incomePlans);
       notifyListeners();
+      print('✅ 收入计划添加成功: ${plan.name}');
     } catch (e) {
+      print('❌ 添加收入计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -111,16 +117,6 @@ class IncomePlanProvider with ChangeNotifier {
       final planIndex = _incomePlans.indexWhere((plan) => plan.id == planId);
       if (planIndex != -1) {
         final plan = _incomePlans[planIndex];
-
-        // 创建执行记录
-        final execution = IncomePlanExecution(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          planId: planId,
-          executionDate: DateTime.now(),
-          amount: actualAmount,
-          description: description,
-          creationDate: DateTime.now(),
-        );
 
         // 更新计划统计信息
         final updatedPlan = plan.copyWith(
@@ -243,6 +239,80 @@ class IncomePlanProvider with ChangeNotifier {
   double getYearlyIncomeTotal(int year) => activeIncomePlans
       .where((plan) => plan.frequency == IncomeFrequency.yearly)
       .fold(0.0, (sum, plan) => sum + plan.amount);
+
+  /// 自动执行收入计划，生成相应的收入交易
+  Future<void> autoExecuteIncomePlans(TransactionProvider transactionProvider) async {
+    final now = DateTime.now();
+    final executedPlans = <IncomePlan>[];
+
+    print('🔄 开始自动执行收入计划，当前时间: $now');
+
+    for (final plan in activeIncomePlans) {
+      if (_shouldExecutePlan(plan, now)) {
+        try {
+          print('💰 执行收入计划: ${plan.name}');
+          await _executeIncomePlan(plan, transactionProvider);
+          executedPlans.add(plan);
+        } catch (e) {
+          print('❌ 执行收入计划失败: ${plan.name}, 错误: $e');
+        }
+      }
+    }
+
+    if (executedPlans.isNotEmpty) {
+      // 更新执行时间并保存
+      for (final plan in executedPlans) {
+        final updatedPlan = plan.copyWith(lastExecutionDate: now);
+        await updateIncomePlan(updatedPlan);
+      }
+      print('✅ 自动执行完成，共执行了 ${executedPlans.length} 个收入计划');
+    } else {
+      print('ℹ️ 没有需要执行的收入计划');
+    }
+  }
+
+  /// 检查收入计划是否应该执行
+  bool _shouldExecutePlan(IncomePlan plan, DateTime now) {
+    final lastExecution = plan.lastExecutionDate ?? plan.startDate;
+
+    switch (plan.frequency) {
+      case IncomeFrequency.daily:
+        return now.difference(lastExecution).inDays >= 1;
+      case IncomeFrequency.weekly:
+        return now.difference(lastExecution).inDays >= 7;
+      case IncomeFrequency.monthly:
+        return now.month > lastExecution.month ||
+               (now.month == lastExecution.month && now.year > lastExecution.year);
+      case IncomeFrequency.quarterly:
+        final currentQuarter = ((now.month - 1) ~/ 3) + 1;
+        final lastQuarter = ((lastExecution.month - 1) ~/ 3) + 1;
+        return currentQuarter > lastQuarter || now.year > lastExecution.year;
+      case IncomeFrequency.yearly:
+        return now.year > lastExecution.year;
+      case IncomeFrequency.oneTime:
+        // 一次性收入只执行一次
+        return plan.lastExecutionDate == null;
+    }
+  }
+
+  /// 执行单个收入计划，创建收入交易
+  Future<void> _executeIncomePlan(IncomePlan plan, TransactionProvider transactionProvider) async {
+    // 创建收入交易
+    final transaction = Transaction(
+      description: '${plan.name} - 自动收入',
+      amount: plan.amount,
+      type: TransactionType.income,
+      category: TransactionCategory.salary, // 工资收入类别
+      toWalletId: plan.walletId, // 收入到指定的钱包
+      date: DateTime.now(),
+      tags: ['自动收入', plan.name],
+      incomePlanId: plan.id, // 关联到收入计划
+      isAutoGenerated: true, // 标记为自动生成
+    );
+
+    await transactionProvider.addTransaction(transaction);
+    print('✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}');
+  }
 
   // 刷新数据
   Future<void> refresh() async {

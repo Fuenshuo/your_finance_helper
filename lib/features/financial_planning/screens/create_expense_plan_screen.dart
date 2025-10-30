@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
+import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/financial_planning/screens/budget_management_screen.dart';
 import 'package:your_finance_flutter/features/financial_planning/screens/mortgage_calculator_screen.dart';
 
-/// 创建支出计划页面
+/// 创建/编辑支出计划页面
 class CreateExpensePlanScreen extends StatefulWidget {
-  const CreateExpensePlanScreen({super.key});
+  final ExpensePlan? editPlan;
+
+  const CreateExpensePlanScreen({
+    super.key,
+    this.editPlan,
+  });
 
   @override
   State<CreateExpensePlanScreen> createState() =>
@@ -23,7 +30,8 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
   double _amount = 0.0;
   ExpensePlanType _planType = ExpensePlanType.periodic;
   ExpenseFrequency _frequency = ExpenseFrequency.monthly;
-  String _selectedWallet = '';
+  String? _selectedAccountId; // 支出账户ID（扣款账户）
+  String? _selectedLoanAccountId; // 贷款账户ID（收款账户，用于还款）
   String? _categoryId;
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
@@ -43,44 +51,99 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
     '其他',
   ];
 
-  final List<String> _wallets = ['工资卡', '储蓄卡', '信用卡'];
+  @override
+  void initState() {
+    super.initState();
+    // 如果是编辑模式，加载现有数据
+    if (widget.editPlan != null) {
+      _loadEditData();
+    }
+  }
+
+  /// 加载编辑数据
+  void _loadEditData() {
+    final plan = widget.editPlan!;
+    _planName = plan.name;
+    _description = plan.description ?? '';
+    _amount = plan.amount;
+    _planType = plan.type;
+    _frequency = plan.frequency;
+    _selectedAccountId = plan.walletId;
+    _selectedLoanAccountId = plan.loanAccountId;
+    _categoryId = plan.categoryId;
+    _startDate = plan.startDate;
+    _endDate = plan.endDate;
+  }
 
   /// 创建支出计划
   Future<void> _createExpensePlan() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedWallet.isEmpty) {
+    // 重要：调用save()确保表单数据被保存到变量中
+    _formKey.currentState?.save();
+
+    if (_selectedAccountId == null || _selectedAccountId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择钱包')),
+        const SnackBar(content: Text('请选择支出账户')),
       );
       return;
     }
 
     try {
-      final expensePlan = ExpensePlan.create(
-        name: _planName,
-        description: _description,
-        type: _planType,
-        amount: _amount,
-        frequency: _frequency,
-        walletId: _selectedWallet,
-        categoryId: _categoryId,
-        startDate: _startDate,
-        endDate: _endDate,
-      );
+      final expensePlanProvider = context.read<ExpensePlanProvider>();
 
-      await context.read<ExpensePlanProvider>().addExpensePlan(expensePlan);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('支出计划创建成功')),
+      if (widget.editPlan != null) {
+        // 编辑模式：更新现有计划
+        final updatedPlan = widget.editPlan!.copyWith(
+          name: _planName,
+          description: _description,
+          type: _planType,
+          amount: _amount,
+          frequency: _frequency,
+          walletId: _selectedAccountId!,
+          categoryId: _categoryId,
+          loanAccountId: _selectedLoanAccountId,
+          startDate: _startDate,
+          endDate: _endDate,
+          updateDate: DateTime.now(),
         );
-        Navigator.of(context).pop(expensePlan);
+
+        await expensePlanProvider.updateExpensePlan(updatedPlan);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('支出计划修改成功')),
+          );
+          Navigator.of(context).pop(updatedPlan);
+        }
+      } else {
+        // 创建模式：创建新计划
+        final expensePlan = ExpensePlan.create(
+          name: _planName,
+          description: _description,
+          type: _planType,
+          amount: _amount,
+          frequency: _frequency,
+          walletId: _selectedAccountId!,
+          categoryId: _categoryId,
+          loanAccountId: _selectedLoanAccountId,
+          startDate: _startDate,
+          endDate: _endDate,
+        );
+
+        await expensePlanProvider.addExpensePlan(expensePlan);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('支出计划创建成功')),
+          );
+          Navigator.of(context).pop(expensePlan);
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建失败: $e')),
+          SnackBar(content: Text('保存失败: $e')),
         );
       }
     }
@@ -111,7 +174,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           title: Text(
-            '创建支出计划',
+            widget.editPlan != null ? '编辑支出计划' : '创建支出计划',
             style: context.textTheme.headlineMedium,
           ),
           centerTitle: true,
@@ -119,7 +182,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
             TextButton(
               onPressed: _createExpensePlan,
               child: Text(
-                '创建',
+                widget.editPlan != null ? '保存' : '创建',
                 style: TextStyle(
                   color: context.primaryAction,
                   fontWeight: FontWeight.w600,
@@ -235,6 +298,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
 
                       // 金额
                       TextFormField(
+                        initialValue: _amount == 0.0 ? '' : _amount.toString(),
                         decoration: InputDecoration(
                           labelText: _planType == ExpensePlanType.budget
                               ? '预算金额'
@@ -255,6 +319,9 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                             return '请输入有效的金额';
                           }
                           return null;
+                        },
+                        onChanged: (value) {
+                          _amount = double.tryParse(value ?? '0') ?? 0.0;
                         },
                         onSaved: (value) {
                           _amount = double.tryParse(value ?? '0') ?? 0.0;
@@ -289,33 +356,42 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
 
                       SizedBox(height: context.spacing16),
 
-                      // 支付钱包
-                      DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: '支付钱包',
-                          border: OutlineInputBorder(),
-                        ),
-                        initialValue:
-                            _selectedWallet.isEmpty ? null : _selectedWallet,
-                        hint: const Text('选择支出使用的钱包'),
-                        items: _wallets
-                            .map(
-                              (wallet) => DropdownMenuItem(
-                                value: wallet,
-                                child: Text(wallet),
-                              ),
-                            )
-                            .toList(),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '请选择支付钱包';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedWallet = value ?? '';
-                          });
+                      // 支出账户
+                      Consumer<AccountProvider>(
+                        builder: (context, accountProvider, child) {
+                          final accounts = accountProvider.accounts
+                              .where((account) => account.type.isAsset) // 只显示资产账户（可用于支出）
+                              .toList();
+
+                          return DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: '支出账户',
+                              border: OutlineInputBorder(),
+                            ),
+                            value: _selectedAccountId,
+                            hint: const Text('选择支出账户'),
+                            items: accounts
+                                .map(
+                                  (account) => DropdownMenuItem(
+                                    value: account.id,
+                                    child: Text(
+                                      '${account.name} (${account.type.displayName})',
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return '请选择支出账户';
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedAccountId = value;
+                              });
+                            },
+                          );
                         },
                       ),
 
@@ -581,7 +657,51 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                         ),
                         SizedBox(height: context.spacing16),
                         Text(
-                          '如果这是房贷还款，您可以使用房贷计算器自动创建还款计划',
+                          '如果这是贷款还款，请选择对应的贷款账户',
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.secondaryText,
+                          ),
+                        ),
+                        SizedBox(height: context.spacing16),
+                        // 贷款账户选择器
+                        Consumer<AccountProvider>(
+                          builder: (context, accountProvider, child) {
+                            final loanAccounts = accountProvider.accounts
+                                .where((account) => account.type == AccountType.loan)
+                                .toList();
+
+                            return DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(
+                                labelText: '关联贷款账户（可选）',
+                                border: OutlineInputBorder(),
+                                hintText: '选择要还款的贷款账户',
+                              ),
+                              value: _selectedLoanAccountId,
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('无关联贷款'),
+                                ),
+                                ...loanAccounts.map(
+                                  (account) => DropdownMenuItem(
+                                    value: account.id,
+                                    child: Text(
+                                      '${account.name} (${account.loanType?.displayName ?? '未知类型'})',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedLoanAccountId = value;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                        SizedBox(height: context.spacing16),
+                        Text(
+                          '或者使用房贷计算器自动创建还款计划',
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: context.secondaryText,
                           ),
@@ -745,7 +865,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
               : ExpensePlanType.periodic,
           amount: _amount,
           frequency: _frequency,
-          walletId: _selectedWallet,
+          walletId: _selectedAccountId ?? '',
           startDate: _startDate,
           description: _description.isEmpty ? '' : _description,
           categoryId: _categoryId,

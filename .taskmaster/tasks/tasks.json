@@ -1,66 +1,262 @@
 {
-    "version": "1.0",
-    "tags": {
-        "v3-iteration": {
-            "description": "V3.0迭代计划任务",
-            "created": "2025-09-26T03:15:00.000Z",
-            "tasks": {
-                "1": {
-                    "id": 1,
-                    "title": "核心架构升级：三层联动架构",
-                    "description": "从'功能聚合'到'三层联动'架构，将现有10个独立模块重新组织进'信息维护 → 财务计划 → 交易流水'核心逻辑链",
-                    "status": "pending",
-                    "priority": "high",
-                    "details": "主要是概念和入口的整合而非功能的废弃。需要重新组织现有的工资管理、税务计算、资产管理、账户管理、预算管理、贷款计算、交易管理等模块的入口和导航结构。",
-                    "testStrategy": "验证所有原有功能仍然可访问，新架构下的导航流畅性",
-                    "dependencies": [],
-                    "created": "2025-09-26T03:15:00.000Z",
-                    "updated": "2025-09-26T03:15:00.000Z"
-                },
-                "2": {
-                    "id": 2,
-                    "title": "家庭信息维护模块整合",
-                    "description": "整合账户管理系统和资产管理系统为统一的静态资产管理入口",
-                    "status": "pending",
-                    "priority": "high",
-                    "details": "将原独立的【账户管理系统】和【资产管理系统】的入口整合进新的【家庭信息维护】模块。实现账户管理统一命名（钱包），为资产管理引入动态估值体系。",
-                    "testStrategy": "验证账户和资产管理功能正常，UI命名统一",
-                    "dependencies": [
-                        1
-                    ],
-                    "created": "2025-09-26T03:15:00.000Z",
-                    "updated": "2025-09-26T03:15:00.000Z"
-                },
-                "3": {
-                    "id": 3,
-                    "title": "财务计划模块重构",
-                    "description": "重构工资/税务系统和预算/贷款系统为周期性收入计划和支出计划",
-                    "status": "pending",
-                    "priority": "high",
-                    "details": "创建全新的【财务计划】模块，将工资和税务系统作为创建'收入计划'时的深度配置项，将预算和贷款系统作为'支出计划'的不同表现形式。废弃零基预算的分配操作，保留信封预算的UI但改变底层逻辑。",
-                    "testStrategy": "验证收入计划和支出计划的创建和管理功能，计划与实际交易的关联",
-                    "dependencies": [
-                        1
-                    ],
-                    "created": "2025-09-26T03:15:00.000Z",
-                    "updated": "2025-09-26T03:15:00.000Z"
-                },
-                "4": {
-                    "id": 4,
-                    "title": "交易流水模块增强",
-                    "description": "增强交易管理系统，融入并增强与计划的关联",
-                    "status": "pending",
-                    "priority": "medium",
-                    "details": "将【交易管理系统】的入口更名为【交易流水】，为自动生成的交易添加明显标签和链接。实现智能建议功能，当用户连续记录相似交易时提示创建自动执行计划。",
-                    "testStrategy": "验证交易显示的计划关联，智能建议功能的触发和准确性",
-                    "dependencies": [
-                        1,
-                        3
-                    ],
-                    "created": "2025-09-26T03:15:00.000Z",
-                    "updated": "2025-09-26T03:15:00.000Z"
-                }
-            }
+  "version": "1.0",
+  "tags": {
+    "v3-iteration": {
+      "description": "V3.0迭代计划任务",
+      "created": "2025-09-26T03:15:00.000Z",
+      "tasks": {
+        "1": {
+          "id": 1,
+          "title": "核心架构升级：三层联动架构",
+          "description": "从'功能聚合'到'三层联动'架构，将现有10个独立模块重新组织进'信息维护 → 财务计划 → 交易流水'核心逻辑链",
+          "status": "pending",
+          "priority": "high",
+          "details": "主要是概念和入口的整合而非功能的废弃。需要重新组织现有的工资管理、税务计算、资产管理、账户管理、预算管理、贷款计算、交易管理等模块的入口和导航结构。",
+          "testStrategy": "验证所有原有功能仍然可访问，新架构下的导航流畅性",
+          "dependencies": [],
+          "created": "2025-09-26T03:15:00.000Z",
+          "updated": "2025-09-26T03:15:00.000Z"
+        },
+        "2": {
+          "id": 2,
+          "title": "家庭信息维护模块整合",
+          "description": "整合账户管理系统和资产管理系统为统一的静态资产管理入口",
+          "status": "pending",
+          "priority": "high",
+          "details": "将原独立的【账户管理系统】和【资产管理系统】的入口整合进新的【家庭信息维护】模块。实现账户管理统一命名（钱包），为资产管理引入动态估值体系。",
+          "testStrategy": "验证账户和资产管理功能正常，UI命名统一",
+          "dependencies": [
+            1
+          ],
+          "created": "2025-09-26T03:15:00.000Z",
+          "updated": "2025-09-26T03:15:00.000Z"
+        },
+        "3": {
+          "id": 3,
+          "title": "财务计划模块重构",
+          "description": "重构工资/税务系统和预算/贷款系统为周期性收入计划和支出计划",
+          "status": "pending",
+          "priority": "high",
+          "details": "创建全新的【财务计划】模块，将工资和税务系统作为创建'收入计划'时的深度配置项，将预算和贷款系统作为'支出计划'的不同表现形式。废弃零基预算的分配操作，保留信封预算的UI但改变底层逻辑。",
+          "testStrategy": "验证收入计划和支出计划的创建和管理功能，计划与实际交易的关联",
+          "dependencies": [
+            1
+          ],
+          "created": "2025-09-26T03:15:00.000Z",
+          "updated": "2025-09-26T03:15:00.000Z"
+        },
+        "4": {
+          "id": 4,
+          "title": "交易流水模块增强",
+          "description": "增强交易管理系统，融入并增强与计划的关联",
+          "status": "pending",
+          "priority": "medium",
+          "details": "将【交易管理系统】的入口更名为【交易流水】，为自动生成的交易添加明显标签和链接。实现智能建议功能，当用户连续记录相似交易时提示创建自动执行计划。",
+          "testStrategy": "验证交易显示的计划关联，智能建议功能的触发和准确性",
+          "dependencies": [
+            1,
+            3
+          ],
+          "created": "2025-09-26T03:15:00.000Z",
+          "updated": "2025-09-26T03:15:00.000Z"
         }
+      }
     }
+  },
+  "v3-iteration": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository",
+        "description": "Initialize the Flutter project, configure git, and add core dependencies such as Provider, sqflite, and path_provider.",
+        "details": "1. Create a new git repository and clone locally.\n2. Run `flutter create .` to scaffold the project.\n3. Add dependencies to pubspec.yaml:\n   - provider: ^6.0.0\n   - sqflite: ^2.0.0+4\n   - path_provider: ^2.0.0\n4. Configure .gitignore for Flutter.\n5. Create a basic MaterialApp in main.dart with a placeholder home screen.\n6. Commit initial setup.",
+        "testStrategy": "Run `flutter run` to ensure the app launches without errors. Verify that `flutter pub get` resolves all dependencies and that the placeholder screen displays correctly.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Clean Up Codebase",
+        "description": "Remove animation code, unused dependencies, and redundant services to reduce complexity.",
+        "details": "1. Search for imports related to iOS style animations and remove associated files.\n2. Delete the 10784 lines of animation system code.\n3. Run `flutter pub remove` for any packages no longer used.\n4. Execute `flutter clean` and rebuild.\n5. Perform static analysis with `flutter analyze` to ensure no unused imports remain.",
+        "testStrategy": "Run `flutter analyze` and confirm no warnings or errors. Verify that the app still builds and runs after removal of animation code.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Simplify UI Components",
+        "description": "Reduce UI complexity by removing glassmorphism, animations, and merging duplicate widgets.",
+        "details": "1. Identify duplicate UI widgets across screens and extract them into reusable components.\n2. Replace complex layouts with simple Material widgets.\n3. Remove blur effects and glassmorphism styles.\n4. Update theme to use basic colors and typography.\n5. Ensure all screens compile and display correctly.",
+        "testStrategy": "Run golden tests for key screens and perform manual UI review to confirm visual regressions are absent.",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Refactor Data Models and SQLite Schema",
+        "description": "Simplify data models, remove complex calculations, and ensure backward compatibility with migrations.",
+        "details": "1. Define minimal Asset, Transaction, and Budget models with fields: id, name, type, amount, date, category.\n2. Create a SQLite database helper using sqflite.\n3. Implement DAO classes for CRUD operations.\n4. Write migration scripts to preserve existing data.\n5. Update Provider state classes to use new models.",
+        "testStrategy": "Unit tests for CRUD operations, migration tests to verify data integrity, and static analysis to ensure type safety.",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Asset Management Core Features",
+        "description": "Provide asset entry, editing, classification, and simple value tracking.",
+        "details": "1. Create AssetPage with a list view of assets.\n2. Add form for creating and editing assets.\n3. Use Provider to manage asset state.\n4. Store assets in SQLite via DAO.\n5. Implement a simple history table to track value changes.",
+        "testStrategy": "Integration tests for adding/editing assets, UI tests for list display, and performance test to ensure load time < 100ms.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Transaction Recording Core Features",
+        "description": "Enable recording of income and expenses with categorization and simple statistics.",
+        "details": "1. Build TransactionPage with a form for adding transactions.\n2. Provide category selection and amount input.\n3. Use Provider for transaction state.\n4. Persist transactions in SQLite.\n5. Calculate simple monthly totals for display.",
+        "testStrategy": "Unit tests for transaction logic, UI tests for adding transactions, and verification of total calculations.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement Budget Management Core Features",
+        "description": "Allow users to set monthly budgets and track spending against them.",
+        "details": "1. Create BudgetPage with a form to set monthly budget amounts.\n2. Store budgets in SQLite.\n3. Use Provider to expose budget data.\n4. Compare spent amounts against budgets and flag overspending.",
+        "testStrategy": "Unit tests for budget calculations, UI tests for setting and viewing budgets, and checks for correct overspending alerts.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Financial Overview Core Features",
+        "description": "Display total assets and monthly income/expense reports with basic charts.",
+        "details": "1. Build OverviewPage that aggregates data from assets and transactions.\n2. Use a simple chart library (e.g., charts_flutter) for bar charts.\n3. Display total assets, monthly income, and monthly expenses.\n4. Ensure charts are static (no animations) and lightweight.",
+        "testStrategy": "Integration tests for data aggregation, UI tests for overview screen, and performance test to confirm rendering < 100ms.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-27T09:58:36.123Z",
+      "updated": "2025-10-27T09:58:36.123Z",
+      "description": "Tasks for v3-iteration context"
+    }
+  },
+  "loan-repayment": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Extend Wallet Management for Loan Accounts",
+        "description": "Add a new wallet type for loan accounts and capture loan details such as principal, interest rate, and term.",
+        "details": "1. Update wallet model to include a 'type' enum with values: bank_card, credit_card, loan_account.\n2. Add fields for loan: principal_amount, annual_interest_rate, total_term_months, remaining_balance.\n3. Update wallet_management_screen to allow adding loan accounts with a form.\n4. Persist data in local database (e.g., Hive or SQLite) and expose via repository layer.\n5. Ensure UI shows loan accounts in a separate list section.",
+        "testStrategy": "Unit tests for wallet repository CRUD operations; widget tests for wallet_management_screen adding a loan account; integration test verifying loan data persists across app restarts.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Enhance Expense Plan for Repayment Scheduling",
+        "description": "Modify ExpensePlan model to support periodic loan repayment plans and link them to wallet accounts.",
+        "details": "1. Add fields: plan_type enum (periodic, one_time), repayment_amount, frequency (monthly), start_date, end_date, linked_wallet_id.\n2. Update create_expense_plan_screen to allow selecting 'Loan Repayment' type.\n3. Validate that repayment_amount <= remaining_balance of linked loan account.\n4. Persist plans in database and expose via repository.\n5. Ensure plan list displays repayment plans with status indicators.",
+        "testStrategy": "Unit tests for ExpensePlan validation logic; widget tests for create_expense_plan_screen flow; integration test ensuring plan creation updates wallet remaining_balance.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Add Repayment Transaction Type and Association",
+        "description": "Introduce a new transaction type for repayments and link each transaction to its corresponding expense plan.",
+        "details": "1. Extend TransactionType enum to include repayment.\n2. Add foreign key field linked_plan_id in Transaction model.\n3. Update add_transaction_screen to allow selecting repayment type and auto-fill amount from selected plan.\n4. On transaction save, decrement linked loan account's remaining_balance.\n5. Update transaction list to show repayment status and plan reference.",
+        "testStrategy": "Unit tests for transaction repository updates; widget tests for add_transaction_screen repayment flow; integration test verifying remaining_balance updates correctly.",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Implement Budget-Based Repayment Reminders",
+        "description": "Use existing budget alert system to trigger repayment reminders before due dates.",
+        "details": "1. Create a new BudgetAlert rule for repayment plans: trigger when current date >= due_date - 3 days.\n2. Store alert settings in database.\n3. Hook into notification service to push local notifications.\n4. Ensure alerts respect user preferences (mute, snooze).\n5. Provide UI to view upcoming reminders in a list.",
+        "testStrategy": "Unit tests for alert scheduling logic; integration test verifying notification payload; UI test for reminder list display.",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Design Repayment Reminder UI Card",
+        "description": "Create a dedicated UI component to display upcoming repayment reminders with actionable buttons.",
+        "details": "1. Build a reusable widget RepaymentReminderCard.\n2. Show card details: card icon, repayment amount, due date, days remaining.\n3. Include actions: Pay Now (navigates to add_transaction_screen), Remind Later, Mark as Paid.\n4. Integrate card into home dashboard and reminder list.\n5. Apply theming and accessibility labels.",
+        "testStrategy": "Widget tests for RepaymentReminderCard rendering; integration test for button actions; accessibility audit.",
+        "priority": "low",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Develop Repayment History and Analytics View",
+        "description": "Provide a history view with progress bars and trend charts for loan repayments.",
+        "details": "1. Create RepaymentHistoryScreen showing total paid, remaining, percentage.\n2. Use a chart library (e.g., charts_flutter) to plot monthly repayment trend.\n3. Allow filtering by loan account.\n4. Persist historical data in database.\n5. Add export to CSV option for tax reporting.",
+        "testStrategy": "Widget tests for RepaymentHistoryScreen layout; integration test for data aggregation; unit tests for export functionality.",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-27T09:59:32.348Z",
+      "updated": "2025-10-27T10:02:10.085Z",
+      "description": "Tasks for loan-repayment context"
+    }
+  }
 }

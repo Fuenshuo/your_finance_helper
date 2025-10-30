@@ -3,9 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
@@ -40,6 +42,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _selectedFromAccountId; // 转账的来源账户
   String? _selectedToAccountId; // 转账的目标账户
   String? _selectedEnvelopeBudgetId;
+  String? _selectedExpensePlanId; // 关联的支出计划ID
   DateTime _selectedDate = DateTime.now();
   bool _isRecurring = false;
   bool _isDraft = false;
@@ -87,6 +90,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _selectedAccountId = transaction.fromAccountId ?? transaction.toAccountId;
     }
     _selectedEnvelopeBudgetId = transaction.envelopeBudgetId;
+    _selectedExpensePlanId = transaction.expensePlanId;
     _selectedDate = transaction.date;
     _isRecurring = transaction.isRecurring;
     _isDraft = transaction.status == TransactionStatus.draft;
@@ -137,6 +141,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 if (_selectedType != TransactionType.transfer)
                   _buildBudgetSection(),
                 if (_selectedType != TransactionType.transfer)
+                  SizedBox(height: context.spacing16),
+
+                // 支出计划关联
+                if (_selectedType == TransactionType.expense)
+                  _buildExpensePlanSection(),
+                if (_selectedType == TransactionType.expense)
                   SizedBox(height: context.spacing16),
 
                 // 其他选项
@@ -583,6 +593,88 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         },
       );
 
+  // 支出计划关联
+  Widget _buildExpensePlanSection() => Consumer<ExpensePlanProvider>(
+        builder: (context, expensePlanProvider, child) {
+          final expensePlans = expensePlanProvider.activeExpensePlans;
+
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '支出计划关联',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                SizedBox(height: context.spacing12),
+                Text(
+                  '选择要关联的支出计划，如定期还款计划（可选）',
+                  style: TextStyle(
+                    color: context.secondaryText,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: context.spacing16),
+                InkWell(
+                  onTap: expensePlans.isEmpty
+                      ? null
+                      : () => _showExpensePlanPicker(expensePlans),
+                  child: Container(
+                    padding: EdgeInsets.all(context.spacing12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.02),
+                      border: Border.all(color: Colors.grey.withOpacity(0.4)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.schedule,
+                          size: 20,
+                          color: expensePlans.isEmpty
+                              ? Colors.grey.shade400
+                              : null,
+                        ),
+                        SizedBox(width: context.spacing12),
+                        Expanded(
+                          child: Text(
+                            _selectedExpensePlanId != null
+                                ? expensePlans
+                                    .firstWhere(
+                                      (p) => p.id == _selectedExpensePlanId,
+                                    )
+                                    .name
+                                : expensePlans.isEmpty
+                                    ? '暂无支出计划'
+                                    : '选择支出计划（可选）',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: _selectedExpensePlanId != null
+                                  ? Colors.black
+                                  : expensePlans.isEmpty
+                                      ? Colors.grey.shade400
+                                      : Colors.grey.shade500,
+                              fontStyle: _selectedExpensePlanId == null &&
+                                      expensePlans.isNotEmpty
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
+                            ),
+                          ),
+                        ),
+                        if (expensePlans.isNotEmpty)
+                          const Icon(Icons.arrow_drop_down),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
   // 其他选项
   Widget _buildOtherOptionsSection() => AppCard(
         child: Column(
@@ -936,6 +1028,53 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
+  // 显示支出计划选择器
+  void _showExpensePlanPicker(List<ExpensePlan> expensePlans) {
+    AppAnimations.showAppModalBottomSheet(
+      context: context,
+      child: Container(
+        padding: EdgeInsets.all(context.spacing24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '选择支出计划',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            SizedBox(height: context.spacing16),
+            ListTile(
+              leading: const Icon(Icons.clear),
+              title: const Text('不关联支出计划'),
+              onTap: () {
+                setState(() => _selectedExpensePlanId = null);
+                Navigator.pop(context);
+              },
+            ),
+            ...expensePlans.map(
+              (plan) => ListTile(
+                leading: Icon(
+                  plan.type == ExpensePlanType.periodic
+                      ? Icons.repeat
+                      : Icons.account_balance_wallet,
+                ),
+                title: Text(plan.name),
+                subtitle: Text(
+                  '金额: ${context.formatAmount(plan.amount)} | ${plan.frequency.displayName}',
+                ),
+                onTap: () {
+                  setState(() => _selectedExpensePlanId = plan.id);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // 保存为草稿
   void _saveAsDraft() {
     if (_formKey.currentState!.validate()) {
@@ -1015,6 +1154,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               : _selectedAccountId)
           : null,
       envelopeBudgetId: _selectedEnvelopeBudgetId,
+      expensePlanId: _selectedExpensePlanId,
       date: _selectedDate,
       notes: _notesController.text.trim().isEmpty
           ? null

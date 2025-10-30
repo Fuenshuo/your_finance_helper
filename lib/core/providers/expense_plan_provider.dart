@@ -245,6 +245,41 @@ class ExpensePlanProvider with ChangeNotifier {
   double get budgetExpenseAmount =>
       budgetExpensePlans.fold(0.0, (sum, plan) => sum + plan.amount);
 
+  /// 获取今天到期的还款计划
+  List<ExpensePlan> getDueTodayPlans() {
+    final today = DateTime.now();
+    return activeExpensePlans.where((plan) {
+      // 只检查有贷款关联的计划
+      if (plan.loanAccountId == null) return false;
+
+      // 检查是否今天到期（可以根据业务逻辑调整为到期前几天提醒）
+      final daysUntilDue = plan.startDate.difference(today).inDays;
+      return daysUntilDue <= 0 && daysUntilDue >= -3; // 到期当天和过期3天内的提醒
+    }).toList();
+  }
+
+  /// 获取即将到期的还款计划（未来7天内）
+  List<ExpensePlan> getUpcomingDuePlans() {
+    final today = DateTime.now();
+    final nextWeek = today.add(const Duration(days: 7));
+
+    return activeExpensePlans.where((plan) {
+      // 只检查有贷款关联的计划
+      if (plan.loanAccountId == null) return false;
+
+      // 检查是否在未来7天内到期
+      return plan.startDate.isAfter(today) &&
+             plan.startDate.isBefore(nextWeek);
+    }).toList();
+  }
+
+  /// 获取所有未完成的还款计划
+  List<ExpensePlan> getPendingRepaymentPlans() {
+    return activeExpensePlans.where((plan) =>
+      plan.loanAccountId != null
+    ).toList();
+  }
+
   /// 刷新数据
   Future<void> refresh() async {
     await _loadExpensePlans();

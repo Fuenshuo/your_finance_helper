@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
@@ -20,6 +21,7 @@ class TransactionListScreen extends StatefulWidget {
 }
 
 class _TransactionListScreenState extends State<TransactionListScreen> {
+  final IOSAnimationSystem _animationSystem = IOSAnimationSystem();
   final _searchController = TextEditingController();
   TransactionType? _filterType;
   TransactionCategory? _filterCategory;
@@ -31,6 +33,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _animationSystem.dispose();
     super.dispose();
   }
 
@@ -329,7 +332,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
           // 交易列表
           ...transactions.map(
-            (transaction) => _buildTransactionItem(transaction, accounts),
+            (transaction) => AppAnimations.animatedListItem(
+              index: transactions.indexOf(transaction),
+              child: _buildTransactionItem(transaction, accounts),
+            ),
           ),
         ],
       ),
@@ -351,82 +357,78 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             ),
     );
 
-    final transactionItem = InkWell(
-      onTap: () => _viewTransactionDetail(transaction),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: context.responsiveSpacing8),
-        child: Row(
-          children: [
-            // 图标
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: _getTransactionTypeColor(
+    final transactionItem = _animationSystem.iosListItem(
+      child: Row(
+        children: [
+          // 图标
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: _getTransactionTypeColor(
+              transaction.type ?? TransactionType.income,
+            ).withOpacity(0.1),
+            child: Icon(
+              _getCategoryIcon(transaction.category),
+              size: 20,
+              color: _getTransactionTypeColor(
                 transaction.type ?? TransactionType.income,
-              ).withOpacity(0.1),
-              child: Icon(
-                _getCategoryIcon(transaction.category),
-                size: 20,
-                color: _getTransactionTypeColor(
-                  transaction.type ?? TransactionType.income,
-                ),
               ),
             ),
-            SizedBox(width: context.responsiveSpacing12),
+          ),
+          SizedBox(width: context.responsiveSpacing12),
 
-            // 交易信息
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction.description,
-                    style: context.mobileBody.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: context.responsiveSpacing4),
-                  Row(
-                    children: [
-                      Text(
-                        account.name,
-                        style: context.mobileCaption,
-                      ),
-                      if (transaction.category !=
-                          TransactionCategory.otherExpense) ...[
-                        Text(
-                          ' • ${transaction.category.displayName}',
-                          style: context.mobileCaption,
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // 金额
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          // 交易信息
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.formatAmount(transaction.amount),
+                  transaction.description,
                   style: context.mobileBody.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: _getTransactionTypeColor(
-                      transaction.type ?? TransactionType.income,
-                    ),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                Text(
-                  DateFormat('HH:mm').format(transaction.date),
-                  style: context.mobileCaption,
+                SizedBox(height: context.responsiveSpacing4),
+                Row(
+                  children: [
+                    Text(
+                      account.name,
+                      style: context.mobileCaption,
+                    ),
+                    if (transaction.category !=
+                        TransactionCategory.otherExpense) ...[
+                      Text(
+                        ' • ${transaction.category.displayName}',
+                        style: context.mobileCaption,
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+
+          // 金额
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                context.formatAmount(transaction.amount),
+                style: context.mobileBody.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: _getTransactionTypeColor(
+                    transaction.type ?? TransactionType.income,
+                  ),
+                ),
+              ),
+              Text(
+                DateFormat('HH:mm').format(transaction.date),
+                style: context.mobileCaption,
+              ),
+            ],
+          ),
+        ],
       ),
+      onTap: () => _viewTransactionDetail(transaction),
     );
 
     // 使用SwipeActionItem包装实现左滑删除
@@ -475,8 +477,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
           .where(
             (t) =>
                 t.description.toLowerCase().contains(searchText) ||
-                    t.notes?.toLowerCase().contains(searchText) ??
-                false,
+                (t.notes?.toLowerCase().contains(searchText) ?? false),
           )
           .toList();
     }

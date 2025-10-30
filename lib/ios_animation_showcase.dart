@@ -266,7 +266,8 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
             height: 100,
             color: Colors.blue,
             child: const Center(
-                child: Text('深度', style: TextStyle(color: Colors.white))),
+              child: Text('深度', style: TextStyle(color: Colors.white)),
+            ),
           ),
           depth: 0.2,
           duration: const Duration(milliseconds: 800),
@@ -311,7 +312,8 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
             height: 100,
             color: Colors.teal,
             child: const Center(
-                child: Text('材质', style: TextStyle(color: Colors.white))),
+              child: Text('材质', style: TextStyle(color: Colors.white)),
+            ),
           ),
           intensity: 1.5,
           duration: const Duration(milliseconds: 1000),
@@ -381,7 +383,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
                                   color: Colors.black.withOpacity(0.3),
                                   blurRadius: 10,
                                   offset: const Offset(0, 5),
-                                )
+                                ),
                               ]
                             : null,
                       ),
@@ -577,7 +579,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
                       width: double.infinity,
                       child: _animationSystem.iosButton(
                         child: Text(_sequenceRunning ? '序列运行中...' : '演示序列动画'),
-                        onPressed: _sequenceRunning ? () {} : () => _runSequenceDemo(),
+                        onPressed: _sequenceRunning ? () {} : _runSequenceDemo,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -651,14 +653,14 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
                         Expanded(
                           child: _animationSystem.iosButton(
                             child: const Text('深度动画'),
-                            onPressed: () => _runDepthAnimation(),
+                            onPressed: _runDepthAnimation,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: _animationSystem.iosButton(
                             child: const Text('材质动画'),
-                            onPressed: () => _runMaterialAnimation(),
+                            onPressed: _runMaterialAnimation,
                           ),
                         ),
                       ],
@@ -970,7 +972,11 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
       );
 
   Widget _buildCategoryCard(
-          String title, String count, String description, Color color) =>
+    String title,
+    String count,
+    String description,
+    Color color,
+  ) =>
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
