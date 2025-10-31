@@ -51,6 +51,10 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   String? _newTransactionId;
   bool _isTransactionAnimationRunning = false;
 
+  // 保存Provider引用，避免在dispose时访问context
+  TransactionProvider? _transactionProvider;
+  AccountProvider? _accountProvider;
+
   @override
   void initState() {
     super.initState();
@@ -125,6 +129,11 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    // 保存Provider引用，避免在dispose时访问context
+    _transactionProvider = context.read<TransactionProvider>();
+    _accountProvider = context.read<AccountProvider>();
+
     // 在依赖变化时初始化余额追踪，确保数据已经准备好
     _initializeBalanceTracking();
 
@@ -157,12 +166,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     _transactionAnimationController.dispose();
     _animationSystem.dispose();
 
-    // 移除交易监听器
-    if (mounted) {
-      context
-          .read<TransactionProvider>()
-          .removeListener(_onTransactionsChanged);
-    }
+    // 移除交易监听器，使用保存的Provider引用
+    _transactionProvider?.removeListener(_onTransactionsChanged);
 
     super.dispose();
   }
@@ -171,8 +176,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     // 防止重复初始化
     if (_isBalanceInitialized) return;
 
-    final transactionProvider = context.read<TransactionProvider>();
-    final accountProvider = context.read<AccountProvider>();
+    final transactionProvider = _transactionProvider;
+    final accountProvider = _accountProvider;
+
+    if (transactionProvider == null || accountProvider == null) {
+      print('⚠️ Provider未初始化，跳过余额追踪');
+      return;
+    }
 
     // 获取初始余额
     final initialBalance = accountProvider.getAccountBalance(
@@ -194,8 +204,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
   void _onTransactionsChanged() {
     print('🔄 _onTransactionsChanged 被调用');
-    final transactionProvider = context.read<TransactionProvider>();
-    final accountProvider = context.read<AccountProvider>();
+    final transactionProvider = _transactionProvider;
+    final accountProvider = _accountProvider;
+
+    if (transactionProvider == null || accountProvider == null) {
+      print('⚠️ Provider未初始化，跳过余额更新');
+      return;
+    }
 
     final newBalance = accountProvider.getAccountBalance(
       widget.account.id,
@@ -1203,8 +1218,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
   Future<void> _deleteAccount() async {
     try {
-      final accountProvider = context.read<AccountProvider>();
-      final transactionProvider = context.read<TransactionProvider>();
+      final accountProvider = _accountProvider;
+      final transactionProvider = _transactionProvider;
+
+      if (accountProvider == null || transactionProvider == null) {
+        print('⚠️ Provider未初始化，无法删除账户');
+        return;
+      }
 
       // 获取所有与该账户相关的交易
       final relatedTransactions = transactionProvider.transactions
