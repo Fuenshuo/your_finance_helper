@@ -2,6 +2,7 @@ import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/services/logging_service.dart';
 import 'package:your_finance_flutter/core/services/personal_income_tax_service.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 
 
@@ -131,7 +132,7 @@ class SalaryCalculationService {
 
     // 如果有工资历史记录，则按时间段计算，否则使用当前工资
     if (salaryHistory.isNotEmpty) {
-      print('  存在工资历史记录，按时间段计算');
+      Logger.debug('  存在工资历史记录，按时间段计算');
       // 将工资历史按时间排序
       final sortedHistory = salaryHistory.entries.toList()
         ..sort((a, b) => a.key.compareTo(b.key));
@@ -179,18 +180,18 @@ class SalaryCalculationService {
               calculateMonthsBetween(effectiveStart, effectiveEnd);
           final periodIncome = currentEntry.value * monthsInPeriod;
           totalBasicIncome += periodIncome;
-          print('    时间段: ${effectiveStart} 到 ${effectiveEnd}, 月数: $monthsInPeriod, 收入: $periodIncome');
+          Logger.debug('    时间段: ${effectiveStart} 到 ${effectiveEnd}, 月数: $monthsInPeriod, 收入: $periodIncome');
         }
       }
     } else {
       // 没有工资历史，使用当前工资
       totalBasicIncome = basicSalary * completedMonths;
-      print('  无工资历史记录，使用当前工资: $basicSalary * $completedMonths = $totalBasicIncome');
+      Logger.debug('  无工资历史记录，使用当前工资: $basicSalary * $completedMonths = $totalBasicIncome');
     }
 
     // 计算津贴收入（考虑月度津贴变化）
     var totalAllowanceIncome = 0.0;
-    print('  开始计算津贴收入:');
+    Logger.debug('  开始计算津贴收入:');
     for (var month = 1; month <= completedMonths; month++) {
       // 计算指定月份的津贴
       double monthlyAllowance;
@@ -198,22 +199,22 @@ class SalaryCalculationService {
         // 使用月度特殊津贴
         final allowanceRecord = monthlyAllowances[month]!;
         monthlyAllowance = allowanceRecord.totalAllowance;
-        print('    ${month}月津贴 (特殊): ¥${monthlyAllowance.toStringAsFixed(0)}');
+        Logger.debug('    ${month}月津贴 (特殊): ¥${monthlyAllowance.toStringAsFixed(0)}');
       } else {
         // 使用默认津贴
         monthlyAllowance = housingAllowance +
             mealAllowance +
             transportationAllowance +
             otherAllowance;
-        print('    ${month}月津贴 (默认): ¥${monthlyAllowance.toStringAsFixed(0)}');
+        Logger.debug('    ${month}月津贴 (默认): ¥${monthlyAllowance.toStringAsFixed(0)}');
       }
       totalAllowanceIncome += monthlyAllowance;
     }
-    print('  津贴总收入: $totalAllowanceIncome');
+    Logger.debug('  津贴总收入: $totalAllowanceIncome');
 
     // 计算奖金收入
     var totalBonusIncome = 0.0;
-    print('  开始计算奖金收入:');
+    Logger.debug('  开始计算奖金收入:');
     for (final bonus in bonuses) {
       var bonusPeriodIncome = 0.0;
 
@@ -229,31 +230,31 @@ class SalaryCalculationService {
             final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
             bonusPeriodIncome += monthlyBonus;
             if (monthlyBonus > 0) {
-              print('    ${bonus.name} 在 ${month}月 发放: $monthlyBonus');
+              Logger.debug('    ${bonus.name} 在 ${month}月 发放: $monthlyBonus');
             }
           }
         }
       }
       totalBonusIncome += bonusPeriodIncome;
-      print('    ${bonus.name} 总收入: $bonusPeriodIncome');
+      Logger.debug('    ${bonus.name} 总收入: $bonusPeriodIncome');
     }
-    print('  奖金总收入: $totalBonusIncome');
+    Logger.debug('  奖金总收入: $totalBonusIncome');
 
     // 计算年度五险一金和专项附加扣除
     final annualSocialInsurance = socialInsurance * completedMonths;
     final annualHousingFund = housingFund * completedMonths;
     final annualSpecialDeduction =
         (specialDeductionMonthly * completedMonths) + otherTaxFreeIncome;
-    print('  年度社保: $annualSocialInsurance');
-    print('  年度公积金: $annualHousingFund');
-    print('  年度专项附加扣除: $annualSpecialDeduction');
+    Logger.debug('  年度社保: $annualSocialInsurance');
+    Logger.debug('  年度公积金: $annualHousingFund');
+    Logger.debug('  年度专项附加扣除: $annualSpecialDeduction');
 
     // 计算累计个税（使用年度累积预扣法）
     var totalTax = 0.0;
     var cumulativeTaxableIncome = 0.0; // 累计应纳税所得额
     var cumulativeTax = 0.0; // 累计已预扣税款
     
-    print('  开始年度累积预扣法计算个税:');
+    Logger.debug('  开始年度累积预扣法计算个税:');
     for (var month = 1; month <= completedMonths; month++) {
       // 计算当月收入（基本工资+津贴）
       final monthBasicIncome = basicSalary; // 基本工资通常不变
@@ -280,7 +281,7 @@ class SalaryCalculationService {
         final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
         monthBonusIncome += monthlyBonus;
         if (monthlyBonus > 0) {
-          print('    ${month}月奖金: ${bonus.name} = $monthlyBonus');
+          Logger.debug('    ${month}月奖金: ${bonus.name} = $monthlyBonus');
         }
       }
       
@@ -313,37 +314,37 @@ class SalaryCalculationService {
       
       totalTax += monthTax > 0 ? monthTax : 0;
       
-      print('    ${month}月: 收入=$monthGrossIncome, 扣除=$monthDeductions, 专项扣除=$monthSpecialDeduction, 应税所得=$monthTaxableIncome, 累计应税=$cumulativeTaxableIncome, 年度税额=$annualTax, 当月税额=$monthTax, 累计税额=$cumulativeTax');
+      Logger.debug('    ${month}月: 收入=$monthGrossIncome, 扣除=$monthDeductions, 专项扣除=$monthSpecialDeduction, 应税所得=$monthTaxableIncome, 累计应税=$cumulativeTaxableIncome, 年度税额=$annualTax, 当月税额=$monthTax, 累计税额=$cumulativeTax');
     }
 
     // 奖金税收单独计算（年终奖等特殊奖金）
     var bonusTaxTotal = 0.0;
-    print('  开始计算奖金税收:');
+    Logger.debug('  开始计算奖金税收:');
     for (final bonus in bonuses) {
       // 只有年终奖使用单独计税方法
       if (bonus.type == BonusType.yearEndBonus && bonus.frequency == BonusFrequency.oneTime) {
         final yearEndTax = PersonalIncomeTaxService.calculateYearEndBonusTax(bonus.amount);
         bonusTaxTotal += yearEndTax;
-        print('    ${bonus.name} (年终奖) 税收: $yearEndTax');
+        Logger.debug('    ${bonus.name} (年终奖) 税收: $yearEndTax');
       }
       // 其他奖金已在年度累积预扣法中计算
     }
 
     totalTax += bonusTaxTotal;
-    print('  奖金税收总计: $bonusTaxTotal');
-    print('  总税收: $totalTax');
+    Logger.debug('  奖金税收总计: $bonusTaxTotal');
+    Logger.debug('  总税收: $totalTax');
 
     // 总收入 = 基本工资+津贴 + 奖金
     final totalIncome = totalBasicIncome + totalAllowanceIncome + totalBonusIncome;
     final netIncome = totalIncome - totalTax;
 
-    print('🧮 年度累积计算完成:');
-    print('  基本收入: $totalBasicIncome');
-    print('  津贴收入: $totalAllowanceIncome');
-    print('  奖金收入: $totalBonusIncome');
-    print('  总收入: $totalIncome');
-    print('  总税费: $totalTax');
-    print('  净收入: $netIncome');
+    Logger.debug('🧮 年度累积计算完成:');
+    Logger.debug('  基本收入: $totalBasicIncome');
+    Logger.debug('  津贴收入: $totalAllowanceIncome');
+    Logger.debug('  奖金收入: $totalBonusIncome');
+    Logger.debug('  总收入: $totalIncome');
+    Logger.debug('  总税费: $totalTax');
+    Logger.debug('  净收入: $netIncome');
 
     return SalaryCalculationResult(
       basicIncome: totalBasicIncome,
