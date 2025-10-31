@@ -42,10 +42,14 @@ class AssetOverviewCard extends StatelessWidget {
                 ),
                 SizedBox(height: context.responsiveSpacing8),
 
-                // 总资产金额 - 使用动画数字
-                AppAnimations.animatedNumber(
-                  value: totalAssets,
-                  formatter: (value) => assetProvider.formatAmount(value),
+                // 总资产金额
+                Text(
+                  '¥${totalAssets.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
                 SizedBox(height: context.spacing16),
 

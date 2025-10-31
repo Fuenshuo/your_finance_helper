@@ -92,10 +92,10 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
     _otherTaxDeductionsController.dispose(); // 其他税收扣除
   }
 
-  void _calculateAutoCumulative() {
+  Future<void> _calculateAutoCumulative() async {
     if (!_isMidYearMode) return;
 
-    final result = SalaryCalculationService.calculateAutoCumulative(
+    final result = await SalaryCalculationService.calculateAutoCumulative(
       completedMonths: _completedMonths,
       salaryHistory: _salaryHistory,
       basicSalary: double.tryParse(_basicSalaryController.text) ?? 0,
@@ -278,7 +278,9 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     onAutoCalculationChanged: (value) {
                       setState(() => _useAutoCalculation = value);
                       if (value) {
-                        _calculateAutoCumulative();
+                        _calculateAutoCumulative().catchError((error) {
+                          print('自动累计计算失败: $error');
+                        });
                       }
                     },
                   ),
@@ -609,11 +611,9 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     specialDeductionController: _specialDeductionController,
                     otherTaxFreeIncomeController: _otherTaxFreeIncomeController,
                     otherTaxDeductionsController: _otherTaxDeductionsController, // 其他税收扣除
-                    autoCalculateTax: _autoCalculateTax,
                     specialDeductionMonthly: _specialDeductionMonthly,
-                    onAutoCalculateTaxChanged: (value) =>
-                        setState(() => _autoCalculateTax = value),
                     onSpecialDeductionChanged: _onSpecialDeductionChanged,
+                    onCalculateTax: _calculateTax,
                   ),
 
                   SizedBox(height: context.spacing24),

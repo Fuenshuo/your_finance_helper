@@ -9,7 +9,7 @@ void main() async {
   if (salaryData != null) {
     final jsonData = jsonDecode(salaryData);
     print('工资数据:');
-    print(jsonEncode(jsonData, indent: '  '));
+    print(jsonEncode(jsonData));
 
     if (jsonData is List && jsonData.isNotEmpty) {
       final firstSalary = jsonData[0];

@@ -9,8 +9,9 @@ class RiverpodTestScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetState = ref.watch(assetProvider);
-    final transactionState = ref.watch(transactionProvider);
+    final assetState = ref.watch(assetsProvider);
+    // Note: Transaction provider not yet implemented in Riverpod
+    // final transactionState = ref.watch(transactionProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -31,14 +32,12 @@ class RiverpodTestScreen extends ConsumerWidget {
               '✅ Riverpod State Management: ${assetState.isInitialized ? 'Working' : 'Initializing...'}',
             ),
             Text('✅ Asset Provider: ${assetState.assets.length} assets loaded'),
-            Text(
-              '✅ Transaction Provider: ${transactionState.isInitialized ? 'Ready' : 'Loading...'}',
-            ),
+            const Text('ℹ️ Transaction Provider: Not yet implemented'),
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
                 // Test adding a sample asset
-                final assetNotifier = ref.read(assetProvider.notifier);
+                final assetNotifier = ref.read(assetsProvider.notifier);
                 // This would normally add an asset, but let's just test the connection
                 unifiedNotifications.showInfo(
                   context,

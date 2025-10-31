@@ -406,7 +406,7 @@ class _RetryInterceptor extends Interceptor {
 
     // Only retry on network errors, not on bad responses
     if (_shouldRetry(err) &&
-        (requestOptions.extra['retryCount'] ?? 0) < maxRetries) {
+        ((requestOptions.extra['retryCount'] as int?) ?? 0) < maxRetries) {
       requestOptions.extra['retryCount'] =
           (requestOptions.extra['retryCount'] ?? 0) + 1;
 

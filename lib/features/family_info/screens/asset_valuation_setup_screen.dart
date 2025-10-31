@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 /// 资产估值设置屏幕
 class AssetValuationSetupScreen extends StatefulWidget {

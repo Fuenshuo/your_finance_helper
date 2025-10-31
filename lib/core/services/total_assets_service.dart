@@ -1,5 +1,7 @@
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/providers/account_provider.dart';
 
 /// 总资产计算服务
 /// 实现"总资产 = 所有账户余额 + 所有信封余额"的核心逻辑

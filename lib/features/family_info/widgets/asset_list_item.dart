@@ -236,12 +236,13 @@ class _AssetListItemState extends State<AssetListItem>
                                 // 当前价值和变化（带动画）
                                 Row(
                                   children: [
-                                    AppAnimations.animatedNumber(
-                                      value: widget.asset.effectiveValue,
-                                      formatter: (value) =>
-                                          '¥${value.toStringAsFixed(2)}',
-                                      duration:
-                                          const Duration(milliseconds: 600),
+                                    Text(
+                                      '¥${widget.asset.effectiveValue.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green,
+                                      ),
                                     ),
                                     if (changeAmount != 0) ...[
                                       SizedBox(

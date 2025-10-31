@@ -11,7 +11,8 @@ class FormBuilderUtils {
   // ============================================================================
 
   /// Build a standard text field with consistent styling
-  static Widget buildTextField({
+  static Widget buildTextField(
+    BuildContext context, {
     required String name,
     required String label,
     String? hintText,
@@ -40,10 +41,7 @@ class FormBuilderUtils {
           validator: validator,
           onChanged: onChanged,
           style: TextStyle(
-            color: enabled
-                ? null
-                : Theme.of(AppAnimations.navigatorKey.currentContext!)
-                    .disabledColor,
+            color: enabled ? null : Theme.of(context).disabledColor,
           ),
           decoration: InputDecoration(
             labelText: label,
@@ -57,14 +55,14 @@ class FormBuilderUtils {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .dividerColor,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .primaryColor,
                 width: 2,
               ),
@@ -72,7 +70,7 @@ class FormBuilderUtils {
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .colorScheme
                     .error,
               ),
@@ -80,7 +78,7 @@ class FormBuilderUtils {
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .colorScheme
                     .error,
                 width: 2,
@@ -88,8 +86,8 @@ class FormBuilderUtils {
             ),
             filled: true,
             fillColor: enabled
-                ? Theme.of(AppAnimations.navigatorKey.currentContext!).cardColor
-                : Theme.of(AppAnimations.navigatorKey.currentContext!)
+                ? Theme.of(context).cardColor
+                : Theme.of(context)
                     .disabledColor
                     .withOpacity(0.1),
             contentPadding:
@@ -99,7 +97,8 @@ class FormBuilderUtils {
       );
 
   /// Build a number field specifically for amounts/money
-  static Widget buildAmountField({
+  static Widget buildAmountField(
+    BuildContext context, {
     required String name,
     required String label,
     String? hintText = '请输入金额',
@@ -111,6 +110,7 @@ class FormBuilderUtils {
     int decimalPlaces = 2,
   }) =>
       buildTextField(
+        context,
         name: name,
         label: label,
         hintText: hintText,
@@ -147,7 +147,8 @@ class FormBuilderUtils {
       );
 
   /// Build a date picker field
-  static Widget buildDateField({
+  static Widget buildDateField(
+    BuildContext context, {
     required String name,
     required String label,
     String? hintText,
@@ -180,22 +181,22 @@ class FormBuilderUtils {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .dividerColor,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .primaryColor,
                 width: 2,
               ),
             ),
             filled: true,
             fillColor: enabled
-                ? Theme.of(AppAnimations.navigatorKey.currentContext!).cardColor
-                : Theme.of(AppAnimations.navigatorKey.currentContext!)
+                ? Theme.of(context).cardColor
+                : Theme.of(context)
                     .disabledColor
                     .withOpacity(0.1),
             contentPadding:
@@ -205,7 +206,8 @@ class FormBuilderUtils {
       );
 
   /// Build a dropdown field
-  static Widget buildDropdown<T>({
+  static Widget buildDropdown<T>(
+    BuildContext context, {
     required String name,
     required String label,
     required List<DropdownMenuItem<T>> items,
@@ -233,22 +235,22 @@ class FormBuilderUtils {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .dividerColor,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                color: Theme.of(context)
                     .primaryColor,
                 width: 2,
               ),
             ),
             filled: true,
             fillColor: enabled
-                ? Theme.of(AppAnimations.navigatorKey.currentContext!).cardColor
-                : Theme.of(AppAnimations.navigatorKey.currentContext!)
+                ? Theme.of(context).cardColor
+                : Theme.of(context)
                     .disabledColor
                     .withOpacity(0.1),
             contentPadding:
@@ -258,7 +260,8 @@ class FormBuilderUtils {
       );
 
   /// Build a checkbox field
-  static Widget buildCheckbox({
+  static Widget buildCheckbox(
+    BuildContext context, {
     required String name,
     required String title,
     String? subtitle,
@@ -281,7 +284,7 @@ class FormBuilderUtils {
                     style: TextStyle(
                       fontSize: 12,
                       color:
-                          Theme.of(AppAnimations.navigatorKey.currentContext!)
+                          Theme.of(context)
                               .textTheme
                               .bodySmall
                               ?.color,
@@ -460,7 +463,8 @@ class FormBuilderUtils {
       );
 
   /// Build form section header
-  static Widget buildSectionHeader({
+  static Widget buildSectionHeader(
+    BuildContext context, {
     required String title,
     String? subtitle,
     IconData? icon,
@@ -481,7 +485,7 @@ class FormBuilderUtils {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                    color: Theme.of(context)
                         .primaryColor,
                   ),
                 ),
@@ -493,7 +497,7 @@ class FormBuilderUtils {
                 subtitle,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(AppAnimations.navigatorKey.currentContext!)
+                  color: Theme.of(context)
                       .textTheme
                       .bodySmall
                       ?.color,

@@ -31,12 +31,14 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
               children: [
                 // Section: Personal Information
                 FormBuilderUtils.buildSectionHeader(
+                  context,
                   title: '个人信息',
                   subtitle: '基本信息填写',
                   icon: Icons.person,
                 ),
 
                 FormBuilderUtils.buildTextField(
+                  context,
                   name: 'fullName',
                   label: '姓名',
                   hintText: '请输入您的姓名',
@@ -46,6 +48,7 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
                 ),
 
                 FormBuilderUtils.buildTextField(
+                  context,
                   name: 'email',
                   label: '邮箱',
                   hintText: '请输入邮箱地址',
@@ -54,6 +57,7 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
                 ),
 
                 FormBuilderUtils.buildTextField(
+                  context,
                   name: 'phone',
                   label: '手机号',
                   hintText: '请输入手机号码',
@@ -63,24 +67,28 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
 
                 // Section: Financial Information
                 FormBuilderUtils.buildSectionHeader(
+                  context,
                   title: '财务信息',
                   subtitle: '收入和支出相关',
                   icon: Icons.account_balance_wallet,
                 ),
 
                 FormBuilderUtils.buildAmountField(
+                  context,
                   name: 'monthlyIncome',
                   label: '月收入',
                   validator: FormBuilderUtils.amountValidator,
                 ),
 
                 FormBuilderUtils.buildAmountField(
+                  context,
                   name: 'monthlyExpenses',
                   label: '月支出',
                   validator: FormBuilderUtils.amountValidator,
                 ),
 
                 FormBuilderUtils.buildDropdown<String>(
+                  context,
                   name: 'employmentType',
                   label: '就业类型',
                   items: const [
@@ -97,18 +105,21 @@ class _FormBuilderDemoScreenState extends State<FormBuilderDemoScreen> {
 
                 // Section: Preferences
                 FormBuilderUtils.buildSectionHeader(
+                  context,
                   title: '偏好设置',
                   subtitle: '个性化配置',
                   icon: Icons.settings,
                 ),
 
                 FormBuilderUtils.buildDateField(
+                  context,
                   name: 'startDate',
                   label: '开始日期',
                   hintText: '选择开始跟踪的日期',
                 ),
 
                 FormBuilderUtils.buildCheckbox(
+                  context,
                   name: 'enableNotifications',
                   title: '启用通知',
                   subtitle: '接收财务提醒和报告',

@@ -100,6 +100,10 @@ dev_dependencies:
   mockito: ^5.4.4
   build_runner: ^2.4.7
 
+  # 集成测试
+  integration_test:
+    sdk: flutter
+
   # Drift code generation
   drift_dev: ^2.18.0
   

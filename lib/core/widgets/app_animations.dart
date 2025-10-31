@@ -1,3 +1,5 @@
+library your_finance_flutter.core.widgets.app_animations;
+
 import 'dart:async';
 import 'dart:math' as math;
 

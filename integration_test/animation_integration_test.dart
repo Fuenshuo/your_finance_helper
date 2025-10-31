@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:your_finance_flutter/main.dart' as app;
+import 'package:your_finance_flutter/ios_animation_showcase.dart';
+import 'package:your_finance_flutter/screens/debug_screen.dart';
 
 /// 集成测试 - 验证动画特效在真实应用中的运行效果
 void main() {
@@ -32,7 +34,7 @@ void main() {
       // 直接导航到动画演示页面
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.IOSAnimationShowcase(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
@@ -58,7 +60,7 @@ void main() {
     testWidgets('Amount pulse animation dialog works', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.IOSAnimationShowcase(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
@@ -83,7 +85,7 @@ void main() {
     testWidgets('Category select animation works', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.IOSAnimationShowcase(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
@@ -112,7 +114,7 @@ void main() {
     testWidgets('Keypad animation works', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.IOSAnimationShowcase(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
@@ -141,7 +143,7 @@ void main() {
     testWidgets('Debug screen animation buttons work', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: app.DebugScreen(),
+          home: DebugScreen(),
         ),
       );
 
