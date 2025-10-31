@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
@@ -123,7 +124,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       }
     });
 
-    print('🎨 初始化v1.1.0动效系统完成');
+    Logger.debug('🎨 初始化v1.1.0动效系统完成');
   }
 
   @override
@@ -140,7 +141,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     // 后备方案：如果500ms后还没有初始化，强制初始化一次
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted && !_isBalanceInitialized) {
-        print('⏰ 后备初始化触发');
+        Logger.debug('⏰ 后备初始化触发');
         _initializeBalanceTracking();
       }
     });
@@ -180,7 +181,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     final accountProvider = _accountProvider;
 
     if (transactionProvider == null || accountProvider == null) {
-      print('⚠️ Provider未初始化，跳过余额追踪');
+      Logger.debug('⚠️ Provider未初始化，跳过余额追踪');
       return;
     }
 
@@ -190,7 +191,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       transactionProvider.transactions,
     );
 
-    print('🎯 初始化账户余额: $initialBalance');
+    Logger.debug('🎯 初始化账户余额: $initialBalance');
 
     setState(() {
       _isBalanceInitialized = true;
@@ -203,12 +204,12 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   }
 
   void _onTransactionsChanged() {
-    print('🔄 _onTransactionsChanged 被调用');
+    Logger.debug('🔄 _onTransactionsChanged 被调用');
     final transactionProvider = _transactionProvider;
     final accountProvider = _accountProvider;
 
     if (transactionProvider == null || accountProvider == null) {
-      print('⚠️ Provider未初始化，跳过余额更新');
+      Logger.debug('⚠️ Provider未初始化，跳过余额更新');
       return;
     }
 
@@ -217,12 +218,12 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       transactionProvider.transactions,
     );
 
-    print('💰 当前余额: $_currentBalance, 新余额: $newBalance');
+    Logger.debug('💰 当前余额: $_currentBalance, 新余额: $newBalance');
 
     // 检查余额是否发生变化且没有正在运行的动画
     if ((newBalance - _currentBalance).abs() > 0.01 &&
         !_isTransactionAnimationRunning) {
-      print('📈 检测到余额变化: ${newBalance - _currentBalance}');
+      Logger.debug('📈 检测到余额变化: ${newBalance - _currentBalance}');
 
       final actualAmountChange = newBalance - _currentBalance;
       final isBalanceIncrease = actualAmountChange > 0;
@@ -245,7 +246,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
         final now = DateTime.now();
         final timeDiff = now.difference(latestTransaction.date).inSeconds;
 
-        print('⏰ 最新交易时间差: $timeDiff秒, 交易ID: ${latestTransaction.id}');
+        Logger.debug('⏰ 最新交易时间差: $timeDiff秒, 交易ID: ${latestTransaction.id}');
 
         // 计算期望的金额变化
         final expectedAmountChange =
@@ -257,7 +258,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
         if (timeDiff <= 30 &&
             (actualAmountChange - expectedAmountChange).abs() < 0.01) {
-          print(
+          Logger.debug(
             '🎭 触发v1.1.0动效序列! 时间差: $timeDiff秒, 金额匹配: $actualAmountChange ≈ $expectedAmountChange',
           );
 
@@ -271,14 +272,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
           );
           return;
         } else {
-          print(
+          Logger.debug(
             '⏰ 时间差太久 ($timeDiff秒) 或金额不匹配 ($actualAmountChange ≠ $expectedAmountChange)，可能是删除操作',
           );
         }
       }
 
       // 对于非新增交易的情况（比如删除交易），也触发动效但不标记新交易ID
-      print(
+      Logger.debug(
         '🎭 触发余额变化动效! 变化: $actualAmountChange (可能是删除交易)',
       );
 
@@ -290,7 +291,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       );
       return;
     } else {
-      print('💰 余额没有变化或动画序列正在运行');
+      Logger.debug('💰 余额没有变化或动画序列正在运行');
     }
   }
 
@@ -301,14 +302,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     required double balanceChange,
     required bool isIncrease,
   }) {
-    print('🎭 启动余额变化动效');
+    Logger.debug('🎭 启动余额变化动效');
 
     // 安全检查：确保数据有效
     if (previousBalance.isNaN ||
         previousBalance.isInfinite ||
         newBalance.isNaN ||
         newBalance.isInfinite) {
-      print('⚠️ 检测到无效的余额数据，跳过动画');
+      Logger.debug('⚠️ 检测到无效的余额数据，跳过动画');
       setState(() {
         _previousBalance = newBalance;
         _currentBalance = newBalance;
@@ -327,13 +328,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     _transactionAnimationController.reset();
     _transactionAnimationController.forward().then((_) {
       if (mounted) {
-        print('✅ 余额变化动效完成');
+        Logger.debug('✅ 余额变化动效完成');
         setState(() {
           _isTransactionAnimationRunning = false;
         });
       }
     }).catchError((Object error) {
-      print('❌ 余额变化动效出错: $error');
+      Logger.debug('❌ 余额变化动效出错: $error');
       if (mounted) {
         setState(() {
           _isTransactionAnimationRunning = false;
@@ -350,14 +351,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     required TransactionType transactionType,
     required String newTransactionId,
   }) {
-    print('🎭 启动v1.1.0交易动效序列');
+    Logger.debug('🎭 启动v1.1.0交易动效序列');
 
     // 安全检查：确保数据有效
     if (previousBalance.isNaN ||
         previousBalance.isInfinite ||
         newBalance.isNaN ||
         newBalance.isInfinite) {
-      print('⚠️ 检测到无效的余额数据，跳过动画');
+      Logger.debug('⚠️ 检测到无效的余额数据，跳过动画');
       setState(() {
         _previousBalance = newBalance;
         _currentBalance = newBalance;
@@ -377,14 +378,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     _transactionAnimationController.reset();
     _transactionAnimationController.forward().then((_) {
       if (mounted) {
-        print('✅ v1.1.0动效序列执行完成');
+        Logger.debug('✅ v1.1.0动效序列执行完成');
         setState(() {
           _isTransactionAnimationRunning = false;
           _newTransactionId = null;
         });
       }
     }).catchError((Object error) {
-      print('❌ v1.1.0动效序列执行出错: $error');
+      Logger.debug('❌ v1.1.0动效序列执行出错: $error');
       if (mounted) {
         setState(() {
           _isTransactionAnimationRunning = false;
@@ -1222,7 +1223,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
       final transactionProvider = _transactionProvider;
 
       if (accountProvider == null || transactionProvider == null) {
-        print('⚠️ Provider未初始化，无法删除账户');
+        Logger.debug('⚠️ Provider未初始化，无法删除账户');
         return;
       }
 
