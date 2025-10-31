@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// 支出计划状态管理
 class ExpensePlanProvider with ChangeNotifier {
@@ -26,11 +27,11 @@ class ExpensePlanProvider with ChangeNotifier {
 
   /// 初始化
   Future<void> initialize() async {
-    print('🔄 ExpensePlanProvider 初始化开始');
+    Logger.debug('🔄 ExpensePlanProvider 初始化开始');
     _storageService = await StorageService.getInstance();
-    print('✅ StorageService 初始化完成');
+    Logger.debug('✅ StorageService 初始化完成');
     await _loadExpensePlans();
-    print('✅ ExpensePlanProvider 初始化完成，支出计划数量: ${_expensePlans.length}');
+    Logger.debug('✅ ExpensePlanProvider 初始化完成，支出计划数量: ${_expensePlans.length}');
   }
 
   /// 加载支出计划数据
@@ -40,22 +41,22 @@ class ExpensePlanProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      print('📊 开始加载支出计划数据');
+      Logger.debug('📊 开始加载支出计划数据');
       final loadedPlans = await _storageService.loadExpensePlans();
       _expensePlans = loadedPlans.map((plan) => plan as ExpensePlan).toList();
-      print('✅ 支出计划加载完成: ${_expensePlans.length} 个');
+      Logger.debug('✅ 支出计划加载完成: ${_expensePlans.length} 个');
 
       if (_expensePlans.isNotEmpty) {
-        print('💰 支出计划详情:');
+        Logger.debug('💰 支出计划详情:');
         for (var i = 0; i < _expensePlans.length; i++) {
           final plan = _expensePlans[i];
-          print(
+          Logger.debug(
             '  ${i + 1}. ${plan.name}: ¥${plan.amount} (${plan.frequency.displayName})',
           );
         }
       }
     } catch (e) {
-      print('❌ 加载支出计划数据失败: $e');
+      Logger.debug('❌ 加载支出计划数据失败: $e');
       _error = e.toString();
     } finally {
       _isLoading = false;
@@ -66,13 +67,13 @@ class ExpensePlanProvider with ChangeNotifier {
   /// 添加支出计划
   Future<void> addExpensePlan(ExpensePlan plan) async {
     try {
-      print('➕ 添加支出计划: ${plan.name}');
+      Logger.debug('➕ 添加支出计划: ${plan.name}');
       _expensePlans.add(plan);
       await _storageService.saveExpensePlans(_expensePlans);
       notifyListeners();
-      print('✅ 支出计划添加成功: ${plan.name}');
+      Logger.debug('✅ 支出计划添加成功: ${plan.name}');
     } catch (e) {
-      print('❌ 添加支出计划失败: $e');
+      Logger.debug('❌ 添加支出计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -81,19 +82,19 @@ class ExpensePlanProvider with ChangeNotifier {
   /// 更新支出计划
   Future<void> updateExpensePlan(ExpensePlan updatedPlan) async {
     try {
-      print('🔄 更新支出计划: ${updatedPlan.name}');
+      Logger.debug('🔄 更新支出计划: ${updatedPlan.name}');
       final index =
           _expensePlans.indexWhere((plan) => plan.id == updatedPlan.id);
       if (index != -1) {
         _expensePlans[index] = updatedPlan.copyWith(updateDate: DateTime.now());
         await _storageService.saveExpensePlans(_expensePlans);
         notifyListeners();
-        print('✅ 支出计划更新成功: ${updatedPlan.name}');
+        Logger.debug('✅ 支出计划更新成功: ${updatedPlan.name}');
       } else {
         throw Exception('支出计划不存在');
       }
     } catch (e) {
-      print('❌ 更新支出计划失败: $e');
+      Logger.debug('❌ 更新支出计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -102,17 +103,17 @@ class ExpensePlanProvider with ChangeNotifier {
   /// 删除支出计划
   Future<void> deleteExpensePlan(String planId) async {
     try {
-      print('🗑️ 删除支出计划: $planId');
+      Logger.debug('🗑️ 删除支出计划: $planId');
       final planIndex = _expensePlans.indexWhere((plan) => plan.id == planId);
       if (planIndex != -1) {
         final planName = _expensePlans[planIndex].name;
         _expensePlans.removeAt(planIndex);
         await _storageService.saveExpensePlans(_expensePlans);
         notifyListeners();
-        print('✅ 支出计划删除成功: $planName');
+        Logger.debug('✅ 支出计划删除成功: $planName');
       }
     } catch (e) {
-      print('❌ 删除支出计划失败: $e');
+      Logger.debug('❌ 删除支出计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -126,10 +127,10 @@ class ExpensePlanProvider with ChangeNotifier {
         _expensePlans[index] = _expensePlans[index].recordExecution();
         await _storageService.saveExpensePlans(_expensePlans);
         notifyListeners();
-        print('✅ 支出计划执行记录成功: ${_expensePlans[index].name}');
+        Logger.debug('✅ 支出计划执行记录成功: ${_expensePlans[index].name}');
       }
     } catch (e) {
-      print('❌ 记录支出计划执行失败: $e');
+      Logger.debug('❌ 记录支出计划执行失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -143,10 +144,10 @@ class ExpensePlanProvider with ChangeNotifier {
         _expensePlans[index] = _expensePlans[index].pause();
         await _storageService.saveExpensePlans(_expensePlans);
         notifyListeners();
-        print('⏸️ 支出计划暂停成功: ${_expensePlans[index].name}');
+        Logger.debug('⏸️ 支出计划暂停成功: ${_expensePlans[index].name}');
       }
     } catch (e) {
-      print('❌ 暂停支出计划失败: $e');
+      Logger.debug('❌ 暂停支出计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -160,10 +161,10 @@ class ExpensePlanProvider with ChangeNotifier {
         _expensePlans[index] = _expensePlans[index].resume();
         await _storageService.saveExpensePlans(_expensePlans);
         notifyListeners();
-        print('▶️ 支出计划恢复成功: ${_expensePlans[index].name}');
+        Logger.debug('▶️ 支出计划恢复成功: ${_expensePlans[index].name}');
       }
     } catch (e) {
-      print('❌ 恢复支出计划失败: $e');
+      Logger.debug('❌ 恢复支出计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
