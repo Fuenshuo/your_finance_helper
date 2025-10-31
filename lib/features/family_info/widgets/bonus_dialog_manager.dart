@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/quarterly_bonus_calculator.dart';
 
 /// Simplified manager class for bonus-related dialogs
@@ -14,14 +15,14 @@ class BonusDialogManager {
     BuildContext context,
     BonusItem bonus,
   ) async {
-    print(
+    Logger.debug(
         '📝 showEditDialog called with bonus: ${bonus.name} and quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}');
     final result = await _showBonusDialog(context, bonus);
     if (result != null) {
-      print(
+      Logger.debug(
           '✅ showEditDialog returning bonus: ${result.name} with quarterlyPaymentMonths: ${result.quarterlyPaymentMonths}');
     } else {
-      print('❌ showEditDialog returning null');
+      Logger.debug('❌ showEditDialog returning null');
     }
     return result;
   }
@@ -54,35 +55,35 @@ class BonusDialogManager {
   /// Get user's basic salary for thirteenth salary and double pay bonus
   static Future<double?> _getBasicSalary() async {
     try {
-      print('[BonusDialogManager._getBasicSalary] 💼 开始获取基本工资');
+      Logger.debug('[BonusDialogManager._getBasicSalary] 💼 开始获取基本工资');
       final storageService = await StorageService.getInstance();
       final salaryIncomes = await storageService.loadSalaryIncomes();
-      print(
+      Logger.debug(
           '[BonusDialogManager._getBasicSalary] 📊 加载到工资收入记录: ${salaryIncomes.length} 条');
 
       if (salaryIncomes.isNotEmpty) {
         final basicSalary = salaryIncomes.first.basicSalary;
-        print('[BonusDialogManager._getBasicSalary] 💰 找到基本工资: ¥$basicSalary');
-        print(
+        Logger.debug('[BonusDialogManager._getBasicSalary] 💰 找到基本工资: ¥$basicSalary');
+        Logger.debug(
             '[BonusDialogManager._getBasicSalary] 📝 工资收入详情: ${salaryIncomes.first.name}');
 
         if (basicSalary > 0) {
-          print(
+          Logger.debug(
               '[BonusDialogManager._getBasicSalary] ✅ 返回有效基本工资: ¥$basicSalary');
           return basicSalary;
         } else {
-          print(
+          Logger.warning(
               '[BonusDialogManager._getBasicSalary] ⚠️ 基本工资为0或null: $basicSalary');
           return null;
         }
       } else {
-        print('[BonusDialogManager._getBasicSalary] ❌ 未找到任何工资收入记录');
+        Logger.warning('[BonusDialogManager._getBasicSalary] ❌ 未找到任何工资收入记录');
       }
     } catch (e) {
-      print('[BonusDialogManager._getBasicSalary] 💥 获取基本工资出错: $e');
+      Logger.error('[BonusDialogManager._getBasicSalary] 💥 获取基本工资出错: $e');
       // Ignore errors and return null
     }
-    print('[BonusDialogManager._getBasicSalary] 🚫 返回null');
+    Logger.debug('[BonusDialogManager._getBasicSalary] 🚫 返回null');
     return null;
   }
 
@@ -140,7 +141,7 @@ class BonusDialogManager {
     BuildContext context,
     BonusItem? bonus,
   ) async {
-    print(
+    Logger.debug(
         '📝 _showBonusDialog called with bonus: ${bonus?.name} and quarterlyPaymentMonths: ${bonus?.quarterlyPaymentMonths}');
     final type = bonus?.type ?? BonusType.quarterlyBonus;
     final name = bonus?.name ??
@@ -256,7 +257,7 @@ class _BonusDialogState extends State<_BonusDialog> {
   @override
   void initState() {
     super.initState();
-    print('📝 _BonusDialog initState called');
+    Logger.debug('📝 _BonusDialog initState called');
 
     // Initialize state variables from widget properties
     _type = widget.type;
@@ -278,7 +279,7 @@ class _BonusDialogState extends State<_BonusDialog> {
             ? <int>[] // 新增时默认为空，让用户自己选择
             : <int>[]);
 
-    print('📝 Initial quarterlyPaymentMonths: $_quarterlyPaymentMonths');
+    Logger.debug('📝 Initial quarterlyPaymentMonths: $_quarterlyPaymentMonths');
 
     // Initialize amount controller
     _amountController = TextEditingController(
@@ -333,12 +334,12 @@ class _BonusDialogState extends State<_BonusDialog> {
 
   // 创建更新季度月份状态的函数 - 确保总是更新正确的状态
   void _updateQuarterlyMonths(List<int> newMonths) {
-    print('🔄 updateQuarterlyMonths called with: $newMonths');
-    print('📊 Current state before update: $_quarterlyPaymentMonths');
+    Logger.debug('🔄 updateQuarterlyMonths called with: $newMonths');
+    Logger.debug('📊 Current state before update: $_quarterlyPaymentMonths');
     setState(() {
       _quarterlyPaymentMonths = List<int>.from(newMonths); // 创建新列表确保状态更新被检测到
     });
-    print('✅ Updated state: $_quarterlyPaymentMonths');
+    Logger.debug('✅ Updated state: $_quarterlyPaymentMonths');
   }
 
   @override
@@ -580,7 +581,7 @@ class _BonusDialogState extends State<_BonusDialog> {
                           if (_quarterlyPaymentMonths.isNotEmpty)
                             TextButton(
                               onPressed: () {
-                                print(
+                                Logger.debug(
                                     '🗑️ Clear button clicked, clearing all months');
                                 _updateQuarterlyMonths([]);
                               },
@@ -604,20 +605,20 @@ class _BonusDialogState extends State<_BonusDialog> {
                             width: 60, // Fixed width for consistent layout
                             child: TextButton(
                               onPressed: () {
-                                print(
+                                Logger.debug(
                                     '📝 Month button clicked: $month月, currently selected: $isSelected');
                                 final currentMonths =
                                     List<int>.from(_quarterlyPaymentMonths);
                                 if (isSelected) {
                                   // Remove selected month
                                   currentMonths.remove(month);
-                                  print(
+                                  Logger.debug(
                                       '📝 Removing month $month月, new list: $currentMonths');
                                 } else if (currentMonths.length < 4) {
                                   // Add new month
                                   currentMonths.add(month);
                                   currentMonths.sort();
-                                  print(
+                                  Logger.debug(
                                       '📝 Adding month $month月, new list: $currentMonths');
                                 }
                                 _updateQuarterlyMonths(currentMonths);
@@ -1126,11 +1127,11 @@ class _BonusDialogState extends State<_BonusDialog> {
           ElevatedButton(
             onPressed: () async {
               if (_formKey.currentState?.validate() ?? false) {
-                print('✅ Form validation passed');
+                Logger.debug('✅ Form validation passed');
                 // Validate quarterly bonus payment months
                 if (_type == BonusType.quarterlyBonus &&
                     _quarterlyPaymentMonths.isEmpty) {
-                  print('❌ Quarterly payment months validation failed');
+                  Logger.debug('❌ Quarterly payment months validation failed');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('请至少选择一个季度奖金发放月份'),
@@ -1139,7 +1140,7 @@ class _BonusDialogState extends State<_BonusDialog> {
                   );
                   return;
                 }
-                print('✅ Quarterly payment months validation passed');
+                Logger.debug('✅ Quarterly payment months validation passed');
 
                 // Handle thirteenth salary and double pay bonus special cases
                 if (_type == BonusType.thirteenthSalary ||
@@ -1162,7 +1163,7 @@ class _BonusDialogState extends State<_BonusDialog> {
                   }
                 }
 
-                print(
+                Logger.debug(
                     '📝 Creating bonus with quarterlyPaymentMonths: $_quarterlyPaymentMonths');
 
                 final newBonus = BonusItem(
@@ -1230,11 +1231,11 @@ class _BonusDialogState extends State<_BonusDialog> {
                           : _endDate,
                 );
 
-                print(
+                Logger.debug(
                     '✅ Bonus created successfully with quarterlyPaymentMonths: ${newBonus.quarterlyPaymentMonths}');
                 Navigator.of(context).pop(newBonus);
               } else {
-                print('❌ Form validation failed');
+                Logger.debug('❌ Form validation failed');
               }
             },
             child: const Text('保存'),
