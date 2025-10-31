@@ -1,5 +1,5 @@
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('十三薪在1月份应该正确显示', () {

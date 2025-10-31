@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/theme/app_theme.dart';
-import 'package:your_finance_flutter/theme/responsive_text_styles.dart';
-import 'package:your_finance_flutter/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
+import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 class ResponsiveTestScreen extends StatelessWidget {
   const ResponsiveTestScreen({super.key});

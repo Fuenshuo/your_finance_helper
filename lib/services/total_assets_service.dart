@@ -1,5 +1,7 @@
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/providers/account_provider.dart';
 
 /// 总资产计算服务
 /// 实现"总资产 = 所有账户余额 + 所有信封余额"的核心逻辑
@@ -9,9 +11,11 @@ class TotalAssetsService {
   static double calculateTotalAssets({
     required List<Account> accounts,
     required List<EnvelopeBudget> envelopeBudgets,
+    required List<Transaction> transactions,
+    required AccountProvider accountProvider,
   }) {
     // 1. 计算账户资产
-    final accountAssets = _calculateAccountAssets(accounts);
+    final accountAssets = _calculateAccountAssets(accounts, transactions, accountProvider);
 
     // 2. 计算信封可用余额
     final envelopeAssets = _calculateEnvelopeAssets(envelopeBudgets);
@@ -59,10 +63,14 @@ class TotalAssetsService {
   static double calculateNetWorth({
     required List<Account> accounts,
     required List<EnvelopeBudget> envelopeBudgets,
+    required List<Transaction> transactions,
+    required AccountProvider accountProvider,
   }) {
     final totalAssets = calculateTotalAssets(
       accounts: accounts,
       envelopeBudgets: envelopeBudgets,
+      transactions: transactions,
+      accountProvider: accountProvider,
     );
 
     final totalLiabilities = _calculateTotalLiabilities(accounts);
@@ -82,10 +90,14 @@ class TotalAssetsService {
   static double calculateDebtRatio({
     required List<Account> accounts,
     required List<EnvelopeBudget> envelopeBudgets,
+    required List<Transaction> transactions,
+    required AccountProvider accountProvider,
   }) {
     final totalAssets = calculateTotalAssets(
       accounts: accounts,
       envelopeBudgets: envelopeBudgets,
+      transactions: transactions,
+      accountProvider: accountProvider,
     );
 
     if (totalAssets == 0) return 0.0;

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:your_finance_flutter/models/budget.dart';
-import 'package:your_finance_flutter/models/transaction.dart';
-import 'package:your_finance_flutter/providers/budget_provider.dart';
-import 'package:your_finance_flutter/providers/transaction_provider.dart';
-import 'package:your_finance_flutter/screens/add_transaction_screen.dart';
-import 'package:your_finance_flutter/screens/transaction_detail_screen.dart';
-import 'package:your_finance_flutter/theme/app_theme.dart';
-import 'package:your_finance_flutter/widgets/app_animations.dart';
+import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
+import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/widgets/app_card.dart';
 
 class EnvelopeBudgetDetailScreen extends StatefulWidget {

@@ -28,10 +28,8 @@ class RiverpodTestScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            Text(
-              '✅ Riverpod State Management: ${assetState.isInitialized ? 'Working' : 'Initializing...'}',
-            ),
-            Text('✅ Asset Provider: ${assetState.assets.length} assets loaded'),
+            const Text('✅ Riverpod State Management: Working'),
+            Text('✅ Asset Provider: ${assetState.length} assets loaded'),
             const Text('ℹ️ Transaction Provider: Not yet implemented'),
             const SizedBox(height: 30),
             ElevatedButton(

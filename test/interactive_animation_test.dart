@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_finance_flutter/animation_demo_page.dart';
+import 'package:your_finance_flutter/ios_animation_showcase.dart';
 
 void main() {
   group('Interactive Animation Tests', () {
@@ -8,7 +8,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: AnimationDemoPage(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
@@ -36,7 +36,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: AnimationDemoPage(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
@@ -70,7 +70,7 @@ void main() {
     testWidgets('Bounce animation state resets after duration', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: AnimationDemoPage(),
+          home: IOSAnimationShowcase(),
         ),
       );
 
