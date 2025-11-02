@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/features/financial_planning/screens/mortgage_calculator_screen.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
@@ -100,7 +101,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
             _notesController.text = (propertyDetails['notes'] ?? '').toString();
           } catch (jsonError) {
             // 如果JSON解析失败，尝试解析旧的Map.toString()格式
-            print('🔄 尝试解析旧格式房产数据');
+            Logger.debug('🔄 尝试解析旧格式房产数据');
             final notesStr =
                 _property.notes!.substring(19); // 移除 '{"propertyDetails":'
             final endIndex = notesStr.lastIndexOf('}');
@@ -121,7 +122,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           _notesController.text = _property.notes!;
         }
       } catch (e) {
-        print('❌ 解析房产详细信息失败: $e');
+        Logger.debug('❌ 解析房产详细信息失败: $e');
         // 如果解析失败，使用原始的 notes 内容
         _notesController.text = _property.notes!;
       }
@@ -521,12 +522,12 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
   Future<void> _saveProperty() async {
     if (!_formKey.currentState!.validate()) {
-      print('❌ PropertyDetailScreen: 表单验证失败');
+      Logger.debug('❌ PropertyDetailScreen: 表单验证失败');
       return;
     }
 
-    print('💾 PropertyDetailScreen: 开始保存房产');
-    print(
+    Logger.debug('💾 PropertyDetailScreen: 开始保存房产');
+    Logger.debug(
       '💾 PropertyDetailScreen: 原资产ID: ${_property.id}, 名称: ${_property.name}',
     );
 
@@ -563,21 +564,21 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         updateDate: DateTime.now(),
       );
 
-      print(
+      Logger.debug(
         '💾 PropertyDetailScreen: 更新后资产 - ID: ${updatedProperty.id}, 名称: ${updatedProperty.name}, 金额: ${updatedProperty.amount}',
       );
-      print('💾 PropertyDetailScreen: 房产详情: $notesJson');
+      Logger.debug('💾 PropertyDetailScreen: 房产详情: $notesJson');
 
       if (widget.onPropertySaved != null) {
-        print('💾 PropertyDetailScreen: 调用onPropertySaved回调');
+        Logger.debug('💾 PropertyDetailScreen: 调用onPropertySaved回调');
         widget.onPropertySaved!(updatedProperty);
-        print('✅ PropertyDetailScreen: onPropertySaved回调调用完成');
+        Logger.debug('✅ PropertyDetailScreen: onPropertySaved回调调用完成');
       } else {
-        print('⚠️ PropertyDetailScreen: onPropertySaved回调为空');
+        Logger.debug('⚠️ PropertyDetailScreen: onPropertySaved回调为空');
       }
 
       if (mounted) {
-        print('🏠 PropertyDetailScreen: 关闭PropertyDetailScreen');
+        Logger.debug('🏠 PropertyDetailScreen: 关闭PropertyDetailScreen');
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -587,7 +588,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         );
       }
     } catch (e) {
-      print('❌ PropertyDetailScreen: 保存失败: $e');
+      Logger.debug('❌ PropertyDetailScreen: 保存失败: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
