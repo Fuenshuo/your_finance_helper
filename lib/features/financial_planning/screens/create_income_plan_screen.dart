@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
@@ -11,12 +12,12 @@ import 'package:your_finance_flutter/features/family_info/screens/salary_income_
 
 /// 创建/编辑收入计划页面
 class CreateIncomePlanScreen extends StatefulWidget {
-  final IncomePlan? editPlan;
 
   const CreateIncomePlanScreen({
     super.key,
     this.editPlan,
   });
+  final IncomePlan? editPlan;
 
   @override
   State<CreateIncomePlanScreen> createState() => _CreateIncomePlanScreenState();
@@ -568,44 +569,44 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
   /// 选择工资收入
   Future<void> _selectSalaryIncome(BuildContext context) async {
     final budgetProvider = context.read<BudgetProvider>();
-    print('📝 获取预算提供者中的工资收入列表');
-    print(
+    Logger.debug('📝 获取预算提供者中的工资收入列表');
+    Logger.debug(
       '📝 BudgetProvider 初始化状态: ${budgetProvider.isInitialized}, 加载状态: ${budgetProvider.isLoading}',
     );
 
     // 等待BudgetProvider初始化完成
     if (!budgetProvider.isInitialized && budgetProvider.isLoading) {
-      print('⏳ BudgetProvider 正在初始化，等待...');
+      Logger.debug('⏳ BudgetProvider 正在初始化，等待...');
       // 等待一小段时间让初始化完成
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
     final salaryIncomes = budgetProvider.salaryIncomes;
-    print('📝 工资收入数量: ${salaryIncomes.length}');
+    Logger.debug('📝 工资收入数量: ${salaryIncomes.length}');
 
     if (salaryIncomes.isEmpty) {
-      print('❌ 没有找到已设置的工资收入');
+      Logger.debug('❌ 没有找到已设置的工资收入');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('没有找到已设置的工资收入，请先设置工资')),
       );
       return;
     }
 
-    print('📝 显示工资收入选择对话框');
+    Logger.debug('📝 显示工资收入选择对话框');
     for (var i = 0; i < salaryIncomes.length; i++) {
       final salary = salaryIncomes[i];
-      print(
+      Logger.debug(
         '  工资收入${i + 1}: ${salary.name} - 月薪: ¥${salary.netIncome.toStringAsFixed(0)}',
       );
 
       // 详细的扣除项信息
-      print('    📊 基本工资: ¥${salary.basicSalary}');
-      print('    💰 个税: ¥${salary.personalIncomeTax}');
-      print(
-          '    🏥 五险一金: ¥${salary.socialInsurance + salary.housingFund} (社保: ¥${salary.socialInsurance}, 公积金: ¥${salary.housingFund})');
-      print('    📋 专项附加扣除: ¥${salary.specialDeductionMonthly}');
-      print('    📝 其他扣除: ¥${salary.otherDeductions}');
-      print('    🧾 其他税收扣除: ¥${salary.otherTaxDeductions}');
+      Logger.debug('    📊 基本工资: ¥${salary.basicSalary}');
+      Logger.debug('    💰 个税: ¥${salary.personalIncomeTax}');
+      Logger.debug(
+          '    🏥 五险一金: ¥${salary.socialInsurance + salary.housingFund} (社保: ¥${salary.socialInsurance}, 公积金: ¥${salary.housingFund})',);
+      Logger.debug('    📋 专项附加扣除: ¥${salary.specialDeductionMonthly}');
+      Logger.debug('    📝 其他扣除: ¥${salary.otherDeductions}');
+      Logger.debug('    🧾 其他税收扣除: ¥${salary.otherTaxDeductions}');
 
       // 手动计算验证
       final totalIncome = salary.basicSalary +
@@ -621,12 +622,12 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
           salary.otherTaxDeductions;
       final calculatedNetIncome = totalIncome - totalDeductions;
 
-      print('    🔍 总收入: ¥$totalIncome');
-      print('    🔍 总扣除: ¥$totalDeductions');
-      print('    ✅ 手动计算净收入: ¥$calculatedNetIncome');
-      print('    📊 存储的净收入: ¥${salary.netIncome}');
-      print(
-          '    ⚠️ 差异: ¥${(calculatedNetIncome - salary.netIncome).toStringAsFixed(2)}');
+      Logger.debug('    🔍 总收入: ¥$totalIncome');
+      Logger.debug('    🔍 总扣除: ¥$totalDeductions');
+      Logger.debug('    ✅ 手动计算净收入: ¥$calculatedNetIncome');
+      Logger.debug('    📊 存储的净收入: ¥${salary.netIncome}');
+      Logger.debug(
+          '    ⚠️ 差异: ¥${(calculatedNetIncome - salary.netIncome).toStringAsFixed(2)}',);
     }
 
     final selectedSalary = await showDialog<SalaryIncome>(
@@ -665,7 +666,7 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
     );
 
     if (selectedSalary != null) {
-      print('✅ 选择了工资收入: ${selectedSalary.name}');
+      Logger.debug('✅ 选择了工资收入: ${selectedSalary.name}');
       setState(() {
         _selectedTemplate = 'salary';
         _selectedSalary = selectedSalary;
@@ -674,7 +675,7 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
         _frequency = 'monthly';
       });
     } else {
-      print('❌ 未选择任何工资收入');
+      Logger.debug('❌ 未选择任何工资收入');
     }
   }
 
