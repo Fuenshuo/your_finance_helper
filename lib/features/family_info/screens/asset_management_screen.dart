@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
@@ -167,7 +168,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     BuildContext context,
     HybridStorageService storageService,
   ) async {
-    print('🗑️ 开始清空数据流程...');
+    Logger.debug('🗑️ 开始清空数据流程...');
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -188,17 +189,17 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       ),
     );
 
-    print('🗑️ 用户确认结果: $confirmed');
+    Logger.debug('🗑️ 用户确认结果: $confirmed');
 
     if (confirmed ?? false) {
-      print('🗑️ 开始执行清空操作...');
+      Logger.debug('🗑️ 开始执行清空操作...');
       await storageService.clearAll();
-      print('🗑️ 清空操作完成');
+      Logger.debug('🗑️ 清空操作完成');
 
       if (context.mounted) {
-        print('🗑️ 重新加载资产数据...');
+        Logger.debug('🗑️ 重新加载资产数据...');
         await context.read<AssetProvider>().loadAssets();
-        print('🗑️ 资产数据重新加载完成');
+        Logger.debug('🗑️ 资产数据重新加载完成');
 
         // 显示成功提示
         ScaffoldMessenger.of(context).showSnackBar(
@@ -210,16 +211,16 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         );
       }
     } else {
-      print('🗑️ 用户取消了清空操作');
+      Logger.debug('🗑️ 用户取消了清空操作');
     }
   }
 
   // 生成测试数据
   Future<void> _generateSampleData(BuildContext context) async {
     try {
-      print('🔄 开始生成测试数据...');
+      Logger.debug('🔄 开始生成测试数据...');
       final storageService = await HybridStorageService.getInstance();
-      print('✅ 存储服务初始化成功');
+      Logger.debug('✅ 存储服务初始化成功');
 
       // 生成测试资产 - 适配新的资产分类
       final sampleAssets = [
@@ -307,7 +308,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           updateDate: DateTime.now(),
         ),
       ];
-      print('✅ 测试资产数据生成完成，共${sampleAssets.length}个资产');
+      Logger.debug('✅ 测试资产数据生成完成，共${sampleAssets.length}个资产');
 
       // 生成测试账户
       final sampleAccounts = [
@@ -328,7 +329,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           balance: 5000.0,
         ),
       ];
-      print('✅ 测试账户数据生成完成，共${sampleAccounts.length}个账户');
+      Logger.debug('✅ 测试账户数据生成完成，共${sampleAccounts.length}个账户');
 
       // 生成测试预算
       final sampleEnvelopeBudgets = [
@@ -357,24 +358,24 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           endDate: DateTime.now().add(const Duration(days: 30)),
         ),
       ];
-      print('✅ 测试预算数据生成完成，共${sampleEnvelopeBudgets.length}个预算');
+      Logger.debug('✅ 测试预算数据生成完成，共${sampleEnvelopeBudgets.length}个预算');
 
       // 保存测试数据
-      print('💾 开始保存测试数据...');
+      Logger.debug('💾 开始保存测试数据...');
       await storageService.saveAssets(sampleAssets);
-      print('✅ 资产数据保存成功');
+      Logger.debug('✅ 资产数据保存成功');
 
       await storageService.saveAccounts(sampleAccounts);
-      print('✅ 账户数据保存成功');
+      Logger.debug('✅ 账户数据保存成功');
 
       await storageService.saveEnvelopeBudgets(sampleEnvelopeBudgets);
-      print('✅ 预算数据保存成功');
+      Logger.debug('✅ 预算数据保存成功');
 
       // 刷新Provider
       if (context.mounted) {
-        print('🔄 刷新Provider...');
+        Logger.debug('🔄 刷新Provider...');
         context.read<AssetProvider>().loadAssets();
-        print('✅ 测试数据生成完成！');
+        Logger.debug('✅ 测试数据生成完成！');
 
         // 显示成功提示
         ScaffoldMessenger.of(context).showSnackBar(
@@ -386,7 +387,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         );
       }
     } catch (e) {
-      print('❌ 生成测试数据时出错: $e');
+      Logger.debug('❌ 生成测试数据时出错: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1273,7 +1274,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           return infoParts.isNotEmpty ? infoParts.join(' · ') : '';
         } catch (jsonError) {
           // 如果JSON解析失败，尝试解析旧的Map.toString()格式
-          print('🔄 尝试解析旧格式房产数据');
+          Logger.debug('🔄 尝试解析旧格式房产数据');
           final notesStr = notes.substring(19); // 移除 '{"propertyDetails":'
           final endIndex = notesStr.lastIndexOf('}');
           if (endIndex > 0) {
@@ -1296,7 +1297,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         }
       }
     } catch (e) {
-      print('❌ 解析房产信息失败: $e');
+      Logger.debug('❌ 解析房产信息失败: $e');
     }
 
     return '';
