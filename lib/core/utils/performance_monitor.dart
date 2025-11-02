@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// 性能监控工具类
 class PerformanceMonitor {
@@ -22,7 +23,7 @@ class PerformanceMonitor {
 
     // 只记录超过阈值的构建时间
     if (buildTime > _getBuildThreshold(widgetName)) {
-      print('🚀 $widgetName build time: $buildTimeμs');
+      Logger.debug('🚀 $widgetName build time: $buildTimeμs');
     }
 
     // 每50次构建输出统计信息（减少输出频率）
@@ -49,7 +50,7 @@ class PerformanceMonitor {
 
     // 只记录超过阈值的绘制时间
     if (paintTime > _getPaintThreshold(painterName)) {
-      print('🎨 $painterName paint time: $paintTimeμs');
+      Logger.debug('🎨 $painterName paint time: $paintTimeμs');
     }
   }
 
@@ -84,22 +85,22 @@ class PerformanceMonitor {
     final max = times.reduce((a, b) => a > b ? a : b);
     final min = times.reduce((a, b) => a < b ? a : b);
 
-    print('📊 $widgetName 构建统计 (最近${times.length}次):');
-    print('   平均: ${avg.toStringAsFixed(1)}μs');
-    print('   最大: $maxμs');
-    print('   最小: $minμs');
+    Logger.debug('📊 $widgetName 构建统计 (最近${times.length}次):');
+    Logger.debug('   平均: ${avg.toStringAsFixed(1)}μs');
+    Logger.debug('   最大: $maxμs');
+    Logger.debug('   最小: $minμs');
   }
 
   /// 打印所有统计信息
   static void printAllStats() {
-    print('📈 性能统计报告:');
+    Logger.debug('📈 性能统计报告:');
     for (final widgetName in _buildTimes.keys) {
       _printBuildStats(widgetName);
     }
     for (final painterName in _paintTimes.keys) {
       final times = _paintTimes[painterName]!;
       final avg = times.reduce((a, b) => a + b) / times.length;
-      print('🎨 $painterName 绘制统计: 平均 ${avg.toStringAsFixed(1)}μs');
+      Logger.debug('🎨 $painterName 绘制统计: 平均 ${avg.toStringAsFixed(1)}μs');
     }
   }
 
@@ -107,7 +108,7 @@ class PerformanceMonitor {
   static void clearStats() {
     _buildTimes.clear();
     _paintTimes.clear();
-    print('🧹 性能统计数据已清除');
+    Logger.debug('🧹 性能统计数据已清除');
   }
 
   /// 开始性能分析
