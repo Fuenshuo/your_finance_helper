@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/features/family_info/screens/fixed_asset_detail_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
@@ -222,7 +223,7 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
     final subCategory = _isCustomInput ? '自定义' : _selectedSubCategory;
     final amount = double.parse(_amountController.text);
 
-    print(
+    Logger.debug(
       '🔧 AddAssetSheet: 创建资产 - 名称: $name, 金额: $amount, 分类: ${widget.category.displayName}, 子分类: $subCategory',
     );
 
@@ -239,15 +240,15 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
           : _notesController.text.trim(),
     );
 
-    print('🔧 AddAssetSheet: 资产创建完成 - ID: ${asset.id}');
+    Logger.debug('🔧 AddAssetSheet: 资产创建完成 - ID: ${asset.id}');
 
     // 如果是固定资产，提供详细录入选项
     if (widget.category == AssetCategory.realEstate) {
-      print('🏠 AddAssetSheet: 检测到固定资产，准备显示详细录入选项');
+      Logger.debug('🏠 AddAssetSheet: 检测到固定资产，准备显示详细录入选项');
       Navigator.of(context).pop(); // 关闭当前页面
       _showDetailedInputOptions(asset);
     } else {
-      print('💰 AddAssetSheet: 普通资产，直接添加');
+      Logger.debug('💰 AddAssetSheet: 普通资产，直接添加');
       widget.onAssetAdded(asset);
       Navigator.of(context).pop();
       _showBudgetGuidance(asset);
@@ -255,14 +256,14 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
   }
 
   void _showDetailedInputOptions(AssetItem asset) {
-    print('📋 _showDetailedInputOptions: 开始执行');
-    print(
+    Logger.debug('📋 _showDetailedInputOptions: 开始执行');
+    Logger.debug(
       '📋 _showDetailedInputOptions: 资产名称: ${asset.name}, 子分类: ${asset.subCategory}',
     );
-    print('📋 _showDetailedInputOptions: 是否为房产资产: ${_isPropertyAsset(asset)}');
+    Logger.debug('📋 _showDetailedInputOptions: 是否为房产资产: ${_isPropertyAsset(asset)}');
 
     // 移除延迟，直接显示弹窗
-    print('✅ 直接显示弹窗');
+    Logger.debug('✅ 直接显示弹窗');
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -323,7 +324,7 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
                 title: '房产详细录入',
                 subtitle: '专门的房产录入，包含地址、面积、房贷计算等',
                 onTap: () {
-                  print(
+                  Logger.debug(
                     '🏠 AddAssetSheet: 选择房产详细录入，导航到PropertyDetailScreen',
                   );
                   Navigator.of(context).pop();
@@ -332,11 +333,11 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
                       builder: (context) => PropertyDetailScreen(
                         asset: asset,
                         onPropertySaved: (savedAsset) {
-                          print(
+                          Logger.debug(
                             '✅ AddAssetSheet: 房产保存回调被调用 - 资产: ${savedAsset.name}, ID: ${savedAsset.id}',
                           );
                           widget.onAssetAdded(savedAsset);
-                          print('✅ AddAssetSheet: 已调用父级onAssetAdded回调');
+                          Logger.debug('✅ AddAssetSheet: 已调用父级onAssetAdded回调');
                           _showBudgetGuidance(savedAsset);
                         },
                       ),
