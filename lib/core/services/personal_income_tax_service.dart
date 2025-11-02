@@ -1,4 +1,5 @@
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// 中国个人所得税计算服务
 /// 根据2021年最新税率表实现自动计算功能
@@ -407,23 +408,23 @@ class BonusTaxCalculator {
     double specialDeductionMonthly, // 月专项附加扣除
     double otherTaxFreeMonthly, // 月其他免税收入
   ) {
-    print('🏆 开始计算年度奖金税费: year=$year, bonuses=${bonuses.length}个');
-    print('  月收入: $monthlyIncome');
-    print('  月扣除: $monthlyDeductions');
-    print('  月专项扣除: $specialDeductionMonthly');
+    Logger.debug('🏆 开始计算年度奖金税费: year=$year, bonuses=${bonuses.length}个');
+    Logger.debug('  月收入: $monthlyIncome');
+    Logger.debug('  月扣除: $monthlyDeductions');
+    Logger.debug('  月专项扣除: $specialDeductionMonthly');
     var totalBonus = 0.0;
     var totalTax = 0.0;
 
     // 分别计算不同类型的奖金税费
     for (final bonus in bonuses) {
-      print(
+      Logger.debug(
         '🎁 处理奖金: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}, 频率=${bonus.frequency}',
       );
       if (bonus.type == BonusType.quarterlyBonus) {
-        print('  季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
+        Logger.debug('  季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
       }
       final annualBonusAmount = bonus.calculateAnnualBonus(year);
-      print('📊 年度奖金金额: $annualBonusAmount');
+      Logger.debug('📊 年度奖金金额: $annualBonusAmount');
       if (annualBonusAmount > 0) {
         totalBonus += annualBonusAmount;
 
@@ -436,12 +437,12 @@ class BonusTaxCalculator {
           specialDeductionMonthly,
           otherTaxFreeMonthly,
         );
-        print('💸 奖金税费: $bonusTax');
+        Logger.debug('💸 奖金税费: $bonusTax');
         totalTax += bonusTax;
       }
     }
 
-    print('📈 奖金汇总: 总奖金=$totalBonus, 总税费=$totalTax');
+    Logger.debug('📈 奖金汇总: 总奖金=$totalBonus, 总税费=$totalTax');
 
     return BonusTaxSummary(
       yearEndBonus: _getTotalBonusByType(bonuses, BonusType.yearEndBonus, year),
@@ -501,13 +502,13 @@ class BonusTaxCalculator {
     double specialDeductionMonthly,
     double otherTaxFreeMonthly,
   ) {
-    print('🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount');
+    Logger.debug('🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount');
     
     switch (bonus.type) {
       case BonusType.yearEndBonus:
         // 年终奖：单独按年终奖税率计算
         final tax = calculateYearEndBonusTax(annualBonusAmount);
-        print('  年终奖税费: $tax');
+        Logger.debug('  年终奖税费: $tax');
         return tax;
 
       case BonusType.thirteenthSalary:
@@ -521,7 +522,7 @@ class BonusTaxCalculator {
           otherTaxFreeMonthly,
         );
         final tax = monthlyTax * 12; // 乘回12个月
-        print('  十三薪/回奖金税费: 月税费=$monthlyTax, 年税费=$tax');
+        Logger.debug('  十三薪/回奖金税费: 月税费=$monthlyTax, 年税费=$tax');
         return tax;
         
       case BonusType.quarterlyBonus:
@@ -535,7 +536,7 @@ class BonusTaxCalculator {
           otherTaxFreeMonthly,
         );
         final tax = monthlyTax * 12; // 乘回12个月
-        print('  季度奖金税费: 月税费=$monthlyTax, 年税费=$tax');
+        Logger.debug('  季度奖金税费: 月税费=$monthlyTax, 年税费=$tax');
         return tax;
 
       case BonusType.other:
@@ -548,7 +549,7 @@ class BonusTaxCalculator {
           otherTaxFreeMonthly,
         );
         final tax = monthlyTax * 12; // 乘回12个月
-        print('  其他奖金税费: 月税费=$monthlyTax, 年税费=$tax');
+        Logger.debug('  其他奖金税费: 月税费=$monthlyTax, 年税费=$tax');
         return tax;
     }
 
@@ -569,9 +570,9 @@ class BonusTaxCalculator {
     double specialDeductionMonthly,
     double otherTaxFreeMonthly,
   ) {
-    print('🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly');
+    Logger.debug('🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly');
     final totalMonthlyIncome = monthlyBaseIncome + monthlyBonusAmount;
-    print('  总月收入: $totalMonthlyIncome');
+    Logger.debug('  总月收入: $totalMonthlyIncome');
     
     final tax = PersonalIncomeTaxService.calculateMonthlyTax(
       totalMonthlyIncome,
@@ -580,7 +581,7 @@ class BonusTaxCalculator {
       0, // 当月
     );
     
-    print('  月税费: $tax');
+    Logger.debug('  月税费: $tax');
     return tax;
   }
 
