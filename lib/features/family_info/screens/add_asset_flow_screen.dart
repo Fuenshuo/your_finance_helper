@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/features/family_info/screens/add_asset_sheet.dart';
@@ -321,28 +322,28 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   }
 
   void _showAddAssetSheet(AssetCategory category) {
-    print('📋 AddAssetFlowScreen: 显示添加资产表单 - 分类: ${category.displayName}');
+    Logger.debug('📋 AddAssetFlowScreen: 显示添加资产表单 - 分类: ${category.displayName}');
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (context) => AddAssetSheet(
         category: category,
         onAssetAdded: (asset) {
-          print(
+          Logger.debug(
             '📋 AddAssetFlowScreen: 收到新资产 - 名称: ${asset.name}, ID: ${asset.id}, 分类: ${asset.category.displayName}',
           );
-          print('📋 AddAssetFlowScreen: 添加前临时资产数量: ${_tempAssets.length}');
+          Logger.debug('📋 AddAssetFlowScreen: 添加前临时资产数量: ${_tempAssets.length}');
           setState(() {
             _tempAssets.add(asset);
           });
-          print('📋 AddAssetFlowScreen: 添加后临时资产数量: ${_tempAssets.length}');
+          Logger.debug('📋 AddAssetFlowScreen: 添加后临时资产数量: ${_tempAssets.length}');
         },
       ),
     );
   }
 
   void _editAsset(BuildContext context, AssetItem asset) {
-    print(
+    Logger.debug(
       '📋 AddAssetFlowScreen: 开始编辑资产 - 名称: ${asset.name}, 分类: ${asset.category.displayName}',
     );
 
@@ -361,7 +362,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
         builder: (context) => EditAssetSheet(
           asset: asset,
           onAssetUpdated: (updatedAsset) {
-            print('📋 AddAssetFlowScreen: 资产已更新 - 名称: ${updatedAsset.name}');
+            Logger.debug('📋 AddAssetFlowScreen: 资产已更新 - 名称: ${updatedAsset.name}');
             setState(() {
               final index = _tempAssets.indexWhere((a) => a.id == asset.id);
               if (index != -1) {
@@ -415,7 +416,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                   builder: (context) => EditAssetSheet(
                     asset: asset,
                     onAssetUpdated: (updatedAsset) {
-                      print(
+                      Logger.debug(
                         '📋 AddAssetFlowScreen: 房产快速编辑完成 - 名称: ${updatedAsset.name}',
                       );
                       setState(() {
@@ -445,7 +446,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                     builder: (context) => PropertyDetailScreen(
                       asset: asset,
                       onPropertySaved: (savedAsset) {
-                        print(
+                        Logger.debug(
                           '📋 AddAssetFlowScreen: 房产详细编辑完成 - 名称: ${savedAsset.name}',
                         );
                         setState(() {
@@ -668,7 +669,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
           return infoParts.isNotEmpty ? infoParts.join(' · ') : '';
         } catch (jsonError) {
           // 如果JSON解析失败，尝试解析旧的Map.toString()格式
-          print('🔄 尝试解析旧格式房产数据');
+          Logger.debug('🔄 尝试解析旧格式房产数据');
           final notesStr = notes.substring(19); // 移除 '{"propertyDetails":'
           final endIndex = notesStr.lastIndexOf('}');
           if (endIndex > 0) {
@@ -691,7 +692,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
         }
       }
     } catch (e) {
-      print('❌ 解析房产信息失败: $e');
+      Logger.debug('❌ 解析房产信息失败: $e');
     }
 
     return '';
@@ -718,11 +719,11 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   }
 
   void _finishFlow(BuildContext context) {
-    print('🏁 AddAssetFlowScreen: 开始完成流程');
-    print('🏁 AddAssetFlowScreen: 临时资产数量: ${_tempAssets.length}');
+    Logger.debug('🏁 AddAssetFlowScreen: 开始完成流程');
+    Logger.debug('🏁 AddAssetFlowScreen: 临时资产数量: ${_tempAssets.length}');
     for (var i = 0; i < _tempAssets.length; i++) {
       final asset = _tempAssets[i];
-      print(
+      Logger.debug(
         '🏁 AddAssetFlowScreen: 临时资产${i + 1}: ${asset.name} - ${asset.amount} (${asset.category.displayName})',
       );
     }
@@ -730,19 +731,19 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
     final assetProvider = Provider.of<AssetProvider>(context, listen: false);
 
     if (widget.isUpdateMode) {
-      print('🔄 AddAssetFlowScreen: 更新模式 - 替换所有资产');
+      Logger.debug('🔄 AddAssetFlowScreen: 更新模式 - 替换所有资产');
       // 更新模式：直接用当前资产覆盖所有现有资产
       assetProvider.replaceAllAssets(_tempAssets);
     } else {
-      print('➕ AddAssetFlowScreen: 新增模式 - 添加新资产');
+      Logger.debug('➕ AddAssetFlowScreen: 新增模式 - 添加新资产');
       // 新增模式：添加新资产
       for (final asset in _tempAssets) {
-        print('➕ AddAssetFlowScreen: 添加资产: ${asset.name}');
+        Logger.debug('➕ AddAssetFlowScreen: 添加资产: ${asset.name}');
         assetProvider.addAsset(asset);
       }
     }
 
-    print('✅ AddAssetFlowScreen: 流程完成，准备返回');
+    Logger.debug('✅ AddAssetFlowScreen: 流程完成，准备返回');
     Navigator.of(context).pop();
   }
 
