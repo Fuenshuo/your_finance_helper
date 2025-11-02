@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
@@ -32,12 +33,12 @@ class IncomePlanProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      print('📊 开始加载收入计划数据');
+      Logger.debug('📊 开始加载收入计划数据');
       final loadedPlans = await _storageService.loadIncomePlans();
       _incomePlans = loadedPlans.map((plan) => plan as IncomePlan).toList();
-      print('✅ 收入计划加载完成: ${_incomePlans.length} 个');
+      Logger.debug('✅ 收入计划加载完成: ${_incomePlans.length} 个');
     } catch (e) {
-      print('❌ 加载收入计划数据失败: $e');
+      Logger.debug('❌ 加载收入计划数据失败: $e');
       _error = e.toString();
     } finally {
       _isLoading = false;
@@ -48,13 +49,13 @@ class IncomePlanProvider with ChangeNotifier {
   // 添加收入计划
   Future<void> addIncomePlan(IncomePlan plan) async {
     try {
-      print('➕ 添加收入计划: ${plan.name}');
+      Logger.debug('➕ 添加收入计划: ${plan.name}');
       _incomePlans.add(plan);
       await _storageService.saveIncomePlans(_incomePlans);
       notifyListeners();
-      print('✅ 收入计划添加成功: ${plan.name}');
+      Logger.debug('✅ 收入计划添加成功: ${plan.name}');
     } catch (e) {
-      print('❌ 添加收入计划失败: $e');
+      Logger.debug('❌ 添加收入计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -150,7 +151,7 @@ class IncomePlanProvider with ChangeNotifier {
     String walletId,
   ) async {
     try {
-      print('💰 从工资创建收入计划: ${salaryIncome.name}');
+      Logger.debug('💰 从工资创建收入计划: ${salaryIncome.name}');
 
       // 计算每月固定收入（扣除一次性奖金）
       final monthlyFixedIncome = _calculateMonthlyFixedIncome(salaryIncome);
@@ -183,11 +184,11 @@ class IncomePlanProvider with ChangeNotifier {
         await addIncomePlan(bonusPlan);
       }
 
-      print(
+      Logger.debug(
         '✅ 成功从工资创建收入计划: 每月固定 ¥$monthlyFixedIncome, 奖金 ${salaryIncome.bonuses.length} 项',
       );
     } catch (e) {
-      print('❌ 从工资创建收入计划失败: $e');
+      Logger.debug('❌ 从工资创建收入计划失败: $e');
       _error = e.toString();
       notifyListeners();
     }
@@ -245,16 +246,16 @@ class IncomePlanProvider with ChangeNotifier {
     final now = DateTime.now();
     final executedPlans = <IncomePlan>[];
 
-    print('🔄 开始自动执行收入计划，当前时间: $now');
+    Logger.debug('🔄 开始自动执行收入计划，当前时间: $now');
 
     for (final plan in activeIncomePlans) {
       if (_shouldExecutePlan(plan, now)) {
         try {
-          print('💰 执行收入计划: ${plan.name}');
+          Logger.debug('💰 执行收入计划: ${plan.name}');
           await _executeIncomePlan(plan, transactionProvider);
           executedPlans.add(plan);
         } catch (e) {
-          print('❌ 执行收入计划失败: ${plan.name}, 错误: $e');
+          Logger.debug('❌ 执行收入计划失败: ${plan.name}, 错误: $e');
         }
       }
     }
@@ -265,9 +266,9 @@ class IncomePlanProvider with ChangeNotifier {
         final updatedPlan = plan.copyWith(lastExecutionDate: now);
         await updateIncomePlan(updatedPlan);
       }
-      print('✅ 自动执行完成，共执行了 ${executedPlans.length} 个收入计划');
+      Logger.debug('✅ 自动执行完成，共执行了 ${executedPlans.length} 个收入计划');
     } else {
-      print('ℹ️ 没有需要执行的收入计划');
+      Logger.debug('ℹ️ 没有需要执行的收入计划');
     }
   }
 
@@ -311,7 +312,7 @@ class IncomePlanProvider with ChangeNotifier {
     );
 
     await transactionProvider.addTransaction(transaction);
-    print('✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}');
+    Logger.debug('✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}');
   }
 
   // 刷新数据
