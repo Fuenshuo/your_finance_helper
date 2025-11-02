@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
@@ -788,9 +789,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     Transaction transaction,
     BuildContext context,
   ) async {
-    print('✅ 交易已记录，账户余额将基于所有交易历史实时计算');
-    print('🔄 交易类型: ${transaction.type}, 金额: ${transaction.amount}');
-    print(
+    Logger.debug('✅ 交易已记录，账户余额将基于所有交易历史实时计算');
+    Logger.debug('🔄 交易类型: ${transaction.type}, 金额: ${transaction.amount}');
+    Logger.debug(
       '📊 账户IDs: from=${transaction.fromAccountId}, to=${transaction.toAccountId}',
     );
 
@@ -1085,15 +1086,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 保存交易
   Future<void> _saveTransaction() async {
-    print('🔄 开始保存交易');
-    print('📝 交易类型: $_selectedType');
-    print('📝 来源账户ID: $_selectedFromAccountId');
-    print('📝 目标账户ID: $_selectedToAccountId');
-    print('📝 金额: ${_amountController.text}');
-    print('📝 描述: ${_descriptionController.text}');
+    Logger.debug('🔄 开始保存交易');
+    Logger.debug('📝 交易类型: $_selectedType');
+    Logger.debug('📝 来源账户ID: $_selectedFromAccountId');
+    Logger.debug('📝 目标账户ID: $_selectedToAccountId');
+    Logger.debug('📝 金额: ${_amountController.text}');
+    Logger.debug('📝 描述: ${_descriptionController.text}');
 
     if (!_formKey.currentState!.validate()) {
-      print('❌ 表单验证失败');
+      Logger.debug('❌ 表单验证失败');
       return;
     }
 
@@ -1101,39 +1102,39 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     switch (_selectedType) {
       case TransactionType.income:
         if (_selectedAccountId == null) {
-          print('❌ 收入未选择目标账户');
+          Logger.debug('❌ 收入未选择目标账户');
           unifiedNotifications.showError(context, '请选择目标账户');
           return;
         }
 
       case TransactionType.expense:
         if (_selectedAccountId == null) {
-          print('❌ 支出未选择来源账户');
+          Logger.debug('❌ 支出未选择来源账户');
           unifiedNotifications.showError(context, '请选择来源账户');
           return;
         }
 
       case TransactionType.transfer:
         if (_selectedFromAccountId == null) {
-          print('❌ 转账未选择来源账户');
+          Logger.debug('❌ 转账未选择来源账户');
           unifiedNotifications.showError(context, '请选择来源账户');
           return;
         }
         if (_selectedToAccountId == null) {
-          print('❌ 转账未选择目标账户');
+          Logger.debug('❌ 转账未选择目标账户');
           unifiedNotifications.showError(context, '请选择目标账户');
           return;
         }
         // 转账不能在同一账户间进行
         if (_selectedFromAccountId == _selectedToAccountId) {
-          print('❌ 转账来源和目标账户不能相同');
+          Logger.debug('❌ 转账来源和目标账户不能相同');
           unifiedNotifications.showError(context, '来源账户和目标账户不能相同');
           return;
         }
     }
 
     final amount = double.parse(_amountController.text);
-    print('🎯 创建交易: type=$_selectedType, name=${_selectedType.name}');
+    Logger.debug('🎯 创建交易: type=$_selectedType, name=${_selectedType.name}');
     final transaction = Transaction(
       id: widget.editingTransaction?.id,
       description: _descriptionController.text.trim(),
@@ -1162,7 +1163,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       status: _isDraft ? TransactionStatus.draft : TransactionStatus.confirmed,
       isRecurring: _isRecurring,
     );
-    print('✅ 交易创建完成: ${transaction.toJson()}');
+    Logger.debug('✅ 交易创建完成: ${transaction.toJson()}');
 
     try {
       final transactionProvider = context.read<TransactionProvider>();
