@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// 奖金类型枚举
 enum BonusType {
@@ -218,7 +219,7 @@ class BonusItem extends Equatable {
   /// 计算指定年月的奖金金额
   double calculateMonthlyBonus(int year, int month) {
     final date = DateTime(year, month);
-    print('🎁 计算奖金月份: ${name}, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency');
+    Logger.debug('🎁 计算奖金月份: ${name}, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency');
 
     // 检查奖金是否在指定日期有效
     // 对于十三薪和年终奖，我们特殊处理日期检查
@@ -227,23 +228,23 @@ class BonusItem extends Equatable {
     } else if (type == BonusType.yearEndBonus && frequency == BonusFrequency.oneTime) {
       // 特殊处理一次性年终奖 - 只需检查年份
       if (startDate.year > year) {
-        print('  奖金开始年份在目标年份之后，返回0');
+        Logger.debug('  奖金开始年份在目标年份之后，返回0');
         return 0;
       }
       
       if (endDate != null && endDate!.year < year) {
-        print('  奖金结束年份在目标年份之前，返回0');
+        Logger.debug('  奖金结束年份在目标年份之前，返回0');
         return 0;
       }
     } else {
       // 其他奖金的日期检查
       if (startDate.isAfter(date)) {
-        print('  奖金开始日期在目标日期之后，返回0');
+        Logger.debug('  奖金开始日期在目标日期之后，返回0');
         return 0; // 奖金开始日期在目标日期之后
       }
 
       if (endDate != null && endDate!.isBefore(date)) {
-        print('  奖金结束日期在目标日期之前，返回0');
+        Logger.debug('  奖金结束日期在目标日期之前，返回0');
         return 0; // 奖金结束日期在目标日期之前
       }
     }
@@ -260,37 +261,37 @@ class BonusItem extends Equatable {
               : (attributionDate ?? startDate).month; // 如果没有归属日期，则使用开始日期的月份
               
           final result = (attributionDate ?? startDate).year <= year && bonusMonth == month ? amount : 0.0;
-          print('  一次性奖金(十三薪/回奖金): 月份=$bonusMonth, 结果=$result');
+          Logger.debug('  一次性奖金(十三薪/回奖金): 月份=$bonusMonth, 结果=$result');
           return result;
         } else if (type == BonusType.yearEndBonus) {
           // 一次性年终奖：在归属日期指定的月份发放
           // attributionDate表示奖金归属的日期，例如2025-04-15表示2025年4月获得的奖金
           final targetDate = attributionDate ?? startDate; // 如果没有归属日期，则使用开始日期
           final result = targetDate.year == year && targetDate.month == month ? amount : 0.0;
-          print('  一次性年终奖: 结果=$result');
+          Logger.debug('  一次性年终奖: 结果=$result');
           return result;
         }
         final result = startDate.year == year && startDate.month == month ? amount : 0.0;
-        print('  一次性奖金: 结果=$result');
+        Logger.debug('  一次性奖金: 结果=$result');
         return result;
       case BonusFrequency.monthly:
         // 月度奖金：每月发放
-        print('  月度奖金: 返回=$amount');
+        Logger.debug('  月度奖金: 返回=$amount');
         return amount;
       case BonusFrequency.quarterly:
         // 季度奖金：使用配置的发放月份
         final quarterlyMonths = quarterlyPaymentMonths ?? [3, 6, 9, 12];
-        print('  季度奖金配置月份: $quarterlyMonths');
+        Logger.debug('  季度奖金配置月份: $quarterlyMonths');
 
         // 如果当前月份不是配置的季度发放月份，返回0
         if (!quarterlyMonths.contains(month)) {
-          print('  当前月份不在季度发放月份中，返回0');
+          Logger.debug('  当前月份不在季度发放月份中，返回0');
           return 0.0;
         }
 
         // 检查是否已经过了发放次数
         if (paymentCount <= 0) {
-          print('  发放次数为0，返回0');
+          Logger.debug('  发放次数为0，返回0');
           return 0.0;
         }
 
@@ -304,25 +305,25 @@ class BonusItem extends Equatable {
         
         // 如果已经超过了发放次数，返回0
         if (expectedPayments > paymentCount) {
-          print('  已超过发放次数($expectedPayments > $paymentCount)，返回0');
+          Logger.debug('  已超过发放次数($expectedPayments > $paymentCount)，返回0');
           return 0.0;
         }
 
         final quarterlyAmount = amount / paymentCount; // 每次发放的季度金额
-        print('  季度奖金: 每次金额=$quarterlyAmount, 发放次数=$paymentCount');
+        Logger.debug('  季度奖金: 每次金额=$quarterlyAmount, 发放次数=$paymentCount');
 
         // 返回季度奖金金额
-        print('  季度奖金: 返回=$quarterlyAmount');
+        Logger.debug('  季度奖金: 返回=$quarterlyAmount');
         return quarterlyAmount;
       case BonusFrequency.semiAnnual:
         // 半年奖金：上半年6月，下半年12月
         final result = (month == 6 || month == 12) ? amount : 0.0;
-        print('  半年奖金: 月份=$month, 结果=$result');
+        Logger.debug('  半年奖金: 月份=$month, 结果=$result');
         return result;
       case BonusFrequency.annual:
         // 年度奖金：12月发放
         final result = month == 12 ? amount : 0.0;
-        print('  年度奖金: 月份=$month, 结果=$result');
+        Logger.debug('  年度奖金: 月份=$month, 结果=$result');
         return result;
     }
   }
