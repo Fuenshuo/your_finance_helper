@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
@@ -66,16 +67,16 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
   @override
   void initState() {
     super.initState();
-    print('📝 SalaryIncomeSetupScreen initState called');
+    Logger.debug('📝 SalaryIncomeSetupScreen initState called');
 
     if (widget.salaryIncomeToEdit != null) {
-      print(
+      Logger.debug(
           '📝 Initializing with existing salary income: ${widget.salaryIncomeToEdit!.name}');
-      print(
+      Logger.debug(
           '📝 Initial bonuses count: ${widget.salaryIncomeToEdit!.bonuses.length}');
       for (var i = 0; i < widget.salaryIncomeToEdit!.bonuses.length; i++) {
         final bonus = widget.salaryIncomeToEdit!.bonuses[i];
-        print(
+        Logger.debug(
             '  Bonus $i: ${bonus.name}, type: ${bonus.type}, amount: ${bonus.amount}');
       }
 
@@ -115,7 +116,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
   @override
   void dispose() {
-    print('📝 SalaryIncomeSetupScreen dispose called with bonuses: $_bonuses');
+    Logger.debug('📝 SalaryIncomeSetupScreen dispose called with bonuses: $_bonuses');
     _disposeControllers();
     super.dispose();
   }
@@ -201,7 +202,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
         ),
       );
     } catch (e) {
-      print('❌ 自动计算税费失败: $e');
+      Logger.debug('❌ 自动计算税费失败: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('❌ 自动计算失败，请手动填写'),
@@ -224,9 +225,9 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
   }
 
   Future<void> _saveIncome() async {
-    print('📝 Saving income with bonuses: $_bonuses');
+    Logger.debug('📝 Saving income with bonuses: $_bonuses');
     if (!_formKey.currentState!.validate()) {
-      print('❌ Form validation failed');
+      Logger.debug('❌ Form validation failed');
       return;
     }
 
@@ -239,8 +240,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
           Provider.of<BudgetProvider>(context, listen: false);
 
       if (widget.salaryIncomeToEdit != null) {
-        print('📝 Updating existing salary income');
-        print('📝 Original salary income ID: ${widget.salaryIncomeToEdit!.id}');
+        Logger.debug('📝 Updating existing salary income');
+        Logger.debug('📝 Original salary income ID: ${widget.salaryIncomeToEdit!.id}');
         // 编辑模式：更新现有工资收入
         final updatedIncome = widget.salaryIncomeToEdit!.copyWith(
           name: _nameController.text.trim(),
@@ -272,9 +273,9 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
           updateDate: DateTime.now(),
         );
         await budgetProvider.updateSalaryIncome(updatedIncome);
-        print('✅ Salary income updated successfully');
+        Logger.debug('✅ Salary income updated successfully');
       } else {
-        print('📝 Creating new salary income');
+        Logger.debug('📝 Creating new salary income');
         // 创建模式：创建新工资收入
         await budgetProvider.createSalaryIncome(
           name: _nameController.text.trim(),
@@ -304,7 +305,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
               _salaryHistory.isNotEmpty ? _salaryHistory : null, // 工资历史
           bonuses: _bonuses,
         );
-        print('✅ New salary income created successfully');
+        Logger.debug('✅ New salary income created successfully');
       }
 
       if (mounted) {
@@ -315,7 +316,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      print('❌ Error saving salary income: $e');
+      Logger.debug('❌ Error saving salary income: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -337,7 +338,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                print('📝 Save button pressed in app bar');
+                Logger.debug('📝 Save button pressed in app bar');
                 _saveIncome();
               },
               child: _isLoading
@@ -466,11 +467,11 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                   BonusManagementWidget(
                     bonuses: _bonuses,
                     onBonusesChanged: (bonuses) {
-                      print(
+                      Logger.debug(
                           '📝 onBonusesChanged called with ${bonuses.length} bonuses');
                       for (var i = 0; i < bonuses.length; i++) {
                         final bonus = bonuses[i];
-                        print(
+                        Logger.debug(
                             '  Bonus ${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
                       }
                       setState(() {
