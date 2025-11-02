@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_history.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/services/asset_history_service.dart';
@@ -32,7 +33,7 @@ class AssetProvider with ChangeNotifier {
 
   // 加载资产数据 - 优先从Drift加载，如果失败则从SharedPreferences加载
   Future<void> loadAssets() async {
-    print('🔄 开始加载资产数据...');
+    Logger.debug('🔄 开始加载资产数据...');
     try {
       // 首先尝试从Drift数据库加载
       try {
@@ -40,40 +41,40 @@ class AssetProvider with ChangeNotifier {
         final driftAssets = await driftService.getAssets();
         if (driftAssets.isNotEmpty) {
           _assets = driftAssets;
-          print('✅ 从Drift数据库加载资产数据成功，共${_assets.length}个资产');
+          Logger.debug('✅ 从Drift数据库加载资产数据成功，共${_assets.length}个资产');
           _isInitialized = true;
           notifyListeners();
           return;
         }
       } catch (e) {
-        print('⚠️ Drift数据库加载失败，尝试从SharedPreferences加载: $e');
+        Logger.debug('⚠️ Drift数据库加载失败，尝试从SharedPreferences加载: $e');
       }
 
       // 如果Drift加载失败或为空，从SharedPreferences加载
       if (_storageService == null) {
-        print('❌ 存储服务未初始化');
+        Logger.debug('❌ 存储服务未初始化');
         return;
       }
 
       _assets = await _storageService!.getAssets();
-      print('✅ 从SharedPreferences加载资产数据，共${_assets.length}个资产');
+      Logger.debug('✅ 从SharedPreferences加载资产数据，共${_assets.length}个资产');
 
       // 打印每个资产的详细信息
       for (var i = 0; i < _assets.length; i++) {
         final asset = _assets[i];
-        print(
+        Logger.debug(
           '📊 资产${i + 1}: ${asset.name} - ${asset.amount} (${asset.category.displayName})',
         );
       }
 
       if (_assets.isEmpty) {
-        print('⚠️ 没有找到任何资产数据');
+        Logger.debug('⚠️ 没有找到任何资产数据');
       }
 
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
-      print('❌ 加载资产数据失败: $e');
+      Logger.debug('❌ 加载资产数据失败: $e');
       _assets = [];
       _isInitialized = true;
       notifyListeners();
@@ -83,20 +84,20 @@ class AssetProvider with ChangeNotifier {
   // 添加资产
   Future<void> addAsset(AssetItem asset) async {
     if (_storageService == null) {
-      print('❌ 存储服务未初始化，无法添加资产');
+      Logger.debug('❌ 存储服务未初始化，无法添加资产');
       return;
     }
 
-    print('➕ 开始添加资产: ${asset.name} - ${asset.amount}');
-    print('➕ 添加前资产总数: ${_assets.length}');
+    Logger.debug('➕ 开始添加资产: ${asset.name} - ${asset.amount}');
+    Logger.debug('➕ 添加前资产总数: ${_assets.length}');
 
     try {
       await _storageService!.addAsset(asset);
-      print('✅ 资产已保存到存储服务');
+      Logger.debug('✅ 资产已保存到存储服务');
 
       _assets.add(asset);
-      print('✅ 资产已添加到内存列表');
-      print('➕ 添加后资产总数: ${_assets.length}');
+      Logger.debug('✅ 资产已添加到内存列表');
+      Logger.debug('➕ 添加后资产总数: ${_assets.length}');
 
       // 记录历史
       await _historyService?.recordAssetChange(
@@ -105,12 +106,12 @@ class AssetProvider with ChangeNotifier {
         changeType: AssetChangeType.created,
         description: '新增资产: ${asset.name}',
       );
-      print('✅ 资产历史记录已保存');
+      Logger.debug('✅ 资产历史记录已保存');
 
       notifyListeners();
-      print('✅ 界面已更新');
+      Logger.debug('✅ 界面已更新');
     } catch (e) {
-      print('❌ 添加资产失败: $e');
+      Logger.debug('❌ 添加资产失败: $e');
       rethrow;
     }
   }
