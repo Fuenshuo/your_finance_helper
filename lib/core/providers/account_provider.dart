@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
@@ -146,12 +147,12 @@ class AccountProvider with ChangeNotifier {
   Future<void> migrateAccountBalancesToTransactions(
     TransactionProvider transactionProvider,
   ) async {
-    print('🔄 开始迁移账户余额到交易记录...');
+    Logger.debug('🔄 开始迁移账户余额到交易记录...');
 
     for (final account in _accounts) {
       // 如果账户有余额且没有初始余额记录，创建初始化交易
       if (account.balance > 0 && account.initialBalance == 0) {
-        print('📝 为账户 ${account.name} 创建初始化交易，金额: ${account.balance}');
+        Logger.debug('📝 为账户 ${account.name} 创建初始化交易，金额: ${account.balance}');
 
         // 使用更早的日期避免计入当月统计
         final initDate =
@@ -175,11 +176,11 @@ class AccountProvider with ChangeNotifier {
         final updatedAccount = account.copyWith(balance: 0.0);
         await updateAccount(updatedAccount);
 
-        print('✅ 账户 ${account.name} 初始化完成');
+        Logger.debug('✅ 账户 ${account.name} 初始化完成');
       }
     }
 
-    print('✅ 账户余额迁移完成');
+    Logger.debug('✅ 账户余额迁移完成');
   }
 
   // 创建账户初始化交易（当设置初始余额时）
@@ -204,7 +205,7 @@ class AccountProvider with ChangeNotifier {
         .toList();
 
     if (existingTransactions.isNotEmpty) {
-      print('⚠️ 账户 ${account.name} 已经存在初始化交易，跳过创建');
+      Logger.debug('⚠️ 账户 ${account.name} 已经存在初始化交易，跳过创建');
       return existingTransactions.first;
     }
 
@@ -236,7 +237,7 @@ class AccountProvider with ChangeNotifier {
   @deprecated
   Future<void> updateAccountBalance(String accountId, double newBalance) async {
     // 这个方法不应该被使用，余额应该通过交易自动计算
-    print('⚠️ 警告: 不应该直接调用updateAccountBalance，余额应该通过交易自动计算');
+    Logger.debug('⚠️ 警告: 不应该直接调用updateAccountBalance，余额应该通过交易自动计算');
   }
 
   // 根据ID获取账户
