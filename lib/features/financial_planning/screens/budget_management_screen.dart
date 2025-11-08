@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
@@ -28,10 +29,20 @@ class BudgetManagementScreen extends StatefulWidget {
 class _BudgetManagementScreenState extends State<BudgetManagementScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late final IOSAnimationSystem _animationSystem;
 
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册预算管理专用动画曲线
+    IOSAnimationSystem.registerCustomCurve('budget-progress', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('envelope-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('tab-transition', Curves.fastOutSlowIn);
+
     _tabController = TabController(
       length: 4,
       vsync: this,
@@ -42,6 +53,7 @@ class _BudgetManagementScreenState extends State<BudgetManagementScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _animationSystem.dispose();
     super.dispose();
   }
 
@@ -104,8 +116,7 @@ class _BudgetManagementScreenState extends State<BudgetManagementScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 预算总览卡片
-                  AppAnimations.animatedListItem(
-                    index: 0,
+                  _animationSystem.iosListItem(
                     child: _buildBudgetOverviewCard(
                       totalAllocated: totalAllocated,
                       totalSpent: totalSpent,
@@ -117,8 +128,7 @@ class _BudgetManagementScreenState extends State<BudgetManagementScreen>
 
                   // 当前零基预算
                   if (currentZeroBased != null) ...[
-                    AppAnimations.animatedListItem(
-                      index: 1,
+                    _animationSystem.iosListItem(
                       child: _buildCurrentZeroBasedCard(currentZeroBased),
                     ),
                     SizedBox(height: context.spacing16),
@@ -126,8 +136,7 @@ class _BudgetManagementScreenState extends State<BudgetManagementScreen>
 
                   // 信封预算列表
                   if (currentEnvelopes.isNotEmpty) ...[
-                    AppAnimations.animatedListItem(
-                      index: 2,
+                    _animationSystem.iosListItem(
                       child: _buildEnvelopeListHeader(),
                     ),
                     SizedBox(height: context.spacing8),
@@ -143,8 +152,7 @@ class _BudgetManagementScreenState extends State<BudgetManagementScreen>
 
                   // 无预算提示
                   if (currentEnvelopes.isEmpty && currentZeroBased == null) ...[
-                    AppAnimations.animatedListItem(
-                      index: 1,
+                    _animationSystem.iosListItem(
                       child: _buildNoBudgetCard(),
                     ),
                   ],
@@ -756,9 +764,9 @@ class _BudgetManagementScreenState extends State<BudgetManagementScreen>
 
   // 显示创建预算选项
   void _showCreateBudgetOptions(BuildContext context) {
-    AppAnimations.showAppModalBottomSheet(
+    _animationSystem.showIOSModal(
       context: context,
-      child: Container(
+      builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
         child: Column(
           mainAxisSize: MainAxisSize.min,

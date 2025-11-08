@@ -29,6 +29,20 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   DateTime? _filterEndDate;
   String? _filterAccountId;
   bool _showFilters = false;
+  bool _isBulkSelectMode = false;
+  final Set<String> _selectedTransactionIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ===== v1.1.0 初始化列表页面动效系统 =====
+    IOSAnimationSystem.registerCustomCurve('transaction-list-item', Curves.easeOutCubic);
+    IOSAnimationSystem.registerCustomCurve('search-result-highlight', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('bulk-select-feedback', Curves.bounceOut);
+    IOSAnimationSystem.registerCustomCurve('infinite-scroll-load', Curves.easeInOut);
+    IOSAnimationSystem.registerCustomCurve('filter-expand-animation', Curves.fastOutSlowIn);
+  }
 
   @override
   void dispose() {
@@ -75,6 +89,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         },
                       ),
               ),
+
+              // ===== v1.1.0 新增：批量操作底部栏 =====
+              if (_isBulkSelectMode && _selectedTransactionIds.isNotEmpty)
+                _buildBulkActionBar(),
             ],
           );
         },
@@ -115,7 +133,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
             SizedBox(height: context.responsiveSpacing12),
 
-            // 筛选按钮
+            // 筛选和批量操作按钮
             Row(
               children: [
                 Expanded(
@@ -132,8 +150,25 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: context.responsiveSpacing12),
-                if (_hasActiveFilters())
+                SizedBox(width: context.responsiveSpacing8),
+                // ===== v1.1.0 新增：批量选择按钮 =====
+                _animationSystem.iosBulkSelectBounce(
+                  child: OutlinedButton.icon(
+                    onPressed: () => setState(() => _isBulkSelectMode = !_isBulkSelectMode),
+                    icon: Icon(_isBulkSelectMode ? Icons.check_circle : Icons.check_circle_outline),
+                    label: Text(_isBulkSelectMode ? '完成' : '多选'),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: context.primaryAction.withOpacity(0.3)),
+                      foregroundColor: context.primaryAction,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  isSelected: _isBulkSelectMode,
+                ),
+                if (_hasActiveFilters() || _isBulkSelectMode) ...[
+                  SizedBox(width: context.responsiveSpacing8),
                   OutlinedButton.icon(
                     onPressed: _clearFilters,
                     icon: const Icon(Icons.clear),
@@ -146,14 +181,22 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                       ),
                     ),
                   ),
+                ],
               ],
             ),
 
-            // 筛选选项
-            if (_showFilters) ...[
-              SizedBox(height: context.responsiveSpacing16),
-              _buildFilterOptions(),
-            ],
+            // ===== v1.1.0 筛选选项（带展开动效）=====
+            _animationSystem.iosFilterExpandCollapse(
+              child: Column(
+                children: [
+                  if (_showFilters) ...[
+                    SizedBox(height: context.responsiveSpacing16),
+                    _buildFilterOptions(),
+                  ],
+                ],
+              ),
+              isExpanded: _showFilters,
+            ),
           ],
         ),
       );
@@ -342,7 +385,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     );
   }
 
-  // 构建交易项
+  // ===== v1.1.0 重构：构建交易项（支持批量选择和搜索高亮）=====
   Widget _buildTransactionItem(
     Transaction transaction,
     List<Account> accounts,
@@ -357,27 +400,54 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             ),
     );
 
-    final transactionItem = _animationSystem.iosListItem(
-      child: Row(
-        children: [
-          // 图标
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: _getTransactionTypeColor(
-              transaction.type ?? TransactionType.income,
-            ).withOpacity(0.1),
-            child: Icon(
-              _getCategoryIcon(transaction.category),
-              size: 20,
-              color: _getTransactionTypeColor(
-                transaction.type ?? TransactionType.income,
-              ),
+    // 检查是否匹配搜索关键词（用于高亮）
+    final isSearchMatch = _searchController.text.isNotEmpty &&
+        (transaction.description.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+         (transaction.notes?.toLowerCase().contains(_searchController.text.toLowerCase()) ?? false));
+
+    // 构建交易项主体
+    final transactionContent = Row(
+      children: [
+        // ===== v1.1.0 批量选择复选框 =====
+        if (_isBulkSelectMode) ...[
+          _animationSystem.iosBulkSelectBounce(
+            child: Checkbox(
+              value: _selectedTransactionIds.contains(transaction.id),
+              onChanged: (selected) {
+                setState(() {
+                  if (selected ?? false) {
+                    _selectedTransactionIds.add(transaction.id);
+                  } else {
+                    _selectedTransactionIds.remove(transaction.id);
+                  }
+                });
+              },
+              activeColor: context.primaryAction,
             ),
+            isSelected: _selectedTransactionIds.contains(transaction.id),
           ),
           SizedBox(width: context.responsiveSpacing12),
+        ],
 
-          // 交易信息
-          Expanded(
+        // 图标
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: _getTransactionTypeColor(
+            transaction.type ?? TransactionType.income,
+          ).withOpacity(0.1),
+          child: Icon(
+            _getCategoryIcon(transaction.category),
+            size: 20,
+            color: _getTransactionTypeColor(
+              transaction.type ?? TransactionType.income,
+            ),
+          ),
+        ),
+        SizedBox(width: context.responsiveSpacing12),
+
+        // 交易信息（带搜索高亮动效）
+        Expanded(
+          child: _animationSystem.iosSearchHighlight(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -405,38 +475,112 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 ),
               ],
             ),
+            isHighlighted: isSearchMatch,
           ),
+        ),
 
-          // 金额
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                context.formatAmount(transaction.amount),
-                style: context.mobileBody.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: _getTransactionTypeColor(
-                    transaction.type ?? TransactionType.income,
-                  ),
+        // 金额
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              context.formatAmount(transaction.amount),
+              style: context.mobileBody.copyWith(
+                fontWeight: FontWeight.bold,
+                color: _getTransactionTypeColor(
+                  transaction.type ?? TransactionType.income,
                 ),
               ),
-              Text(
-                DateFormat('HH:mm').format(transaction.date),
-                style: context.mobileCaption,
-              ),
-            ],
-          ),
-        ],
-      ),
-      onTap: () => _viewTransactionDetail(transaction),
+            ),
+            Text(
+              DateFormat('HH:mm').format(transaction.date),
+              style: context.mobileCaption,
+            ),
+          ],
+        ),
+      ],
     );
 
-    // 使用SwipeActionItem包装实现左滑删除
-    return SwipeActionItem(
-      action: SwipeAction.delete(() => _deleteTransaction(transaction)),
+    // 构建可点击的交易项
+    final transactionItem = _animationSystem.iosListItem(
+      child: transactionContent,
+      onTap: _isBulkSelectMode
+          ? () {
+              // 批量选择模式：点击切换选中状态
+              setState(() {
+                if (_selectedTransactionIds.contains(transaction.id)) {
+                  _selectedTransactionIds.remove(transaction.id);
+                } else {
+                  _selectedTransactionIds.add(transaction.id);
+                }
+              });
+            }
+          : () => _viewTransactionDetail(transaction), // 正常模式：查看详情
+    );
+
+    // ===== v1.1.0 使用新的滑动删除动效 =====
+    return _animationSystem.iosSwipeableListItem(
       child: transactionItem,
+      action: SwipeAction.delete(() => _deleteTransaction(transaction)),
+      onTap: _isBulkSelectMode ? () {
+        setState(() {
+          if (_selectedTransactionIds.contains(transaction.id)) {
+            _selectedTransactionIds.remove(transaction.id);
+          } else {
+            _selectedTransactionIds.add(transaction.id);
+          }
+        });
+      } : () => _viewTransactionDetail(transaction),
     );
   }
+
+  // ===== v1.1.0 新增：批量操作底部栏 =====
+  Widget _buildBulkActionBar() => Container(
+    padding: EdgeInsets.all(context.responsiveSpacing16),
+    decoration: BoxDecoration(
+      color: context.primaryBackground,
+      border: Border(
+        top: BorderSide(color: context.dividerColor, width: 1),
+      ),
+    ),
+    child: Row(
+      children: [
+        // 选中数量提示
+        Text(
+          '已选择 ${_selectedTransactionIds.length} 项',
+          style: context.mobileBody.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const Spacer(),
+        // 批量删除按钮
+        TextButton.icon(
+          onPressed: () => _showBulkDeleteConfirmation(context),
+          icon: const Icon(Icons.delete_outline, color: Colors.red),
+          label: const Text('删除', style: TextStyle(color: Colors.red)),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.responsiveSpacing16,
+              vertical: context.responsiveSpacing8,
+            ),
+          ),
+        ),
+        SizedBox(width: context.responsiveSpacing8),
+        // 批量导出按钮
+        TextButton.icon(
+          onPressed: () => _exportSelectedTransactions(),
+          icon: Icon(Icons.download_outlined, color: context.primaryAction),
+          label: Text('导出', style: TextStyle(color: context.primaryAction)),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.responsiveSpacing16,
+              vertical: context.responsiveSpacing8,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
   // 空状态
   Widget _buildEmptyState() => Center(
@@ -543,15 +687,17 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     return Map.fromEntries(sortedEntries);
   }
 
-  // 检查是否有活跃的筛选条件
+  // ===== v1.1.0 重构：检查是否有活跃的筛选条件或批量选择 =====
   bool _hasActiveFilters() =>
       _filterType != null ||
       _filterCategory != null ||
       _filterStartDate != null ||
       _filterEndDate != null ||
-      _filterAccountId != null;
+      _filterAccountId != null ||
+      _isBulkSelectMode ||
+      _selectedTransactionIds.isNotEmpty;
 
-  // 清除筛选条件
+  // ===== v1.1.0 重构：清除筛选条件和批量选择状态 =====
   void _clearFilters() {
     setState(() {
       _filterType = null;
@@ -559,6 +705,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       _filterStartDate = null;
       _filterEndDate = null;
       _filterAccountId = null;
+      _isBulkSelectMode = false;
+      _selectedTransactionIds.clear();
     });
   }
 
@@ -673,5 +821,70 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
     // 执行删除操作
     transactionProvider.deleteTransaction(transaction.id);
+  }
+
+  // ===== v1.1.0 新增：批量操作方法 =====
+
+  // 显示批量删除确认对话框
+  void _showBulkDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('批量删除'),
+        content: Text('确定要删除选中的 ${_selectedTransactionIds.length} 笔交易吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _executeBulkDelete();
+            },
+            child: Text(
+              '删除',
+              style: TextStyle(color: context.increaseColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 执行批量删除
+  void _executeBulkDelete() {
+    final transactionProvider = context.read<TransactionProvider>();
+
+    // 批量删除选中的交易
+    for (final transactionId in _selectedTransactionIds) {
+      transactionProvider.deleteTransaction(transactionId);
+    }
+
+    // 显示删除成功提示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已批量删除 ${_selectedTransactionIds.length} 笔交易'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    // 清除选择状态
+    setState(() {
+      _selectedTransactionIds.clear();
+      _isBulkSelectMode = false;
+    });
+  }
+
+  // 批量导出选中的交易
+  void _exportSelectedTransactions() {
+    // TODO: 实现批量导出功能
+    // 这里可以导出为CSV、JSON等格式
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('批量导出功能即将上线'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 }

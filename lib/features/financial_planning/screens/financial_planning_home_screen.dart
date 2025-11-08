@@ -123,7 +123,7 @@ class _FinancialPlanningHomeScreenState
                             ...dueTodayPlans.map((plan) {
                               final loanAccount = accountProvider.accounts
                                   .where((account) =>
-                                      account.id == plan.loanAccountId)
+                                      account.id == plan.loanAccountId,)
                                   .firstOrNull;
 
                               return Padding(
@@ -184,7 +184,7 @@ class _FinancialPlanningHomeScreenState
                                   .inDays;
                               final loanAccount = accountProvider.accounts
                                   .where((account) =>
-                                      account.id == plan.loanAccountId)
+                                      account.id == plan.loanAccountId,)
                                   .firstOrNull;
 
                               return Padding(
@@ -290,13 +290,13 @@ class _FinancialPlanningHomeScreenState
                                             .autoExecuteIncomePlans(
                                           Provider.of<TransactionProvider>(
                                               context,
-                                              listen: false),
+                                              listen: false,),
                                         );
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             const SnackBar(
-                                                content: Text('收入计划执行完成')),
+                                                content: Text('收入计划执行完成'),),
                                           );
                                         }
                                       } catch (e) {

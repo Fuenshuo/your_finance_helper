@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/asset_history.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/services/asset_history_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 
 class AssetHistoryScreen extends StatefulWidget {
   const AssetHistoryScreen({super.key});
@@ -19,11 +22,27 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
   List<AssetHistory> _history = [];
   Map<String, dynamic> _stats = {};
   bool _isLoading = true;
+  late final IOSAnimationSystem _animationSystem;
 
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册资产历史专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('history-list-item', Curves.easeOutCubic);
+    IOSAnimationSystem.registerCustomCurve('history-swipe-delete', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('history-stats-highlight', Curves.easeInOutCubic);
+
     _loadHistory();
+  }
+
+  @override
+  void dispose() {
+    _animationSystem.dispose();
+    super.dispose();
   }
 
   Future<void> _loadHistory() async {
@@ -150,92 +169,105 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
         ],
       );
 
+  // ===== v1.1.0 升级：历史记录列表（带动效）=====
   Widget _buildHistoryList() => ListView.builder(
         padding: EdgeInsets.all(context.responsiveSpacing16),
         itemCount: _history.length,
         itemBuilder: (context, index) {
           final history = _history[index];
-          return _buildHistoryItem(history);
+          return AppAnimations.animatedListItem(
+            index: index,
+            child: _buildHistoryItem(history),
+          );
         },
       );
 
-  Widget _buildHistoryItem(AssetHistory history) => AppCard(
-        margin: EdgeInsets.only(bottom: context.responsiveSpacing12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  _getChangeTypeIcon(history.changeType),
-                  color: _getChangeTypeColor(history.changeType),
-                  size: 20,
-                ),
-                SizedBox(width: context.responsiveSpacing8),
-                Expanded(
-                  child: Text(
-                    history.changeDescription ?? '资产变更',
-                    style: context.mobileBody.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+  // ===== v1.1.0 重构：历史记录项（支持滑动删除动效）=====
+  Widget _buildHistoryItem(AssetHistory history) {
+    final historyCard = AppCard(
+      margin: EdgeInsets.only(bottom: context.responsiveSpacing12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                _getChangeTypeIcon(history.changeType),
+                color: _getChangeTypeColor(history.changeType),
+                size: 20,
+              ),
+              SizedBox(width: context.responsiveSpacing8),
+              Expanded(
+                child: Text(
+                  history.changeDescription ?? '资产变更',
+                  style: context.mobileBody.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
-                ),
-                Text(
-                  DateFormat('MM-dd HH:mm').format(history.changeDate),
-                  style: context.mobileCaption,
-                ),
-              ],
-            ),
-            if (history.asset != null) ...[
-              SizedBox(height: context.responsiveSpacing8),
-              Container(
-                padding: EdgeInsets.all(context.responsiveSpacing8),
-                decoration: BoxDecoration(
-                  color: context.primaryBackground,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: context.dividerColor,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _getCategoryIcon(history.asset!.category),
-                      color: _getCategoryColor(history.asset!.category),
-                      size: 16,
-                    ),
-                    SizedBox(width: context.responsiveSpacing8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            history.asset!.name,
-                            style: context.mobileBody.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            '${history.asset!.category.displayName} • ${history.asset!.subCategory}',
-                            style: context.mobileCaption,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      context.formatAmount(history.asset!.amount),
-                      style: context.mobileBody.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: context.primaryAction,
-                      ),
-                    ),
-                  ],
                 ),
               ),
+              Text(
+                DateFormat('MM-dd HH:mm').format(history.changeDate),
+                style: context.mobileCaption,
+              ),
             ],
+          ),
+          if (history.asset != null) ...[
+            SizedBox(height: context.responsiveSpacing8),
+            Container(
+              padding: EdgeInsets.all(context.responsiveSpacing8),
+              decoration: BoxDecoration(
+                color: context.primaryBackground,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: context.dividerColor,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _getCategoryIcon(history.asset!.category),
+                    color: _getCategoryColor(history.asset!.category),
+                    size: 16,
+                  ),
+                  SizedBox(width: context.responsiveSpacing8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          history.asset!.name,
+                          style: context.mobileBody.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '${history.asset!.category.displayName} • ${history.asset!.subCategory}',
+                          style: context.mobileCaption,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    context.formatAmount(history.asset!.amount),
+                    style: context.mobileBody.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: context.primaryAction,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-      );
+        ],
+      ),
+    );
+
+    // ===== v1.1.0 使用新的滑动删除动效 =====
+    return _animationSystem.iosSwipeableListItem(
+      child: historyCard,
+      action: SwipeAction.delete(() => _deleteHistoryItem(history)),
+    );
+  }
 
   Widget _buildEmptyState() => Center(
         child: Column(
@@ -326,6 +358,61 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
         return Colors.purple;
       case AssetCategory.liabilities:
         return Colors.red;
+    }
+  }
+
+  // ===== v1.1.0 新增：删除历史记录项 =====
+  void _deleteHistoryItem(AssetHistory history) async {
+    if (_historyService == null) return;
+
+    // 显示删除确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除历史记录'),
+        content: Text('确定要删除"${history.changeDescription ?? '资产变更'}"的历史记录吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              '删除',
+              style: TextStyle(color: context.increaseColor),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _historyService!.deleteHistory(history.id);
+
+        // 显示删除成功提示
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('已删除历史记录"${history.changeDescription ?? '资产变更'}"'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+
+          // 重新加载历史记录
+          await _loadHistory();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('删除历史记录失败'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
     }
   }
 }

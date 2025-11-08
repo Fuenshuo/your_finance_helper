@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 
@@ -19,6 +20,7 @@ class EditAssetSheet extends StatefulWidget {
 
 class _EditAssetSheetState extends State<EditAssetSheet> {
   final _formKey = GlobalKey<FormState>();
+  late final IOSAnimationSystem _animationSystem;
   late TextEditingController _nameController;
   late TextEditingController _amountController;
   late TextEditingController _subCategoryController;
@@ -26,6 +28,15 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册资产编辑表单专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('asset-edit-focus', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('asset-edit-validation', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('asset-edit-success', Curves.elasticOut);
+
     _nameController = TextEditingController(text: widget.asset.name);
     _amountController =
         TextEditingController(text: widget.asset.amount.toString());
@@ -35,6 +46,7 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
 
   @override
   void dispose() {
+    _animationSystem.dispose();
     _nameController.dispose();
     _amountController.dispose();
     _subCategoryController.dispose();

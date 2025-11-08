@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
@@ -26,6 +27,7 @@ class MortgageCalculatorScreen extends StatefulWidget {
 
 class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
   final ChineseMortgageService _mortgageService = ChineseMortgageService();
+  // 使用单例模式获取动效系统实例
   final TextEditingController _propertyValueController =
       TextEditingController();
   final TextEditingController _downPaymentController = TextEditingController();
@@ -57,6 +59,11 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 注册房贷计算器专用动效曲线 =====
+    IOSAnimationSystem.registerCustomCurve('calculation-result', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('mortgage-progress', Curves.easeInOutCubic);
+
     if (widget.propertyValue != null) {
       _propertyValue = widget.propertyValue!;
       _propertyValueController.text = _propertyValue.toStringAsFixed(0);
@@ -192,7 +199,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
 
             // 贷款类型
             DropdownButtonFormField<MortgageType>(
-              value: _mortgageType,
+              initialValue: _mortgageType,
               decoration: InputDecoration(
                 labelText: '贷款类型',
                 border: OutlineInputBorder(
@@ -288,7 +295,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
                   SizedBox(width: context.spacing12),
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _gongjijinYears,
+                      initialValue: _gongjijinYears,
                       decoration: InputDecoration(
                         labelText: '年限',
                         labelStyle: const TextStyle(
@@ -358,7 +365,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
                   SizedBox(width: context.spacing12),
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _commercialYears,
+                      initialValue: _commercialYears,
                       decoration: InputDecoration(
                         labelText: '年限',
                         border: OutlineInputBorder(
@@ -501,7 +508,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
             // 贷款年限（仅在非组合贷款时显示）
             if (_mortgageType != MortgageType.combined) ...[
               DropdownButtonFormField<int>(
-                value: _loanYears,
+                initialValue: _loanYears,
                 decoration: InputDecoration(
                   labelText: '贷款年限',
                   border: OutlineInputBorder(
@@ -611,8 +618,7 @@ class _MortgageCalculatorScreenState extends State<MortgageCalculatorScreen> {
         ..._recommendations.asMap().entries.map((entry) {
           final index = entry.key;
           final recommendation = entry.value;
-          return AppAnimations.animatedListItem(
-            index: index,
+          return IOSAnimationSystem().iosListItem(
             child: _buildRecommendationCard(recommendation),
           );
         }),
@@ -1271,8 +1277,7 @@ class PaymentScheduleScreen extends StatelessWidget {
                 itemCount: result.paymentSchedule.length,
                 itemBuilder: (context, index) {
                   final item = result.paymentSchedule[index];
-                  return AppAnimations.animatedListItem(
-                    index: index,
+                  return IOSAnimationSystem().iosListItem(
                     child: _buildPaymentItem(context, item),
                   );
                 },

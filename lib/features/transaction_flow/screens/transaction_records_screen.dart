@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
+import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 
 /// 交易记录页面
 class TransactionRecordsScreen extends StatefulWidget {
@@ -17,9 +20,32 @@ class TransactionRecordsScreen extends StatefulWidget {
 class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
   String _selectedFilter = 'all'; // all, income, expense
   String _selectedTimeRange = 'month'; // week, month, quarter, year
+  String _searchText = '';
+  bool _isBulkSelectMode = false;
+  final Set<String> _selectedTransactionIds = {};
+  bool _showFilters = false;
 
+  final IOSAnimationSystem _animationSystem = IOSAnimationSystem();
   final List<String> _filters = ['all', 'income', 'expense'];
   final List<String> _timeRanges = ['week', 'month', 'quarter', 'year'];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    IOSAnimationSystem.registerCustomCurve('transaction-list-item', Curves.easeOutCubic);
+    IOSAnimationSystem.registerCustomCurve('search-result-highlight', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('bulk-select-feedback', Curves.bounceOut);
+    IOSAnimationSystem.registerCustomCurve('swipe-delete-feedback', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('filter-expand-animation', Curves.fastOutSlowIn);
+  }
+
+  @override
+  void dispose() {
+    _animationSystem.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -33,22 +59,46 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
           ),
           centerTitle: true,
           actions: [
-            IconButton(
-              onPressed: _showSearchDialog,
-              icon: const Icon(Icons.search),
-              tooltip: '搜索交易',
-            ),
-            IconButton(
-              onPressed: _showFilterDialog,
-              icon: const Icon(Icons.filter_list),
-              tooltip: '筛选',
-            ),
+            if (_isBulkSelectMode) ...[
+              // 批量删除按钮
+              IconButton(
+                onPressed: _selectedTransactionIds.isNotEmpty ? _deleteSelectedTransactions : null,
+                icon: const Icon(Icons.delete_forever),
+                tooltip: '删除选中的交易',
+                color: Colors.red,
+              ),
+              // 导出按钮
+              IconButton(
+                onPressed: _selectedTransactionIds.isNotEmpty ? _exportSelectedTransactions : null,
+                icon: const Icon(Icons.share),
+                tooltip: '导出选中的交易',
+              ),
+            ] else ...[
+              // 多选按钮
+              IconButton(
+                onPressed: _toggleBulkSelectMode,
+                icon: const Icon(Icons.checklist),
+                tooltip: '批量选择',
+              ),
+              // 搜索按钮
+              IconButton(
+                onPressed: _showSearchDialog,
+                icon: const Icon(Icons.search),
+                tooltip: '搜索交易',
+              ),
+              // 筛选按钮
+              IconButton(
+                onPressed: _toggleFilters,
+                icon: const Icon(Icons.filter_list),
+                tooltip: '筛选',
+              ),
+            ],
           ],
         ),
         body: Column(
           children: [
-            // 筛选栏
-            _buildFilterBar(),
+            // 搜索栏
+            _buildSearchAndFilterBar(),
 
             // 统计摘要
             _buildSummaryBar(),
@@ -61,61 +111,133 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
         ),
       );
 
-  Widget _buildFilterBar() => Container(
-        padding: EdgeInsets.all(context.responsiveSpacing16),
-        color: Colors.white,
-        child: Row(
-          children: [
-            // 类型筛选
-            Expanded(
-              child: DropdownButton<String>(
-                value: _selectedFilter,
-                isExpanded: true,
-                underline: const SizedBox(),
-                items: _filters
-                    .map(
-                      (filter) => DropdownMenuItem(
-                        value: filter,
-                        child: Text(
-                          _getFilterDisplayName(filter),
-                          style: context.textTheme.bodyMedium,
+  Widget _buildSearchAndFilterBar() => Column(
+        children: [
+          // 搜索栏
+          Container(
+            padding: EdgeInsets.all(context.responsiveSpacing16),
+            color: Colors.white,
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: '搜索交易描述、金额...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchText.isNotEmpty
+                    ? IconButton(
+                        onPressed: _clearSearch,
+                        icon: const Icon(Icons.clear),
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(context.responsiveSpacing12),
+                  borderSide: BorderSide(color: context.dividerColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(context.responsiveSpacing12),
+                  borderSide: BorderSide(color: context.dividerColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(context.responsiveSpacing12),
+                  borderSide: BorderSide(color: context.primaryColor, width: 2),
+                ),
+                filled: true,
+                fillColor: context.surfaceColor,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value;
+                });
+              },
+            ),
+          ),
+
+          // 多选模式栏
+          if (_isBulkSelectMode) _buildBulkActionBar(),
+
+          // 筛选选项（带展开动画）
+          _animationSystem.iosFilterExpandCollapse(
+            isExpanded: _showFilters,
+            child: Container(
+              padding: EdgeInsets.all(context.responsiveSpacing16),
+              color: context.surfaceColor,
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      // 类型筛选
+                      Expanded(
+                        child: DropdownButton<String>(
+                          value: _selectedFilter,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          items: _filters
+                              .map(
+                                (filter) => DropdownMenuItem(
+                                  value: filter,
+                                  child: Text(
+                                    _getFilterDisplayName(filter),
+                                    style: context.textTheme.bodyMedium,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedFilter = value ?? 'all';
+                            });
+                          },
                         ),
                       ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedFilter = value ?? 'all';
-                  });
-                },
+
+                      SizedBox(width: context.spacing16),
+
+                      // 时间范围筛选
+                      Expanded(
+                        child: DropdownButton<String>(
+                          value: _selectedTimeRange,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          items: _timeRanges
+                              .map(
+                                (range) => DropdownMenuItem(
+                                  value: range,
+                                  child: Text(
+                                    _getTimeRangeDisplayName(range),
+                                    style: context.textTheme.bodyMedium,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedTimeRange = value ?? 'month';
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
+          ),
+        ],
+      );
 
-            SizedBox(width: context.spacing16),
-
-            // 时间范围筛选
-            Expanded(
-              child: DropdownButton<String>(
-                value: _selectedTimeRange,
-                isExpanded: true,
-                underline: const SizedBox(),
-                items: _timeRanges
-                    .map(
-                      (range) => DropdownMenuItem(
-                        value: range,
-                        child: Text(
-                          _getTimeRangeDisplayName(range),
-                          style: context.textTheme.bodyMedium,
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedTimeRange = value ?? 'month';
-                  });
-                },
+  Widget _buildBulkActionBar() => Container(
+        padding: EdgeInsets.all(context.responsiveSpacing16),
+        color: context.primaryColor.withOpacity(0.1),
+        child: Row(
+          children: [
+            Text(
+              '已选择 ${_selectedTransactionIds.length} 项',
+              style: context.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
+            ),
+            const Spacer(),
+            TextButton(
+              onPressed: _clearSelection,
+              child: const Text('取消选择'),
             ),
           ],
         ),
@@ -250,8 +372,11 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
               _filterTransactionsByTimeRange(allTransactions);
 
           // 按类型筛选
-          final filteredTransactions =
+          final filteredByType =
               _filterTransactionsByType(filteredByTime);
+
+          // 按搜索文本筛选
+          final filteredTransactions = _filterTransactionsBySearch(filteredByType);
 
           if (filteredTransactions.isEmpty) {
             return Center(
@@ -274,7 +399,9 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
                     ),
                     SizedBox(height: context.spacing8),
                     Text(
-                      '开始记录您的第一笔交易吧',
+                      _searchText.isNotEmpty
+                          ? '没有找到匹配的交易记录'
+                          : '开始记录您的第一笔交易吧',
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: Colors.grey.shade500,
                       ),
@@ -289,7 +416,7 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
             padding: EdgeInsets.all(context.responsiveSpacing16),
             itemCount: filteredTransactions.length,
             itemBuilder: (context, index) =>
-                _buildRealTransactionItem(filteredTransactions[index]),
+                _buildTransactionItem(filteredTransactions[index]),
           );
         },
       );
@@ -341,33 +468,79 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
     }
   }
 
-  /// 构建真实交易项
-  Widget _buildRealTransactionItem(Transaction transaction) {
-    final isIncome = transaction.type == TransactionType.income;
+  /// 按搜索文本筛选交易
+  List<Transaction> _filterTransactionsBySearch(List<Transaction> transactions) {
+    if (_searchText.isEmpty) {
+      return transactions;
+    }
+
+    final searchLower = _searchText.toLowerCase();
+    return transactions.where((transaction) {
+      final description = transaction.description.toLowerCase();
+      final amount = transaction.amount.toString();
+      final accountName = _getAccountName(transaction.fromAccountId ?? '').toLowerCase();
+      final categoryName = transaction.category.displayName.toLowerCase();
+
+      return description.contains(searchLower) ||
+             amount.contains(searchLower) ||
+             accountName.contains(searchLower) ||
+             categoryName.contains(searchLower);
+    }).toList();
+  }
+
+  /// 构建交易项（支持批量选择、搜索高亮和滑动删除）
+  Widget _buildTransactionItem(Transaction transaction) {
+    final isIncome = transaction.type == TransactionType.income ||
+        (transaction.type == null && transaction.category.isIncome);
     final accountName = _getAccountName(transaction.fromAccountId ?? '');
     final categoryName = transaction.category.displayName;
     final timeStr = _formatTransactionTime(transaction.date);
     final amountStr = _formatTransactionAmount(transaction);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: context.spacing8),
-      padding: EdgeInsets.all(context.responsiveSpacing12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(context.responsiveSpacing8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _showTransactionDetail(transaction),
-        borderRadius: BorderRadius.circular(context.responsiveSpacing8),
+    // 检查是否匹配搜索
+    final isHighlighted = _searchText.isNotEmpty &&
+        (transaction.description.toLowerCase().contains(_searchText.toLowerCase()) ||
+         transaction.amount.toString().contains(_searchText) ||
+         accountName.toLowerCase().contains(_searchText.toLowerCase()) ||
+         categoryName.toLowerCase().contains(_searchText.toLowerCase()));
+
+    // 滑动删除动作
+    final swipeAction = SwipeAction(
+      icon: Icons.delete,
+      label: '删除',
+      backgroundColor: Colors.red,
+      iconColor: Colors.white,
+      onTap: () => _deleteTransaction(transaction),
+    );
+
+    return _animationSystem.iosSwipeableListItem(
+      child: Container(
+        margin: EdgeInsets.only(bottom: context.spacing8),
+        padding: EdgeInsets.all(context.responsiveSpacing12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(context.responsiveSpacing8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Row(
           children: [
+            // 批量选择复选框
+            if (_isBulkSelectMode)
+              _animationSystem.iosBulkSelectBounce(
+                isSelected: _selectedTransactionIds.contains(transaction.id),
+                child: Checkbox(
+                  value: _selectedTransactionIds.contains(transaction.id),
+                  onChanged: (value) => _toggleTransactionSelection(transaction.id),
+                  activeColor: context.primaryColor,
+                ),
+              ),
+
             // 交易图标
             Container(
               padding: EdgeInsets.all(context.responsiveSpacing8),
@@ -385,31 +558,39 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
 
             SizedBox(width: context.spacing12),
 
-            // 交易信息
+            // 交易信息（带搜索高亮）
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          transaction.description,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
+              child: _animationSystem.iosSearchHighlight(
+                isHighlighted: isHighlighted,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: _isBulkSelectMode
+                                ? () => _toggleTransactionSelection(transaction.id)
+                                : () => _showTransactionDetail(transaction),
+                            child: Text(
+                              transaction.description,
+                              style: context.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: context.spacing2),
-                  Text(
-                    '$accountName · $categoryName',
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: context.secondaryText,
+                      ],
                     ),
-                  ),
-                ],
+                    SizedBox(height: context.spacing2),
+                    Text(
+                      '$accountName · $categoryName',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -438,6 +619,10 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
           ],
         ),
       ),
+      action: swipeAction,
+      onTap: _isBulkSelectMode
+          ? () => _toggleTransactionSelection(transaction.id)
+          : () => _showTransactionDetail(transaction),
     );
   }
 
@@ -681,4 +866,146 @@ class _TransactionRecordsScreenState extends State<TransactionRecordsScreen> {
           ],
         ),
       );
+
+  // ===== 新的交互方法 =====
+
+  /// 切换批量选择模式
+  void _toggleBulkSelectMode() {
+    setState(() {
+      _isBulkSelectMode = !_isBulkSelectMode;
+      if (!_isBulkSelectMode) {
+        _selectedTransactionIds.clear();
+      }
+    });
+  }
+
+  /// 切换筛选展开状态
+  void _toggleFilters() {
+    setState(() {
+      _showFilters = !_showFilters;
+    });
+  }
+
+  /// 切换交易选择状态
+  void _toggleTransactionSelection(String transactionId) {
+    setState(() {
+      if (_selectedTransactionIds.contains(transactionId)) {
+        _selectedTransactionIds.remove(transactionId);
+      } else {
+        _selectedTransactionIds.add(transactionId);
+      }
+    });
+  }
+
+  /// 清除选择
+  void _clearSelection() {
+    setState(() {
+      _selectedTransactionIds.clear();
+      _isBulkSelectMode = false;
+    });
+  }
+
+  /// 清除搜索
+  void _clearSearch() {
+    setState(() {
+      _searchText = '';
+    });
+  }
+
+  /// 删除单笔交易
+  void _deleteTransaction(Transaction transaction) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除交易"${transaction.description}"吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final transactionProvider = context.read<TransactionProvider>();
+        await transactionProvider.deleteTransaction(transaction.id);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('交易已删除')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('删除失败: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  /// 删除选中的交易
+  void _deleteSelectedTransactions() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除选中的 ${_selectedTransactionIds.length} 笔交易吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final transactionProvider = context.read<TransactionProvider>();
+        for (final transactionId in _selectedTransactionIds) {
+          await transactionProvider.deleteTransaction(transactionId);
+        }
+
+        setState(() {
+          _selectedTransactionIds.clear();
+          _isBulkSelectMode = false;
+        });
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('已删除 ${_selectedTransactionIds.length} 笔交易')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('删除失败: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  /// 导出选中的交易
+  void _exportSelectedTransactions() {
+    // TODO: 实现导出功能
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('导出功能即将上线')),
+    );
+  }
 }

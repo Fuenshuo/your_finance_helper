@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
@@ -22,16 +23,27 @@ class TransactionManagementScreen extends StatefulWidget {
 class _TransactionManagementScreenState
     extends State<TransactionManagementScreen> with TickerProviderStateMixin {
   late TabController _tabController;
+  late final IOSAnimationSystem _animationSystem;
 
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册交易管理专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('filter-panel-slide', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('batch-action-feedback', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('tab-management-transition', Curves.fastOutSlowIn);
+
     _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _animationSystem.dispose();
     super.dispose();
   }
 
@@ -607,9 +619,9 @@ class _TransactionManagementScreenState
 
   // 显示添加交易选项
   void _showAddTransactionOptions(BuildContext context) {
-    AppAnimations.showAppModalBottomSheet(
+    _animationSystem.showIOSModal(
       context: context,
-      child: Container(
+      builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
         child: Column(
           mainAxisSize: MainAxisSize.min,

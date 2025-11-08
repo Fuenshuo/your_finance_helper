@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
@@ -7,7 +8,9 @@ import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 
 /// 还款历史页面
 class RepaymentHistoryScreen extends StatefulWidget {
@@ -18,6 +21,27 @@ class RepaymentHistoryScreen extends StatefulWidget {
 }
 
 class _RepaymentHistoryScreenState extends State<RepaymentHistoryScreen> {
+  late final IOSAnimationSystem _animationSystem;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册还款历史专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('repayment-list-item', Curves.easeOutCubic);
+    IOSAnimationSystem.registerCustomCurve('repayment-swipe-delete', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('repayment-progress-highlight', Curves.easeInOutCubic);
+  }
+
+  @override
+  void dispose() {
+    _animationSystem.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.primaryBackground,
@@ -208,7 +232,10 @@ class _RepaymentHistoryScreenState extends State<RepaymentHistoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppCard(
+        // ===== v1.1.0 添加动效包装 =====
+        AppAnimations.animatedListItem(
+          index: 0,
+          child: AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -289,6 +316,7 @@ class _RepaymentHistoryScreenState extends State<RepaymentHistoryScreen> {
             ],
           ),
         ),
+        ), // ===== v1.1.0 AppAnimations.animatedListItem结束 =====
 
         SizedBox(height: context.spacing12),
 
@@ -301,7 +329,12 @@ class _RepaymentHistoryScreenState extends State<RepaymentHistoryScreen> {
             ),
           ),
           SizedBox(height: context.spacing8),
-          ...transactions.map((transaction) => _buildTransactionItem(context, transaction)),
+          ...transactions.map(
+            (transaction) => AppAnimations.animatedListItem(
+              index: transactions.indexOf(transaction),
+              child: _buildTransactionItem(context, transaction),
+            ),
+          ),
         ] else ...[
           AppCard(
             child: Center(
@@ -323,46 +356,54 @@ class _RepaymentHistoryScreenState extends State<RepaymentHistoryScreen> {
     );
   }
 
-  /// 构建交易项
-  Widget _buildTransactionItem(BuildContext context, Transaction transaction) => AppCard(
-        child: Row(
-          children: [
-            const Icon(
-              Icons.check_circle,
+  /// ===== v1.1.0 重构：构建交易项（支持滑动删除动效）=====
+  Widget _buildTransactionItem(BuildContext context, Transaction transaction) {
+    final transactionCard = AppCard(
+      child: Row(
+        children: [
+          const Icon(
+            Icons.check_circle,
+            color: Color(0xFF4CAF50),
+            size: 20,
+          ),
+          SizedBox(width: context.spacing12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.description,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  '${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    color: context.secondaryText,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '¥${transaction.amount.toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
               color: Color(0xFF4CAF50),
-              size: 20,
             ),
-            SizedBox(width: context.spacing12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction.description,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    '${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}',
-                    style: TextStyle(
-                      color: context.secondaryText,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              '¥${transaction.amount.toStringAsFixed(0)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4CAF50),
-              ),
-            ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+
+    // ===== v1.1.0 使用新的滑动删除动效 =====
+    return _animationSystem.iosSwipeableListItem(
+      child: transactionCard,
+      action: SwipeAction.delete(() => _deleteRepaymentTransaction(transaction)),
+    );
+  }
 
   /// 获取还款交易
   List<Transaction> _getRepaymentTransactions(
@@ -381,4 +422,27 @@ class _RepaymentHistoryScreenState extends State<RepaymentHistoryScreen> {
   /// 计算总还款金额
   double _calculateTotalRepaymentAmount(List<Transaction> transactions) =>
       transactions.fold<double>(0, (sum, transaction) => sum + transaction.amount);
+
+  // ===== v1.1.0 新增：删除还款交易 =====
+  void _deleteRepaymentTransaction(Transaction transaction) {
+    final transactionProvider = context.read<TransactionProvider>();
+
+    // 显示删除成功提示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已删除还款记录"${transaction.description}"'),
+        action: SnackBarAction(
+          label: '撤销',
+          onPressed: () {
+            // 这里可以实现撤销功能，但暂时先不实现
+            // TODO: 实现撤销删除功能
+          },
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    // 执行删除操作
+    transactionProvider.deleteTransaction(transaction.id);
+  }
 }

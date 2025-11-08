@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:your_finance_flutter/core/animations/animation_config.dart';
 import 'package:your_finance_flutter/core/animations/animation_engine.dart';
 import 'package:your_finance_flutter/core/animations/ios_animation_sequence_builder.dart';
+import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 
 /// 企业级iOS动效系统
 /// 集成flutter_animate和自定义动效，提供企业级稳定性和性能
@@ -68,6 +69,14 @@ class IOSAnimationSystem {
     'fastOutSlowIn': Curves.fastOutSlowIn,
     'slowMiddle': Curves.slowMiddle,
     'decelerate': Curves.decelerate,
+    // ===== v1.1.0 新增：列表页面动效曲线 =====
+    'list-item-slide': Curves.easeOutCubic,
+    'swipe-delete-feedback': Curves.elasticOut,
+    'search-highlight': Curves.easeInOutCubic,
+    'bulk-select-bounce': Curves.bounceOut,
+    'infinite-scroll-fade': Curves.easeInOut,
+    'drag-sort-bounce': Curves.elasticIn,
+    'filter-expand-collapse': Curves.fastOutSlowIn,
   };
 
   // ===== v1.1.0 新功能：iOS 18特性 =====
@@ -383,7 +392,17 @@ class IOSAnimationSystem {
         transitionDuration:
             _currentTheme.adjustDuration(IOSAnimationConfig.normal),
         pageBuilder: (context, animation, secondaryAnimation) =>
-            builder(context),
+            Material(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 400,
+                    maxHeight: MediaQuery.of(context).size.height * 0.8,
+                  ),
+                  child: builder(context),
+                ),
+              ),
+            ),
         transitionBuilder: (context, animation, secondaryAnimation, child) =>
             ScaleTransition(
           scale: Tween<double>(
@@ -435,6 +454,133 @@ class IOSAnimationSystem {
       completer.complete();
       _pendingAnimations.remove(animationId);
     }
+  }
+
+  // ===== v1.1.0 新增：列表页面专用动效方法 =====
+
+  /// 创建带有滑动删除反馈的列表项
+  Widget iosSwipeableListItem({
+    required Widget child,
+    required SwipeAction action,
+    VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    double actionWidth = 120.0,
+    Duration animationDuration = const Duration(milliseconds: 300),
+  }) {
+    return SwipeActionItem(
+      action: action,
+      actionWidth: actionWidth,
+      child: iosListItem(
+        child: child,
+        isLast: false,
+        onTap: onTap,
+        onLongPress: onLongPress,
+      ),
+    )
+        .animate(
+          target: onTap != null ? 1.0 : 0.0,
+        )
+        .scale(
+          begin: const Offset(1.0, 1.0),
+          end: const Offset(0.98, 0.98),
+          curve: IOSAnimationSystem.getCustomCurve('swipe-delete-feedback') ?? Curves.elasticOut,
+          duration: animationDuration,
+        );
+  }
+
+  /// 搜索高亮动效
+  Widget iosSearchHighlight({
+    required Widget child,
+    required bool isHighlighted,
+    Color highlightColor = Colors.yellow,
+    Duration duration = const Duration(milliseconds: 400),
+  }) {
+    return Container(
+      child: child,
+    ).animate(
+      target: isHighlighted ? 1.0 : 0.0,
+    ).tint(
+      color: highlightColor.withOpacity(0.3),
+      curve: IOSAnimationSystem.getCustomCurve('search-highlight') ?? Curves.easeInOutCubic,
+      duration: duration,
+    );
+  }
+
+  /// 批量选择弹跳动效
+  Widget iosBulkSelectBounce({
+    required Widget child,
+    required bool isSelected,
+    Duration duration = const Duration(milliseconds: 300),
+  }) {
+    return child.animate(
+      target: isSelected ? 1.0 : 0.0,
+    ).scale(
+      begin: const Offset(1.0, 1.0),
+      end: const Offset(1.05, 1.05),
+      curve: IOSAnimationSystem.getCustomCurve('bulk-select-bounce') ?? Curves.bounceOut,
+      duration: duration,
+    );
+  }
+
+  /// 无限滚动淡入动效
+  Widget iosInfiniteScrollFade({
+    required Widget child,
+    required bool isVisible,
+    double beginOpacity = 0.0,
+    double endOpacity = 1.0,
+    Duration duration = const Duration(milliseconds: 500),
+  }) {
+    return child.animate(
+      target: isVisible ? 1.0 : 0.0,
+    ).fade(
+      begin: beginOpacity,
+      end: endOpacity,
+      curve: IOSAnimationSystem.getCustomCurve('infinite-scroll-fade') ?? Curves.easeInOut,
+      duration: duration,
+    );
+  }
+
+  /// 拖拽排序弹跳反馈
+  Widget iosDragSortBounce({
+    required Widget child,
+    required bool isDragging,
+    double elevation = 8.0,
+    Duration duration = const Duration(milliseconds: 200),
+  }) {
+    return child.animate(
+      target: isDragging ? 1.0 : 0.0,
+    ).elevation(
+      begin: 2.0,
+      end: elevation,
+      curve: IOSAnimationSystem.getCustomCurve('drag-sort-bounce') ?? Curves.elasticIn,
+      duration: duration,
+    ).scale(
+      begin: const Offset(1.0, 1.0),
+      end: const Offset(1.02, 1.02),
+      curve: IOSAnimationSystem.getCustomCurve('drag-sort-bounce') ?? Curves.elasticIn,
+      duration: duration,
+    );
+  }
+
+  /// 筛选展开/折叠动效
+  Widget iosFilterExpandCollapse({
+    required Widget child,
+    required bool isExpanded,
+    Duration duration = const Duration(milliseconds: 350),
+  }) {
+    return child.animate(
+      target: isExpanded ? 1.0 : 0.0,
+    ).slideY(
+      begin: -0.2,
+      end: 0.0,
+      curve: IOSAnimationSystem.getCustomCurve('filter-expand-collapse') ?? Curves.fastOutSlowIn,
+      duration: duration,
+    ).fade(
+      begin: 0.0,
+      end: 1.0,
+      curve: IOSAnimationSystem.getCustomCurve('filter-expand-collapse') ?? Curves.fastOutSlowIn,
+      duration: duration,
+    );
   }
 }
 

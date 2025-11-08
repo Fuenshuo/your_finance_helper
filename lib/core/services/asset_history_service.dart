@@ -129,6 +129,14 @@ class AssetHistoryService {
     await _prefs!.remove(_historyKey);
   }
 
+  // 删除特定历史记录
+  Future<void> deleteHistory(String historyId) async {
+    final histories = await getAssetHistory();
+    histories.removeWhere((history) => history.id == historyId);
+
+    await _saveAssetHistory(histories);
+  }
+
   // 获取历史统计信息
   Future<Map<String, dynamic>> getHistoryStats() async {
     final history = await getAssetHistory();

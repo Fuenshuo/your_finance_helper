@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
@@ -35,6 +36,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
+  late final IOSAnimationSystem _animationSystem;
 
   TransactionType _selectedType = TransactionType.expense;
   TransactionCategory _selectedCategory = TransactionCategory.otherExpense;
@@ -51,6 +53,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册表单动效专用曲线
+    IOSAnimationSystem.registerCustomCurve('form-field-focus', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('validation-error', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('success-feedback', Curves.elasticOut);
+
     if (widget.initialType != null) {
       _selectedType = widget.initialType!;
     }
@@ -69,6 +80,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   @override
   void dispose() {
+    _animationSystem.dispose();
     _descriptionController.dispose();
     _amountController.dispose();
     _notesController.dispose();
@@ -909,9 +921,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 显示分类选择器
   void _showCategoryPicker(List<TransactionCategory> categories) {
-    AppAnimations.showAppModalBottomSheet(
+    _animationSystem.showIOSModal(
       context: context,
-      child: Container(
+      builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -944,9 +956,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 显示账户选择器
   void _showAccountPicker(List<Account> accounts, Function(String?) onChanged) {
-    AppAnimations.showAppModalBottomSheet(
+    _animationSystem.showIOSModal(
       context: context,
-      child: Container(
+      builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -989,9 +1001,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 显示预算选择器
   void _showBudgetPicker(List<EnvelopeBudget> budgets) {
-    AppAnimations.showAppModalBottomSheet(
+    _animationSystem.showIOSModal(
       context: context,
-      child: Container(
+      builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1031,9 +1043,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 显示支出计划选择器
   void _showExpensePlanPicker(List<ExpensePlan> expensePlans) {
-    AppAnimations.showAppModalBottomSheet(
+    _animationSystem.showIOSModal(
       context: context,
-      child: Container(
+      builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/income_plan_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/salary_income_setup_screen.dart';
 
 /// 创建/编辑收入计划页面
 class CreateIncomePlanScreen extends StatefulWidget {
-
   const CreateIncomePlanScreen({
     super.key,
     this.editPlan,
@@ -25,6 +25,7 @@ class CreateIncomePlanScreen extends StatefulWidget {
 
 class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final IOSAnimationSystem _animationSystem;
   String _selectedTemplate = 'ordinary'; // 'ordinary', 'detailed', or 'salary'
   String _planName = '';
   double _amount = 0.0;
@@ -45,6 +46,15 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册收入计划表单专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('income-form-focus', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('income-validation-error', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('income-success-feedback', Curves.elasticOut);
+
     // 如果是编辑模式，加载现有数据
     if (widget.editPlan != null) {
       _loadEditData();
@@ -603,7 +613,8 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
       Logger.debug('    📊 基本工资: ¥${salary.basicSalary}');
       Logger.debug('    💰 个税: ¥${salary.personalIncomeTax}');
       Logger.debug(
-          '    🏥 五险一金: ¥${salary.socialInsurance + salary.housingFund} (社保: ¥${salary.socialInsurance}, 公积金: ¥${salary.housingFund})',);
+        '    🏥 五险一金: ¥${salary.socialInsurance + salary.housingFund} (社保: ¥${salary.socialInsurance}, 公积金: ¥${salary.housingFund})',
+      );
       Logger.debug('    📋 专项附加扣除: ¥${salary.specialDeductionMonthly}');
       Logger.debug('    📝 其他扣除: ¥${salary.otherDeductions}');
       Logger.debug('    🧾 其他税收扣除: ¥${salary.otherTaxDeductions}');
@@ -627,7 +638,8 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
       Logger.debug('    ✅ 手动计算净收入: ¥$calculatedNetIncome');
       Logger.debug('    📊 存储的净收入: ¥${salary.netIncome}');
       Logger.debug(
-          '    ⚠️ 差异: ¥${(calculatedNetIncome - salary.netIncome).toStringAsFixed(2)}',);
+        '    ⚠️ 差异: ¥${(calculatedNetIncome - salary.netIncome).toStringAsFixed(2)}',
+      );
     }
 
     final selectedSalary = await showDialog<SalaryIncome>(
@@ -713,5 +725,11 @@ class _CreateIncomePlanScreenState extends State<CreateIncomePlanScreen> {
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _animationSystem.dispose();
+    super.dispose();
   }
 }

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:uuid/uuid.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
@@ -31,16 +33,26 @@ class AssetManagementScreen extends StatefulWidget {
 
 class _AssetManagementScreenState extends State<AssetManagementScreen> {
   final DebugModeManager _debugManager = DebugModeManager();
+  late final IOSAnimationSystem _animationSystem;
 
   @override
   void initState() {
     super.initState();
     _debugManager.addListener(_onDebugModeChanged);
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册资产管理专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('asset-card-hover', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('category-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('asset-transition', Curves.fastOutSlowIn);
   }
 
   @override
   void dispose() {
     _debugManager.removeListener(_onDebugModeChanged);
+    _animationSystem.dispose();
     super.dispose();
   }
 
@@ -457,9 +469,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
               icon: const Icon(Icons.add),
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const AddAssetFlowScreen(),
-                  ),
+                  AppAnimations.createRoute(const AddAssetFlowScreen()),
                 );
               },
             ),
@@ -604,10 +614,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                         onPressed: () {
                           // 导航到钱包管理页面
                           Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) =>
-                                  const WalletManagementScreen(),
-                            ),
+                            AppAnimations.createRoute(const WalletManagementScreen()),
                           );
                         },
                         icon: const Icon(Icons.add),
@@ -734,10 +741,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                       onPressed: () {
                         // 导航到钱包管理页面
                         Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (context) =>
-                                const WalletManagementScreen(),
-                          ),
+                          AppAnimations.createRoute(const WalletManagementScreen()),
                         );
                       },
                       icon: const Icon(Icons.manage_accounts),
@@ -765,9 +769,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       InkWell(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (context) => AccountDetailScreen(account: account),
-            ),
+            AppAnimations.createRoute(AccountDetailScreen(account: account)),
           );
         },
         child: Padding(
@@ -861,9 +863,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       InkWell(
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (context) => AssetDetailScreen(asset: asset),
-            ),
+            AppAnimations.createRoute(AssetDetailScreen(asset: asset)),
           );
         },
         child: Card(
@@ -1064,26 +1064,24 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => PropertyDetailScreen(
-                        asset: asset,
-                        onPropertySaved: (savedAsset) {
-                          final assetProvider = Provider.of<AssetProvider>(
-                            context,
-                            listen: false,
-                          );
-                          assetProvider.updateAsset(savedAsset);
-                          Navigator.of(context).pop(); // 返回到资产管理页面
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('房产信息更新成功'),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                    AppAnimations.createRoute(PropertyDetailScreen(
+                      asset: asset,
+                      onPropertySaved: (savedAsset) {
+                        final assetProvider = Provider.of<AssetProvider>(
+                          context,
+                          listen: false,
+                        );
+                        assetProvider.updateAsset(savedAsset);
+                        Navigator.of(context).pop(); // 返回到资产管理页面
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('房产信息更新成功'),
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),),
                   );
                 },
               ),

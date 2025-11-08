@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
@@ -7,6 +8,7 @@ import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
 
@@ -25,16 +27,27 @@ class EnvelopeBudgetDetailScreen extends StatefulWidget {
 class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late final IOSAnimationSystem _animationSystem;
 
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册信封预算详情专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('envelope-list-item', Curves.easeOutCubic);
+    IOSAnimationSystem.registerCustomCurve('envelope-swipe-delete', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('envelope-progress-highlight', Curves.easeInOutCubic);
+
     _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _animationSystem.dispose();
     super.dispose();
   }
 
@@ -583,68 +596,77 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
         ),
       );
 
-  // 交易卡片
-  Widget _buildTransactionCard(Transaction transaction) => AppCard(
-        margin: EdgeInsets.only(bottom: context.spacing12),
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: transaction.type == TransactionType.expense
-                  ? context.increaseColor.withOpacity(0.1)
-                  : context.decreaseColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(context.borderRadius / 2),
-            ),
-            child: Icon(
-              transaction.type == TransactionType.expense
-                  ? Icons.trending_down_outlined
-                  : Icons.trending_up_outlined,
-              color: transaction.type == TransactionType.expense
-                  ? context.increaseColor
-                  : context.decreaseColor,
-              size: 20,
-            ),
+  // ===== v1.1.0 重构：交易卡片（支持滑动删除动效）=====
+  Widget _buildTransactionCard(Transaction transaction) {
+    final transactionCard = AppCard(
+      margin: EdgeInsets.only(bottom: context.spacing12),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: transaction.type == TransactionType.expense
+                ? context.increaseColor.withOpacity(0.1)
+                : context.decreaseColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(context.borderRadius / 2),
           ),
-          title: Text(
-            transaction.description,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+          child: Icon(
+            transaction.type == TransactionType.expense
+                ? Icons.trending_down_outlined
+                : Icons.trending_up_outlined,
+            color: transaction.type == TransactionType.expense
+                ? context.increaseColor
+                : context.decreaseColor,
+            size: 20,
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        ),
+        title: Text(
+          transaction.description,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: context.secondaryText,
+                  ),
+            ),
+            if (transaction.notes != null && transaction.notes!.isNotEmpty)
               Text(
-                '${transaction.date.year}-${transaction.date.month.toString().padLeft(2, '0')}-${transaction.date.day.toString().padLeft(2, '0')}',
+                transaction.notes!,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: context.secondaryText,
                     ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              if (transaction.notes != null && transaction.notes!.isNotEmpty)
-                Text(
-                  transaction.notes!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.secondaryText,
-                      ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-            ],
-          ),
-          trailing: Text(
-            '${transaction.type == TransactionType.expense ? '-' : '+'}${context.formatAmount(transaction.amount)}',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: transaction.type == TransactionType.expense
-                      ? context.increaseColor
-                      : context.decreaseColor,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          onTap: () => _viewTransactionDetail(transaction),
+          ],
         ),
-      );
+        trailing: Text(
+          '${transaction.type == TransactionType.expense ? '-' : '+'}${context.formatAmount(transaction.amount)}',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: transaction.type == TransactionType.expense
+                    ? context.increaseColor
+                    : context.decreaseColor,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        onTap: () => _viewTransactionDetail(transaction),
+      ),
+    );
+
+    // ===== v1.1.0 使用新的滑动删除动效 =====
+    return _animationSystem.iosSwipeableListItem(
+      child: transactionCard,
+      action: SwipeAction.delete(() => _deleteTransactionFromEnvelope(transaction)),
+      onTap: () => _viewTransactionDetail(transaction),
+    );
+  }
 
   // 时间信息项
   Widget _buildTimeInfoItem({
@@ -913,5 +935,28 @@ class _EnvelopeBudgetDetailScreenState extends State<EnvelopeBudgetDetailScreen>
         ],
       ),
     );
+  }
+
+  // ===== v1.1.0 新增：从信封预算中删除交易 =====
+  void _deleteTransactionFromEnvelope(Transaction transaction) {
+    final transactionProvider = context.read<TransactionProvider>();
+
+    // 显示删除成功提示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已从"${widget.envelope.name}"中移除"${transaction.description}"'),
+        action: SnackBarAction(
+          label: '撤销',
+          onPressed: () {
+            // 这里可以实现撤销功能，但暂时先不实现
+            // TODO: 实现撤销删除功能
+          },
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    // 执行删除操作
+    transactionProvider.deleteTransaction(transaction.id);
   }
 }

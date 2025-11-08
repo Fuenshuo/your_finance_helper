@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/features/financial_planning/screens/mortgage_calculator_screen.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   const PropertyDetailScreen({
@@ -44,6 +46,13 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    // 注册房产详情专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('property-card-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('valuation-chart', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('property-info-slide', Curves.fastOutSlowIn);
+
     _property = widget.asset;
     _initializeControllers();
   }
@@ -306,7 +315,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _propertyType,
+                      initialValue: _propertyType,
                       decoration: const InputDecoration(
                         labelText: '房产类型',
                         border: OutlineInputBorder(),
@@ -328,7 +337,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _propertyUsage,
+                      initialValue: _propertyUsage,
                       decoration: const InputDecoration(
                         labelText: '使用性质',
                         border: OutlineInputBorder(),
@@ -399,7 +408,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<DepreciationMethod>(
-                      value: _depreciationMethod,
+                      initialValue: _depreciationMethod,
                       decoration: const InputDecoration(
                         labelText: '折旧方式',
                         border: OutlineInputBorder(),
@@ -461,11 +470,9 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                           double.tryParse(_amountController.text);
                       if (propertyValue != null && propertyValue > 0) {
                         Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (context) => MortgageCalculatorScreen(
-                              propertyValue: propertyValue,
-                            ),
-                          ),
+                          AppAnimations.createRoute(MortgageCalculatorScreen(
+                            propertyValue: propertyValue,
+                          ),),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

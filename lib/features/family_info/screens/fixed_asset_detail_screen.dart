@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 
@@ -36,6 +37,13 @@ class _FixedAssetDetailScreenState extends State<FixedAssetDetailScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    // 注册固定资产详情专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('fixed-asset-card-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('depreciation-chart', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('asset-maintenance-slide', Curves.fastOutSlowIn);
+
     _asset = widget.asset;
     _initializeControllers();
   }
@@ -205,7 +213,7 @@ class _FixedAssetDetailScreenState extends State<FixedAssetDetailScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<DepreciationMethod>(
-                value: _depreciationMethod,
+                initialValue: _depreciationMethod,
                 decoration: const InputDecoration(
                   labelText: '折旧方式',
                   border: OutlineInputBorder(),

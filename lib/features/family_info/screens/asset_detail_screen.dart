@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
@@ -7,7 +8,7 @@ import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_edit_screen.dart';
 
 /// 通用资产详情屏幕
-class AssetDetailScreen extends StatelessWidget {
+class AssetDetailScreen extends StatefulWidget {
   const AssetDetailScreen({
     required this.asset,
     super.key,
@@ -16,11 +17,27 @@ class AssetDetailScreen extends StatelessWidget {
   final AssetItem asset;
 
   @override
+  State<AssetDetailScreen> createState() => _AssetDetailScreenState();
+}
+
+class _AssetDetailScreenState extends State<AssetDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    // 注册通用资产详情专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('asset-detail-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('asset-history-chart', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('asset-info-slide', Curves.fastOutSlowIn);
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.primaryBackground,
         appBar: AppBar(
           title: Text(
-            asset.name,
+            widget.asset.name,
             style: context.textTheme.headlineMedium,
           ),
           backgroundColor: Colors.white,
@@ -42,15 +59,15 @@ class AssetDetailScreen extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.all(context.responsiveSpacing12),
                           decoration: BoxDecoration(
-                            color: _getCategoryColor(asset.category)
+                            color: _getCategoryColor(widget.asset.category)
                                 .withOpacity(0.1),
                             borderRadius: BorderRadius.circular(
                               context.responsiveSpacing12,
                             ),
                           ),
                           child: Icon(
-                            _getCategoryIcon(asset.category),
-                            color: _getCategoryColor(asset.category),
+                            _getCategoryIcon(widget.asset.category),
+                            color: _getCategoryColor(widget.asset.category),
                             size: 24,
                           ),
                         ),
@@ -60,14 +77,14 @@ class AssetDetailScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                asset.name,
+                                widget.asset.name,
                                 style: context.textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               SizedBox(height: context.spacing4),
                               Text(
-                                '${asset.category.displayName} · ${asset.subCategory}',
+                                '${widget.asset.category.displayName} · ${widget.asset.subCategory}',
                                 style: context.textTheme.bodyMedium?.copyWith(
                                   color: context.secondaryText,
                                 ),
@@ -77,10 +94,10 @@ class AssetDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (asset.notes != null && asset.notes!.isNotEmpty) ...[
+                    if (widget.asset.notes != null && widget.asset.notes!.isNotEmpty) ...[
                       SizedBox(height: context.spacing16),
                       Text(
-                        asset.notes!,
+                        widget.asset.notes!,
                         style: context.textTheme.bodyMedium,
                       ),
                     ],
@@ -107,40 +124,40 @@ class AssetDetailScreen extends StatelessWidget {
                     _buildValueRow(
                       context,
                       '购入价格',
-                      '¥${asset.amount.toStringAsFixed(2)}',
+                      '¥${widget.asset.amount.toStringAsFixed(2)}',
                       _getValueColor(
-                        asset.amount,
-                        asset.currentValue ?? asset.amount,
+                        widget.asset.amount,
+                        widget.asset.currentValue ?? widget.asset.amount,
                       ),
-                      subtitle: asset.purchaseDate != null
-                          ? '购入时间：${_formatDate(asset.purchaseDate!)}'
+                      subtitle: widget.asset.purchaseDate != null
+                          ? '购入时间：${_formatDate(widget.asset.purchaseDate!)}'
                           : null,
                     ),
 
                     // 当前估值（如果有）
-                    if (asset.currentValue != null &&
-                        asset.currentValue != asset.amount) ...[
+                    if (widget.asset.currentValue != null &&
+                        widget.asset.currentValue != widget.asset.amount) ...[
                       SizedBox(height: context.spacing12),
                       _buildValueRow(
                         context,
                         '当前估值',
-                        '¥${asset.currentValue!.toStringAsFixed(2)}',
-                        _getValueColor(asset.currentValue!, asset.amount),
+                        '¥${widget.asset.currentValue!.toStringAsFixed(2)}',
+                        _getValueColor(widget.asset.currentValue!, widget.asset.amount),
                         subtitle: _getValueChangeText(),
                       ),
                     ],
 
                     // 折旧信息
-                    if (asset.depreciationMethod !=
+                    if (widget.asset.depreciationMethod !=
                         DepreciationMethod.none) ...[
                       SizedBox(height: context.spacing12),
                       _buildValueRow(
                         context,
                         '估值方式',
-                        asset.depreciationMethod.displayName,
+                        widget.asset.depreciationMethod.displayName,
                         const Color(0xFF2196F3),
-                        subtitle: asset.depreciationRate != null
-                            ? '年折旧率：${(asset.depreciationRate! * 100).toStringAsFixed(1)}%'
+                        subtitle: widget.asset.depreciationRate != null
+                            ? '年折旧率：${(widget.asset.depreciationRate! * 100).toStringAsFixed(1)}%'
                             : null,
                       ),
                     ],
@@ -165,15 +182,15 @@ class AssetDetailScreen extends StatelessWidget {
                     _buildStatusRow(
                       context,
                       '创建时间',
-                      _formatDateTime(asset.creationDate),
+                      _formatDateTime(widget.asset.creationDate),
                     ),
                     SizedBox(height: context.spacing8),
                     _buildStatusRow(
                       context,
                       '最后更新',
-                      _formatDateTime(asset.updateDate),
+                      _formatDateTime(widget.asset.updateDate),
                     ),
-                    if (asset.isIdle) ...[
+                    if (widget.asset.isIdle) ...[
                       SizedBox(height: context.spacing8),
                       _buildStatusRow(
                         context,
@@ -181,12 +198,12 @@ class AssetDetailScreen extends StatelessWidget {
                         '当前闲置',
                         valueColor: const Color(0xFFFF9800),
                       ),
-                      if (asset.idleValue != null) ...[
+                      if (widget.asset.idleValue != null) ...[
                         SizedBox(height: context.spacing8),
                         _buildStatusRow(
                           context,
                           '闲置价值',
-                          '¥${asset.idleValue!.toStringAsFixed(2)}',
+                          '¥${widget.asset.idleValue!.toStringAsFixed(2)}',
                           valueColor: const Color(0xFF9C27B0),
                         ),
                       ],
@@ -226,7 +243,7 @@ class AssetDetailScreen extends StatelessWidget {
                         Navigator.of(context)
                             .push(
                               AppAnimations.createRoute(
-                                AssetEditScreen(asset: asset),
+                                AssetEditScreen(asset: widget.asset),
                               ),
                             )
                             .then((result) {
@@ -394,10 +411,10 @@ class AssetDetailScreen extends StatelessWidget {
   }
 
   String _getValueChangeText() {
-    if (asset.currentValue == null) return '';
+    if (widget.asset.currentValue == null) return '';
 
-    final change = asset.currentValue! - asset.amount;
-    final changePercent = (change / asset.amount * 100).abs();
+    final change = widget.asset.currentValue! - widget.asset.amount;
+    final changePercent = (change / widget.asset.amount * 100).abs();
 
     if (change > 0) {
       return '较购入价增值 ¥${change.toStringAsFixed(2)} (${changePercent.toStringAsFixed(1)}%)';
@@ -410,16 +427,16 @@ class AssetDetailScreen extends StatelessWidget {
 
   bool _hasAdditionalDetails() {
     // 检查是否有额外的详细信息需要显示
-    return asset.category == AssetCategory.realEstate ||
-        asset.category == AssetCategory.consumptionAssets ||
-        asset.isIdle;
+    return widget.asset.category == AssetCategory.realEstate ||
+        widget.asset.category == AssetCategory.consumptionAssets ||
+        widget.asset.isIdle;
   }
 
   List<Widget> _buildAdditionalDetails(BuildContext context) {
     final details = <Widget>[];
 
     // 房产特定信息
-    if (asset.category == AssetCategory.realEstate) {
+    if (widget.asset.category == AssetCategory.realEstate) {
       // 这里可以从asset的额外字段中获取房产信息
       // 暂时显示占位信息
       details.add(_buildStatusRow(context, '房产类型', '住宅'));
@@ -428,12 +445,12 @@ class AssetDetailScreen extends StatelessWidget {
     }
 
     // 消费资产特定信息
-    if (asset.category == AssetCategory.consumptionAssets) {
-      details.add(_buildStatusRow(context, '资产类型', asset.subCategory));
-      if (asset.depreciationRate != null) {
+    if (widget.asset.category == AssetCategory.consumptionAssets) {
+      details.add(_buildStatusRow(context, '资产类型', widget.asset.subCategory));
+      if (widget.asset.depreciationRate != null) {
         details.add(SizedBox(height: context.spacing8));
-        final expectedLife = asset.depreciationRate! > 0
-            ? (1 / asset.depreciationRate!).round()
+        final expectedLife = widget.asset.depreciationRate! > 0
+            ? (1 / widget.asset.depreciationRate!).round()
             : 0;
         details.add(_buildStatusRow(context, '预期使用寿命', '$expectedLife年'));
       }

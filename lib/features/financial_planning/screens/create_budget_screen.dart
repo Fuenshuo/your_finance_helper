@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
@@ -24,6 +25,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
+  late final IOSAnimationSystem _animationSystem;
 
   TransactionCategory _selectedCategory = TransactionCategory.food;
   BudgetPeriod _selectedPeriod = BudgetPeriod.monthly;
@@ -49,7 +51,21 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册预算创建表单专用动效曲线
+    IOSAnimationSystem.registerCustomCurve('budget-form-focus', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve('budget-validation-error', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve('budget-success-celebration', Curves.elasticOut);
+  }
+
+  @override
   void dispose() {
+    _animationSystem.dispose();
     _nameController.dispose();
     _amountController.dispose();
     _descriptionController.dispose();
@@ -209,7 +225,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
 
             // 分类选择
             DropdownButtonFormField<TransactionCategory>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: InputDecoration(
                 labelText: '预算分类',
                 border: OutlineInputBorder(
@@ -275,7 +291,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
 
             // 预算周期
             DropdownButtonFormField<BudgetPeriod>(
-              value: _selectedPeriod,
+              initialValue: _selectedPeriod,
               decoration: InputDecoration(
                 labelText: '预算周期',
                 border: OutlineInputBorder(
@@ -373,7 +389,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                   _isEssential = value;
                 });
               },
-              activeColor: context.primaryAction,
+              activeThumbColor: context.primaryAction,
             ),
             Divider(color: context.dividerColor),
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
@@ -11,12 +12,11 @@ import 'package:your_finance_flutter/features/financial_planning/screens/mortgag
 
 /// 创建/编辑支出计划页面
 class CreateExpensePlanScreen extends StatefulWidget {
-  final ExpensePlan? editPlan;
-
   const CreateExpensePlanScreen({
     super.key,
     this.editPlan,
   });
+  final ExpensePlan? editPlan;
 
   @override
   State<CreateExpensePlanScreen> createState() =>
@@ -25,6 +25,7 @@ class CreateExpensePlanScreen extends StatefulWidget {
 
 class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final IOSAnimationSystem _animationSystem;
   String _planName = '';
   String _description = '';
   double _amount = 0.0;
@@ -54,6 +55,24 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ===== v1.1.0 初始化企业级动效系统 =====
+    _animationSystem = IOSAnimationSystem();
+
+    // 注册支出计划表单专用动效曲线
+    IOSAnimationSystem.registerCustomCurve(
+      'expense-form-focus',
+      Curves.easeInOutCubic,
+    );
+    IOSAnimationSystem.registerCustomCurve(
+      'expense-validation-error',
+      Curves.elasticOut,
+    );
+    IOSAnimationSystem.registerCustomCurve(
+      'expense-success-feedback',
+      Curves.elasticOut,
+    );
+
     // 如果是编辑模式，加载现有数据
     if (widget.editPlan != null) {
       _loadEditData();
@@ -100,7 +119,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
           type: _planType,
           amount: _amount,
           frequency: _frequency,
-          walletId: _selectedAccountId!,
+          walletId: _selectedAccountId,
           categoryId: _categoryId,
           loanAccountId: _selectedLoanAccountId,
           startDate: _startDate,
@@ -360,7 +379,9 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                       Consumer<AccountProvider>(
                         builder: (context, accountProvider, child) {
                           final accounts = accountProvider.accounts
-                              .where((account) => account.type.isAsset) // 只显示资产账户（可用于支出）
+                              .where(
+                                (account) => account.type.isAsset,
+                              ) // 只显示资产账户（可用于支出）
                               .toList();
 
                           return DropdownButtonFormField<String>(
@@ -368,7 +389,7 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                               labelText: '支出账户',
                               border: OutlineInputBorder(),
                             ),
-                            value: _selectedAccountId,
+                            initialValue: _selectedAccountId,
                             hint: const Text('选择支出账户'),
                             items: accounts
                                 .map(
@@ -667,7 +688,9 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                         Consumer<AccountProvider>(
                           builder: (context, accountProvider, child) {
                             final loanAccounts = accountProvider.accounts
-                                .where((account) => account.type == AccountType.loan)
+                                .where(
+                                  (account) => account.type == AccountType.loan,
+                                )
                                 .toList();
 
                             return DropdownButtonFormField<String>(
@@ -676,10 +699,9 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
                                 border: OutlineInputBorder(),
                                 hintText: '选择要还款的贷款账户',
                               ),
-                              value: _selectedLoanAccountId,
+                              initialValue: _selectedLoanAccountId,
                               items: [
                                 const DropdownMenuItem<String>(
-                                  value: null,
                                   child: Text('无关联贷款'),
                                 ),
                                 ...loanAccounts.map(
@@ -895,5 +917,11 @@ class _CreateExpensePlanScreenState extends State<CreateExpensePlanScreen> {
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _animationSystem.dispose();
+    super.dispose();
   }
 }
