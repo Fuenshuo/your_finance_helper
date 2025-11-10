@@ -960,40 +960,42 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       context: context,
       builder: (context) => Container(
         padding: EdgeInsets.all(context.spacing24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '选择账户',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            SizedBox(height: context.spacing16),
-            ...accounts.map(
-              (account) => Consumer<TransactionProvider>(
-                builder: (context, transactionProvider, child) {
-                  final accountProvider = context.read<AccountProvider>();
-                  final realBalance = accountProvider.getAccountBalance(
-                    account.id,
-                    transactionProvider.transactions,
-                  );
-                  return ListTile(
-                    leading: Icon(
-                      _getAccountTypeIcon(account.type),
-                      color: context.primaryAction,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '选择账户',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    title: Text(account.name),
-                    subtitle: Text('余额: ${context.formatAmount(realBalance)}'),
-                    onTap: () {
-                      onChanged(account.id);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
               ),
-            ),
-          ],
+              SizedBox(height: context.spacing16),
+              ...accounts.map(
+                (account) => Consumer<TransactionProvider>(
+                  builder: (context, transactionProvider, child) {
+                    final accountProvider = context.read<AccountProvider>();
+                    final realBalance = accountProvider.getAccountBalance(
+                      account.id,
+                      transactionProvider.transactions,
+                    );
+                    return ListTile(
+                      leading: Icon(
+                        _getAccountTypeIcon(account.type),
+                        color: context.primaryAction,
+                      ),
+                      title: Text(account.name),
+                      subtitle: Text('余额: ${context.formatAmount(realBalance)}'),
+                      onTap: () {
+                        onChanged(account.id);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
