@@ -4,6 +4,7 @@ import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow
 import 'package:your_finance_flutter/features/family_info/screens/add_wallet_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_history_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_management_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/clearance_home_screen.dart';
 // Family Info Screens
 import 'package:your_finance_flutter/features/family_info/screens/family_info_home_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/salary_income_setup_screen.dart';
@@ -52,6 +53,7 @@ class AppRoutes {
   static const String walletManagement = '/family-info/wallets';
   static const String addWallet = '/family-info/wallets/add';
   static const String assetHistory = '/family-info/assets/history';
+  static const String clearance = '/family-info/clearance';
 
   // Financial Planning Routes
   static const String financialPlanning = '/financial-planning';
@@ -161,6 +163,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.assetHistory,
       builder: (context, state) => const AssetHistoryScreen(),
+    ),
+
+    GoRoute(
+      path: AppRoutes.clearance,
+      builder: (context, state) => const ClearanceHomeScreen(),
     ),
 
     // Financial Planning Routes

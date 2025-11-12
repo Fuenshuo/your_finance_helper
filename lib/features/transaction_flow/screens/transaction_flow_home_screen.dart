@@ -120,7 +120,13 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                             continue;
                           }
 
-                          if (transaction.type == TransactionType.income ||
+                          if (transaction.type == TransactionType.transfer) {
+                            // 转账交易同时计入收入和支出
+                            totalIncome += transaction.amount;
+                            totalExpense += transaction.amount;
+                            incomeCount++;
+                            expenseCount++;
+                          } else if (transaction.type == TransactionType.income ||
                               (transaction.type == null &&
                                   transaction.category.isIncome)) {
                             totalIncome += transaction.amount;

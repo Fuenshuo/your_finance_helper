@@ -275,6 +275,7 @@ extension AppThemeExtensions on BuildContext {
   // 响应式间距
   double responsiveSpacing(double baseSpacing) =>
       AppTheme.getResponsiveSpacing(this, baseSpacing);
+  double get responsiveSpacing2 => responsiveSpacing(2);
   double get responsiveSpacing4 => responsiveSpacing(4);
   double get responsiveSpacing6 => responsiveSpacing(6);
   double get responsiveSpacing8 => responsiveSpacing(8);

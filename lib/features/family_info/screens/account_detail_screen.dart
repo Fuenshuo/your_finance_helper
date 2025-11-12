@@ -8,10 +8,10 @@ import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
 import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
-import 'package:your_finance_flutter/core/widgets/swipe_action_item.dart';
 import 'package:your_finance_flutter/features/family_info/screens/account_edit_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
@@ -660,11 +660,21 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '📋 账户信息',
-                    style: context.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 20,
+                        color: context.primaryColor,
+                      ),
+                      SizedBox(width: context.spacing8),
+                      Text(
+                        '账户信息',
+                        style: context.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: context.spacing16),
                   _buildInfoRow('账户类型', widget.account.type.displayName),
@@ -685,75 +695,6 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               ),
             ),
 
-            SizedBox(height: context.spacing16),
-
-            // 本月统计
-            Consumer<TransactionProvider>(
-              builder: (context, transactionProvider, child) {
-                final now = DateTime.now();
-                final startOfMonth = DateTime(now.year, now.month);
-                final monthTransactions = transactionProvider.transactions
-                    .where(
-                      (t) =>
-                          (t.fromAccountId == widget.account.id ||
-                              t.toAccountId == widget.account.id) &&
-                          t.date.isAfter(startOfMonth),
-                    )
-                    .toList();
-
-                double income = 0;
-                double expense = 0;
-
-                for (final transaction in monthTransactions) {
-                  if (transaction.fromAccountId == widget.account.id) {
-                    expense += transaction.amount;
-                  }
-                  if (transaction.toAccountId == widget.account.id) {
-                    income += transaction.amount;
-                  }
-                }
-
-                return AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '📊 本月统计',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: context.spacing16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatItem(
-                              '收入',
-                              _currencyFormat.format(income),
-                              Colors.green,
-                            ),
-                          ),
-                          SizedBox(width: context.spacing12),
-                          Expanded(
-                            child: _buildStatItem(
-                              '支出',
-                              _currencyFormat.format(expense),
-                              Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: context.spacing12),
-                      _buildStatItem(
-                        '交易笔数',
-                        '${monthTransactions.length}笔',
-                        context.secondaryText,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
           ],
         ),
       );
@@ -791,11 +732,15 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             );
           }
 
-          return ListView.builder(
+          return ListView.separated(
             padding: EdgeInsets.all(context.responsiveSpacing16),
             itemCount: accountTransactions.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: Colors.grey[300],
+            ),
             itemBuilder: (context, index) =>
-                _buildDismissibleTransactionItem(accountTransactions[index]),
+                _buildTransactionItem(accountTransactions[index]),
           );
         },
       );
@@ -843,11 +788,21 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '📈 月度统计',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.trending_up,
+                            size: 20,
+                            color: context.primaryColor,
+                          ),
+                          SizedBox(width: context.spacing8),
+                          Text(
+                            '月度统计',
+                            style: context.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: context.spacing16),
                       ...sortedMonths.take(6).map((month) {
@@ -914,32 +869,6 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
         ),
       );
 
-  Widget _buildStatItem(String label, String value, Color color) => Column(
-        children: [
-          Text(
-            value,
-            style: context.textTheme.titleLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: context.spacing4),
-          Text(
-            label,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.secondaryText,
-            ),
-          ),
-        ],
-      );
-
-  // ===== 左滑显示删除按钮的交易项 =====
-  Widget _buildDismissibleTransactionItem(Transaction transaction) =>
-      SwipeActionItem(
-        action: SwipeAction.delete(() => _deleteTransaction(transaction)),
-        child: _buildTransactionItem(transaction),
-      );
-
   // 执行删除交易
   Future<void> _deleteTransaction(Transaction transaction) async {
     try {
@@ -1000,55 +929,65 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                   : Colors.transparent;
 
               return Container(
-                margin: EdgeInsets.only(bottom: context.spacing8),
+                color: highlightColor,
                 child: Transform.translate(
                   offset: Offset(slideOffset, 0), // 从右侧滑入
                   child: Opacity(
                     opacity: opacity,
-                    child: Card(
-                      margin: EdgeInsets.zero,
-                      color: highlightColor,
-                      child: ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(context.responsiveSpacing8),
-                          decoration: BoxDecoration(
-                            color: transaction.type == TransactionType.income
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            transaction.type == TransactionType.income
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward,
-                            color: transaction.type == TransactionType.income
-                                ? Colors.green
-                                : Colors.red,
-                          ),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _getCategoryColor(transaction.category).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        title: Text(
-                          transaction.description,
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Icon(
+                          _getCategoryIcon(transaction.category),
+                          color: _getCategoryColor(transaction.category),
+                          size: 20,
                         ),
-                        subtitle: Text(
-                          DateFormat('MM-dd HH:mm').format(transaction.date),
-                          style: context.textTheme.bodySmall?.copyWith(
-                            color: context.secondaryText,
-                          ),
-                        ),
-                        trailing: Text(
-                          '${transaction.type == TransactionType.income ? '+' : '-'}${_currencyFormat.format(transaction.amount)}',
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            color: transaction.type == TransactionType.income
-                                ? Colors.green
-                                : Colors.red,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        onTap: () => _showTransactionDetail(transaction),
                       ),
+                      title: Text(
+                        transaction.description,
+                        style: context.responsiveBodyLarge,
+                      ),
+                      subtitle: Text(
+                        '${transaction.category.displayName} • ${DateFormat('MM-dd HH:mm').format(transaction.date)}',
+                        style: context.responsiveBodySmall.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            context.formatAmount(
+                              transaction.type == TransactionType.income 
+                                  ? transaction.amount 
+                                  : -transaction.amount,
+                            ),
+                            style: context.amountStyle(
+                              isPositive: transaction.type == TransactionType.income,
+                            ),
+                          ),
+                          SizedBox(width: context.responsiveSpacing8),
+                          GestureDetector(
+                            onTap: () => _deleteTransaction(transaction),
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: EdgeInsets.all(context.responsiveSpacing4),
+                              child: Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () => _showTransactionDetail(transaction),
                     ),
                   ),
                 ),
@@ -1056,52 +995,56 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             },
           )
         // ===== 正常显示交易项 =====
-        : Container(
-            margin: EdgeInsets.only(bottom: context.spacing8),
-            child: Card(
-              margin: EdgeInsets.zero,
-              child: ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(context.responsiveSpacing8),
-                  decoration: BoxDecoration(
-                    color: transaction.type == TransactionType.income
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    transaction.type == TransactionType.income
-                        ? Icons.arrow_downward
-                        : Icons.arrow_upward,
-                    color: transaction.type == TransactionType.income
-                        ? Colors.green
-                        : Colors.red,
-                  ),
-                ),
-                title: Text(
-                  transaction.description,
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                subtitle: Text(
-                  DateFormat('MM-dd HH:mm').format(transaction.date),
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: context.secondaryText,
-                  ),
-                ),
-                trailing: Text(
-                  '${transaction.type == TransactionType.income ? '+' : '-'}${_currencyFormat.format(transaction.amount)}',
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    color: transaction.type == TransactionType.income
-                        ? Colors.green
-                        : Colors.red,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () => _showTransactionDetail(transaction),
+        : ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: _getCategoryColor(transaction.category).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                _getCategoryIcon(transaction.category),
+                color: _getCategoryColor(transaction.category),
+                size: 20,
               ),
             ),
+            title: Text(
+              transaction.description,
+              style: context.responsiveBodyLarge,
+            ),
+            subtitle: Text(
+              '${transaction.category.displayName} • ${DateFormat('MM-dd HH:mm').format(transaction.date)}',
+              style: context.responsiveBodySmall.copyWith(
+                color: Colors.grey,
+              ),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.formatAmount(
+                    transaction.type == TransactionType.income 
+                        ? transaction.amount 
+                        : -transaction.amount,
+                  ),
+                  style: context.amountStyle(
+                    isPositive: transaction.type == TransactionType.income,
+                  ),
+                ),
+                SizedBox(width: context.responsiveSpacing8),
+                InkWell(
+                  onTap: () => _deleteTransaction(transaction),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+            onTap: () => _showTransactionDetail(transaction),
           );
   }
 
@@ -1121,6 +1064,43 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
         return Icons.business;
       case AccountType.liability:
         return Icons.warning;
+    }
+  }
+
+  // 获取分类颜色
+  Color _getCategoryColor(TransactionCategory category) {
+    if (category.isIncome) return Colors.green;
+    return Colors.red;
+  }
+
+  // 获取分类图标
+  IconData _getCategoryIcon(TransactionCategory category) {
+    switch (category) {
+      case TransactionCategory.salary:
+        return Icons.work;
+      case TransactionCategory.food:
+        return Icons.restaurant;
+      case TransactionCategory.transport:
+        return Icons.directions_car;
+      case TransactionCategory.shopping:
+        return Icons.shopping_bag;
+      case TransactionCategory.entertainment:
+        return Icons.movie;
+      case TransactionCategory.healthcare:
+        return Icons.local_hospital;
+      case TransactionCategory.education:
+        return Icons.school;
+      case TransactionCategory.housing:
+        return Icons.home;
+      case TransactionCategory.utilities:
+        return Icons.electrical_services;
+      case TransactionCategory.investment:
+        return Icons.trending_up;
+      case TransactionCategory.otherIncome:
+      case TransactionCategory.otherExpense:
+        return Icons.more_horiz;
+      default:
+        return Icons.attach_money;
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
+import 'package:your_finance_flutter/core/models/clearance_entry.dart';
 import 'package:your_finance_flutter/core/models/currency.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
@@ -22,6 +23,7 @@ class StorageService {
   static const String _salaryIncomesKey = 'salary_incomes_data';
   static const String _expensePlansKey = 'expense_plans_data';
   static const String _incomePlansKey = 'income_plans_data';
+  static const String _periodClearanceSessionsKey = 'period_clearance_sessions_data';
 
   static StorageService? _instance;
   static SharedPreferences? _prefs;
@@ -384,6 +386,47 @@ class StorageService {
           final incomePlan =
               IncomePlan.fromJson(json as Map<String, dynamic>);
           result.add(incomePlan);
+        } catch (e) {
+          // 跳过有问题的记录，继续加载其他记录
+        }
+      }
+
+      return result;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // 旧的清账会话方法已废弃，使用新的周期清账系统
+  // Future<void> saveClearanceSessions(List<ClearanceSession> sessions) async { ... }
+  // Future<List<ClearanceSession>> loadClearanceSessions() async { ... }
+
+  // 保存周期清账会话列表
+  Future<void> savePeriodClearanceSessions(List<PeriodClearanceSession> sessions) async {
+    try {
+      final jsonList = sessions.map((session) => session.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+      await _prefs!.setString(_periodClearanceSessionsKey, jsonString);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // 加载周期清账会话列表
+  Future<List<PeriodClearanceSession>> loadPeriodClearanceSessions() async {
+    try {
+      final jsonString = _prefs!.getString(_periodClearanceSessionsKey);
+      if (jsonString == null) {
+        return [];
+      }
+
+      final jsonList = jsonDecode(jsonString) as List<dynamic>;
+      final result = <PeriodClearanceSession>[];
+
+      for (final json in jsonList) {
+        try {
+          final session = PeriodClearanceSession.fromJson(json as Map<String, dynamic>);
+          result.add(session);
         } catch (e) {
           // 跳过有问题的记录，继续加载其他记录
         }

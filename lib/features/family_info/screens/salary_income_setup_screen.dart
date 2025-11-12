@@ -197,7 +197,15 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ 自动计算完成：月均个税 ¥${monthlyTax.toStringAsFixed(0)}'),
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('自动计算完成：月均个税 ¥${monthlyTax.toStringAsFixed(0)}'),
+              ),
+            ],
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -205,7 +213,15 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
       Logger.debug('❌ 自动计算税费失败: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('❌ 自动计算失败，请手动填写'),
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('自动计算失败，请手动填写'),
+              ),
+            ],
+          ),
           backgroundColor: Colors.red,
         ),
       );

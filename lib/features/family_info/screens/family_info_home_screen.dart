@@ -6,6 +6,7 @@ import 'package:your_finance_flutter/core/utils/notification_manager.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_management_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/clearance_home_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/salary_income_setup_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/wallet_management_screen.dart';
 
@@ -156,19 +157,18 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
                     },
                   ),
 
-                  // 数据统计卡片
+                  // 清账管理卡片
                   _buildFeatureCard(
                     context,
-                    icon: Icons.analytics_outlined,
-                    title: '数据统计',
-                    subtitle: '资产总览与分析',
-                    color: const Color(0xFFF7DC6F),
+                    icon: Icons.checklist_outlined,
+                    title: '清账管理',
+                    subtitle: '余额盘点与动账核销',
+                    color: const Color(0xFF9B59B6),
                     onTap: () {
-                      // TODO: 导航到数据统计页面
-                      NotificationManager().showDevelopmentHint(
-                        context,
-                        '数据统计',
-                        additionalInfo: '资产分析图表和财务报表功能即将上线',
+                      Navigator.of(context).push(
+                        AppAnimations.createRoute(
+                          ClearanceHomeScreen(),
+                        ),
                       );
                     },
                   ),

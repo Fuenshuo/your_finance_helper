@@ -70,6 +70,7 @@ dependencies:
 
   # File handling
   share_plus: ^9.0.0
+  widgets_to_image: ^1.0.0
   
   # Date and time utilities
   timeago: ^3.6.0

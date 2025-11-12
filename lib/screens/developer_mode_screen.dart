@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:share_plus/share_plus.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/core/services/clearance_service.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
@@ -23,6 +26,7 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
   bool _isLoading = false;
   LogLevel _selectedLogLevel = Logger.currentLevel;
   bool _fileLoggingEnabled = Logger.fileLoggingEnabled;
+  final PeriodClearanceService _clearanceService = PeriodClearanceService();
 
   @override
   void initState() {
@@ -196,6 +200,62 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
         unifiedNotifications.showError(
           context,
           '❌ 数据迁移失败: $e',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// 处理历史清账数据：将已完成清账的交易转换为实际交易记录
+  Future<void> _processHistoricalClearanceData() async {
+    final confirmed = await unifiedNotifications.showConfirmation(
+      context,
+      title: '🔄 处理历史清账数据',
+      message: '此操作将扫描所有已完成的清账会话，将其中的交易记录转换为实际交易记录。\n\n'
+          '转换后的交易将出现在交易列表中，钱包余额会自动更新。\n\n'
+          '已存在的交易不会被重复添加。\n\n'
+          '确定要继续吗？',
+      confirmLabel: '开始处理',
+      confirmColor: const Color(0xFF2196F3),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _clearanceService.initialize();
+      final convertedCount = await _clearanceService.processHistoricalClearanceData();
+
+      // 刷新交易数据
+      try {
+        final transactionProvider = provider.Provider.of<TransactionProvider>(context, listen: false);
+        await transactionProvider.refresh();
+      } catch (e) {
+        Logger.debug('刷新交易数据失败: $e');
+      }
+
+      if (mounted) {
+        if (convertedCount > 0) {
+          unifiedNotifications.showSuccess(
+            context,
+            '✅ 已处理 $convertedCount 个历史清账会话，交易记录已更新',
+          );
+        } else {
+          unifiedNotifications.showInfo(
+            context,
+            'ℹ️ 没有需要处理的历史清账数据',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        unifiedNotifications.showError(
+          context,
+          '❌ 处理失败: $e',
         );
       }
     } finally {
@@ -469,12 +529,38 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                       ],
                     ),
 
+                    SizedBox(height: context.spacing12),
+
+                    // 处理历史清账数据按钮
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _processHistoricalClearanceData,
+                            icon: const Icon(Icons.history),
+                            label: const Text('处理历史清账数据'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
                     SizedBox(height: context.spacing8),
 
                     Text(
-                      '⚠️ 此操作将重新执行所有数据迁移，可能恢复丢失的工资数据',
+                      '⚠️ 强制数据迁移：重新执行所有数据迁移，可能恢复丢失的工资数据',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: const Color(0xFFFF6B6B),
+                      ),
+                    ),
+                    SizedBox(height: context.spacing4),
+                    Text(
+                      '🔄 处理历史清账数据：将已完成清账的交易转换为实际交易记录',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF2196F3),
                       ),
                     ),
                   ],

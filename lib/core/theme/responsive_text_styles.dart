@@ -38,6 +38,13 @@ class ResponsiveTextStyles {
         color: AppTheme.secondaryText,
       );
 
+  static TextStyle getBodySmall(BuildContext context) => TextStyle(
+        fontFamily: AppTheme.fontFamily,
+        fontSize: AppTheme.getResponsiveFontSize(context, 13),
+        fontWeight: FontWeight.w400,
+        color: AppTheme.secondaryText,
+      );
+
   static TextStyle getLabelLarge(BuildContext context) => TextStyle(
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 15),
@@ -116,6 +123,7 @@ extension ResponsiveTextStylesExtension on BuildContext {
   TextStyle get responsiveBodyLarge => ResponsiveTextStyles.getBodyLarge(this);
   TextStyle get responsiveBodyMedium =>
       ResponsiveTextStyles.getBodyMedium(this);
+  TextStyle get responsiveBodySmall => ResponsiveTextStyles.getBodySmall(this);
   TextStyle get responsiveLabelLarge =>
       ResponsiveTextStyles.getLabelLarge(this);
 
