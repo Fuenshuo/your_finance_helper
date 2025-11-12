@@ -21,9 +21,9 @@ enum PeriodType {
 
 // 清账会话状态
 enum ClearanceSessionStatus {
-  balanceInput('余额录入中'),    // 正在录入各钱包余额
+  balanceInput('余额录入中'), // 正在录入各钱包余额
   differenceAnalysis('差额分解中'), // 正在分解差额和添加交易
-  completed('已完成');         // 清账完成
+  completed('已完成'); // 清账完成
 
   const ClearanceSessionStatus(this.displayName);
   final String displayName;
@@ -37,11 +37,6 @@ enum ClearanceSessionStatus {
 
 // 钱包余额快照
 class WalletBalanceSnapshot extends Equatable {
-  final String walletId;
-  final String walletName;
-  final double balance;
-  final DateTime recordTime;
-
   const WalletBalanceSnapshot({
     required this.walletId,
     required this.walletName,
@@ -56,6 +51,10 @@ class WalletBalanceSnapshot extends Equatable {
         balance: (json['balance'] as num).toDouble(),
         recordTime: DateTime.parse(json['recordTime'] as String),
       );
+  final String walletId;
+  final String walletName;
+  final double balance;
+  final DateTime recordTime;
 
   Map<String, dynamic> toJson() => {
         'walletId': walletId,
@@ -70,24 +69,14 @@ class WalletBalanceSnapshot extends Equatable {
 
 // 手动添加的交易记录
 class ManualTransaction extends Equatable {
-  final String id;
-  final String description;
-  final double amount;
-  final TransactionCategory category;
-  final String walletId;
-  final String walletName;
-  final DateTime date;
-  final String? notes;
-  final DateTime creationDate;
-
   ManualTransaction({
-    String? id,
     required this.description,
     required this.amount,
     required this.category,
     required this.walletId,
     required this.walletName,
     required this.date,
+    String? id,
     this.notes,
     DateTime? creationDate,
   })  : id = id ?? const Uuid().v4(),
@@ -98,13 +87,23 @@ class ManualTransaction extends Equatable {
         id: json['id'] as String,
         description: json['description'] as String,
         amount: (json['amount'] as num).toDouble(),
-        category: TransactionCategory.fromDisplayName(json['category'] as String),
+        category:
+            TransactionCategory.fromDisplayName(json['category'] as String),
         walletId: json['walletId'] as String,
         walletName: json['walletName'] as String,
         date: DateTime.parse(json['date'] as String),
         notes: json['notes'] as String?,
         creationDate: DateTime.parse(json['creationDate'] as String),
       );
+  final String id;
+  final String description;
+  final double amount;
+  final TransactionCategory category;
+  final String walletId;
+  final String walletName;
+  final DateTime date;
+  final String? notes;
+  final DateTime creationDate;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -157,13 +156,7 @@ class ManualTransaction extends Equatable {
 
 // 钱包差额信息
 class WalletDifference extends Equatable {
-  final String walletId;
-  final String walletName;
-  final double startBalance;      // 期初余额
-  final double endBalance;        // 期末余额
-  final double totalDifference;   // 总差额
-  final double explainedAmount;   // 已解释金额（通过添加的交易）
-  final double remainingAmount;   // 剩余未解释金额
+  // 剩余未解释金额
 
   const WalletDifference({
     required this.walletId,
@@ -182,6 +175,13 @@ class WalletDifference extends Equatable {
         endBalance: (json['endBalance'] as num).toDouble(),
         explainedAmount: (json['explainedAmount'] as num).toDouble(),
       );
+  final String walletId;
+  final String walletName;
+  final double startBalance; // 期初余额
+  final double endBalance; // 期末余额
+  final double totalDifference; // 总差额
+  final double explainedAmount; // 已解释金额（通过添加的交易）
+  final double remainingAmount;
 
   Map<String, dynamic> toJson() => {
         'walletId': walletId,
@@ -239,32 +239,12 @@ class WalletDifference extends Equatable {
 
 // 周期清账会话模型
 class PeriodClearanceSession extends Equatable {
-  final String id;
-  final String name;                    // 会话名称，如"2024年1月上半月清账"
-  final PeriodType periodType;          // 周期类型
-  final DateTime startDate;             // 周期开始日期
-  final DateTime endDate;               // 周期结束日期
-  final ClearanceSessionStatus status;  // 会话状态
-  
-  // 余额快照
-  final List<WalletBalanceSnapshot> startBalances;  // 期初余额快照
-  final List<WalletBalanceSnapshot> endBalances;    // 期末余额快照
-  
-  // 差额分析
-  final List<WalletDifference> walletDifferences;   // 各钱包差额分析
-  final List<ManualTransaction> manualTransactions; // 手动添加的交易
-  
-  // 时间戳
-  final DateTime creationDate;
-  final DateTime updateDate;
-  final String? notes;
-
   PeriodClearanceSession({
-    String? id,
     required this.name,
     required this.periodType,
     required this.startDate,
     required this.endDate,
+    String? id,
     this.status = ClearanceSessionStatus.balanceInput,
     this.startBalances = const [],
     this.endBalances = const [],
@@ -285,27 +265,51 @@ class PeriodClearanceSession extends Equatable {
         periodType: PeriodType.fromDisplayName(json['periodType'] as String),
         startDate: DateTime.parse(json['startDate'] as String),
         endDate: DateTime.parse(json['endDate'] as String),
-        status: ClearanceSessionStatus.fromDisplayName(json['status'] as String),
+        status:
+            ClearanceSessionStatus.fromDisplayName(json['status'] as String),
         startBalances: (json['startBalances'] as List<dynamic>?)
-                ?.map((e) => WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>))
+                ?.map((e) =>
+                    WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
         endBalances: (json['endBalances'] as List<dynamic>?)
-                ?.map((e) => WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>))
+                ?.map((e) =>
+                    WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
         walletDifferences: (json['walletDifferences'] as List<dynamic>?)
-                ?.map((e) => WalletDifference.fromJson(e as Map<String, dynamic>))
+                ?.map(
+                    (e) => WalletDifference.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
         manualTransactions: (json['manualTransactions'] as List<dynamic>?)
-                ?.map((e) => ManualTransaction.fromJson(e as Map<String, dynamic>))
+                ?.map((e) =>
+                    ManualTransaction.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
         creationDate: DateTime.parse(json['creationDate'] as String),
         updateDate: DateTime.parse(json['updateDate'] as String),
         notes: json['notes'] as String?,
       );
+  final String id;
+  final String name; // 会话名称，如"2024年1月上半月清账"
+  final PeriodType periodType; // 周期类型
+  final DateTime startDate; // 周期开始日期
+  final DateTime endDate; // 周期结束日期
+  final ClearanceSessionStatus status; // 会话状态
+
+  // 余额快照
+  final List<WalletBalanceSnapshot> startBalances; // 期初余额快照
+  final List<WalletBalanceSnapshot> endBalances; // 期末余额快照
+
+  // 差额分析
+  final List<WalletDifference> walletDifferences; // 各钱包差额分析
+  final List<ManualTransaction> manualTransactions; // 手动添加的交易
+
+  // 时间戳
+  final DateTime creationDate;
+  final DateTime updateDate;
+  final String? notes;
 
   // 序列化
   Map<String, dynamic> toJson() => {
@@ -318,7 +322,8 @@ class PeriodClearanceSession extends Equatable {
         'startBalances': startBalances.map((e) => e.toJson()).toList(),
         'endBalances': endBalances.map((e) => e.toJson()).toList(),
         'walletDifferences': walletDifferences.map((e) => e.toJson()).toList(),
-        'manualTransactions': manualTransactions.map((e) => e.toJson()).toList(),
+        'manualTransactions':
+            manualTransactions.map((e) => e.toJson()).toList(),
         'creationDate': creationDate.toIso8601String(),
         'updateDate': updateDate.toIso8601String(),
         'notes': notes,
@@ -358,35 +363,39 @@ class PeriodClearanceSession extends Equatable {
 
   // 获取统计信息
   int get totalWallets => walletDifferences.length;
-  int get walletsWithDifference => walletDifferences.where((w) => w.hasRemainingDifference).length;
+  int get walletsWithDifference =>
+      walletDifferences.where((w) => w.hasRemainingDifference).length;
   int get totalManualTransactions => manualTransactions.length;
-  
+
   // 计算总差额
-  double get totalDifference => walletDifferences.fold(0.0, (sum, w) => sum + w.totalDifference);
-  
+  double get totalDifference =>
+      walletDifferences.fold(0.0, (sum, w) => sum + w.totalDifference);
+
   // 计算已解释金额
-  double get totalExplainedAmount => walletDifferences.fold(0.0, (sum, w) => sum + w.explainedAmount);
-  
+  double get totalExplainedAmount =>
+      walletDifferences.fold(0.0, (sum, w) => sum + w.explainedAmount);
+
   // 计算剩余未解释金额
-  double get totalRemainingAmount => walletDifferences.fold(0.0, (sum, w) => sum + w.remainingAmount);
-  
+  double get totalRemainingAmount =>
+      walletDifferences.fold(0.0, (sum, w) => sum + w.remainingAmount);
+
   // 计算解释完成度
   double get explanationRate {
     if (totalDifference.abs() <= 0.01) return 1.0;
     return (totalExplainedAmount.abs() / totalDifference.abs()).clamp(0.0, 1.0);
   }
-  
+
   // 是否可以完成
-  bool get canComplete => status == ClearanceSessionStatus.differenceAnalysis && 
-                         walletsWithDifference == 0;
-  
+  bool get canComplete =>
+      status == ClearanceSessionStatus.differenceAnalysis &&
+      walletsWithDifference == 0;
+
   // 是否已完成
   bool get isCompleted => status == ClearanceSessionStatus.completed;
 
   // 周期描述
-  String get periodDescription {
-    return '${startDate.toString().substring(0, 10)} 至 ${endDate.toString().substring(0, 10)}';
-  }
+  String get periodDescription =>
+      '${startDate.toString().substring(0, 10)} 至 ${endDate.toString().substring(0, 10)}';
 
   @override
   List<Object?> get props => [
@@ -408,17 +417,6 @@ class PeriodClearanceSession extends Equatable {
 
 // 周期财务总结
 class PeriodSummary extends Equatable {
-  final String sessionId;
-  final String sessionName;
-  final DateTime startDate;
-  final DateTime endDate;
-  final double totalIncome;      // 总收入
-  final double totalExpense;     // 总支出
-  final double netChange;        // 净变化
-  final Map<String, double> categoryBreakdown; // 分类统计
-  final List<ManualTransaction> topTransactions; // 主要交易
-  final DateTime generatedDate;
-
   const PeriodSummary({
     required this.sessionId,
     required this.sessionName,
@@ -440,12 +438,23 @@ class PeriodSummary extends Equatable {
         totalIncome: (json['totalIncome'] as num).toDouble(),
         totalExpense: (json['totalExpense'] as num).toDouble(),
         netChange: (json['netChange'] as num).toDouble(),
-        categoryBreakdown: Map<String, double>.from(json['categoryBreakdown'] as Map),
+        categoryBreakdown:
+            Map<String, double>.from(json['categoryBreakdown'] as Map),
         topTransactions: (json['topTransactions'] as List<dynamic>)
             .map((e) => ManualTransaction.fromJson(e as Map<String, dynamic>))
             .toList(),
         generatedDate: DateTime.parse(json['generatedDate'] as String),
       );
+  final String sessionId;
+  final String sessionName;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double totalIncome; // 总收入
+  final double totalExpense; // 总支出
+  final double netChange; // 净变化
+  final Map<String, double> categoryBreakdown; // 分类统计
+  final List<ManualTransaction> topTransactions; // 主要交易
+  final DateTime generatedDate;
 
   Map<String, dynamic> toJson() => {
         'sessionId': sessionId,
@@ -474,4 +483,3 @@ class PeriodSummary extends Equatable {
         generatedDate,
       ];
 }
-
