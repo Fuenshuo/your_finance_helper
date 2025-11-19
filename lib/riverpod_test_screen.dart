@@ -28,9 +28,27 @@ class RiverpodTestScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            const Text('✅ Riverpod State Management: Working'),
-            Text('✅ Asset Provider: ${assetState.length} assets loaded'),
-            const Text('ℹ️ Transaction Provider: Not yet implemented'),
+            Row(
+              children: [
+                const Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                const SizedBox(width: 8),
+                const Text('Riverpod State Management: Working'),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                const SizedBox(width: 8),
+                Text('Asset Provider: ${assetState.length} assets loaded'),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                const SizedBox(width: 8),
+                const Text('Transaction Provider: Not yet implemented'),
+              ],
+            ),
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {

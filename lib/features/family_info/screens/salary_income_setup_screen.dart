@@ -13,6 +13,8 @@ import 'package:your_finance_flutter/features/family_info/widgets/bonus_manageme
 import 'package:your_finance_flutter/features/family_info/widgets/salary_basic_info_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/salary_history_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/tax_deductions_widget.dart';
+import 'package:your_finance_flutter/core/services/ai/payroll_recognition_service.dart';
+import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
 
 class SalaryIncomeSetupScreen extends StatefulWidget {
   const SalaryIncomeSetupScreen({
@@ -138,7 +140,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
   }
 
   Future<void> _updateCumulativeIncome() async {
-    final result = await SalaryCalculationService.calculateAutoCumulative(
+    // 计算累积收入（用于中年度模式）
+    await SalaryCalculationService.calculateAutoCumulative(
       completedMonths: _completedMonths,
       salaryHistory: _salaryHistory,
       basicSalary: double.tryParse(_basicSalaryController.text) ?? 0,
@@ -157,8 +160,6 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
           double.tryParse(_otherTaxFreeIncomeController.text) ?? 0,
       bonuses: _bonuses,
     );
-
-    // 移除了对 _cumulativeIncome 和 _cumulativeTax 的设置，因为这些变量已被删除
   }
 
   /// 自动计算月度个税
@@ -237,6 +238,114 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
       setState(() {
         _specialDeductionMonthly = value.clamp(0, 5000);
       });
+    }
+  }
+
+  /// 识别工资条
+  Future<void> _recognizePayroll() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // 1. 选择图片
+      final imageService = ImageProcessingService.getInstance();
+      final imageFile = await imageService.pickImageFromGallery();
+      if (imageFile == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // 2. 保存图片
+      final imagePath = await imageService.saveImageToAppDirectory(imageFile);
+
+      // 3. 识别工资条
+      final service = await PayrollRecognitionService.getInstance();
+      final result = await service.recognizePayroll(imagePath: imagePath);
+
+      // 4. 转换为SalaryIncome并填充表单
+      final salaryIncome = result.toSalaryIncome(
+        name: _nameController.text.isNotEmpty
+            ? _nameController.text
+            : '工资收入',
+        salaryDay: _salaryDay,
+      );
+
+      // 5. 填充基本工资字段（实发金额）
+      setState(() {
+        _basicSalaryController.text =
+            salaryIncome.basicSalary.toStringAsFixed(2);
+        // 如果识别到了发薪日期，更新salaryDay
+        if (result.salaryDate != null) {
+          _salaryDay = result.salaryDate!.day;
+        }
+        _isLoading = false;
+      });
+
+      // 6. 显示识别结果摘要（简化版）
+      if (mounted) {
+        showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 8),
+                Text('识别成功'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('实发金额: ¥${result.netIncome.toStringAsFixed(2)}'),
+                Text('置信度: ${(result.confidence * 100).toStringAsFixed(0)}%'),
+                if (result.salaryDate != null)
+                  Text('发薪日期: ${result.salaryDate!.toString().substring(0, 10)}'),
+                const SizedBox(height: 8),
+                const Text(
+                  '提示: 已自动填充基本工资，其他字段请手动补充',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '识别成功！实发金额: ¥${result.netIncome.toStringAsFixed(2)}',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      Logger.debug('❌ 工资条识别失败: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('识别失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -352,6 +461,11 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.camera_alt),
+              tooltip: '拍照识别工资条',
+              onPressed: _isLoading ? null : _recognizePayroll,
+            ),
             TextButton(
               onPressed: () {
                 Logger.debug('📝 Save button pressed in app bar');

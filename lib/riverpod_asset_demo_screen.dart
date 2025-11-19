@@ -89,7 +89,7 @@ class _RiverpodAssetDemoScreenState
                 border: Border.all(color: Colors.green),
               ),
               child: Text(
-                '🌐 $_httpTestResult',
+                _httpTestResult,
                 style: const TextStyle(color: Colors.green),
               ),
             ),
@@ -354,16 +354,16 @@ class _RiverpodAssetDemoScreenState
       // Test basic connectivity (this will fail gracefully since we don't have a real server)
       setState(() {
         _httpTestResult = 'Dio HTTP服务已初始化并配置完成！\n'
-            '✅ 自动重试机制\n'
-            '✅ 请求/响应拦截器\n'
-            '✅ 中文错误消息\n'
-            '✅ 文件上传/下载支持\n'
+            '• 自动重试机制\n'
+            '• 请求/响应拦截器\n'
+            '• 中文错误消息\n'
+            '• 文件上传/下载支持\n'
             '准备好用于云同步功能';
       });
 
       unifiedNotifications.showSuccess(
         context,
-        '🌐 Dio HTTP服务测试成功',
+        'Dio HTTP服务测试成功',
       );
     } catch (e) {
       setState(() {

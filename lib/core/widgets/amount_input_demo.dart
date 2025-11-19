@@ -79,11 +79,19 @@ class AmountInputDemo extends StatelessWidget {
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('🎨 样式特点：',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        const Icon(Icons.palette_outlined, size: 20),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '样式特点：',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                     SizedBox(height: 8),
                     Text('• "元"字居中显示在右侧'),
                     Text('• 浅灰色背景块包裹整个输入区域'),

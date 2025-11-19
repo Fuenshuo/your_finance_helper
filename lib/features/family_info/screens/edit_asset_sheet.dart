@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
+import 'package:your_finance_flutter/core/services/ai/asset_valuation_service.dart';
+import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
 
 class EditAssetSheet extends StatefulWidget {
   const EditAssetSheet({
@@ -77,11 +79,22 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
               const SizedBox(height: 24),
 
               // 名称输入
-              Text(
-                '名称',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '名称',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt),
+                    tooltip: '拍照估值',
+                    onPressed: _valuateAsset,
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -177,6 +190,95 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
           ),
         ),
       );
+
+  /// 资产照片估值
+  Future<void> _valuateAsset() async {
+    try {
+      // 1. 选择图片
+      final imageService = ImageProcessingService.getInstance();
+      final imageFile = await imageService.pickImageFromGallery();
+      if (imageFile == null) return;
+
+      // 2. 保存图片
+      final imagePath = await imageService.saveImageToAppDirectory(imageFile);
+
+      // 3. 显示加载对话框
+      if (!mounted) return;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // 4. 识别并估值
+      final service = await AssetValuationService.getInstance();
+      final result = await service.valuateAsset(imagePath: imagePath);
+
+      // 5. 关闭加载对话框
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // 6. 填充表单字段（只填充名称，金额需要用户手动输入）
+      setState(() {
+        _nameController.text = result.assetName;
+        // 不自动填充金额，让用户手动输入
+      });
+
+      // 7. 显示识别结果对话框
+      if (mounted) {
+        showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 8),
+                Text('识别成功'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('品牌: ${result.brand}'),
+                Text('型号: ${result.model}'),
+                Text('置信度: ${(result.confidence * 100).toStringAsFixed(0)}%'),
+                const SizedBox(height: 8),
+                const Text(
+                  '提示: 请手动输入资产金额',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('确认'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        // 关闭加载对话框（如果还在显示）
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('估值失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   void _saveChanges() {
     if (!_formKey.currentState!.validate()) return;

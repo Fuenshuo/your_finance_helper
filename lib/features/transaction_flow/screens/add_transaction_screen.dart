@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -13,8 +15,10 @@ import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/constants/app_icons.dart';
+import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
+import 'package:your_finance_flutter/core/services/ai/category_recommendation_service.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({
@@ -22,10 +26,14 @@ class AddTransactionScreen extends StatefulWidget {
     this.initialType,
     this.editingTransaction,
     this.initialAccountId,
+    this.parsedTransaction,
+    this.imagePath,
   });
   final TransactionType? initialType;
   final Transaction? editingTransaction;
   final String? initialAccountId;
+  final ParsedTransaction? parsedTransaction;
+  final String? imagePath;
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -49,6 +57,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isRecurring = false;
   bool _isDraft = false;
+  String? _transactionImagePath; // 交易关联的图片路径（用于发票识别）
+
+  // AI分类推荐相关
+  CategoryRecommendation? _categoryRecommendation;
+  bool _isRecommendingCategory = false;
+  Timer? _recommendationTimer;
+  String? _lastRequestedDescription; // 记录最后一次请求的描述，避免重复请求
 
   @override
   void initState() {
@@ -76,10 +91,75 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (widget.editingTransaction != null) {
       _loadTransactionData();
     }
+    
+    // 如果有AI解析结果，填充表单
+    if (widget.parsedTransaction != null) {
+      _handleParsedTransaction(widget.parsedTransaction!);
+      if (widget.imagePath != null) {
+        _transactionImagePath = widget.imagePath;
+      }
+    }
   }
+
+  /// 处理AI解析结果
+  void _handleParsedTransaction(ParsedTransaction parsed) {
+    setState(() {
+      // 填充描述
+      if (parsed.description != null && parsed.description!.isNotEmpty) {
+        _descriptionController.text = parsed.description!;
+      }
+
+      // 填充金额
+      if (parsed.amount != null && parsed.amount! > 0) {
+        _amountController.text = parsed.amount!.toStringAsFixed(2);
+      }
+
+      // 填充交易类型
+      if (parsed.type != null) {
+        _selectedType = parsed.type!;
+      }
+
+      // 填充分类
+      if (parsed.category != null) {
+        _selectedCategory = parsed.category!;
+      }
+
+      // 填充子分类
+      if (parsed.subCategory != null) {
+        _selectedSubCategory = parsed.subCategory;
+      }
+
+      // 填充账户
+      if (parsed.accountId != null) {
+        if (_selectedType == TransactionType.transfer) {
+          // 转账类型需要特殊处理
+          _selectedFromAccountId = parsed.accountId;
+        } else {
+          _selectedAccountId = parsed.accountId;
+        }
+      }
+
+      // 填充预算
+      if (parsed.envelopeBudgetId != null) {
+        _selectedEnvelopeBudgetId = parsed.envelopeBudgetId;
+      }
+
+      // 填充日期
+      if (parsed.date != null) {
+        _selectedDate = parsed.date!;
+      }
+
+      // 填充备注
+      if (parsed.notes != null && parsed.notes!.isNotEmpty) {
+        _notesController.text = parsed.notes!;
+      }
+    });
+  }
+
 
   @override
   void dispose() {
+    _recommendationTimer?.cancel();
     _animationSystem.dispose();
     _descriptionController.dispose();
     _amountController.dispose();
@@ -266,6 +346,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 hintText: '请输入交易描述',
                 border: OutlineInputBorder(),
               ),
+              onChanged: (value) => _onDescriptionChanged(value),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return '请输入交易描述';
@@ -298,6 +379,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               },
             ),
             SizedBox(height: context.spacing16),
+
+            // AI分类推荐显示
+            if (_categoryRecommendation != null || _isRecommendingCategory)
+              _buildCategoryRecommendation(),
 
             // 分类选择
             _buildCategorySelector(),
@@ -341,6 +426,202 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ],
         ),
       );
+
+  /// 描述输入变化处理（带防抖和请求去重）
+  void _onDescriptionChanged(String value) {
+    // 取消之前的定时器
+    _recommendationTimer?.cancel();
+
+    final trimmedValue = value.trim();
+
+    // 如果描述太短，清除推荐
+    if (trimmedValue.isEmpty || trimmedValue.length < 3) {
+      setState(() {
+        _categoryRecommendation = null;
+        _isRecommendingCategory = false;
+        _lastRequestedDescription = null;
+      });
+      return;
+    }
+
+    // 如果和上次请求的描述相同，不重复请求
+    if (trimmedValue == _lastRequestedDescription) {
+      return;
+    }
+
+    // 设置防抖定时器（400ms，平衡响应速度和请求频率）
+    _recommendationTimer = Timer(const Duration(milliseconds: 400), () {
+      // 再次检查描述是否仍然有效且与当前输入一致
+      if (mounted && _descriptionController.text.trim() == trimmedValue) {
+        _recommendCategory(trimmedValue);
+      }
+    });
+  }
+
+  /// 推荐分类
+  Future<void> _recommendCategory(String description) async {
+    if (description.isEmpty) return;
+
+    // 检查描述是否仍然有效（用户可能已经继续输入了）
+    if (!mounted || _descriptionController.text.trim() != description) {
+      return;
+    }
+
+    // 记录本次请求的描述，避免重复请求
+    _lastRequestedDescription = description;
+
+    setState(() {
+      _isRecommendingCategory = true;
+      _categoryRecommendation = null;
+    });
+
+    try {
+      final service = await CategoryRecommendationService.getInstance();
+      final transactionProvider =
+          Provider.of<TransactionProvider>(context, listen: false);
+      final transactions = transactionProvider.transactions;
+
+      final recommendation = await service.recommendCategory(
+        description: description,
+        userHistory: transactions.take(50).toList(),
+        transactionType: _selectedType,
+      );
+
+      // 再次检查：如果用户已经继续输入，忽略这次结果
+      if (!mounted || _descriptionController.text.trim() != description) {
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _categoryRecommendation = recommendation;
+          _isRecommendingCategory = false;
+
+          // 如果置信度>0.5，自动选中推荐分类
+          if (recommendation.confidence > 0.5) {
+            _selectedCategory = recommendation.category;
+            if (recommendation.subCategory != null) {
+              _selectedSubCategory = recommendation.subCategory;
+            }
+          }
+        });
+
+        // 显示推荐提示（只在置信度足够高时显示）
+        if (recommendation.confidence > 0.5) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'AI推荐分类: ${recommendation.category.displayName}${recommendation.subCategory != null ? ' - ${recommendation.subCategory}' : ''}',
+              ),
+              duration: const Duration(seconds: 2),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print(
+        '[AddTransactionScreen._recommendCategory] ❌ 分类推荐失败: $e',
+      );
+      if (mounted) {
+        // 只有在描述仍然匹配时才清除加载状态
+        if (_descriptionController.text.trim() == description) {
+          setState(() {
+            _isRecommendingCategory = false;
+          });
+        }
+      }
+    }
+  }
+
+  /// 构建分类推荐显示
+  Widget _buildCategoryRecommendation() {
+    return Container(
+      margin: EdgeInsets.only(bottom: context.spacing12),
+      padding: EdgeInsets.all(context.spacing12),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.blue.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: _isRecommendingCategory
+          ? Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
+                ),
+                SizedBox(width: context.spacing8),
+                Text(
+                  'AI正在推荐分类...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.blue[700],
+                  ),
+                ),
+              ],
+            )
+          : _categoryRecommendation != null
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.auto_awesome,
+                          size: 16,
+                          color: Colors.blue[700],
+                        ),
+                        SizedBox(width: context.spacing4),
+                        Text(
+                          'AI推荐',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '置信度: ${(_categoryRecommendation!.confidence * 100).toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: context.spacing4),
+                    Text(
+                      '分类: ${_categoryRecommendation!.category.displayName}${_categoryRecommendation!.subCategory != null ? ' - ${_categoryRecommendation!.subCategory}' : ''}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue[900],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (_categoryRecommendation!.reason != null) ...[
+                      SizedBox(height: context.spacing4),
+                      Text(
+                        _categoryRecommendation!.reason!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ],
+                  ],
+                )
+              : const SizedBox.shrink(),
+    );
+  }
 
   // 分类选择器
   Widget _buildCategorySelector() {
@@ -838,71 +1119,25 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   // 获取交易类型图标
   IconData _getTransactionTypeIcon(TransactionType type) {
-    switch (type) {
-      case TransactionType.income:
-        return Icons.trending_up;
-      case TransactionType.expense:
-        return Icons.trending_down;
-      case TransactionType.transfer:
-        return Icons.swap_horiz;
-    }
+    return AppIcons.getTransactionTypeIcon(type);
   }
 
   // 获取分类图标
   IconData _getCategoryIcon(TransactionCategory category) {
-    switch (category) {
-      case TransactionCategory.food:
-        return Icons.restaurant_outlined;
-      case TransactionCategory.transport:
-        return Icons.directions_car_outlined;
-      case TransactionCategory.shopping:
-        return Icons.shopping_bag_outlined;
-      case TransactionCategory.entertainment:
-        return Icons.movie_outlined;
-      case TransactionCategory.healthcare:
-        return Icons.local_hospital_outlined;
-      case TransactionCategory.education:
-        return Icons.school_outlined;
-      case TransactionCategory.housing:
-        return Icons.home_outlined;
-      case TransactionCategory.utilities:
-        return Icons.electrical_services_outlined;
-      case TransactionCategory.insurance:
-        return Icons.security_outlined;
-      case TransactionCategory.investment:
-        return Icons.trending_up_outlined;
-      case TransactionCategory.salary:
-        return Icons.work_outlined;
-      case TransactionCategory.bonus:
-        return Icons.card_giftcard_outlined;
-      case TransactionCategory.freelance:
-        return Icons.work_outline;
-      case TransactionCategory.otherIncome:
-        return Icons.attach_money_outlined;
-      case TransactionCategory.otherExpense:
-        return Icons.receipt_outlined;
-      case TransactionCategory.gift:
-        return Icons.card_giftcard_outlined;
-    }
+    return AppIcons.getCategoryIcon(category);
   }
 
   // 获取账户类型图标
   IconData _getAccountTypeIcon(AccountType type) {
     switch (type) {
-      case AccountType.cash:
-        return Icons.account_balance_wallet;
-      case AccountType.bank:
-        return Icons.account_balance;
-      case AccountType.creditCard:
-        return Icons.credit_card;
-      case AccountType.investment:
-        return Icons.trending_up;
       case AccountType.loan:
         return Icons.account_balance_wallet;
       case AccountType.asset:
         return Icons.home;
       case AccountType.liability:
         return Icons.credit_card;
+      default:
+        return AppIcons.getAccountIcon(type);
     }
   }
 
@@ -1176,6 +1411,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           : _notesController.text.trim(),
       status: _isDraft ? TransactionStatus.draft : TransactionStatus.confirmed,
       isRecurring: _isRecurring,
+      imagePath: _transactionImagePath,
     );
     Logger.debug('✅ 交易创建完成: ${transaction.toJson()}');
 

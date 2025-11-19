@@ -263,6 +263,9 @@ extension AppThemeExtensions on BuildContext {
   Color get primaryColor => AppTheme.primaryAction; // 兼容性别名
   Color get surfaceColor => Colors.white; // 表面颜色
 
+  // ColorScheme 兼容性扩展
+  ColorScheme get colorScheme => Theme.of(this).colorScheme;
+
   // 获取间距
   double get spacing2 => AppTheme.baseSpacing * 0.25; // 2pt
   double get spacing4 => AppTheme.baseSpacing * 0.5; // 4pt

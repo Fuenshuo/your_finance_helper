@@ -1,0 +1,258 @@
+---
+description: README文件维护规则 - 确保包文档与代码保持同步
+globs: lib/**/*.dart
+alwaysApply: true
+---
+
+# README文件维护规则
+
+## ⚠️ 强制执行规则
+
+**每创建一个或修改一个 `.dart` 文件后，必须立即更新对应的README文档！**
+
+**执行顺序**：
+1. 创建/修改 `.dart` 文件
+2. **立即**识别文件所属的包
+3. **立即**读取对应的README文件
+4. **立即**更新README中的文件列表和功能描述
+5. **验证**更新完整性
+6. 继续下一个文件
+
+**不要等到所有文件创建完成后再更新README！**
+
+## 核心原则
+
+**代码与文档同步** - 每次修改包内代码时，必须同步更新对应的README文档，确保文档始终反映代码的最新状态。
+
+## 执行检查点（必须在每个文件创建/修改后执行）
+
+- [ ] 已识别文件所属的包
+- [ ] 已读取对应的README文件
+- [ ] 已在README中添加/更新文件说明
+- [ ] 已更新功能描述
+- [ ] 已验证更新完整性
+
+## 工作流程
+
+### 1. 修改代码前：读取README
+
+**触发条件**：
+- 修改任何包内的代码文件（`.dart`文件）
+- 添加新的文件到包中
+- 删除包内的文件
+- 重构包的结构
+
+**操作步骤**：
+1. **识别包路径**：确定被修改文件所属的包
+   - `lib/core/models/*.dart` → 读取 `lib/core/models/README.md`
+   - `lib/features/family_info/screens/*.dart` → 读取 `lib/features/family_info/README.md`
+   - `lib/core/services/*.dart` → 读取 `lib/core/README.md` 或 `lib/core/services/README.md`（如果存在）
+
+2. **读取README文件**：使用 `read_file` 工具读取对应的README文件
+   ```dart
+   // 示例：修改 lib/core/models/account.dart 前
+   read_file('lib/core/models/README.md')
+   ```
+
+3. **理解当前文档结构**：了解文档中描述的内容，确保修改不会破坏文档的准确性
+
+### 2. 执行代码修改
+
+按照任务要求进行代码修改，包括：
+- 添加新的类、函数、枚举
+- 修改现有功能
+- 删除废弃代码
+- 重构代码结构
+
+### 3. 修改代码后：立即更新README
+
+**⚠️ 重要：不要等到所有文件创建完成后再更新README！每个文件创建后立即更新！**
+
+**必须更新的情况**：
+
+#### ✅ 添加新文件
+- 在README的"主要文件"或"文件列表"部分添加新文件说明
+- 描述新文件的功能和用途
+
+#### ✅ 修改文件功能
+- 更新文件中相关功能的描述
+- 如果功能发生重大变化，更新"关键特性"部分
+
+#### ✅ 添加新的类/枚举/函数
+- 在README的相应部分添加说明
+- 描述新增内容的用途和使用场景
+
+#### ✅ 删除文件或功能
+- 从README中移除相关描述
+- 如果删除的是重要功能，在"变更历史"中记录（如果有）
+
+#### ✅ 重构包结构
+- 更新README的"包结构"部分
+- 更新文件列表和说明
+
+**更新步骤**：
+1. **识别需要更新的部分**：
+   - 文件列表
+   - 功能描述
+   - 使用示例
+   - 设计原则（如果适用）
+
+2. **更新README内容**：
+   - 使用 `search_replace` 或 `write` 工具更新README
+   - 保持文档格式一致
+   - 确保描述准确反映代码实现
+
+3. **验证更新**：
+   - 确保README中的文件列表与实际文件一致
+   - 确保功能描述与代码实现匹配
+   - 确保示例代码（如果有）仍然有效
+
+## 包与README映射关系
+
+### Core包
+```
+lib/core/models/*.dart          → lib/core/models/README.md
+lib/core/providers/*.dart       → lib/core/README.md (providers部分)
+lib/core/services/*.dart        → lib/core/README.md (services部分)
+lib/core/widgets/*.dart         → lib/core/README.md (widgets部分)
+lib/core/utils/*.dart           → lib/core/README.md (utils部分)
+lib/core/theme/*.dart           → lib/core/README.md (theme部分)
+lib/core/database/*.dart        → lib/core/README.md (database部分)
+lib/core/router/*.dart          → lib/core/README.md (router部分)
+lib/core/animations/*.dart       → lib/core/README.md (animations部分)
+lib/core/constants/*.dart        → lib/core/README.md (constants部分)
+```
+
+### Features包
+```
+lib/features/family_info/**/*.dart      → lib/features/family_info/README.md
+lib/features/financial_planning/**/*.dart → lib/features/financial_planning/README.md
+lib/features/transaction_flow/**/*.dart   → lib/features/transaction_flow/README.md
+```
+
+### Screens包
+```
+lib/screens/*.dart  → lib/screens/README.md
+```
+
+### 顶层包
+```
+lib/*.dart          → lib/ARCHITECTURE.md (整体架构文档)
+```
+
+## 更新示例
+
+### 示例1：添加新模型文件
+
+**代码修改**：
+```dart
+// 添加 lib/core/models/new_model.dart
+class NewModel extends Equatable {
+  // ...
+}
+```
+
+**README更新**：
+```markdown
+### 12. new_model.dart - 新模型
+
+**职责**: 定义新模型相关的数据结构
+
+**核心类**:
+- `NewModel` - 新模型实体
+  - 功能描述
+  - 使用场景
+
+**使用场景**:
+- 场景1
+- 场景2
+```
+
+### 示例2：修改现有功能
+
+**代码修改**：
+```dart
+// 修改 lib/core/services/storage_service.dart
+// 添加新的方法 saveNewData()
+Future<void> saveNewData(NewData data) async {
+  // ...
+}
+```
+
+**README更新**：
+```markdown
+**主要服务**:
+- `storage_service.dart` - 存储服务（SharedPreferences）
+  - 新增 `saveNewData()` 方法用于保存新数据
+```
+
+### 示例3：添加新页面
+
+**代码修改**：
+```dart
+// 添加 lib/features/family_info/screens/new_screen.dart
+class NewScreen extends StatelessWidget {
+  // ...
+}
+```
+
+**README更新**：
+```markdown
+### 13. new_screen.dart - 新页面
+
+**职责**: 描述新页面的功能
+
+**功能**:
+- 功能1
+- 功能2
+
+**导航**:
+- 从某页面 → `new_screen.dart`
+```
+
+## 特殊情况处理
+
+### 1. README文件不存在
+- 如果包没有README文件，创建新的README文件
+- 参考现有README的格式和结构
+- 包含包的基本信息、文件列表、功能说明
+
+### 2. 修改影响多个包
+- 如果修改影响多个包，需要更新所有相关的README文件
+- 例如：添加新的数据模型可能影响：
+  - `lib/core/models/README.md`
+  - `lib/core/database/README.md`（如果涉及数据库表）
+  - 使用该模型的feature模块的README
+
+### 3. 重大重构
+- 如果进行重大重构，可能需要重写README的某些部分
+- 确保文档结构仍然清晰
+- 更新所有受影响的章节
+
+## 验证检查清单（每个文件创建/修改后必须检查）
+
+**⚠️ 在创建或修改每个 `.dart` 文件后，立即执行以下检查：**
+
+- [ ] ✅ 已识别文件所属的包
+- [ ] ✅ 已读取对应的README文件
+- [ ] ✅ README中的文件列表已更新（新增文件必须添加说明）
+- [ ] ✅ README中的功能描述已更新（修改文件必须更新描述）
+- [ ] ✅ README中的使用示例仍然有效（如有示例代码）
+- [ ] ✅ README中的设计原则仍然适用（如有原则说明）
+- [ ] ✅ 所有受影响的README文件都已更新（如果文件影响多个包）
+
+**如果以上任何一项未完成，必须立即完成后再继续！**
+
+## 注意事项
+
+1. **保持格式一致**：更新README时保持与现有文档格式一致
+2. **描述准确**：确保描述准确反映代码实现，不要过度简化或夸大
+3. **及时更新**：在完成代码修改后立即更新README，不要延迟
+4. **完整性**：确保更新是完整的，不要遗漏相关部分
+5. **可读性**：保持文档的可读性，使用清晰的标题和结构
+
+## 相关文档
+
+- [项目结构指南](mdc:.cursor/rules/project-structure.mdc)
+- [整体架构文档](mdc:lib/ARCHITECTURE.md)
+- [Core包文档](mdc:lib/core/README.md)

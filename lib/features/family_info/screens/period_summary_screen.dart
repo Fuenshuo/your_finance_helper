@@ -882,17 +882,17 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       final buffer = StringBuffer();
       
       // 标题
-      buffer.writeln('📊 ${widget.session.name}');
+      buffer.writeln('${widget.session.name}');
       buffer.writeln('=' * 40);
       buffer.writeln();
       
       // 周期信息
-      buffer.writeln('📅 周期: ${widget.session.periodDescription}');
+      buffer.writeln('周期: ${widget.session.periodDescription}');
       buffer.writeln('生成时间: ${DateFormat('yyyy-MM-dd HH:mm').format(_summary!.generatedDate)}');
       buffer.writeln();
       
       // 财务概览
-      buffer.writeln('💰 财务概览');
+      buffer.writeln('财务概览');
       buffer.writeln('-' * 40);
       buffer.writeln('总收入: ${context.formatAmount(_summary!.totalIncome)}');
       buffer.writeln('总支出: ${context.formatAmount(_summary!.totalExpense)}');
@@ -907,7 +907,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       if (_summary!.totalIncome + _summary!.totalExpense > 0) {
         final incomeRatio = (_summary!.totalIncome / (_summary!.totalIncome + _summary!.totalExpense) * 100).toStringAsFixed(1);
         final expenseRatio = (_summary!.totalExpense / (_summary!.totalIncome + _summary!.totalExpense) * 100).toStringAsFixed(1);
-        buffer.writeln('📈 收支分析');
+        buffer.writeln('收支分析');
         buffer.writeln('-' * 40);
         buffer.writeln('收入占比: $incomeRatio%');
         buffer.writeln('支出占比: $expenseRatio%');
@@ -916,7 +916,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       
       // 分类分析
       if (_summary!.categoryBreakdown.isNotEmpty) {
-        buffer.writeln('📋 分类分析');
+        buffer.writeln('分类分析');
         buffer.writeln('-' * 40);
         final sortedCategories = _summary!.categoryBreakdown.entries.toList()
           ..sort((a, b) => b.value.compareTo(a.value));
@@ -932,7 +932,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       
       // 主要交易
       if (_summary!.topTransactions.isNotEmpty) {
-        buffer.writeln('💳 主要交易');
+        buffer.writeln('主要交易');
         buffer.writeln('-' * 40);
         for (final transaction in _summary!.topTransactions) {
           final sign = transaction.category.isIncome ? '+' : '-';

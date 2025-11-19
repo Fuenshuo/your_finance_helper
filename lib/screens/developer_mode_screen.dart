@@ -82,7 +82,13 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('📊 导入预览'),
+            title: Row(
+              children: [
+                const Icon(Icons.analytics_outlined),
+                const SizedBox(width: 8),
+                const Text('导入预览'),
+              ],
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -96,9 +102,15 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                   Text('历史: ${report.modules['history']!.total} 条记录'),
                   if (report.errors.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const Text(
-                      '⚠️ 发现问题:',
-                      style: TextStyle(color: Colors.orange),
+                    Row(
+                      children: [
+                        const Icon(Icons.warning_amber_outlined, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '发现问题:',
+                          style: TextStyle(color: Colors.orange),
+                        ),
+                      ],
                     ),
                     ...report.errors.map((e) => Text('• $e')),
                   ],
@@ -118,7 +130,7 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
       if (mounted) {
         unifiedNotifications.showError(
           context,
-          '❌ 预览失败: $e',
+          '预览失败: $e',
         );
       }
     } finally {
@@ -132,7 +144,7 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
   Future<void> _performLegacyImport() async {
     final confirmed = await unifiedNotifications.showConfirmation(
       context,
-      title: '⚠️ 导入遗留数据',
+      title: '导入遗留数据',
       message: '此操作将从SharedPreferences和JSON文件导入遗留数据到Drift数据库。\n\n'
           '将导入：资产、账户、交易、预算、薪资等所有数据。\n\n'
           '原始数据将被备份，导入的数据将与现有数据合并。\n\n'
@@ -153,14 +165,14 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
       if (mounted) {
         unifiedNotifications.showSuccess(
           context,
-          '✅ 遗留数据导入完成，请重启应用查看结果',
+          '遗留数据导入完成，请重启应用查看结果',
         );
       }
     } catch (e) {
       if (mounted) {
         unifiedNotifications.showError(
           context,
-          '❌ 导入失败: $e',
+          '导入失败: $e',
         );
       }
     } finally {
@@ -173,7 +185,7 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
   Future<void> _forceDataMigration() async {
     final confirmed = await unifiedNotifications.showConfirmation(
       context,
-      title: '⚠️ 强制数据迁移',
+      title: '强制数据迁移',
       message: '此操作将重新执行所有数据迁移，可能恢复丢失的工资数据。\n\n'
           '注意：此操作可能会覆盖现有数据，建议先备份重要数据。\n\n'
           '确定要继续吗？',
@@ -192,14 +204,14 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
       if (mounted) {
         unifiedNotifications.showSuccess(
           context,
-          '✅ 数据迁移完成，请重新启动应用查看结果',
+          '数据迁移完成，请重新启动应用查看结果',
         );
       }
     } catch (e) {
       if (mounted) {
         unifiedNotifications.showError(
           context,
-          '❌ 数据迁移失败: $e',
+          '数据迁移失败: $e',
         );
       }
     } finally {
@@ -213,7 +225,7 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
   Future<void> _processHistoricalClearanceData() async {
     final confirmed = await unifiedNotifications.showConfirmation(
       context,
-      title: '🔄 处理历史清账数据',
+      title: '处理历史清账数据',
       message: '此操作将扫描所有已完成的清账会话，将其中的交易记录转换为实际交易记录。\n\n'
           '转换后的交易将出现在交易列表中，钱包余额会自动更新。\n\n'
           '已存在的交易不会被重复添加。\n\n'
@@ -242,12 +254,12 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
         if (convertedCount > 0) {
           unifiedNotifications.showSuccess(
             context,
-            '✅ 已处理 $convertedCount 个历史清账会话，交易记录已更新',
+            '已处理 $convertedCount 个历史清账会话，交易记录已更新',
           );
         } else {
           unifiedNotifications.showInfo(
             context,
-            'ℹ️ 没有需要处理的历史清账数据',
+            '没有需要处理的历史清账数据',
           );
         }
       }
@@ -255,7 +267,7 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
       if (mounted) {
         unifiedNotifications.showError(
           context,
-          '❌ 处理失败: $e',
+          '处理失败: $e',
         );
       }
     } finally {
@@ -551,14 +563,14 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                     SizedBox(height: context.spacing8),
 
                     Text(
-                      '⚠️ 强制数据迁移：重新执行所有数据迁移，可能恢复丢失的工资数据',
+                      '强制数据迁移：重新执行所有数据迁移，可能恢复丢失的工资数据',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: const Color(0xFFFF6B6B),
                       ),
                     ),
                     SizedBox(height: context.spacing4),
                     Text(
-                      '🔄 处理历史清账数据：将已完成清账的交易转换为实际交易记录',
+                      '处理历史清账数据：将已完成清账的交易转换为实际交易记录',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: const Color(0xFF2196F3),
                       ),
@@ -615,9 +627,9 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                     ),
                     SizedBox(height: context.spacing8),
                     Text(
-                      '📁 查找路径: legacy/ 或 应用文档目录\n'
-                      '📄 支持文件: assets.json, accounts.json, transactions.json, budgets.json, salary.json\n'
-                      '🔄 导入后数据将存储在Drift数据库中，原始文件会被备份',
+                      '查找路径: legacy/ 或 应用文档目录\n'
+                      '支持文件: assets.json, accounts.json, transactions.json, budgets.json, salary.json\n'
+                      '导入后数据将存储在Drift数据库中，原始文件会被备份',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: const Color(0xFF666666),
                       ),

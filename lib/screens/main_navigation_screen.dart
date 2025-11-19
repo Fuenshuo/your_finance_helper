@@ -3,7 +3,7 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/features/family_info/screens/family_info_home_screen.dart';
 import 'package:your_finance_flutter/features/financial_planning/screens/financial_planning_home_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_flow_home_screen.dart';
-import 'package:your_finance_flutter/screens/debug_screen.dart';
+import 'package:your_finance_flutter/screens/personal_screen.dart';
 
 /// 主导航页面 - 三层架构的核心导航
 class MainNavigationScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     FamilyInfoHomeScreen(),
     FinancialPlanningHomeScreen(),
     TransactionFlowHomeScreen(),
-    DebugScreen(),
+    PersonalScreen(),
   ];
 
   static const List<BottomNavigationBarItem> _navItems = [
@@ -43,15 +43,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       tooltip: '交易记录',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.bug_report_outlined),
-      activeIcon: Icon(Icons.bug_report),
-      label: '调试',
-      tooltip: '调试信息',
+      icon: Icon(Icons.person_outline),
+      activeIcon: Icon(Icons.person),
+      label: '个人',
+      tooltip: '个人中心',
     ),
   ];
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Text(
+            _getAppBarTitle(),
+            style: context.textTheme.headlineMedium,
+          ),
+          centerTitle: true,
+        ),
         body: IndexedStack(
           index: _selectedIndex,
           children: _screens,
@@ -63,4 +72,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           items: _navItems,
         ),
       );
+
+  String _getAppBarTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return '家庭信息';
+      case 1:
+        return '财务规划';
+      case 2:
+        return '收支流水';
+      case 3:
+        return '个人';
+      default:
+        return '家庭资产记账';
+    }
+  }
 }

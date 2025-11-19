@@ -30,22 +30,6 @@ class _FinancialPlanningHomeScreenState
         builder: (context, incomePlanProvider, expensePlanProvider, child) =>
             Scaffold(
           backgroundColor: context.primaryBackground,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            title: Text(
-              '财务计划',
-              style: context.textTheme.headlineMedium,
-            ),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                onPressed: _showCreatePlanDialog,
-                icon: const Icon(Icons.add),
-                tooltip: '新建计划',
-              ),
-            ],
-          ),
           body: SingleChildScrollView(
             padding: EdgeInsets.all(context.responsiveSpacing16),
             child: Column(
@@ -53,20 +37,16 @@ class _FinancialPlanningHomeScreenState
               children: [
                 // 模块介绍
                 AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        '🎯 财务计划',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: context.spacing8),
-                      Text(
+                      const Text('🎯'),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
                         '制定收入计划和支出计划，实现财务目标的智能管理',
                         style: context.textTheme.bodyMedium?.copyWith(
                           color: context.secondaryText,
+                          ),
                         ),
                       ),
                     ],
@@ -100,8 +80,10 @@ class _FinancialPlanningHomeScreenState
                                 size: 20,
                               ),
                               SizedBox(width: context.spacing8),
+                              Icon(Icons.notifications_outlined, color: context.colorScheme.primary),
+                              const SizedBox(width: 8),
                               Text(
-                                '💰 还款提醒',
+                                '还款提醒',
                                 style: context.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -280,7 +262,14 @@ class _FinancialPlanningHomeScreenState
                                 AppCard(
                               child: Column(
                                 children: [
-                                  const Text('💰 收入计划自动执行'),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.monetization_on_outlined, color: context.colorScheme.primary),
+                                      const SizedBox(width: 8),
+                                      const Text('收入计划自动执行'),
+                                    ],
+                                  ),
                                   const Text('自动根据工资计划生成收入交易'),
                                   SizedBox(height: context.spacing12),
                                   OutlinedButton.icon(
@@ -379,12 +368,18 @@ class _FinancialPlanningHomeScreenState
 
                       // 显示收入计划
                       if (incomePlanProvider.activeIncomePlans.isNotEmpty) ...[
-                        Text(
-                          '💰 收入计划',
-                          style: context.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4CAF50),
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.monetization_on_outlined, color: context.colorScheme.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              '收入计划',
+                              style: context.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF4CAF50),
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: context.spacing8),
                         ...incomePlanProvider.activeIncomePlans.map(
@@ -402,12 +397,18 @@ class _FinancialPlanningHomeScreenState
                           .activeExpensePlans.isNotEmpty) ...[
                         if (incomePlanProvider.activeIncomePlans.isNotEmpty)
                           SizedBox(height: context.spacing16),
-                        Text(
-                          '💸 支出计划',
-                          style: context.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFF44336),
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.trending_down_outlined, color: const Color(0xFFF44336)),
+                            const SizedBox(width: 8),
+                            Text(
+                              '支出计划',
+                              style: context.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFF44336),
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: context.spacing8),
                         ...expensePlanProvider.activeExpensePlans.map(
@@ -534,11 +535,17 @@ class _FinancialPlanningHomeScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '📊 计划执行统计',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Icon(Icons.analytics_outlined, color: context.colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            '计划执行统计',
+                            style: context.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: context.spacing16),
                       Row(

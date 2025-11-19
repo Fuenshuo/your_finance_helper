@@ -69,15 +69,6 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.primaryBackground,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Text(
-            '家庭信息维护',
-            style: context.textTheme.headlineMedium,
-          ),
-          centerTitle: true,
-        ),
         body: SingleChildScrollView(
           padding: EdgeInsets.all(context.responsiveSpacing16),
           child: Column(
@@ -88,18 +79,22 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '📊 家庭信息维护',
-                      style: context.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: context.spacing8),
-                    Text(
-                      '统一管理您的工资收入、资产配置和钱包账户等静态财务信息',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.secondaryText,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.analytics_outlined,
+                          color: context.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '统一管理您的工资收入、资产配置和钱包账户等静态财务信息',
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.secondaryText,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/constants/app_icons.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/utils/notification_manager.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
+import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
 import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_records_screen.dart';
+import 'package:your_finance_flutter/features/transaction_flow/widgets/ai_smart_accounting_widget.dart';
 
 /// 交易流水主页
 class TransactionFlowHomeScreen extends StatefulWidget {
@@ -24,22 +25,6 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: context.primaryBackground,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Text(
-            '交易流水',
-            style: context.textTheme.headlineMedium,
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: _showAddTransactionDialog,
-              icon: const Icon(Icons.add),
-              tooltip: '添加交易',
-            ),
-          ],
-        ),
         body: SingleChildScrollView(
           padding: EdgeInsets.all(context.responsiveSpacing16),
           child: Column(
@@ -47,20 +32,19 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
             children: [
               // 模块介绍
               AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '💳 交易流水',
-                      style: context.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: context.spacing8),
-                    Text(
+                  child: Row(
+                      children: [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                        color: context.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
                       '查看所有交易记录，与财务计划智能关联，掌握资金流动情况',
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: context.secondaryText,
+                          ),
                       ),
                     ),
                   ],
@@ -77,11 +61,20 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '📊 本月统计',
-                          style: context.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.analytics_outlined,
+                              color: context.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '本月统计',
+                              style: context.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                         Text(
                           '${DateTime.now().year}年${DateTime.now().month}月',
@@ -221,16 +214,12 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                   Expanded(
                     child: _buildQuickActionCard(
                       context,
-                      icon: Icons.receipt_long_outlined,
-                      title: '交易记录',
-                      subtitle: '查看所有交易',
-                      color: const Color(0xFF2196F3),
+                      icon: Icons.smart_toy_outlined,
+                      title: 'AI智能记账',
+                      subtitle: '语音输入/拍照识别',
+                      color: const Color(0xFF9C27B0),
                       onTap: () {
-                        Navigator.of(context).push(
-                          AppAnimations.createRoute(
-                            const TransactionRecordsScreen(),
-                          ),
-                        );
+                        AiSmartAccountingWidget.show(context);
                       },
                     ),
                   ),
@@ -238,18 +227,11 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                   Expanded(
                     child: _buildQuickActionCard(
                       context,
-                      icon: Icons.search,
-                      title: '交易搜索',
-                      subtitle: '查找特定交易',
-                      color: const Color(0xFFFF9800),
-                      onTap: () {
-                        // TODO: 导航到交易搜索页面
-                        NotificationManager().showDevelopmentHint(
-                          context,
-                          '交易搜索',
-                          additionalInfo: '智能搜索和筛选功能即将上线',
-                        );
-                      },
+                      icon: Icons.add_circle_outlined,
+                      title: '添加交易',
+                      subtitle: '记录新的交易',
+                      color: const Color(0xFF4CAF50),
+                      onTap: _showAddTransactionDialog,
                     ),
                   ),
                 ],
@@ -332,8 +314,6 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                             );
                             final categoryName =
                                 transaction.category.displayName;
-                            final timeStr =
-                                _formatTransactionTime(transaction.date);
                             final amountStr =
                                 _formatTransactionAmount(transaction);
 
@@ -343,14 +323,17 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                                   context,
                                   transaction: transaction,
                                   title: transaction.description,
-                                  subtitle: '$accountName · $categoryName',
+                                  subtitle: '$categoryName • $accountName',
                                   amount: amountStr,
-                                  time: timeStr,
+                                  time: '', // 不再单独显示时间
                                   type: transaction.type?.name ?? 'unknown',
                                   isAuto: false, // TODO: 根据交易来源判断是否自动生成
                                 ),
                                 if (displayTransactions.last != transaction)
-                                  SizedBox(height: context.spacing12),
+                                  Divider(
+                                    height: 1,
+                                    color: Colors.grey[300],
+                                  ),
                               ],
                             );
                           }).toList(),
@@ -546,31 +529,16 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
     }
   }
 
-  /// 格式化交易时间
-  String _formatTransactionTime(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final transactionDate = DateTime(date.year, date.month, date.day);
-
-    if (transactionDate == today) {
-      return '今天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (transactionDate == today.subtract(const Duration(days: 1))) {
-      return '昨天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (transactionDate == today.subtract(const Duration(days: 2))) {
-      return '前天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else {
-      return '${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    }
-  }
-
   /// 格式化交易金额
   String _formatTransactionAmount(Transaction transaction) {
-    final prefix = transaction.type == TransactionType.income ? '+' : '-';
-    final amount = transaction.amount.toStringAsFixed(2);
-    return '$prefix¥$amount';
+    final isIncome = transaction.type == TransactionType.income ||
+        (transaction.type == null && transaction.category.isIncome);
+    return context.formatAmount(
+      isIncome ? transaction.amount : -transaction.amount,
+    );
   }
 
-  /// 构建真正的交易项
+  /// 构建真正的交易项（参考清账历史样式）
   Widget _buildRealTransactionItem(
     BuildContext context, {
     required Transaction transaction,
@@ -583,64 +551,30 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
   }) {
     final isIncome = transaction.type == TransactionType.income ||
         (transaction.type == null && transaction.category.isIncome);
-    final amountColor = isIncome ? context.successColor : context.errorColor;
-    final typeIcon = isIncome ? Icons.trending_up : Icons.trending_down;
-    final typeIconColor = isIncome ? context.successColor : context.errorColor;
+    final categoryColor = _getCategoryColor(transaction.category);
+    final categoryIcon = AppIcons.getCategoryIcon(transaction.category);
 
-    return InkWell(
-      onTap: () {
-        // 导航到交易详情页面
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) =>
-                TransactionDetailScreen(transaction: transaction),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: EdgeInsets.all(context.spacing16),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: context.dividerColor.withOpacity(0.3),
-          ),
-        ),
-        child: Row(
-          children: [
-            // 交易图标
-            Container(
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: typeIconColor.withOpacity(0.1),
+          color: categoryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                typeIcon,
-                color: typeIconColor,
+          categoryIcon,
+          color: categoryColor,
                 size: 20,
               ),
             ),
-
-            SizedBox(width: context.spacing12),
-
-            // 交易信息
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      title: Row(
                     children: [
                       Expanded(
                         child: Text(
                           title,
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+              style: context.responsiveBodyLarge,
                         ),
                       ),
                       if (isAuto)
@@ -664,38 +598,34 @@ class _TransactionFlowHomeScreenState extends State<TransactionFlowHomeScreen> {
                         ),
                     ],
                   ),
-                  SizedBox(height: context.spacing4),
-                  Text(
+      subtitle: Text(
                     subtitle,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.secondaryText,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: context.spacing4),
-                  Text(
-                    time,
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: context.secondaryText,
+        style: context.responsiveBodySmall.copyWith(
+          color: Colors.grey,
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            // 金额
-            Text(
+      trailing: Text(
               amount,
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: amountColor,
-                fontWeight: FontWeight.w600,
+        style: context.amountStyle(
+          isPositive: isIncome,
               ),
             ),
-          ],
-        ),
+      onTap: () {
+        // 导航到交易详情页面
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) =>
+                TransactionDetailScreen(transaction: transaction),
       ),
     );
+      },
+    );
+  }
+
+  /// 获取分类颜色
+  Color _getCategoryColor(TransactionCategory category) {
+    if (category.isIncome) return Colors.green;
+    return Colors.red;
   }
 
   /// 构建示例交易项

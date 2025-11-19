@@ -3,6 +3,7 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/screens/ai_config_screen.dart';
 import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
 
 /// 设置页面
@@ -60,6 +61,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildInfoItem('版本号', 'V3.0'),
                     _buildInfoItem('架构', '三层财务模型'),
                     _buildInfoItem('状态', '开发中'),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // AI配置
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'AI服务配置',
+                          style: context.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              AppAnimations.createRoute<void>(
+                                const AiConfigScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward_ios),
+                          iconSize: 16,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '配置AI服务提供商和API Key，启用大语言分析和图文分析功能',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.secondaryText,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -152,7 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             IconButton(
                               onPressed: () {
                                 Navigator.of(context).push(
-                                  AppAnimations.createRoute(
+                                  AppAnimations.createRoute<void>(
                                     const DeveloperModeScreen(),
                                   ),
                                 );

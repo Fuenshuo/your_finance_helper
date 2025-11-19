@@ -88,9 +88,15 @@ class AmountInputDemo extends StatelessWidget {
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '🎨 样式特点：',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Row(
+                      children: [
+                        const Icon(Icons.palette_outlined, size: 20),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '样式特点：',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 8),
                     Text('• "元"字居中显示在右侧'),

@@ -1,0 +1,586 @@
+---
+globs: *.dart
+description: UI component style naming guide - standardized style names for all UI components
+---
+
+# UI组件样式命名指南
+
+本文档定义了应用中所有UI组件的样式名称，**按样式特征命名**，方便快速引用和应用。
+
+## 🎯 默认样式体系（推荐）
+
+**核心原则：除非有特殊需求，否则一律使用默认样式。**
+
+### 默认样式组合
+
+| 组件类型 | 默认样式 | 实现方式 | 使用场景 |
+|---------|---------|---------|---------|
+| **文本输入框** | 标准文本输入框样式 | `FormBuilderUtils.buildTextField()` 或直接使用 `TextField` + 全局主题 | 所有文本输入 |
+| **金额输入** | 金额输入框样式 | `AmountInputField` 组件 | 仅金额输入场景 |
+| **日期选择** | 日期选择器样式 | `FormBuilderUtils.buildDateField()` | 仅日期选择场景 |
+| **下拉框** | 标准下拉框样式 | `FormBuilderUtils.buildDropdown()` | 所有下拉选择 |
+| **复选框** | Material默认样式 | `FormBuilderUtils.buildCheckbox()` 或 `Checkbox` | 所有复选框 |
+| **开关** | Material默认样式 | `FormBuilderUtils.buildSwitch()` 或 `SwitchListTile` | 所有开关 |
+| **单选按钮** | Material默认样式 | `Radio` 或 `RadioListTile` | 所有单选 |
+| **滑块** | Material默认样式 | `FormBuilderUtils.buildSlider()` 或 `Slider` | 所有滑块 |
+| **主要按钮** | 主要按钮样式 | `ElevatedButton`（使用全局主题） | 主要操作按钮 |
+| **次要按钮** | 文本按钮样式 | `TextButton`（使用全局主题） | 取消、次要操作 |
+| **确认对话框** | 确认对话框样式 | `unifiedNotifications.showConfirmation()` | 所有确认操作 |
+| **底部表单** | 底部表单样式 | `AppAnimations.showAppModalBottomSheet()` | 所有底部表单 |
+| **标签页** | Material默认样式 | `TabBar` / `TabBarView` | 所有标签页 |
+| **提示消息** | SnackBar提示样式 | `ScaffoldMessenger.showSnackBar()` | 所有操作反馈 |
+
+### 默认样式特征
+
+所有默认样式都遵循全局主题配置（[app_theme.dart](mdc:lib/core/theme/app_theme.dart)）：
+
+- **圆角**：12pt（统一圆角）
+- **输入框**：白色背景，灰色边框，聚焦时主题色2px边框
+- **按钮**：主题色背景（主要按钮），主题色文字（文本按钮），12pt圆角
+- **间距**：使用响应式间距（`context.responsiveSpacing*`）
+
+---
+
+## 📋 完整样式列表（特殊场景使用）
+
+**样式编号说明：**
+- **S1-S3**：输入框样式
+- **S4**：下拉框样式
+- **S5-S10**：选择组件样式
+- **S11-S16**：按钮样式
+- **S17-S18**：对话框样式
+- **S19**：标签页样式
+- **S20-S21**：提示样式
+
+---
+
+## 1. 输入框样式 (Input Field Styles)
+
+### 1.1 **标准文本输入框样式** (`StandardTextFieldStyle`) ⭐ **默认** [S1]
+**命名：`标准文本输入框样式` 或 `StandardTextFieldStyle`**
+
+**样式特征：**
+- 使用 `FormBuilderTextField` 或 `TextField` + 全局主题
+- 圆角：12pt（由全局主题定义）
+- 填充背景：白色（cardColor）
+- 边框：默认灰色（dividerColor），聚焦时主题色（primaryColor）2px宽
+- 内边距：水平16pt，垂直16pt
+
+**推荐使用方式：**
+```dart
+// 方式1：使用FormBuilderUtils（推荐）
+FormBuilderUtils.buildTextField(
+  context,
+  name: 'field_name',
+  label: '标签',
+)
+
+// 方式2：直接使用TextField（会自动应用全局主题）
+TextField(
+  decoration: InputDecoration(
+    labelText: '标签',
+  ),
+)
+```
+
+**使用位置：**
+- [FormBuilderUtils.buildTextField](mdc:lib/core/widgets/form_builder_utils.dart) - 通用文本输入框构建器
+- 所有使用 `FormBuilderUtils.buildTextField()` 的表单页面
+
+---
+
+### 1.2 **金额输入框样式** (`AmountInputFieldStyle`) 🔸 **特殊场景** [S2]
+**命名：`金额输入框样式` 或 `AmountInputFieldStyle`**
+
+**样式特征：**
+- 使用 `AmountInputField` 组件
+- 左侧圆角：8pt（右侧无圆角，与单位块衔接）
+- 右侧单位块：36px宽，浅灰色背景
+- **仅在金额输入时使用**
+
+**使用位置：**
+- [AmountInputField](mdc:lib/core/widgets/amount_input_field.dart) - 金额输入组件
+
+**代码示例：**
+```dart
+AmountInputField(
+  controller: controller,
+  labelText: '金额',
+  unitText: '元',
+)
+```
+
+---
+
+### 1.3 **日期选择器样式** (`DatePickerFieldStyle`) 🔸 **特殊场景** [S3]
+**命名：`日期选择器样式` 或 `DatePickerFieldStyle`**
+
+**样式特征：**
+- 使用 `FormBuilderDateTimePicker`
+- 前缀图标：日历图标（Icons.calendar_today）
+- 日期格式：yyyy-MM-dd
+- **仅在日期选择时使用**
+
+**推荐使用方式：**
+```dart
+FormBuilderUtils.buildDateField(
+  context,
+  name: 'date',
+  label: '日期',
+)
+```
+
+**使用位置：**
+- [FormBuilderUtils.buildDateField](mdc:lib/core/widgets/form_builder_utils.dart) - 日期选择器构建器
+
+---
+
+## 2. 下拉框样式 (Dropdown Styles)
+
+### 2.1 **标准下拉框样式** (`StandardDropdownStyle`) ⭐ **默认** [S4]
+**命名：`标准下拉框样式` 或 `StandardDropdownStyle`**
+
+**样式特征：**
+- 使用 `FormBuilderDropdown`
+- 圆角：12pt
+- 填充背景：白色（cardColor）
+- 边框：默认灰色，聚焦时主题色2px宽
+
+**推荐使用方式：**
+```dart
+FormBuilderUtils.buildDropdown<String>(
+  context,
+  name: 'dropdown',
+  label: '选择项',
+  items: [
+    DropdownMenuItem(value: 'option1', child: Text('选项1')),
+    DropdownMenuItem(value: 'option2', child: Text('选项2')),
+  ],
+)
+```
+
+**使用位置：**
+- [FormBuilderUtils.buildDropdown](mdc:lib/core/widgets/form_builder_utils.dart) - 下拉框构建器
+
+---
+
+## 3. 选择组件样式 (Selection Component Styles)
+
+### 3.1 **复选框样式** (`CheckboxStyle`) ⭐ **默认** [S5]
+**命名：`复选框样式` 或 `CheckboxStyle`**
+
+**推荐使用方式：**
+```dart
+// 方式1：使用FormBuilderUtils
+FormBuilderUtils.buildCheckbox(
+  context,
+  name: 'checkbox',
+  title: '选项',
+)
+
+// 方式2：直接使用Material Checkbox
+Checkbox(
+  value: isChecked,
+  onChanged: (value) => setState(() => isChecked = value),
+)
+```
+
+**使用位置：**
+- [FormBuilderUtils.buildCheckbox](mdc:lib/core/widgets/form_builder_utils.dart) - 复选框构建器
+
+---
+
+### 3.2 **开关样式** (`SwitchStyle`) ⭐ **默认** [S6]
+**命名：`开关样式` 或 `SwitchStyle`**
+
+**推荐使用方式：**
+```dart
+// 方式1：使用FormBuilderUtils
+FormBuilderUtils.buildSwitch(
+  name: 'switch',
+  title: '开关',
+)
+
+// 方式2：使用SwitchListTile（推荐，带标题）
+SwitchListTile(
+  title: Text('开关'),
+  value: isEnabled,
+  onChanged: (value) => setState(() => isEnabled = value),
+)
+```
+
+**使用位置：**
+- [FormBuilderUtils.buildSwitch](mdc:lib/core/widgets/form_builder_utils.dart) - 开关构建器
+
+---
+
+### 3.3 **单选按钮样式** (`RadioButtonStyle`) ⭐ **默认** [S7]
+**命名：`单选按钮样式` 或 `RadioButtonStyle`**
+
+**推荐使用方式：**
+```dart
+// 使用RadioListTile（推荐，带标题）
+RadioListTile<String>(
+  title: Text('选项1'),
+  value: 'option1',
+  groupValue: selectedValue,
+  onChanged: (value) => setState(() => selectedValue = value),
+)
+```
+
+**使用位置：**
+- [ai_config_screen.dart](mdc:lib/screens/ai_config_screen.dart) - AI提供商选择
+
+---
+
+### 3.4 **滑块样式** (`SliderStyle`) ⭐ **默认** [S8]
+**命名：`滑块样式` 或 `SliderStyle`**
+
+**推荐使用方式：**
+```dart
+// 使用Material Slider
+Slider(
+  value: sliderValue,
+  min: 0,
+  max: 100,
+  onChanged: (value) => setState(() => sliderValue = value),
+)
+```
+
+**使用位置：**
+- [salary_income_setup_screen.dart](mdc:lib/features/family_info/screens/salary_income_setup_screen.dart) - 薪资比例滑块
+
+---
+
+### 3.5 **分段选择器样式** (`SegmentedControlStyle`) 🔸 **特殊场景** [S9]
+**命名：`分段选择器样式` 或 `SegmentedControlStyle`**
+
+**仅在需要分段切换时使用**（如：日/周/月/年选择）
+
+**推荐使用方式：**
+```dart
+AppAnimations.animatedSegmentedControl(
+  segments: ['日', '周', '月', '年'],
+  selectedIndex: selectedIndex,
+  onChanged: (index) => setState(() => selectedIndex = index),
+)
+```
+
+**使用位置：**
+- [AppAnimations.animatedSegmentedControl](mdc:lib/core/widgets/app_animations.dart) - 分段选择器动画组件
+
+---
+
+### 3.6 **标签芯片样式** (`ChipStyle`) 🔸 **特殊场景** [S10]
+**命名：`标签芯片样式` 或 `ChipStyle`**
+
+**仅在需要标签选择/筛选时使用**
+
+**推荐使用方式：**
+```dart
+FilterChip(
+  label: Text('标签'),
+  selected: isSelected,
+  onSelected: (selected) => setState(() => isSelected = selected),
+)
+```
+
+**使用位置：**
+- [add_asset_sheet.dart](mdc:lib/features/family_info/screens/add_asset_sheet.dart) - 资产子分类选择
+
+---
+
+## 4. 按钮样式 (Button Styles)
+
+### 4.1 **主要按钮样式** (`PrimaryButtonStyle`) ⭐ **默认** [S11]
+**命名：`主要按钮样式` 或 `PrimaryButtonStyle`**
+
+**样式特征：**
+- 使用 `ElevatedButton`
+- **自动应用全局主题配置**（无需手动设置样式）
+- 背景色：主题色（primaryAction - #007AFF）
+- 文字颜色：白色
+- 圆角：12pt
+- 内边距：水平24pt，垂直16pt
+
+**推荐使用方式：**
+```dart
+// 直接使用，会自动应用全局主题
+ElevatedButton(
+  onPressed: () => {},
+  child: Text('确定'),
+)
+```
+
+**使用位置：**
+- [app_theme.dart](mdc:lib/core/theme/app_theme.dart) - `elevatedButtonTheme` - 全局主题配置
+- 所有使用 `ElevatedButton` 的页面
+
+---
+
+### 4.2 **文本按钮样式** (`TextButtonStyle`) ⭐ **默认** [S12]
+**命名：`文本按钮样式` 或 `TextButtonStyle`**
+
+**样式特征：**
+- 使用 `TextButton`
+- **自动应用全局主题配置**
+- 文字颜色：主题色（primaryAction）
+- 圆角：12pt
+
+**推荐使用方式：**
+```dart
+// 直接使用，会自动应用全局主题
+TextButton(
+  onPressed: () => {},
+  child: Text('取消'),
+)
+```
+
+**使用位置：**
+- [app_theme.dart](mdc:lib/core/theme/app_theme.dart) - `textButtonTheme` - 全局主题配置
+- 对话框操作按钮
+
+---
+
+### 4.3 **轮廓按钮样式** (`OutlinedButtonStyle`) 🔸 **特殊场景** [S13]
+**命名：`轮廓按钮样式` 或 `OutlinedButtonStyle`**
+
+**仅在需要边框按钮时使用**
+
+**推荐使用方式：**
+```dart
+OutlinedButton(
+  onPressed: () => {},
+  child: Text('取消'),
+)
+```
+
+---
+
+### 4.4 **图标按钮样式** (`IconButtonStyle`) ⭐ **默认** [S14]
+**命名：`图标按钮样式` 或 `IconButtonStyle`**
+
+**推荐使用方式：**
+```dart
+IconButton(
+  icon: Icon(Icons.delete_outline),
+  onPressed: () => {},
+)
+```
+
+---
+
+### 4.5 **浮动操作按钮样式** (`FloatingActionButtonStyle`) 🔸 **特殊场景** [S15]
+**命名：`浮动操作按钮样式` 或 `FloatingActionButtonStyle`**
+
+**仅在需要浮动添加按钮时使用**
+
+**推荐使用方式：**
+```dart
+EnhancedFloatingActionButton(
+  onPressed: () => {},
+  icon: Icons.add,
+)
+```
+
+**使用位置：**
+- [EnhancedFloatingActionButton](mdc:lib/core/widgets/enhanced_floating_action_button.dart) - 增强浮动按钮
+
+---
+
+### 4.6 **带图标按钮样式** (`IconLabelButtonStyle`) 🔸 **特殊场景** [S16]
+**命名：`带图标按钮样式` 或 `IconLabelButtonStyle`**
+
+**仅在需要图标+文字组合按钮时使用**
+
+**推荐使用方式：**
+```dart
+ElevatedButton.icon(
+  onPressed: () => {},
+  icon: Icon(Icons.add, size: 20),
+  label: Text('添加'),
+)
+```
+
+---
+
+## 5. 对话框样式 (Dialog Styles)
+
+### 5.1 **确认对话框样式** (`ConfirmationDialogStyle`) ⭐ **默认** [S17]
+**命名：`确认对话框样式` 或 `ConfirmationDialogStyle`**
+
+**推荐使用方式：**
+```dart
+// 使用统一通知系统（推荐）
+final confirmed = await unifiedNotifications.showConfirmation(
+  context,
+  title: '确认删除',
+  message: '确定要删除吗？',
+);
+```
+
+**使用位置：**
+- [unified_notifications.showConfirmation](mdc:lib/core/utils/unified_notifications.dart) - 统一确认对话框
+
+---
+
+### 5.2 **底部表单样式** (`BottomSheetStyle`) ⭐ **默认** [S18]
+**命名：`底部表单样式` 或 `BottomSheetStyle`**
+
+**推荐使用方式：**
+```dart
+AppAnimations.showAppModalBottomSheet(
+  context: context,
+  child: Container(
+    padding: EdgeInsets.all(16),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 内容
+      ],
+    ),
+  ),
+)
+```
+
+**使用位置：**
+- [AppAnimations.showAppModalBottomSheet](mdc:lib/core/widgets/app_animations.dart) - 底部表单动画
+
+---
+
+## 6. 标签页样式 (Tab Styles)
+
+### 6.1 **标准标签页样式** (`StandardTabStyle`) ⭐ **默认** [S19]
+**命名：`标准标签页样式` 或 `StandardTabStyle`**
+
+**推荐使用方式：**
+```dart
+DefaultTabController(
+  length: 2,
+  child: Scaffold(
+    appBar: AppBar(
+      bottom: TabBar(
+        tabs: [
+          Tab(text: '标签1'),
+          Tab(text: '标签2'),
+        ],
+      ),
+    ),
+    body: TabBarView(
+      children: [
+        // 内容1
+        // 内容2
+      ],
+    ),
+  ),
+)
+```
+
+---
+
+## 7. 提示样式 (Notification Styles)
+
+### 7.1 **SnackBar提示样式** (`SnackBarStyle`) ⭐ **默认** [S20]
+**命名：`SnackBar提示样式` 或 `SnackBarStyle`**
+
+**推荐使用方式：**
+```dart
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text('操作成功'),
+  ),
+)
+```
+
+---
+
+### 7.2 **玻璃通知样式** (`GlassNotificationStyle`) 🔸 **特殊场景** [S21]
+**命名：`玻璃通知样式` 或 `GlassNotificationStyle`**
+
+**仅在需要特殊视觉效果时使用**
+
+**推荐使用方式：**
+```dart
+unifiedNotifications.showSuccess(context, '操作成功');
+```
+
+---
+
+## 🎯 快速引用指南
+
+### 默认样式（直接使用，无需指定）
+
+- **[S1] 文本输入框** → 使用 `FormBuilderUtils.buildTextField()` 或 `TextField`
+- **[S4] 下拉框** → 使用 `FormBuilderUtils.buildDropdown()`
+- **[S5] 复选框** → 使用 `FormBuilderUtils.buildCheckbox()` 或 `Checkbox`
+- **[S6] 开关** → 使用 `FormBuilderUtils.buildSwitch()` 或 `SwitchListTile`
+- **[S7] 单选按钮** → 使用 `RadioListTile`
+- **[S8] 滑块** → 使用 `Slider`
+- **[S11] 主要按钮** → 使用 `ElevatedButton`（自动应用主题）
+- **[S12] 文本按钮** → 使用 `TextButton`（自动应用主题）
+- **[S14] 图标按钮** → 使用 `IconButton`
+- **[S17] 确认对话框** → 使用 `unifiedNotifications.showConfirmation()`
+- **[S18] 底部表单** → 使用 `AppAnimations.showAppModalBottomSheet()`
+- **[S19] 标签页** → 使用 `TabBar` / `TabBarView`
+- **[S20] 提示消息** → 使用 `ScaffoldMessenger.showSnackBar()`
+
+### 特殊样式（仅在特定场景使用）
+
+- **[S2] 金额输入框** → 使用 `AmountInputField` 组件
+- **[S3] 日期选择器** → 使用 `FormBuilderUtils.buildDateField()`
+- **[S9] 分段选择器** → 使用 `AppAnimations.animatedSegmentedControl()`
+- **[S10] 标签芯片** → 使用 `FilterChip` 或 `ChoiceChip`
+- **[S13] 轮廓按钮** → 使用 `OutlinedButton`
+- **[S15] 浮动操作按钮** → 使用 `EnhancedFloatingActionButton`
+- **[S16] 带图标按钮** → 使用 `ElevatedButton.icon` + 自定义样式
+- **[S21] 玻璃通知** → 使用 `unifiedNotifications` 或 `GlassNotification`
+
+---
+
+## 📝 样式使用决策树
+
+```
+需要输入文本？
+├─ 是金额？ → 使用 AmountInputField（金额输入框样式）
+├─ 是日期？ → 使用 FormBuilderUtils.buildDateField()（日期选择器样式）
+└─ 其他文本 → 使用 FormBuilderUtils.buildTextField()（标准文本输入框样式）⭐
+
+需要选择？
+├─ 下拉选择 → 使用 FormBuilderUtils.buildDropdown()（标准下拉框样式）⭐
+├─ 多选 → 使用 FormBuilderUtils.buildCheckbox()（复选框样式）⭐
+├─ 开关 → 使用 SwitchListTile（开关样式）⭐
+├─ 单选 → 使用 RadioListTile（单选按钮样式）⭐
+├─ 数值范围 → 使用 Slider（滑块样式）⭐
+├─ 分段切换 → 使用 AppAnimations.animatedSegmentedControl()（分段选择器样式）🔸
+└─ 标签筛选 → 使用 FilterChip（标签芯片样式）🔸
+
+需要按钮？
+├─ 主要操作 → 使用 ElevatedButton（主要按钮样式）⭐
+├─ 次要操作 → 使用 TextButton（文本按钮样式）⭐
+├─ 图标操作 → 使用 IconButton（图标按钮样式）⭐
+├─ 浮动添加 → 使用 EnhancedFloatingActionButton（浮动操作按钮样式）🔸
+└─ 图标+文字 → 使用 ElevatedButton.icon + 自定义样式（带图标按钮样式）🔸
+
+需要对话框？
+├─ 确认操作 → 使用 unifiedNotifications.showConfirmation()（确认对话框样式）⭐
+└─ 表单输入 → 使用 AppAnimations.showAppModalBottomSheet()（底部表单样式）⭐
+
+需要提示？
+└─ 操作反馈 → 使用 ScaffoldMessenger.showSnackBar()（SnackBar提示样式）⭐
+```
+
+**图例：**
+- ⭐ = 默认样式（推荐使用）
+- 🔸 = 特殊样式（仅在特定场景使用）
+
+---
+
+## 相关文件
+- [FormBuilderUtils](mdc:lib/core/widgets/form_builder_utils.dart) - 表单构建工具类（推荐使用）
+- [AppTheme](mdc:lib/core/theme/app_theme.dart) - 全局主题配置（自动应用）
+- [AmountInputField](mdc:lib/core/widgets/amount_input_field.dart) - 金额输入组件
+- [AppAnimations](mdc:lib/core/widgets/app_animations.dart) - 动效系统
+- [UnifiedNotifications](mdc:lib/core/utils/unified_notifications.dart) - 统一通知系统
+- [UI设计系统规范](mdc:.cursor/rules/ui-design-system.mdc) - 整体UI/UX设计系统
+- [列表样式指南](mdc:LIST_STYLE_GUIDE.md) - 列表项样式命名指南
+- [页面-样式映射表](mdc:PAGE_STYLE_MAPPING.md) - 所有页面的样式使用情况

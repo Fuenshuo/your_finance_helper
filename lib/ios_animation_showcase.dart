@@ -603,7 +603,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
 
               // 自定义缓动曲线系统
               _buildV11Section(
-                title: '🎨 自定义缓动曲线系统',
+                title: '自定义缓动曲线系统',
                 description: '注册和管理自定义缓动曲线，扩展动画表现力',
                 child: Column(
                   children: [
@@ -644,7 +644,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
 
               // iOS 18深度和材质动画
               _buildV11Section(
-                title: '📱 iOS 18深度和材质动画',
+                title: 'iOS 18深度和材质动画',
                 description: '最新的iOS 18系统特性，深度感知和材质渲染',
                 child: Column(
                   children: [
@@ -706,7 +706,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '📊 动效系统性能 (v1.0.0)',
+                            '动效系统性能 (v1.0.0)',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -742,7 +742,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '🚀 v1.1.0 新特性统计',
+                            'v1.1.0 新特性统计',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -903,7 +903,7 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '📊 动画库统计',
+                  '动画库统计',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -933,37 +933,37 @@ class _IOSAnimationShowcaseState extends State<IOSAnimationShowcase>
         childAspectRatio: 1.2,
         children: [
           _buildCategoryCard(
-            '📝 输入反馈',
+            '输入反馈',
             '12种动画',
             '金额跳动、输入聚焦、数字格式化',
             Colors.orange,
           ),
           _buildCategoryCard(
-            '💰 状态变化',
+            '状态变化',
             '12种动画',
             '进度条、余额滚动、图表高亮',
             Colors.blue,
           ),
           _buildCategoryCard(
-            '📋 列表操作',
+            '列表操作',
             '12种动画',
             '滑动删除、拖拽排序、展开收起',
             Colors.green,
           ),
           _buildCategoryCard(
-            '🎯 交互选择',
+            '交互选择',
             '12种动画',
             '下拉菜单、标签切换、颜色选择',
             Colors.purple,
           ),
           _buildCategoryCard(
-            '✅ 成功确认',
+            '成功确认',
             '12种动画',
             '烟花效果、勋章解锁、进度充满',
             Colors.red,
           ),
           _buildCategoryCard(
-            '🔧 通用组件',
+            '通用组件',
             '12种动画',
             '骨架屏、工具提示、图片淡入',
             Colors.teal,
