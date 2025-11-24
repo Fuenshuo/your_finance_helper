@@ -1,0 +1,61 @@
+import 'package:flutter/material.dart';
+import '../theme/app_design_tokens.dart';
+
+/// 分类标签组件
+/// 用于交易列表中的分类显示 (如: 餐饮, 交通)
+/// 样式：极淡的背景色 + 主色调文字，圆角矩形
+class AppTag extends StatelessWidget {
+  final String label;
+  final Color? color; // 如果不传，默认使用主色调
+  final bool isSelected;
+  final VoidCallback? onTap;
+
+  const AppTag({
+    super.key,
+    required this.label,
+    this.color,
+    this.isSelected = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final themeColor = color ?? AppDesignTokens.primaryAction(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // 选中状态：实心背景 + 白色文字
+    // 未选中状态：10%透明度背景 + 彩色文字
+    final bgColor = isSelected 
+        ? themeColor 
+        : themeColor.withOpacity(isDark ? 0.2 : 0.1);
+    
+    final textColor = isSelected 
+        ? Colors.white 
+        : themeColor;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected ? null : Border.all(
+            color: themeColor.withOpacity(0.2),
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+    );
+  }
+}
+

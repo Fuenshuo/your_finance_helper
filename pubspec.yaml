@@ -78,10 +78,16 @@ dependencies:
   # Equality comparison
   equatable: ^2.0.5
 
+  # Shimmer loading effect
+  shimmer: ^3.0.0
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_animate: ^4.5.2
+  
+  # Phosphor Icons - V3方案要求使用Phosphor Icons替代Emoji
+  phosphor_flutter: ^2.0.0
 
 dev_dependencies:
   flutter_test:

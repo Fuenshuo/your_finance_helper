@@ -95,6 +95,7 @@ core/
 - `income_plan.dart` - 收入计划模型
 - `transaction.dart` - 交易模型
 - `ai_config.dart` - AI配置模型
+- `ai_nlp_tuning_config.dart` - LLM调参与Prompt模板配置（新增）
 - `parsed_transaction.dart` - AI解析交易模型（新增）
 
 **关键特性**:
@@ -121,6 +122,7 @@ core/
 - Riverpod支持（新功能）
 - 数据同步和缓存
 - 状态持久化
+- 初始化幂等化：Repeated initialize() 调用只刷新数据，不再重复实例化底层 StorageService，避免 LateInitializationError
 
 **架构演进**:
 - 旧架构: Provider + SharedPreferences
@@ -167,11 +169,12 @@ core/
 - `persistent_storage_service.dart` - 持久化存储服务
 - `ai/` - AI服务目录
   - `ai_config_service.dart` - AI配置服务
+  - `ai_tuning_config_service.dart` - LLM调参配置服务（新增）
   - `ai_service_factory.dart` - AI服务工厂
   - `ai_service.dart` - AI服务抽象接口
   - `dashscope_ai_service.dart` - DashScope AI服务实现
   - `siliconflow_ai_service.dart` - SiliconFlow AI服务实现
-  - `natural_language_transaction_service.dart` - 自然语言记账服务（新增）
+  - `natural_language_transaction_service.dart` - 自然语言记账服务（支持 AiNlpTuningConfig 调参与 Prompt 路径校验）
   - `image_processing_service.dart` - 图片处理服务（新增）
   - `invoice_recognition_service.dart` - 发票/收据识别服务（新增）
 
@@ -180,6 +183,8 @@ core/
 - 异步操作支持
 - 错误处理
 - 服务间解耦
+- AI调参能力：`AiNlpTuningConfig` + `AiTuningConfigService` 支持运行时热切换模型、温度与Prompt模板
+- Prompt安全控制：所有模板路径在加载前会通过 `_resolvePromptTemplatePath` 校验，限制访问 `lib/core/services/ai/prompts` 目录，防止路径穿越
 
 ### 8. theme/ - 主题样式
 

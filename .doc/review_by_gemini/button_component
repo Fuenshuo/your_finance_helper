@@ -1,0 +1,102 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import '../theme/app_design_tokens.dart';
+
+/// iOS 风格主按钮
+/// 特性：56pt高度、按压回弹动画、Loading状态
+class AppPrimaryButton extends StatefulWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+  final bool isEnabled;
+  final IconData? icon;
+
+  const AppPrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+    this.isEnabled = true,
+    this.icon,
+  });
+
+  @override
+  State<AppPrimaryButton> createState() => _AppPrimaryButtonState();
+}
+
+class _AppPrimaryButtonState extends State<AppPrimaryButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDisabled = !widget.isEnabled || widget.isLoading;
+    final Color bgColor = AppDesignTokens.primaryAction(context);
+
+    return GestureDetector(
+      onTapDown: isDisabled ? null : (_) => _controller.forward(),
+      onTapUp: isDisabled ? null : (_) => _controller.reverse(),
+      onTapCancel: isDisabled ? null : () => _controller.reverse(),
+      onTap: isDisabled ? null : widget.onPressed,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          height: 56, // 强制高度，增加点击热区和稳重感
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDisabled ? bgColor.withOpacity(0.5) : bgColor,
+            borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium), // 16pt 圆角
+            boxShadow: isDisabled
+                ? []
+                : [
+                    BoxShadow(
+                      color: bgColor.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+          ),
+          alignment: Alignment.center,
+          child: widget.isLoading
+              ? const CupertinoActivityIndicator(color: Colors.white)
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (widget.icon != null) ...[
+                      Icon(widget.icon, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      widget.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17, // Headline Size
+                        fontWeight: FontWeight.w600, // 加粗
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}

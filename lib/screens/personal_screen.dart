@@ -5,6 +5,7 @@ import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/screens/ai_config_screen.dart';
 import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
+import 'package:your_finance_flutter/screens/unified_transaction_entry_screen_v2.dart';
 
 /// 个人页面
 class PersonalScreen extends StatefulWidget {
@@ -81,6 +82,51 @@ class _PersonalScreenState extends State<PersonalScreen> {
               ),
 
               const SizedBox(height: 8),
+
+              // 统一记账入口（测试）
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline,
+                              color: context.primaryColor,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              '统一记账入口（测试）',
+                              style: context.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            UnifiedTransactionEntryScreenV2.show(context);
+                          },
+                          icon: const Icon(Icons.arrow_forward_ios),
+                          iconSize: 16,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'AI自动识别收支类型，零认知负担的记账体验',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
               // AI配置
               AppCard(

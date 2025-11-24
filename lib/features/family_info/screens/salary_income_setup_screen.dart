@@ -4,11 +4,12 @@ import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
-import 'package:your_finance_flutter/core/services/salary_calculation_service.dart';
+import 'package:your_finance_flutter/core/services/personal_income_tax_service.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/widgets/app_primary_button.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/bonus_management_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/salary_basic_info_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/salary_history_widget.dart';
@@ -51,11 +52,12 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
   final _otherTaxDeductionsController = TextEditingController(); // 其他税收扣除
 
   int _salaryDay = 10;
-  bool _isMidYearMode = false;
-  bool _useAutoCalculation = false;
+  // 以下变量保留用于数据兼容性，但UI中不再使用（预测功能已移除）
+  // bool _isMidYearMode = false;
+  // bool _useAutoCalculation = false;
   bool _isLoading = false;
   double _specialDeductionMonthly = 0;
-  int _completedMonths = 0; // 添加缺失的变量
+  // int _completedMonths = 0;
 
   // Salary history
   final Map<DateTime, double> _salaryHistory = {};
@@ -139,79 +141,139 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
     _otherTaxDeductionsController.dispose(); // 其他税收扣除
   }
 
-  Future<void> _updateCumulativeIncome() async {
-    // 计算累积收入（用于中年度模式）
-    await SalaryCalculationService.calculateAutoCumulative(
-      completedMonths: _completedMonths,
-      salaryHistory: _salaryHistory,
-      basicSalary: double.tryParse(_basicSalaryController.text) ?? 0,
-      housingAllowance: double.tryParse(_housingAllowanceController.text) ?? 0,
-      mealAllowance: double.tryParse(_mealAllowanceController.text) ?? 0,
-      transportationAllowance:
-          double.tryParse(_transportationAllowanceController.text) ?? 0,
-      otherAllowance: double.tryParse(_otherAllowanceController.text) ?? 0,
-      performanceBonus: 0,
-      socialInsurance: double.tryParse(_socialInsuranceController.text) ?? 0,
-      housingFund: double.tryParse(_housingFundController.text) ?? 0,
-      specialDeductionMonthly: _specialDeductionMonthly,
-      otherTaxFreeIncome:
-          double.tryParse(_otherTaxFreeIncomeController.text) ?? 0,
-      otherTaxFreeMonthly:
-          double.tryParse(_otherTaxFreeIncomeController.text) ?? 0,
-      bonuses: _bonuses,
-    );
-  }
+  // 已移除：年中模式相关的累积收入计算（预测功能已移除）
+  // Future<void> _updateCumulativeIncome() async { ... }
 
-  /// 自动计算月度个税
-  Future<void> _calculateMonthlyTax() async {
+  /// 预测下个月个税（基于当前数据，假设下个月收入稳定）
+  Future<void> _predictNextMonthTax() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // 计算月度平均税费（基于年度累积预扣法）
-      final result = await SalaryCalculationService.calculateAutoCumulative(
-        completedMonths: 12, // 计算全年平均
-        salaryHistory: _salaryHistory,
-        basicSalary: double.tryParse(_basicSalaryController.text) ?? 0,
-        housingAllowance:
-            double.tryParse(_housingAllowanceController.text) ?? 0,
-        mealAllowance: double.tryParse(_mealAllowanceController.text) ?? 0,
-        transportationAllowance:
-            double.tryParse(_transportationAllowanceController.text) ?? 0,
-        otherAllowance: double.tryParse(_otherAllowanceController.text) ?? 0,
-        performanceBonus: 0,
-        socialInsurance: double.tryParse(_socialInsuranceController.text) ?? 0,
-        housingFund: double.tryParse(_housingFundController.text) ?? 0,
-        specialDeductionMonthly: _specialDeductionMonthly,
-        otherTaxFreeIncome:
-            double.tryParse(_otherTaxFreeIncomeController.text) ?? 0,
-        otherTaxFreeMonthly: 0,
-        bonuses: _bonuses,
-        monthlyAllowances:
-            _monthlyAllowances.isNotEmpty ? _monthlyAllowances : null,
+      final now = DateTime.now();
+      final currentMonth = now.month;
+      final currentYear = now.year;
+      
+      // 计算当前月收入（基本工资 + 津贴）
+      final basicSalary = double.tryParse(_basicSalaryController.text) ?? 0;
+      final housingAllowance = double.tryParse(_housingAllowanceController.text) ?? 0;
+      final mealAllowance = double.tryParse(_mealAllowanceController.text) ?? 0;
+      final transportationAllowance = double.tryParse(_transportationAllowanceController.text) ?? 0;
+      final otherAllowance = double.tryParse(_otherAllowanceController.text) ?? 0;
+      
+      // 计算当前月津贴（考虑月度津贴变化）
+      double currentMonthAllowance;
+      if (_monthlyAllowances.containsKey(currentMonth)) {
+        currentMonthAllowance = _monthlyAllowances[currentMonth]!.totalAllowance;
+      } else {
+        currentMonthAllowance = housingAllowance + mealAllowance + 
+                                transportationAllowance + otherAllowance;
+      }
+      
+      // 计算当前月奖金（排除年终奖，年终奖单独计税）
+      var currentMonthBonus = 0.0;
+      for (final bonus in _bonuses) {
+        if (bonus.type != BonusType.yearEndBonus) {
+          final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, currentMonth);
+          currentMonthBonus += monthlyBonus;
+        }
+      }
+      
+      // 当前月总收入
+      final currentMonthIncome = basicSalary + currentMonthAllowance + currentMonthBonus;
+      
+      // 当前月扣除项
+      final socialInsurance = double.tryParse(_socialInsuranceController.text) ?? 0;
+      final housingFund = double.tryParse(_housingFundController.text) ?? 0;
+      final monthlyDeductions = socialInsurance + housingFund;
+      
+      // 假设下个月收入稳定（与当前月相同）
+      final nextMonthIncome = currentMonthIncome;
+      
+      // 计算本年累计应纳税所得额（到当前月）
+      var cumulativeTaxableIncome = 0.0;
+      var cumulativeTax = 0.0;
+      
+      // 计算1月到当前月的累计
+      for (var month = 1; month <= currentMonth; month++) {
+        // 计算指定月份的津贴
+        double monthAllowance;
+        if (_monthlyAllowances.containsKey(month)) {
+          monthAllowance = _monthlyAllowances[month]!.totalAllowance;
+        } else {
+          monthAllowance = housingAllowance + mealAllowance + 
+                          transportationAllowance + otherAllowance;
+        }
+        
+        // 计算指定月份的奖金（排除年终奖）
+        var monthBonus = 0.0;
+        for (final bonus in _bonuses) {
+          if (bonus.type != BonusType.yearEndBonus) {
+            final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
+            monthBonus += monthlyBonus;
+          }
+        }
+        
+        final monthIncome = basicSalary + monthAllowance + monthBonus;
+        final monthTaxableIncome = PersonalIncomeTaxService.calculateTaxableIncome(
+          monthIncome,
+          monthlyDeductions,
+          _specialDeductionMonthly,
+          0,
+        );
+        
+        cumulativeTaxableIncome += monthTaxableIncome;
+        
+        // 计算年度累计应纳税额
+        final annualTax = PersonalIncomeTaxService.calculateAnnualTax(cumulativeTaxableIncome);
+        
+        // 计算当月应预扣税额
+        final monthTax = annualTax - cumulativeTax;
+        cumulativeTax += monthTax;
+      }
+      
+      // 预测下个月：假设下个月收入与当前月相同
+      final nextMonthTaxableIncome = PersonalIncomeTaxService.calculateTaxableIncome(
+        nextMonthIncome,
+        monthlyDeductions,
+        _specialDeductionMonthly,
+        0,
       );
-
-      // 月度平均税费 = 年度总税费 / 12
-      final monthlyTax = result.totalTax / 12;
-      _personalIncomeTaxController.text = monthlyTax.toStringAsFixed(0);
+      
+      // 下个月的累计应纳税所得额
+      final nextMonthCumulativeTaxableIncome = cumulativeTaxableIncome + nextMonthTaxableIncome;
+      
+      // 计算下个月的年度累计应纳税额
+      final nextMonthAnnualTax = PersonalIncomeTaxService.calculateAnnualTax(
+        nextMonthCumulativeTaxableIncome,
+      );
+      
+      // 计算下个月应预扣税额
+      final nextMonthTax = nextMonthAnnualTax - cumulativeTax;
+      
+      // 填入预测值（作为建议）
+      _personalIncomeTaxController.text = nextMonthTax.toStringAsFixed(0);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white, size: 20),
+              const Icon(Icons.info_outline, color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('自动计算完成：月均个税 ¥${monthlyTax.toStringAsFixed(0)}'),
+                child: Text(
+                  '预测完成：下个月个税约 ¥${nextMonthTax.toStringAsFixed(0)}（假设收入稳定）',
+                ),
               ),
             ],
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 4),
         ),
       );
     } catch (e) {
-      Logger.debug('❌ 自动计算税费失败: $e');
+      Logger.debug('❌ 预测下个月个税失败: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Row(
@@ -219,7 +281,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
               Icon(Icons.error_outline, color: Colors.white, size: 20),
               SizedBox(width: 8),
               Expanded(
-                child: Text('自动计算失败，请手动填写'),
+                child: Text('预测失败，请手动填写'),
               ),
             ],
           ),
@@ -486,7 +548,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
             FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(context.spacing16),
+            padding: EdgeInsets.all(AppDesignTokens.spacing16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -497,91 +559,11 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     nameController: _nameController,
                     basicSalaryController: _basicSalaryController,
                     salaryDay: _salaryDay,
-                    isMidYearMode: _isMidYearMode,
-                    useAutoCalculation: _useAutoCalculation,
                     onSalaryDayChanged: (value) =>
                         setState(() => _salaryDay = value),
-                    onMidYearModeChanged: (value) =>
-                        setState(() => _isMidYearMode = value),
-                    onAutoCalculationChanged: (value) {
-                      setState(() => _useAutoCalculation = value);
-                      if (value) {
-                        _updateCumulativeIncome();
-                      }
-                    },
                   ),
 
-                  SizedBox(height: context.spacing16),
-
-                  // Mid-year mode cumulative data input
-                  if (_isMidYearMode) ...[
-                    AppAnimations.animatedListItem(
-                      index: 1,
-                      child: AppCard(
-                        child: Padding(
-                          padding: EdgeInsets.all(context.spacing16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '累计数据（今年已收工资情况）',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              SizedBox(height: context.spacing16),
-
-                              // 已完成月份数
-                              Text(
-                                '已收工资月份数',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                              SizedBox(height: context.spacing8),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_month,
-                                    color: Colors.orange,
-                                  ),
-                                  SizedBox(width: context.spacing8),
-                                  Text(
-                                    '$_completedMonths / 12 个月',
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                  SizedBox(width: context.spacing8),
-                                  Expanded(
-                                    child: Slider(
-                                      value: _completedMonths.toDouble(),
-                                      max: 12,
-                                      divisions: 12,
-                                      label: _completedMonths.toString(),
-                                      onChanged: _useAutoCalculation
-                                          ? (value) => setState(
-                                                () => _completedMonths =
-                                                    value.toInt(),
-                                              )
-                                          : null,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: context.spacing16),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: context.spacing16),
-                  ],
+                  SizedBox(height: AppDesignTokens.spacing16),
 
                   // Salary History Section
                   SalaryHistoryWidget(
@@ -591,7 +573,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                         setState(() => _salaryHistory.addAll(history)),
                   ),
 
-                  SizedBox(height: context.spacing16),
+                  SizedBox(height: AppDesignTokens.spacing16),
 
                   // Bonus Management Section
                   BonusManagementWidget(
@@ -611,94 +593,57 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     },
                   ),
 
-                  SizedBox(height: context.spacing16),
+                  SizedBox(height: AppDesignTokens.spacing16),
 
                   // Monthly Allowance Section
                   AppCard(
                     child: Padding(
-                      padding: EdgeInsets.all(context.spacing16),
+                      padding: EdgeInsets.all(AppDesignTokens.spacing16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             '月度津贴',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: AppDesignTokens.title1(context),
                           ),
-                          SizedBox(height: context.spacing16),
-                          Text(
-                            '住房津贴',
-                            style:
-                                Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                          ),
-                          SizedBox(height: context.spacing8),
+                          SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _housingAllowanceController,
                             labelText: '住房津贴',
                             hintText: '请输入住房津贴金额',
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.home,
-                              color: Colors.blue,
+                              color: AppDesignTokens.primaryAction(context),
                             ),
                           ),
-                          SizedBox(height: context.spacing16),
-                          Text(
-                            '餐补',
-                            style:
-                                Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                          ),
-                          SizedBox(height: context.spacing8),
+                          SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _mealAllowanceController,
                             labelText: '餐补',
                             hintText: '请输入餐补金额',
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.restaurant,
-                              color: Colors.green,
+                              color: AppDesignTokens.successColor(context),
                             ),
                           ),
-                          SizedBox(height: context.spacing16),
-                          Text(
-                            '交通补贴',
-                            style:
-                                Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                          ),
-                          SizedBox(height: context.spacing8),
+                          SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _transportationAllowanceController,
                             labelText: '交通补贴',
                             hintText: '请输入交通补贴金额',
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.directions_car,
-                              color: Colors.orange,
+                              color: AppDesignTokens.warningColor,
                             ),
                           ),
-                          SizedBox(height: context.spacing16),
-                          Text(
-                            '其他津贴',
-                            style:
-                                Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                          ),
-                          SizedBox(height: context.spacing8),
+                          SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _otherAllowanceController,
                             labelText: '其他津贴',
                             hintText: '请输入其他津贴金额',
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.money,
-                              color: Colors.purple,
+                              color: AppDesignTokens.secondaryText(context),
                             ),
                           ),
                         ],
@@ -706,7 +651,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     ),
                   ),
 
-                  SizedBox(height: context.spacing16),
+                  SizedBox(height: AppDesignTokens.spacing16),
 
                   // Tax and Deductions Section
                   TaxDeductionsWidget(
@@ -720,27 +665,56 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                         _otherTaxDeductionsController, // 其他税收扣除
                     specialDeductionMonthly: _specialDeductionMonthly,
                     onSpecialDeductionChanged: _onSpecialDeductionChanged,
-                    onCalculateTax: _calculateMonthlyTax,
                   ),
 
-                  SizedBox(height: context.spacing24),
+                  SizedBox(height: AppDesignTokens.spacing16),
+
+                  // Tax Prediction Section (独立预测区域)
+                  AppCard(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppDesignTokens.spacing16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.trending_up,
+                                color: AppDesignTokens.primaryAction(context),
+                              ),
+                              SizedBox(width: AppDesignTokens.spacing8),
+                              Text(
+                                '下个月个税预测',
+                                style: AppDesignTokens.title1(context),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: AppDesignTokens.spacing12),
+                          Text(
+                            '基于当前录入的数据，预测下个月的个税（假设收入稳定）',
+                            style: AppDesignTokens.caption(context),
+                          ),
+                          SizedBox(height: AppDesignTokens.spacing16),
+                          AppPrimaryButton(
+                            label: '预测下个月个税',
+                            icon: Icons.calculate,
+                            onPressed: _isLoading ? null : _predictNextMonthTax,
+                            isLoading: _isLoading,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: AppDesignTokens.spacing24),
 
                   // Save Button
                   Center(
-                    child: ElevatedButton(
-                      onPressed: _saveIncome,
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: context.spacing24,
-                          vertical: context.spacing12,
-                        ),
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('保存工资信息'),
+                    child: AppPrimaryButton(
+                      label: '保存工资信息',
+                      icon: Icons.check,
+                      onPressed: _isLoading ? null : _saveIncome,
+                      isLoading: _isLoading,
                     ),
                   ),
                 ],

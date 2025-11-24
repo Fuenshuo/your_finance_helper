@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/app_design_tokens.dart';
+import '../theme/app_design_tokens.dart' show AppStyle;
 
 /// 金额输入组件 - 带单位显示的金额输入框
 class AmountInputField extends StatefulWidget {
@@ -53,6 +55,7 @@ class AmountInputField extends StatefulWidget {
 
 class _AmountInputFieldState extends State<AmountInputField> {
   late TextEditingController _controller;
+  bool _isFocused = false;
 
   @override
   void initState() {
@@ -71,10 +74,19 @@ class _AmountInputFieldState extends State<AmountInputField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currentStyle = AppDesignTokens.getCurrentStyle();
+    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
 
     return SizedBox(
       width: widget.width,
       height: widget.height,
+      child: FocusScope(
+        child: Focus(
+          onFocusChange: (hasFocus) {
+            setState(() {
+              _isFocused = hasFocus;
+            });
+          },
       child: TextFormField(
         controller: _controller,
         enabled: widget.enabled,
@@ -103,7 +115,7 @@ class _AmountInputFieldState extends State<AmountInputField> {
             fontSize: 14,
           ),
           prefixIcon: widget.prefixIcon,
-          suffixIcon: _buildUnitSuffix(),
+              suffixIcon: _buildUnitSuffix(context, isSharpProfessional),
           contentPadding: widget.contentPadding ??
               const EdgeInsets.only(
                 left: 16,
@@ -174,12 +186,26 @@ class _AmountInputFieldState extends State<AmountInputField> {
         ),
         onChanged: widget.onChanged,
         validator: widget.validator,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildUnitSuffix() {
+  Widget _buildUnitSuffix(BuildContext context, bool isSharpProfessional) {
     if (widget.unitText.isEmpty) return const SizedBox.shrink();
+
+    // SharpProfessional: 单位块背景色改为 #004D40 的 5% 透明度，聚焦时用鲜草绿突出
+    // iOS Fintech: 保持原有样式
+    final unitBackgroundColor = isSharpProfessional
+        ? (_isFocused
+            ? AppDesignTokens.successColor(context) // 聚焦时：鲜草绿 #8BC34A
+            : AppDesignTokens.primaryAction(context).withOpacity(0.05)) // 未聚焦：深森绿 5% 透明度
+        : Colors.grey.withOpacity(0.08); // iOS Fintech: 浅灰色背景
+
+    final unitTextColor = isSharpProfessional && _isFocused
+        ? Colors.white // 聚焦时：白色文字（与鲜草绿背景对比）
+        : (widget.unitTextColor ?? AppDesignTokens.primaryAction(context)); // 未聚焦：主题色
 
     return Container(
       width: 36, // 适当宽度
@@ -187,7 +213,7 @@ class _AmountInputFieldState extends State<AmountInputField> {
       alignment: Alignment.center, // 让"元"字居中
       margin: EdgeInsets.zero, // 移除所有边距，让它紧贴右边缘
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.08), // 浅灰色背景
+        color: unitBackgroundColor,
         borderRadius: const BorderRadius.only(
           topRight: Radius.circular(8), // 与输入框圆角匹配
           bottomRight: Radius.circular(8),
@@ -198,7 +224,7 @@ class _AmountInputFieldState extends State<AmountInputField> {
         style: TextStyle(
           fontSize: widget.unitTextSize ?? 13,
           fontWeight: FontWeight.w500,
-          color: widget.unitTextColor ?? Theme.of(context).colorScheme.primary,
+          color: unitTextColor,
         ),
       ),
     );

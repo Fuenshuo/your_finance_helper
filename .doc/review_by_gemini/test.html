@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI设计令牌预览与确认 - 金融配色与样式风格</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* 使用 Noto Sans SC 和 Inter 作为通用字体 */
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            /* 主背景色 */
+            color: var(--text-color);
+            /* 主文本色 */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Custom Properties (CSS 变量) 用于 Design Tokens */
+        :root {
+            /* 颜色令牌 (Color Tokens) - 默认主题: 深邃藏青 */
+            --primary-color: #1A237E;
+            --accent-color: #E53935;
+            /* Loss / Alert Color */
+            --success-color: #2E7D32;
+            /* Income / Profit Color */
+            --divider-color: #EEEEEE;
+
+            /* 样式令牌 (Style Tokens) - 默认风格: 柔和友好 */
+            --border-radius: 16px;
+            --card-shadow-light: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --card-shadow-dark: 0 4px 10px rgba(0, 0, 0, 0.6);
+            --input-focus-shadow: 0 0 0 4px;
+            /* Default wide glow */
+
+            /* 模式相关颜色 - 默认浅色模式 */
+            --bg-color: #F5F7FA;
+            --card-color: #FFFFFF;
+            --text-color: #1F2937;
+            --secondary-text: #757575;
+        }
+
+        /* 深色模式下的变量重写 (通过 body[data-theme="dark"] 激活) */
+        body[data-theme="dark"] {
+            --bg-color: #121212;
+            --card-color: #1E1E1E;
+            --text-color: #F3F4F6;
+            --secondary-text: #B0B0B0;
+            --divider-color: #333333;
+            /* 确保深色模式下边框清晰 */
+        }
+
+        /* 统一的圆角、阴影和边框风格 */
+        .card-style {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            /* 动态圆角 */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            /* 核心：1px 边框以解决深色模式下边界模糊问题 */
+            border: 1px solid var(--divider-color);
+        }
+
+        /* 动态阴影的使用 */
+        body:not([data-theme="dark"]) .card-style {
+            box-shadow: var(--card-shadow-light);
+        }
+
+        body[data-theme="dark"] .card-style {
+            box-shadow: var(--card-shadow-dark);
+        }
+
+        /* 极简平面风格下阴影会被设置为 none */
+
+
+        .primary-btn,
+        .accent-btn {
+            border-radius: var(--border-radius);
+            /* 动态圆角 */
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .primary-btn {
+            background-color: var(--primary-color);
+        }
+
+        .primary-btn:hover {
+            background-color: color-mix(in srgb, var(--primary-color) 85%, black);
+        }
+
+        .accent-btn {
+            background-color: var(--accent-color);
+        }
+
+        .accent-btn:hover {
+            background-color: color-mix(in srgb, var(--accent-color) 85%, black);
+        }
+
+        .input-style {
+            border: 1px solid var(--divider-color);
+            background-color: var(--card-color);
+            color: var(--text-color);
+            border-radius: var(--border-radius);
+            /* 动态圆角 */
+            padding: 16px;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-style:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            /* 动态焦点样式 */
+            box-shadow: var(--input-focus-shadow) color-mix(in srgb, var(--primary-color) 20%, transparent);
+        }
+
+        .input-style::placeholder {
+            color: var(--secondary-text);
+            opacity: 0.7;
+        }
+
+        /* AI 功能的特殊样式 */
+        .ai-input-glow {
+            border: 2px solid color-mix(in srgb, var(--primary-color) 50%, transparent);
+            box-shadow: 0 0 8px color-mix(in srgb, var(--primary-color) 40%, transparent);
+        }
+
+        .ai-preview-bg {
+            /* 确保 AI 预览卡片背景比 CardColor 更浅（浅色模式）或更深（深色模式） */
+            background-color: color-mix(in srgb, var(--primary-color) 5%, var(--card-color));
+            transition: background-color 0.3s ease, border-left-color 0.3s ease;
+        }
+
+        .theme-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            /* 按钮圆角固定，防止 Style Preset 影响导航 */
+            font-weight: 600;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-color);
+            background-color: color-mix(in srgb, var(--bg-color) 90%, white);
+        }
+
+        .theme-button.active {
+            border-color: var(--primary-color);
+            background-color: color-mix(in srgb, var(--primary-color) 10%, var(--card-color));
+            color: var(--primary-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 模式切换开关样式 (保持不变) */
+        #mode-toggle-label {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        #mode-toggle-label input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+            content: "🌙";
+        }
+
+        input:not(:checked)+.slider {
+            background-color: #757575;
+        }
+
+        input:not(:checked)+.slider:before {
+            content: "☀️";
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8" data-theme="light">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800" style="color: var(--text-color);">UI设计令牌实时预览 - 金融版</h1>
+
+            <!-- 模式切换开关 -->
+            <div class="flex items-center space-x-3">
+                <span class="text-sm font-medium" style="color: var(--secondary-text);">模式切换：</span>
+                <label id="mode-toggle-label" for="mode-toggle">
+                    <input type="checkbox" id="mode-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <p class="mb-6 text-gray-600" style="color: var(--secondary-text);">通过切换配色方案、样式风格和浅色/深色模式，实时查看应用视觉风格。</p>
+
+        <!-- UI TOKEN 主题切换 -->
+        <div class="card-style p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-color);">🎨 切换配色方案 (Color Theme)</h2>
+            <div id="theme-switcher" class="flex flex-wrap gap-4 mb-6">
+                <!-- 按钮将由 JS 插入 -->
+            </div>
+
+            <h2 class="text-xl font-semibold mb-4 mt-6" style="color: var(--text-color);">📐 切换样式风格 (Style Preset)</h2>
+            <div id="style-switcher" class="flex flex-wrap gap-4 mb-6">
+                <!-- 按钮将由 JS 插入 -->
+            </div>
+
+            <h2 class="text-xl font-semibold mb-4 mt-6" style="color: var(--text-color);">⚙️ 当前 Design Tokens 值</h2>
+            <div id="token-editor-values" class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm font-mono p-4 rounded-lg"
+                style="background-color: var(--bg-color); border: 1px solid var(--divider-color);">
+                <!-- Tokens will be inserted here by JS -->
+            </div>
+        </div>
+
+        <!-- 实时预览区 -->
+        <h2 class="text-2xl font-bold mb-4 mt-8" style="color: var(--text-color);">🚀 样式实时预览</h2>
+
+        <!-- 1. 核心颜色与卡片风格预览 -->
+        <div class="card-style p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4" style="color: var(--text-color);">核心交互与卡片 (观察圆角和阴影)</h3>
+            <div class="flex flex-col md:flex-row gap-4 mb-6 items-center">
+                <!-- Primary Button -->
+                <button class="primary-btn flex-shrink-0 w-full md:w-auto">主要操作按钮 (Primary)</button>
+                <!-- Accent Button - 亏损/警示色 -->
+                <button class="accent-btn flex-shrink-0 w-full md:w-auto">亏损/警示色 (Accent/Loss)</button>
+                <!-- Success Preview -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-lg font-semibold" style="color: var(--success-color);">收入/盈利色</span>
+                    <div class="w-6 h-6 rounded-full"
+                        style="background-color: var(--success-color); border: 1px solid var(--divider-color);"></div>
+                </div>
+            </div>
+
+            <!-- Secondary Text -->
+            <p class="text-sm" style="color: var(--secondary-text);">这是次要文本颜色 (`secondaryTextColor`)，用于描述或提示信息。</p>
+
+            <!-- Divider -->
+            <div class="h-px my-4" style="background-color: var(--divider-color);"></div>
+
+            <!-- Card Background -->
+            <div class="card-style p-4">
+                <p class="font-semibold" style="color: var(--text-color);">卡片/填充色 (`cardColor`) - 轮廓清晰，并带有当前风格的阴影和圆角。
+                </p>
+                <p class="text-sm mt-1" style="color: var(--secondary-text);">
+                    注意观察卡片的圆角（`--border-radius`）和阴影（`--card-shadow`）如何随风格变化。</p>
+            </div>
+        </div>
+
+        <!-- 2. 表单与 AI 特色预览 - 演示焦点与收支对比 -->
+        <div class="card-style p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4" style="color: var(--text-color);">表单、输入框与收支对比 (观察输入框焦点和圆角)</h3>
+
+            <!-- AI Input -->
+            <label class="block mb-2 text-sm font-medium" style="color: var(--primary-color);">AI 自然语言记账输入框
+                (尝试点击，观察焦点效果)</label>
+            <input type="text" placeholder="今天在星巴克买了杯拿铁，花了35块..." class="input-style ai-input-glow mb-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- AI Preview Card - 支出/亏损 (Accent/Loss Color) -->
+                <div class="card-style p-4 ai-preview-bg shadow-none border-l-4"
+                    style="border-left-color: var(--accent-color);">
+                    <p class="font-semibold mb-1" style="color: var(--text-color);">AI 支出解析结果 (亏损)</p>
+                    <p class="text-2xl font-bold" style="color: var(--accent-color);">-35.00 元</p>
+                    <p class="text-sm" style="color: var(--secondary-text);">分类：餐饮 → 咖啡 | 账户：支付宝</p>
+                </div>
+
+                <!-- AI Preview Card - 收入/盈利 (Success Color) -->
+                <div class="card-style p-4 ai-preview-bg shadow-none border-l-4"
+                    style="border-left-color: var(--success-color);">
+                    <p class="font-semibold mb-1" style="color: var(--text-color);">AI 收入解析结果 (盈利)</p>
+                    <p class="text-2xl font-bold" style="color: var(--success-color);">+8000.00 元</p>
+                    <p class="text-sm" style="color: var(--secondary-text);">分类：工作 → 工资 | 账户：招商银行</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 颜色主题定义 (Color Themes) ---
+        const THEMES = {
+            'EleganceDeepBlue': {
+                name: '深邃藏青 / 典雅绿红',
+                primaryColor: '#1A237E', // Deep Indigo (Trust, Stability)
+                accentColor: '#E53935', // Vibrant Red (Loss, Alert)
+                successColor: '#2E7D32', // Elegant Deep Green (Income, Profit)
+            },
+            'ModernForestGreen': {
+                name: '现代森绿 / 清新活力',
+                primaryColor: '#004D40', // Dark Teal/Forest Green (Growth, Refined)
+                accentColor: '#E53935', // Vibrant Red (Loss, Alert)
+                successColor: '#8BC34A', // Lime Green/Fresh Growth (Income, Profit)
+            },
+            'PremiumGraphite': {
+                name: '高级石墨 / 经典红绿',
+                primaryColor: '#424242', // Dark Grey/Graphite (Premium, Neutral)
+                accentColor: '#E53935', // Vibrant Red (Loss, Alert)
+                successColor: '#4CAF50', // Standard Green (Income, Profit)
+            },
+            'ClassicBurgundy': {
+                name: '经典酒红 / 柔和紫',
+                primaryColor: '#4A148C', // Deep Purple/Plum (Prestige, Unique)
+                accentColor: '#E53935', // Vibrant Red (Loss, Alert)
+                successColor: '#66BB6A', // Soft Green (Income, Profit)
+            }
+        };
+
+        // --- 样式风格定义 (Style Presets) ---
+        const STYLES = {
+            'SoftFriendly': {
+                name: '柔和友好',
+                borderRadius: '16px',
+                // 柔和阴影 (光影更分散)
+                cardShadowLight: '0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                cardShadowDark: '0 4px 10px rgba(0, 0, 0, 0.6)',
+                // 焦点光环更宽
+                inputFocusShadow: '0 0 0 4px',
+            },
+            'SharpProfessional': {
+                name: '锐利专业',
+                borderRadius: '8px',
+                // 锐利阴影 (光影更紧凑)
+                cardShadowLight: '0 2px 4px 0 rgba(0, 0, 0, 0.08)',
+                cardShadowDark: '0 1px 3px rgba(0, 0, 0, 0.4)',
+                // 焦点光环更紧凑
+                inputFocusShadow: '0 0 0 3px',
+            },
+            'MinimalFlat': {
+                name: '极简平面',
+                borderRadius: '4px',
+                cardShadowLight: 'none',
+                cardShadowDark: 'none',
+                // 极简风格不需要光环，只靠边框变化
+                inputFocusShadow: 'none',
+            }
+        };
+
+        // --- 模式相关的基础颜色 (Mode Base Colors) ---
+        const MODE_BASE_COLORS = {
+            light: {
+                backgroundColor: '#F5F7FA',
+                cardColor: '#FFFFFF',
+                textColor: '#1F2937',
+                secondaryText: '#757575',
+                dividerColor: '#EEEEEE',
+            },
+            dark: {
+                backgroundColor: '#121212',
+                cardColor: '#1E1E1E',
+                textColor: '#F3F4F6',
+                secondaryText: '#B0B0B0',
+                dividerColor: '#333333',
+            }
+        };
+
+        let currentThemeKey = 'EleganceDeepBlue';
+        let currentStyleKey = 'SoftFriendly';
+        let isDarkMode = false;
+        const root = document.documentElement;
+        const body = document.body;
+        const modeToggle = document.getElementById('mode-toggle');
+
+        // 核心函数：根据当前主题和模式更新所有 CSS 变量
+        function updateTokens() {
+            const theme = THEMES[currentThemeKey];
+            const style = STYLES[currentStyleKey];
+            const mode = isDarkMode ? MODE_BASE_COLORS.dark : MODE_BASE_COLORS.light;
+
+            // 1. 更新颜色令牌
+            root.style.setProperty('--primary-color', theme.primaryColor);
+            root.style.setProperty('--accent-color', theme.accentColor);
+            root.style.setProperty('--success-color', theme.successColor);
+
+            // 2. 更新样式令牌
+            root.style.setProperty('--border-radius', style.borderRadius);
+            root.style.setProperty('--card-shadow-light', style.cardShadowLight);
+            root.style.setProperty('--card-shadow-dark', style.cardShadowDark);
+            root.style.setProperty('--input-focus-shadow', style.inputFocusShadow);
+
+            // 3. 更新模式相关颜色
+            root.style.setProperty('--bg-color', mode.backgroundColor);
+            root.style.setProperty('--card-color', mode.cardColor);
+            root.style.setProperty('--text-color', mode.textColor);
+            root.style.setProperty('--secondary-text', mode.secondaryText);
+            root.style.setProperty('--divider-color', mode.dividerColor);
+
+            // 4. 更新 body 的 data-theme 属性
+            body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+
+            // 5. 更新控制台显示的值
+            const editorDiv = document.getElementById('token-editor-values');
+            editorDiv.innerHTML = '';
+
+            const allTokens = {
+                'Mode (模式)': isDarkMode ? 'Dark' : 'Light',
+                'Color Theme (配色)': theme.name,
+                'Style Preset (风格)': style.name,
+                'PrimaryColor (主色)': theme.primaryColor,
+                'AccentColor (亏损)': theme.accentColor,
+                'SuccessColor (收入)': theme.successColor,
+                'BorderRadius (圆角)': style.borderRadius,
+            };
+
+            for (const [key, value] of Object.entries(allTokens)) {
+                editorDiv.innerHTML += `
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-gray-500">${key}:</span>
+                        <div class="flex items-center space-x-2 mt-1">
+                            ${value.startsWith('#') ? `<span class="w-3 h-3 rounded-full" style="background-color: ${value}; border: 1px solid #ccc;"></span>` : ''}
+                            <span class="text-gray-900" style="color: ${isDarkMode && !value.startsWith('#') ? 'white' : 'inherit'};">${value}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 初始化切换器
+        function initializeSwitcher(switcherId, data, currentKeyRef, updateFunction) {
+            const switcher = document.getElementById(switcherId);
+
+            Object.keys(data).forEach(key => {
+                const item = data[key];
+                const button = document.createElement('button');
+                button.className = 'theme-button text-sm';
+                button.textContent = item.name;
+
+                // 使用 primaryColor 作为激活边框色
+                if (item.primaryColor) {
+                    button.style.setProperty('--primary-color', item.primaryColor);
+                }
+
+                button.onclick = () => {
+                    window[currentKeyRef] = key; // 更新全局状态变量
+                    updateFunction();
+                    updateButtonActiveState(switcher, key);
+                };
+                switcher.appendChild(button);
+            });
+
+            function updateButtonActiveState(container, currentKey) {
+                Array.from(container.children).forEach(btn => {
+                    const btnKey = Object.keys(data).find(k => data[k].name === btn.textContent);
+                    if (btnKey === currentKey) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            updateButtonActiveState(switcher, window[currentKeyRef]); // 默认选中
+        }
+
+        // 初始化模式切换
+        function initializeModeToggle() {
+            modeToggle.checked = !isDarkMode; // Light mode by default
+
+            modeToggle.addEventListener('change', (event) => {
+                isDarkMode = !event.target.checked;
+                updateTokens();
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化颜色主题切换器 (Color Theme)
+            initializeSwitcher('theme-switcher', THEMES, 'currentThemeKey', updateTokens);
+            // 初始化样式风格切换器 (Style Preset)
+            initializeSwitcher('style-switcher', STYLES, 'currentStyleKey', updateTokens);
+
+            initializeModeToggle();
+
+            // 初始加载
+            updateTokens();
+        });
+
+    </script>
+</body>
+
+</html>

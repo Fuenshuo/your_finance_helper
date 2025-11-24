@@ -25,6 +25,7 @@ import 'package:your_finance_flutter/notification_system_demo.dart';
 // Main Screens
 import 'package:your_finance_flutter/riverpod_asset_demo_screen.dart';
 import 'package:your_finance_flutter/screens/debug_screen.dart';
+import 'package:your_finance_flutter/screens/debug_ui_kit_screen.dart';
 import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
 import 'package:your_finance_flutter/screens/home_screen.dart';
 import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
@@ -41,6 +42,7 @@ class AppRoutes {
   static const String onboarding = '/onboarding';
   static const String settings = '/settings';
   static const String debug = '/debug';
+  static const String debugUIKit = '/debug-ui-kit';
   static const String developer = '/developer';
   static const String riverpodDemo = '/riverpod-demo';
   static const String notificationDemo = '/notification-demo';
@@ -97,6 +99,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.debug,
       builder: (context, state) => const DebugScreen(),
+    ),
+
+    GoRoute(
+      path: AppRoutes.debugUIKit,
+      builder: (context, state) => const DebugUIKitScreen(),
     ),
 
     GoRoute(
@@ -271,6 +278,9 @@ extension GoRouterExtensions on BuildContext {
 
   /// Navigate to debug screen
   void goDebug() => go(AppRoutes.debug);
+
+  /// Navigate to UI Gallery
+  void goDebugUIKit() => go(AppRoutes.debugUIKit);
 
   /// Navigate to Riverpod demo
   void goRiverpodDemo() => go(AppRoutes.riverpodDemo);
