@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/utils/salary_form_validators.dart';
 import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
+import 'package:your_finance_flutter/core/widgets/composite/input_with_action_button.dart';
 
 class SalaryHistoryWidget extends StatefulWidget {
   const SalaryHistoryWidget({
@@ -34,65 +35,58 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
         index: 1,
         child: AppCard(
           child: Padding(
-            padding: EdgeInsets.all(context.spacing16),
+            padding: EdgeInsets.all(AppDesignTokens.spacing16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: AmountInputField(
-                        controller: widget.basicSalaryController,
-                        labelText: '基本工资',
-                        hintText: '每月基本工资',
-                        prefixIcon: const Icon(
-                          Icons.account_balance_wallet,
-                          color: Colors.green,
-                        ),
-                        validator: SalaryFormValidators.validateBasicSalary,
-                      ),
+                InputWithActionButton(
+                  controller: widget.basicSalaryController,
+                  labelText: '基本工资',
+                  hintText: '每月基本工资',
+                  prefixIcon: Icon(
+                    Icons.account_balance_wallet,
+                    color: AppDesignTokens.successColor(context),
+                  ),
+                  validator: SalaryFormValidators.validateBasicSalary,
+                  keyboardType: TextInputType.number,
+                  actionButton: IconButton(
+                    onPressed: () => _showSalaryHistoryDialog(context),
+                    icon: Icon(
+                      Icons.history,
+                      color: AppDesignTokens.primaryAction(context),
                     ),
-                    SizedBox(width: context.spacing12),
-                    IconButton(
-                      onPressed: () => _showSalaryHistoryDialog(context),
-                      icon: const Icon(
-                        Icons.history,
-                        color: Colors.blue,
-                      ),
-                      tooltip: '工资历史',
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.blue.withOpacity(0.1),
-                        padding: const EdgeInsets.all(12),
-                      ),
+                    tooltip: '工资历史',
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppDesignTokens.primaryAction(context).withOpacity(0.1),
+                      padding: const EdgeInsets.all(12),
                     ),
-                  ],
+                  ),
                 ),
                 if (_tempHistory.isNotEmpty) ...[
-                  SizedBox(height: context.spacing8),
+                  SizedBox(height: AppDesignTokens.spacing8),
                   Container(
-                    padding: EdgeInsets.all(context.spacing8),
+                    padding: EdgeInsets.all(AppDesignTokens.spacing8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
+                      color: AppDesignTokens.primaryAction(context).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
                       border: Border.all(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: AppDesignTokens.primaryAction(context).withOpacity(0.3),
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.info_outline,
-                          color: Colors.blue,
+                          color: AppDesignTokens.primaryAction(context),
                           size: 16,
                         ),
-                        SizedBox(width: context.spacing8),
+                        SizedBox(width: AppDesignTokens.spacing8),
                         Expanded(
                           child: Text(
                             '已记录 ${_tempHistory.length} 次工资调整',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.blue.shade700,
-                                    ),
+                            style: AppDesignTokens.caption(context).copyWith(
+                              color: AppDesignTokens.primaryAction(context),
+                            ),
                           ),
                         ),
                       ],
@@ -122,7 +116,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                         color: Colors.grey.shade600,
                       ),
                 ),
-                SizedBox(height: context.spacing16),
+                SizedBox(height: AppDesignTokens.spacing16),
 
                 // 添加新记录按钮
                 ElevatedButton.icon(
@@ -138,12 +132,12 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                     foregroundColor: Colors.white,
                   ),
                 ),
-                SizedBox(height: context.spacing16),
+                SizedBox(height: AppDesignTokens.spacing16),
 
                 // 显示工资历史记录
                 if (_tempHistory.isEmpty)
                   Container(
-                    padding: EdgeInsets.all(context.spacing16),
+                    padding: EdgeInsets.all(AppDesignTokens.spacing16),
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -192,8 +186,8 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
     StateSetter setState,
   ) =>
       Container(
-        margin: EdgeInsets.only(bottom: context.spacing8),
-        padding: EdgeInsets.all(context.spacing12),
+        margin: EdgeInsets.only(bottom: AppDesignTokens.spacing8),
+        padding: EdgeInsets.all(AppDesignTokens.spacing12),
         decoration: BoxDecoration(
           color: Colors.blue.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
@@ -290,7 +284,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   child: Text(_formatDate(selectedDate)),
                 ),
               ),
-              SizedBox(height: context.spacing16),
+              SizedBox(height: AppDesignTokens.spacing16),
 
               // 新工资输入
               TextField(
@@ -363,7 +357,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   child: Text(_formatDate(selectedDate)),
                 ),
               ),
-              SizedBox(height: context.spacing16),
+              SizedBox(height: AppDesignTokens.spacing16),
 
               // 新工资输入
               TextField(

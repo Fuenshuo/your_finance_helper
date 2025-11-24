@@ -1,0 +1,92 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../theme/app_design_tokens.dart';
+
+/// iOS 风格输入框
+/// 特性：无边框、灰色填充背景、大圆角、内容居中
+class AppTextField extends StatelessWidget {
+  final String? labelText;
+  final String? hintText;
+  final String? errorText;
+  final TextEditingController? controller;
+  final TextInputType? keyboardType;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final bool obscureText;
+  final List<TextInputFormatter>? inputFormatters;
+
+  const AppTextField({
+    super.key,
+    this.labelText,
+    this.hintText,
+    this.errorText,
+    this.controller,
+    this.keyboardType,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.obscureText = false,
+    this.inputFormatters,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (labelText != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 6),
+            child: Text(
+              labelText!,
+              style: AppDesignTokens.headline(context).copyWith(fontSize: 15),
+            ),
+          ),
+        ],
+        Container(
+          decoration: BoxDecoration(
+            color: AppDesignTokens.inputFill(context), // 使用 Token 定义的浅灰填充
+            borderRadius: BorderRadius.circular(12), // 12pt 圆角
+            // 错误状态下显示红色边框，正常状态无边框
+            border: errorText != null
+                ? Border.all(color: const Color(0xFFFF3B30), width: 1.5)
+                : Border.all(color: Colors.transparent, width: 1.5), // 预留宽度防止跳动
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            obscureText: obscureText,
+            inputFormatters: inputFormatters,
+            style: AppDesignTokens.body(context).copyWith(height: 1.2), // 修复文字垂直居中
+            cursorColor: AppDesignTokens.primaryAction(context),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: AppDesignTokens.body(context).color!.withOpacity(0.4),
+                fontSize: 17,
+              ),
+              border: InputBorder.none, // 彻底移除 Material 默认下划线/边框
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              prefixIcon: prefixIcon != null 
+                ? IconTheme(data: IconThemeData(color: AppDesignTokens.primaryAction(context)), child: prefixIcon!) 
+                : null,
+              suffixIcon: suffixIcon,
+            ),
+          ),
+        ),
+        if (errorText != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 6),
+            child: Text(
+              errorText!,
+              style: const TextStyle(
+                color: Color(0xFFFF3B30),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}

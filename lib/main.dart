@@ -7,6 +7,8 @@ import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/income_plan_provider.dart';
+import 'package:your_finance_flutter/core/providers/theme_provider.dart';
+import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
@@ -65,6 +67,9 @@ void main() async {
     ProviderScope(
       child: provider.MultiProvider(
         providers: [
+          provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ThemeStyleProvider()..initialize()),
           provider.ChangeNotifierProvider(
               create: (_) => AccountProvider()..initialize()),
           provider.ChangeNotifierProvider(
@@ -88,9 +93,14 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
+  Widget build(BuildContext context) {
+    final themeProvider = provider.Provider.of<ThemeProvider>(context);
+    
+    return MaterialApp.router(
         title: '家庭资产记账',
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeProvider.themeMode,
         routerConfig: appRouter,
         debugShowCheckedModeBanner: false,
         // 添加国际化支持
@@ -111,4 +121,5 @@ class MyApp extends StatelessWidget {
           child: child!,
         ),
       );
+  }
 }

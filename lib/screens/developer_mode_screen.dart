@@ -8,6 +8,7 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
+import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/ios_animation_showcase.dart';
 
@@ -452,6 +453,36 @@ class _DeveloperModeScreenState extends State<DeveloperModeScreen>
                         label: const Text('导出日志'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: context.spacing16),
+
+              // UI工具
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'UI工具',
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: context.spacing16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => context.goDebugUIKit(),
+                        icon: const Icon(Icons.palette_outlined),
+                        label: const Text('UI Gallery / 组件测试'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF9C27B0),
                           foregroundColor: Colors.white,
                         ),
                       ),

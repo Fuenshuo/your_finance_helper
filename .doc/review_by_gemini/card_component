@@ -1,0 +1,42 @@
+import 'package:flutter/material.dart';
+import '../theme/app_design_tokens.dart';
+
+/// 现代卡片组件
+/// 特性：有色阴影、Surface 颜色、内容边距
+class AppCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final VoidCallback? onTap;
+
+  const AppCard({
+    super.key,
+    required this.child,
+    this.padding,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cardContent = Container(
+      width: double.infinity,
+      padding: padding ?? const EdgeInsets.all(AppDesignTokens.spacing16),
+      decoration: BoxDecoration(
+        color: AppDesignTokens.surface(context),
+        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+        boxShadow: [
+          AppDesignTokens.primaryShadow(context), // 使用有色阴影 Token
+        ],
+      ),
+      child: child,
+    );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: cardContent,
+      );
+    }
+
+    return cardContent;
+  }
+}

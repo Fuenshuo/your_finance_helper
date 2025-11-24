@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../theme/responsive_text_styles.dart';
+import '../theme/app_design_tokens.dart';
+import '../theme/app_design_tokens.dart' show AppStyle;
 
+/// 现代卡片组件
+/// 特性：有色阴影、Surface 颜色、内容边距
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -22,35 +24,56 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
-      margin: margin ?? EdgeInsets.all(context.responsiveSpacing8),
+    final currentStyle = AppDesignTokens.getCurrentStyle();
+    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
+    
+    // SharpProfessional: Elevation 2.0 的清晰阴影，确保卡片与背景分界明确
+    // iOS Fintech: 使用原有的有色阴影
+    final boxShadow = showShadow
+        ? (isSharpProfessional
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08), // 略深，确保分界清晰
+                  blurRadius: 8, // 清晰的模糊半径
+                  offset: const Offset(0, 2), // Elevation 2.0
+                  spreadRadius: 0, // 无扩散，保持紧凑
+                ),
+              ]
+            : [
+                AppDesignTokens.primaryShadow(context),
+              ])
+        : null;
+    
+    // 使用统一的水平边距，确保内容对齐
+    final effectivePadding = padding ?? EdgeInsets.symmetric(
+      horizontal: AppDesignTokens.globalHorizontalPadding,
+      vertical: AppDesignTokens.spacing16,
+    );
+    
+    final cardContent = Container(
+      width: double.infinity,
+      margin: margin ?? EdgeInsets.zero,
+      padding: effectivePadding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
-        borderRadius: BorderRadius.circular(context.borderRadius),
-        boxShadow: showShadow ? [context.cardShadow] : null,
+        color: backgroundColor ?? AppDesignTokens.surface(context),
+        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+        boxShadow: boxShadow,
       ),
-      child: Padding(
-        padding: padding ?? EdgeInsets.all(context.responsiveSpacing16),
-        child: child,
-      ),
+      child: child,
     );
 
     if (onTap != null) {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(context.borderRadius),
-          child: card,
-        ),
+      return GestureDetector(
+        onTap: onTap,
+        child: cardContent,
       );
     }
 
-    return card;
+    return cardContent;
   }
 }
 
-// 带标题的卡片
+// 带标题的卡片（兼容旧代码）
 class AppCardWithTitle extends StatelessWidget {
   final String title;
   final Widget child;
@@ -83,12 +106,12 @@ class AppCardWithTitle extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: context.responsiveHeadlineMedium,
+                style: AppDesignTokens.headline(context),
               ),
               if (trailing != null) trailing!,
             ],
           ),
-          SizedBox(height: context.responsiveSpacing16),
+          SizedBox(height: AppDesignTokens.spacing16),
           child,
         ],
       ),
@@ -96,7 +119,7 @@ class AppCardWithTitle extends StatelessWidget {
   }
 }
 
-// 统计卡片
+// 统计卡片（兼容旧代码）
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -128,30 +151,32 @@ class StatCard extends StatelessWidget {
                 Icon(
                   icon,
                   size: 20,
-                  color: context.secondaryText,
+                  color: AppDesignTokens.secondaryText(context),
                 ),
-                SizedBox(width: context.responsiveSpacing8),
+                SizedBox(width: AppDesignTokens.spacing8),
               ],
               Expanded(
                 child: Text(
                   title,
-                  style: context.responsiveBodyMedium,
+                  style: AppDesignTokens.body(context).copyWith(
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: context.responsiveSpacing8),
+          SizedBox(height: AppDesignTokens.spacing8),
           Text(
             value,
-            style: context.statCardAmountStyle(isPositive: valueColor == context.increaseColor).copyWith(
-              color: valueColor ?? context.primaryText,
+            style: AppDesignTokens.title1(context).copyWith(
+              color: valueColor ?? AppDesignTokens.primaryText(context),
             ),
           ),
           if (subtitle != null) ...[
-            SizedBox(height: context.responsiveSpacing4),
+            SizedBox(height: AppDesignTokens.spacing4),
             Text(
               subtitle!,
-              style: context.responsiveBodyMedium,
+              style: AppDesignTokens.caption(context),
             ),
           ],
         ],

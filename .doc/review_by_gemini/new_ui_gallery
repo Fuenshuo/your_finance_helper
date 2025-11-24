@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import '../core/theme/app_design_tokens.dart';
+import '../core/widgets/app_primary_button.dart';
+import '../core/widgets/app_text_field.dart';
+import '../core/widgets/app_card.dart';
+
+class DebugUIKitScreen extends StatelessWidget {
+  const DebugUIKitScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 使用 Grouped Background (高级灰)
+    return Scaffold(
+      backgroundColor: AppDesignTokens.pageBackground(context),
+      appBar: AppBar(
+        title: const Text("Design System 2.0"),
+        backgroundColor: AppDesignTokens.pageBackground(context),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: AppDesignTokens.headline(context),
+        iconTheme: IconThemeData(color: AppDesignTokens.primaryAction(context)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppDesignTokens.spacing24),
+        children: [
+          _buildSectionHeader(context, "1. Typography (排版)"),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Large Title", style: AppDesignTokens.largeTitle(context)),
+                const SizedBox(height: 8),
+                Text("Title 1 Header", style: AppDesignTokens.title1(context)),
+                const SizedBox(height: 8),
+                Text("Headline Text", style: AppDesignTokens.headline(context)),
+                const SizedBox(height: 8),
+                Text(
+                  "Body text should be breathable and easy to read. line-height is adjusted to 1.4 for better readability.",
+                  style: AppDesignTokens.body(context),
+                ),
+                const SizedBox(height: 8),
+                Text("Caption / Secondary text", style: AppDesignTokens.caption(context)),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 32),
+          _buildSectionHeader(context, "2. Buttons (按钮)"),
+          // 不再需要卡片背景，按钮直接放在背景上更有质感
+          AppPrimaryButton(
+            label: "Primary Action",
+            onPressed: () {},
+          ),
+          const SizedBox(height: 16),
+          AppPrimaryButton(
+            label: "Loading State",
+            isLoading: true,
+            onPressed: () {},
+          ),
+          const SizedBox(height: 16),
+          AppPrimaryButton(
+            label: "With Icon",
+            icon: CupertinoIcons.add,
+            onPressed: () {},
+          ),
+          const SizedBox(height: 16),
+          AppPrimaryButton(
+            label: "Disabled",
+            isEnabled: false,
+            onPressed: () {},
+          ),
+
+          const SizedBox(height: 32),
+          _buildSectionHeader(context, "3. Inputs (输入框)"),
+          AppCard(
+            child: Column(
+              children: [
+                const AppTextField(
+                  labelText: "Username",
+                  hintText: "Enter your username",
+                  prefixIcon: Icon(CupertinoIcons.person),
+                ),
+                const SizedBox(height: 16),
+                const AppTextField(
+                  labelText: "Password",
+                  hintText: "Enter secure password",
+                  obscureText: true,
+                  prefixIcon: Icon(CupertinoIcons.lock),
+                  suffixIcon: Icon(CupertinoIcons.eye),
+                ),
+                const SizedBox(height: 16),
+                const AppTextField(
+                  labelText: "Error State",
+                  hintText: "Wrong value",
+                  errorText: "This field is required",
+                  prefixIcon: Icon(CupertinoIcons.exclamationmark_circle),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          _buildSectionHeader(context, "4. Cards & Shadows"),
+          AppCard(
+            child: Row(
+              children: [
+                Container(
+                  width: 50, height: 50,
+                  decoration: BoxDecoration(
+                    color: AppDesignTokens.primaryAction(context).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(CupertinoIcons.chart_pie_fill, color: AppDesignTokens.primaryAction(context)),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Asset Overview", style: AppDesignTokens.headline(context)),
+                    Text("Updated just now", style: AppDesignTokens.caption(context)),
+                  ],
+                )
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 50),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, left: 4),
+      child: Text(
+        title,
+        style: AppDesignTokens.headline(context).copyWith(
+          color: AppDesignTokens.body(context).color!.withOpacity(0.5),
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+}

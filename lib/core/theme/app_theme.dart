@@ -242,6 +242,164 @@ class AppTheme {
           space: 1,
         ),
       );
+
+  // 深色主题
+  static ThemeData get darkTheme => ThemeData(
+        useMaterial3: true,
+        fontFamily: fontFamily,
+        brightness: Brightness.dark,
+
+        // 色彩方案
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF0A84FF), // iOS深色模式蓝
+          secondary: Color(0xFF2C2C2E),
+          onSecondary: Colors.white,
+          onSurface: Colors.white,
+          outline: Color(0xFF38383A),
+        ),
+
+        // 应用栏主题
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF000000),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+
+        // 卡片主题
+        cardTheme: CardThemeData(
+          color: const Color(0xFF1C1C1E),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          shadowColor: Colors.black.withOpacity(0.3),
+        ),
+
+        // 按钮主题
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF0A84FF),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 16,
+            ),
+            textStyle: const TextStyle(
+              fontFamily: fontFamily,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        // 文本按钮主题
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF0A84FF),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+            textStyle: const TextStyle(
+              fontFamily: fontFamily,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        // 输入框主题
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF2C2C2E),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: const BorderSide(
+              color: Color(0xFF0A84FF),
+              width: 2,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+        ),
+
+        // 文本主题
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 34,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          displayMedium: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+          headlineMedium: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          bodyLarge: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            color: Colors.white,
+          ),
+          bodyMedium: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF8E8E93),
+          ),
+          labelLarge: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+        ),
+
+        // 浮动操作按钮主题
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF0A84FF),
+          foregroundColor: Colors.white,
+          elevation: 4,
+        ),
+
+        // 分割线主题
+        dividerTheme: const DividerThemeData(
+          color: Color(0xFF38383A),
+          thickness: 0.5,
+          space: 1,
+        ),
+
+        // 脚手架背景色
+        scaffoldBackgroundColor: const Color(0xFF000000),
+      );
 }
 
 // 扩展方法，方便使用设计规范

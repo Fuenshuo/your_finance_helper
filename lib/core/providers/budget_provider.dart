@@ -37,8 +37,12 @@ class BudgetProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _storageService = await StorageService.getInstance();
-      Logger.info('✅ StorageService 初始化完成');
+      if (!_isInitialized) {
+        _storageService = await StorageService.getInstance();
+        Logger.info('✅ StorageService 初始化完成');
+      } else {
+        Logger.info('♻️ StorageService 已初始化，执行数据刷新');
+      }
 
       // 加载所有数据
       await _loadBudgets();
@@ -234,10 +238,10 @@ class BudgetProvider with ChangeNotifier {
     if (_isLoading) {
       Logger.debug('⏳ 数据正在加载中，等待加载完成...');
       // 等待一段时间让数据加载完成
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       // 如果还是在加载，再等一会儿
       if (_isLoading) {
-        await Future.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
       }
     }
 

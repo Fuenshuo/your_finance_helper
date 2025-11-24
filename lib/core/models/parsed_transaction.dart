@@ -16,6 +16,8 @@ class ParsedTransaction extends Equatable {
     this.date,
     this.notes,
     this.confidence = 0.0,
+    this.uncertainty,
+    this.nextStuff,
     this.source = ParsedTransactionSource.unknown,
     this.rawData,
   });
@@ -52,6 +54,12 @@ class ParsedTransaction extends Equatable {
 
   /// 解析置信度（0.0-1.0）
   final double confidence;
+
+  /// 不确定性说明（可选，如"用户说'发钱了'但未提金额"）
+  final String? uncertainty;
+
+  /// 下一步引导语（LLM生成，用于提示用户补充缺失信息）
+  final String? nextStuff;
 
   /// 数据来源
   final ParsedTransactionSource source;
@@ -115,6 +123,8 @@ class ParsedTransaction extends Equatable {
       date: json['date'] != null ? DateTime.parse(json['date'] as String) : null,
       notes: json['notes'] as String?,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+      uncertainty: json['uncertainty'] as String?,
+      nextStuff: json['nextStuff'] as String?,
       source: ParsedTransactionSource.values.firstWhere(
         (e) => e.name == json['source'],
         orElse: () => ParsedTransactionSource.unknown,
@@ -136,6 +146,8 @@ class ParsedTransaction extends Equatable {
         'date': date?.toIso8601String(),
         'notes': notes,
         'confidence': confidence,
+        'uncertainty': uncertainty,
+        'nextStuff': nextStuff,
         'source': source.name,
         'rawData': rawData,
       };
@@ -153,6 +165,8 @@ class ParsedTransaction extends Equatable {
     DateTime? date,
     String? notes,
     double? confidence,
+    String? uncertainty,
+    String? nextStuff,
     ParsedTransactionSource? source,
     Map<String, dynamic>? rawData,
   }) =>
@@ -168,6 +182,8 @@ class ParsedTransaction extends Equatable {
         date: date ?? this.date,
         notes: notes ?? this.notes,
         confidence: confidence ?? this.confidence,
+        uncertainty: uncertainty ?? this.uncertainty,
+        nextStuff: nextStuff ?? this.nextStuff,
         source: source ?? this.source,
         rawData: rawData ?? this.rawData,
       );
@@ -185,6 +201,8 @@ class ParsedTransaction extends Equatable {
         date,
         notes,
         confidence,
+        uncertainty,
+        nextStuff,
         source,
         rawData,
       ];

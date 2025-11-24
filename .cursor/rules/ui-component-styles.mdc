@@ -1,56 +1,205 @@
 ---
 globs: *.dart
-description: UI component style naming guide - standardized style names for all UI components
+description: UI component style naming guide V3.0 - standardized style names for all UI components including composite styles and state styles
 ---
 
-# UI组件样式命名指南
+# UI组件样式命名指南 V3.0
 
 本文档定义了应用中所有UI组件的样式名称，**按样式特征命名**，方便快速引用和应用。
+
+**版本：** V3.0（已扩充复合样式和状态样式，全面切换到 iOS Fintech 组件系统）
+
+**核心更新：**
+- ✅ 新增 Section 8：数据展示与复合组件样式（7种复合样式）
+- ✅ 新增 Section 9：状态与反馈样式（3种状态样式）
+- ✅ **强制要求**：所有样式必须使用 `AppDesignTokens` 和新的 iOS Fintech 组件系统
+- ✅ **清理 V2.0 残留**：所有 Material 默认样式和 FormBuilderUtils 引用已标记为 LEGACY/废弃
+- ✅ **纯化设计令牌**：新增 `AppDesignTokens.microCaption`，移除硬编码字体大小
+- ✅ **新增 Section 0**：Design Token 系统（4套主题 + 3套风格）
+
+---
+
+## 0. Design Token 系统 (设计令牌)
+
+所有组件的样式均通过引用以下动态令牌实现。**默认使用 iOS Fintech 风格**，同时支持多主题和多风格切换。
+
+### 0.1 颜色令牌 (Color Tokens) - 4 套主题
+
+**默认主题：** ModernForestGreen（森绿主题）
+
+| 令牌名称 | 默认值 (ModernForestGreen) | 搭配场景 / 定位 |
+|---------|-------------------------|----------------|
+| `primaryColor` | `#004D40` (深森绿) | 主题色，用于主要操作、品牌元素、激活状态 |
+| `accentColor` | `#E53935` (Vibrant Red) | 警示色 / 亏损色（所有主题共用此标准红） |
+| `successColor` | `#8BC34A` (鲜草绿) | 收入色 / 盈利色 |
+| `cardColor` | `#FFFFFF` / `#1E1E1E` (随模式切换) | 卡片背景色 |
+| `backgroundColor` | `#F5F7FA` / `#121212` (随模式切换) | 应用主背景色 |
+| `dividerColor` | `#EEEEEE` / `#333333` (随模式切换) | 分隔线、次要边框色 |
+
+#### 4 种主题的具体配置
+
+| 主题名称 | 核心定位 | `primaryColor` | `successColor` |
+|---------|---------|---------------|---------------|
+| **EleganceDeepBlue** | 主色藏青 / 墨绿 | `#1A237E` | `#2E7D32` |
+| **ModernForestGreen** | 主色森绿 / 明快黄绿（**默认**） | `#004D40` | `#8BC34A` |
+| **PremiumGraphite** | 主色石墨灰 / 经典常春藤绿 | `#424242` | `#4CAF50` |
+| **ClassicBurgundy** | 主色深紫红 / 柔和对比绿 | `#4A148C` | `#66BB6A` |
+
+**⚠️ 注意：** 当前实现使用 iOS Fintech 风格（`#007AFF` 蓝色主题），主题切换功能待实现。
+
+### 0.2 样式令牌 (Style Tokens) - 3 套风格
+
+**默认风格：** iOS Fintech（通透、层级感、微交互）
+
+| 令牌名称 | iOS Fintech（默认） | SharpProfessional | 描述 |
+|---------|-------------------|------------------|------|
+| `borderRadius` | 12pt / 16pt（中-大圆角） | 8pt（中圆角） | 组件统一圆角大小 |
+| `cardShadow` | 弥散阴影（blurRadius: 32, opacity: 0.08） | 清晰阴影（elevation: 2.0） | 卡片投影风格 |
+| `inputFocusShadow` | 无边框，灰色填充 | 紧凑光环（3pt 扩散） | 输入框聚焦时的效果 |
+| `buttonElevation` | 弥散阴影（有色阴影） | 清晰阴影（elevation: 4.0） | 按钮投影风格 |
+
+**当前实现：** 使用 iOS Fintech 风格，SharpProfessional 风格待实现。
+
+### 0.3 组件样式实现细节对比
+
+#### iOS Fintech 风格（当前默认）
+
+**标准文本输入框样式：**
+- 圆角：12pt（`AppDesignTokens.radiusMedium`）
+- 边框：无边框，灰色填充背景（`AppDesignTokens.inputFill(context)`）
+- 聚焦：无边框变化，保持填充背景
+
+**主要按钮样式：**
+- 圆角：16pt（`AppDesignTokens.radiusMedium`）
+- 高度：56pt
+- 阴影：弥散阴影（`AppDesignTokens.primaryShadow(context)`）
+- 动画：按压回弹动画
+
+**标准数据卡片样式：**
+- 圆角：12pt（`AppDesignTokens.radiusMedium`）
+- 阴影：弥散阴影（`AppDesignTokens.primaryShadow(context)`）
+
+#### SharpProfessional 风格（可选扩展）
+
+**标准文本输入框样式：**
+- 圆角：8pt
+- 边框：默认 `dividerColor`，聚焦时 `primaryColor` 2px宽，强调边缘感
+- 代码参考：
+```dart
+InputDecoration(
+  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)), 
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8.0),
+    borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+  ),
+  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+)
+```
+
+**主要按钮样式：**
+- 圆角：8pt
+- 背景色：`primaryColor`
+- 阴影：清晰可见（`elevation: 4.0`）
+- 代码参考：
+```dart
+ElevatedButton.styleFrom(
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+  backgroundColor: Theme.of(context).primaryColor,
+  elevation: 4.0, // 清晰阴影
+  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+)
+```
+
+**标准数据卡片样式：**
+- 圆角：8pt
+- 背景色：`cardColor`
+- 阴影：清晰阴影（`elevation: 2.0`）
+- 代码参考：
+```dart
+Card(
+  elevation: 2.0, // 清晰阴影
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+  // ... 卡片内容
+)
+```
+
+### 0.4 样式对比表（关键组件）
+
+| 样式类型 | 组件 | iOS Fintech（默认） | SharpProfessional（可选） |
+|---------|------|-------------------|-------------------------|
+| **文本输入框** | `AppTextField` | 无边框，灰色填充，圆角 12pt | 有边框，聚焦时 2px 边框，圆角 8pt |
+| **主要按钮** | `AppPrimaryButton` | 主题色背景，圆角 16pt，弥散阴影，56pt高度 | 主题色背景，圆角 8pt，Elevation 4.0 |
+| **浮动操作按钮** | FAB | 圆形浮动，圆角 12pt，弥散阴影 | 圆形浮动，圆角 12pt，Elevation 6.0 |
+| **标准数据卡片** | `AppCard` | 圆角 12pt，弥散阴影 | 圆角 8pt，Elevation 2.0 |
+| **标签芯片** | `AppTag` | 圆角 8pt（胶囊形） | 圆角 16pt（胶囊形 - 保持标签友好度） |
+
+**⚠️ 重要提示：**
+- **当前实现**：所有组件使用 iOS Fintech 风格
+- **主题切换**：4套主题配置已定义，切换功能待实现
+- **风格切换**：SharpProfessional 风格已定义，切换功能待实现
+- **迁移建议**：新代码必须使用 iOS Fintech 风格，SharpProfessional 风格仅作为可选扩展参考
 
 ## 🎯 默认样式体系（推荐）
 
 **核心原则：除非有特殊需求，否则一律使用默认样式。**
 
-### 默认样式组合
+### 默认样式组合（V3.0 - 全面使用 iOS Fintech 组件系统）
 
 | 组件类型 | 默认样式 | 实现方式 | 使用场景 |
 |---------|---------|---------|---------|
-| **文本输入框** | 标准文本输入框样式 | `FormBuilderUtils.buildTextField()` 或直接使用 `TextField` + 全局主题 | 所有文本输入 |
-| **金额输入** | 金额输入框样式 | `AmountInputField` 组件 | 仅金额输入场景 |
-| **日期选择** | 日期选择器样式 | `FormBuilderUtils.buildDateField()` | 仅日期选择场景 |
-| **下拉框** | 标准下拉框样式 | `FormBuilderUtils.buildDropdown()` | 所有下拉选择 |
-| **复选框** | Material默认样式 | `FormBuilderUtils.buildCheckbox()` 或 `Checkbox` | 所有复选框 |
-| **开关** | Material默认样式 | `FormBuilderUtils.buildSwitch()` 或 `SwitchListTile` | 所有开关 |
-| **单选按钮** | Material默认样式 | `Radio` 或 `RadioListTile` | 所有单选 |
-| **滑块** | Material默认样式 | `FormBuilderUtils.buildSlider()` 或 `Slider` | 所有滑块 |
-| **主要按钮** | 主要按钮样式 | `ElevatedButton`（使用全局主题） | 主要操作按钮 |
-| **次要按钮** | 文本按钮样式 | `TextButton`（使用全局主题） | 取消、次要操作 |
+| **文本输入框** | 标准文本输入框样式 | `AppTextField` 组件 ⚠️ **必须使用** | 所有文本输入 |
+| **金额输入** | 金额输入框样式 | `AmountInputField` 组件 🔸 **LEGACY，待迁移** | 仅金额输入场景（过渡期） |
+| **日期选择** | 日期选择器样式 | `AppTextField` (Wrapper) + DatePicker ⭐ | 仅日期选择场景 |
+| **下拉框** | 标准下拉框样式 | `AppTextField` (Wrapper) + Dropdown ⚠️ **必须使用** | 所有下拉选择 |
+| **复选框** | 复选框样式 | `AppCheckbox` 组件 ⚠️ **必须使用** | 所有复选框 |
+| **开关** | 开关样式 | `AppSwitch` 组件 ⚠️ **必须使用** | 所有开关 |
+| **单选按钮** | 单选按钮样式 | `RadioListTile`（使用 `AppDesignTokens`） | 所有单选 |
+| **滑块** | 滑块样式 | `Slider`（使用 `AppDesignTokens.primaryAction(context)`） | 所有滑块 |
+| **分段选择器** | 分段选择器样式 | `AppSegmentedControl` 组件 ⚠️ **必须使用** | 分段切换场景 |
+| **标签芯片** | 标签芯片样式 | `AppTag` 组件 ⚠️ **必须使用** | 标签选择/筛选 |
+| **主要按钮** | 主要按钮样式 | `AppPrimaryButton` 组件 ⚠️ **必须使用** | 主要操作按钮 |
+| **次要按钮** | 文本按钮样式 | `TextButton`（使用 `AppDesignTokens`） | 取消、次要操作 |
+| **图标按钮** | 图标按钮样式 | `IconButton`（使用 `AppDesignTokens`） | 图标操作 |
 | **确认对话框** | 确认对话框样式 | `unifiedNotifications.showConfirmation()` | 所有确认操作 |
 | **底部表单** | 底部表单样式 | `AppAnimations.showAppModalBottomSheet()` | 所有底部表单 |
-| **标签页** | Material默认样式 | `TabBar` / `TabBarView` | 所有标签页 |
+| **标签页** | 标准标签页样式 | `TabBar` / `TabBarView`（使用 `AppDesignTokens`） | 所有标签页 |
 | **提示消息** | SnackBar提示样式 | `ScaffoldMessenger.showSnackBar()` | 所有操作反馈 |
 
-### 默认样式特征
+### 默认样式特征（V3.0 - iOS Fintech 风格）
 
-所有默认样式都遵循全局主题配置（[app_theme.dart](mdc:lib/core/theme/app_theme.dart)）：
+所有默认样式都遵循 `AppDesignTokens` 设计令牌系统：
 
-- **圆角**：12pt（统一圆角）
-- **输入框**：白色背景，灰色边框，聚焦时主题色2px边框
-- **按钮**：主题色背景（主要按钮），主题色文字（文本按钮），12pt圆角
-- **间距**：使用响应式间距（`context.responsiveSpacing*`）
+- **主题**：ModernForestGreen（森绿主题，默认）
+- **风格**：iOS Fintech（通透、层级感、微交互，默认）
+- **圆角**：12pt / 16pt（`AppDesignTokens.radiusMedium`）
+- **输入框**：无边框，灰色填充背景（`AppDesignTokens.inputFill(context)`），12pt圆角
+- **按钮**：56pt高度，按压动画，主题色背景（`AppDesignTokens.primaryAction(context)`）
+- **阴影**：弥散阴影（`AppDesignTokens.primaryShadow(context)`）
+- **间距**：使用 `AppDesignTokens.spacing*`（spacing4, spacing8, spacing12, spacing16, spacing24, spacing32）
+- **字体**：使用 `AppDesignTokens` 文本样式（largeTitle, title1, headline, body, caption, microCaption）
+- **颜色**：使用 `AppDesignTokens` 颜色系统（primaryAction, successColor, errorColor, warningColor, secondaryText等）
+
+**可选扩展：** 支持 SharpProfessional 风格（8pt圆角，清晰阴影，有边框输入框），详见 Section 0。
 
 ---
 
-## 📋 完整样式列表（特殊场景使用）
+## 📋 完整样式列表（V3.0 体系）
 
 **样式编号说明：**
-- **S1-S3**：输入框样式
-- **S4**：下拉框样式
-- **S5-S10**：选择组件样式
-- **S11-S16**：按钮样式
+- **S1-S3**：输入框样式（S1必须使用AppTextField，S2为LEGACY）
+- **S4**：下拉框样式（必须使用AppTextField + 下拉菜单）
+- **S5-S10**：选择组件样式（S5-S6、S9-S10必须使用App*组件）
+- **S11-S16**：按钮样式（S11必须使用AppPrimaryButton）
 - **S17-S18**：对话框样式
 - **S19**：标签页样式
 - **S20-S21**：提示样式
+- **S22-S28**：数据展示与复合组件样式（V3.0新增）
+- **S29-S31**：状态与反馈样式（V3.0新增）
+
+**⚠️ 重要提示：**
+- 所有标记为 ⭐ **默认** 的样式必须使用新的 iOS Fintech 组件系统
+- 所有标记为 🔸 **LEGACY** 的样式为过渡期使用，**新代码严禁引用**
+- 所有标记为 🔸 **特殊场景** 的样式仅在特定场景使用
 
 ---
 
@@ -60,49 +209,54 @@ description: UI component style naming guide - standardized style names for all 
 **命名：`标准文本输入框样式` 或 `StandardTextFieldStyle`**
 
 **样式特征：**
-- 使用 `FormBuilderTextField` 或 `TextField` + 全局主题
-- 圆角：12pt（由全局主题定义）
-- 填充背景：白色（cardColor）
-- 边框：默认灰色（dividerColor），聚焦时主题色（primaryColor）2px宽
-- 内边距：水平16pt，垂直16pt
+- ⚠️ **必须使用** `AppTextField` 组件
+- iOS 风格：无边框，灰色填充背景（`AppDesignTokens.inputFill(context)`）
+- 圆角：12pt（`AppDesignTokens.radiusMedium`）
+- 内边距：水平18pt，垂直16pt
+- 错误状态：红色边框（`Color(0xFFFF3B30)`）
 
 **推荐使用方式：**
 ```dart
-// 方式1：使用FormBuilderUtils（推荐）
-FormBuilderUtils.buildTextField(
-  context,
-  name: 'field_name',
-  label: '标签',
-)
-
-// 方式2：直接使用TextField（会自动应用全局主题）
-TextField(
-  decoration: InputDecoration(
-    labelText: '标签',
-  ),
+// ⚠️ 唯一推荐方式：使用 AppTextField
+AppTextField(
+  controller: _controller,
+  labelText: '标签',
+  hintText: '请输入...',
+  prefixIcon: Icon(CupertinoIcons.person),
+  validator: (value) => value?.isEmpty ?? true ? '不能为空' : null,
 )
 ```
 
 **使用位置：**
-- [FormBuilderUtils.buildTextField](mdc:lib/core/widgets/form_builder_utils.dart) - 通用文本输入框构建器
-- 所有使用 `FormBuilderUtils.buildTextField()` 的表单页面
+- [AppTextField](mdc:lib/core/widgets/app_text_field.dart) - iOS风格输入框组件
+- 所有表单页面的文本输入
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`FormBuilderUtils.buildTextField()`~~ → 迁移到 `AppTextField`
+- ~~`TextField`~~ → 迁移到 `AppTextField`
 
 ---
 
-### 1.2 **金额输入框样式** (`AmountInputFieldStyle`) 🔸 **特殊场景** [S2]
+### 1.2 **金额输入框样式** (`AmountInputFieldStyle`) 🔸 **LEGACY - 过渡期使用** [S2]
 **命名：`金额输入框样式` 或 `AmountInputFieldStyle`**
 
-**样式特征：**
-- 使用 `AmountInputField` 组件
+**⚠️ 迁移状态：** 此样式已标记为 LEGACY。**新代码中应优先考虑基于 AppTextField 的 Suffix 实现。**
+
+**当前实现（过渡期）：**
+- 使用 `AmountInputField` 组件（LEGACY）
 - 左侧圆角：8pt（右侧无圆角，与单位块衔接）
 - 右侧单位块：36px宽，浅灰色背景
-- **仅在金额输入时使用**
 
-**使用位置：**
-- [AmountInputField](mdc:lib/core/widgets/amount_input_field.dart) - 金额输入组件
+**未来实现方向（推荐新代码实现）：**
+- 基于 `AppTextField` 的 `suffixIcon` 或自定义 `suffixBuilder` 实现单位块
+- 保持 iOS 风格的一致性
 
-**代码示例：**
+**当前使用位置（过渡期）：**
+- [AmountInputField](mdc:lib/core/widgets/amount_input_field.dart) - 金额输入组件（LEGACY）
+
+**代码示例（过渡期 - 严禁新代码使用）：**
 ```dart
+// ⚠️ 仅为兼容旧代码，新代码请勿使用 AmountInputField
 AmountInputField(
   controller: controller,
   labelText: '金额',
@@ -116,22 +270,35 @@ AmountInputField(
 **命名：`日期选择器样式` 或 `DatePickerFieldStyle`**
 
 **样式特征：**
-- 使用 `FormBuilderDateTimePicker`
-- 前缀图标：日历图标（Icons.calendar_today）
+- **必须**使用 `AppTextField` 组件作为外部视觉容器
+- 前缀图标：日历图标（`CupertinoIcons.calendar` 或 `Icons.calendar_today`）
 - 日期格式：yyyy-MM-dd
 - **仅在日期选择时使用**
 
 **推荐使用方式：**
 ```dart
-FormBuilderUtils.buildDateField(
-  context,
-  name: 'date',
-  label: '日期',
+// 推荐方式：使用 AppTextField 包装一个只读的点击事件
+AppTextField(
+  labelText: '日期',
+  hintText: '请选择日期',
+  readOnly: true, // 只读
+  prefixIcon: Icon(CupertinoIcons.calendar),
+  controller: TextEditingController(text: selectedDateString), // 展示选定值
+  onTap: () async {
+    // 触发 DatePicker
+    final DateTime? picked = await showCupertinoModalPopup<DateTime>(
+      // ... DatePicker Implementation
+    );
+    // ...
+  },
 )
 ```
 
 **使用位置：**
-- [FormBuilderUtils.buildDateField](mdc:lib/core/widgets/form_builder_utils.dart) - 日期选择器构建器
+- 所有日期选择场景
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`FormBuilderUtils.buildDateField()`~~ → 迁移到 `AppTextField` + DatePicker
 
 ---
 
@@ -141,26 +308,41 @@ FormBuilderUtils.buildDateField(
 **命名：`标准下拉框样式` 或 `StandardDropdownStyle`**
 
 **样式特征：**
-- 使用 `FormBuilderDropdown`
-- 圆角：12pt
-- 填充背景：白色（cardColor）
-- 边框：默认灰色，聚焦时主题色2px宽
+- ⚠️ **必须使用** `AppTextField` 的视觉风格作为包装
+- iOS 风格：无边框，灰色填充背景
+- 圆角：12pt（`AppDesignTokens.radiusMedium`）
+- 后缀图标：向下箭头（`CupertinoIcons.chevron_down`）
 
 **推荐使用方式：**
 ```dart
-FormBuilderUtils.buildDropdown<String>(
-  context,
-  name: 'dropdown',
-  label: '选择项',
-  items: [
-    DropdownMenuItem(value: 'option1', child: Text('选项1')),
-    DropdownMenuItem(value: 'option2', child: Text('选项2')),
-  ],
+// ⚠️ 推荐方式：使用 DropdownButtonFormField 并包裹在 AppTextField 的视觉容器中
+Container(
+  decoration: BoxDecoration(
+    color: AppDesignTokens.inputFill(context),
+    borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+  ),
+  child: DropdownButtonFormField<String>(
+    // 移除默认下划线和边框
+    decoration: const InputDecoration(
+      labelText: '选择项',
+      border: InputBorder.none,
+      contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      suffixIcon: Icon(CupertinoIcons.chevron_down), // 添加后缀箭头
+    ),
+    items: [
+      DropdownMenuItem(value: 'option1', child: Text('选项1')),
+      // ...
+    ],
+    onChanged: (value) {},
+  ),
 )
 ```
 
 **使用位置：**
-- [FormBuilderUtils.buildDropdown](mdc:lib/core/widgets/form_builder_utils.dart) - 下拉框构建器
+- 所有下拉选择场景
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`FormBuilderUtils.buildDropdown()`~~ → 迁移到 `AppTextField` + 下拉菜单视觉组合
 
 ---
 
@@ -169,48 +351,62 @@ FormBuilderUtils.buildDropdown<String>(
 ### 3.1 **复选框样式** (`CheckboxStyle`) ⭐ **默认** [S5]
 **命名：`复选框样式` 或 `CheckboxStyle`**
 
+**样式特征：**
+- ⚠️ **必须使用** `AppCheckbox` 组件
+- iOS 风格：圆形，选中变蓝，带有缩放动画
+
 **推荐使用方式：**
 ```dart
-// 方式1：使用FormBuilderUtils
-FormBuilderUtils.buildCheckbox(
-  context,
-  name: 'checkbox',
-  title: '选项',
-)
-
-// 方式2：直接使用Material Checkbox
-Checkbox(
+// ⚠️ 唯一推荐方式：使用 AppCheckbox
+AppCheckbox(
   value: isChecked,
   onChanged: (value) => setState(() => isChecked = value),
+  label: '选项', // 可选
 )
 ```
 
 **使用位置：**
-- [FormBuilderUtils.buildCheckbox](mdc:lib/core/widgets/form_builder_utils.dart) - 复选框构建器
+- [AppCheckbox](mdc:lib/core/widgets/app_selection_controls.dart) - iOS风格复选框组件
+- 所有复选框场景
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`FormBuilderUtils.buildCheckbox()`~~ → 迁移到 `AppCheckbox`
+- ~~`Checkbox`~~ → 迁移到 `AppCheckbox`
 
 ---
 
 ### 3.2 **开关样式** (`SwitchStyle`) ⭐ **默认** [S6]
 **命名：`开关样式` 或 `SwitchStyle`**
 
+**样式特征：**
+- ⚠️ **必须使用** `AppSwitch` 组件
+- iOS 风格：`CupertinoSwitch`，主题色激活
+
 **推荐使用方式：**
 ```dart
-// 方式1：使用FormBuilderUtils
-FormBuilderUtils.buildSwitch(
-  name: 'switch',
-  title: '开关',
-)
-
-// 方式2：使用SwitchListTile（推荐，带标题）
-SwitchListTile(
-  title: Text('开关'),
-  value: isEnabled,
-  onChanged: (value) => setState(() => isEnabled = value),
+// ⚠️ 唯一推荐方式：使用 AppSwitch
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text(
+      '开关',
+      style: AppDesignTokens.body(context),
+    ),
+    AppSwitch(
+      value: isEnabled,
+      onChanged: (value) => setState(() => isEnabled = value),
+    ),
+  ],
 )
 ```
 
 **使用位置：**
-- [FormBuilderUtils.buildSwitch](mdc:lib/core/widgets/form_builder_utils.dart) - 开关构建器
+- [AppSwitch](mdc:lib/core/widgets/app_selection_controls.dart) - iOS风格开关组件
+- 所有开关场景
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`FormBuilderUtils.buildSwitch()`~~ → 迁移到 `AppSwitch`
+- ~~`SwitchListTile`~~ → 迁移到 `AppSwitch` + `Row`
 
 ---
 
@@ -255,38 +451,56 @@ Slider(
 ### 3.5 **分段选择器样式** (`SegmentedControlStyle`) 🔸 **特殊场景** [S9]
 **命名：`分段选择器样式` 或 `SegmentedControlStyle`**
 
-**仅在需要分段切换时使用**（如：日/周/月/年选择）
+**样式特征：**
+- 使用 `AppSegmentedControl` 组件
+- 无边框、扁平化设计，选中项主题色填充
+- iOS Cupertino 风格
 
 **推荐使用方式：**
 ```dart
-AppAnimations.animatedSegmentedControl(
-  segments: ['日', '周', '月', '年'],
-  selectedIndex: selectedIndex,
-  onChanged: (index) => setState(() => selectedIndex = index),
+AppSegmentedControl<String>(
+  children: const {
+    'day': Text('日'),
+    'week': Text('周'),
+    'month': Text('月'),
+  },
+  groupValue: selectedPeriod,
+  onValueChanged: (value) => setState(() => selectedPeriod = value),
 )
 ```
 
 **使用位置：**
-- [AppAnimations.animatedSegmentedControl](mdc:lib/core/widgets/app_animations.dart) - 分段选择器动画组件
+- 页面 B 的"方案对比"沙盒切换器
+- [AppSegmentedControl](mdc:lib/core/widgets/app_selection_controls.dart) - iOS 风格分段选择器
 
 ---
 
-### 3.6 **标签芯片样式** (`ChipStyle`) 🔸 **特殊场景** [S10]
+### 3.6 **标签芯片样式** (`ChipStyle`) ⭐ **默认** [S10]
 **命名：`标签芯片样式` 或 `ChipStyle`**
 
-**仅在需要标签选择/筛选时使用**
+**样式特征：**
+- ⚠️ **必须使用** `AppTag` 组件
+- iOS 风格：8pt圆角，选中/未选中状态，支持自定义颜色
 
 **推荐使用方式：**
 ```dart
-FilterChip(
-  label: Text('标签'),
-  selected: isSelected,
-  onSelected: (selected) => setState(() => isSelected = selected),
+// ⚠️ 唯一推荐方式：使用 AppTag
+AppTag(
+  label: '标签',
+  isSelected: isSelected,
+  onTap: () => setState(() => isSelected = !isSelected),
+  color: AppDesignTokens.primaryAction(context), // 可选
 )
 ```
 
 **使用位置：**
-- [add_asset_sheet.dart](mdc:lib/features/family_info/screens/add_asset_sheet.dart) - 资产子分类选择
+- [AppTag](mdc:lib/core/widgets/app_tag.dart) - iOS风格标签组件
+- 标签选择/筛选场景
+- 分类展示场景
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`FilterChip`~~ → 迁移到 `AppTag`
+- ~~`ChoiceChip`~~ → 迁移到 `AppTag`
 
 ---
 
@@ -296,25 +510,30 @@ FilterChip(
 **命名：`主要按钮样式` 或 `PrimaryButtonStyle`**
 
 **样式特征：**
-- 使用 `ElevatedButton`
-- **自动应用全局主题配置**（无需手动设置样式）
-- 背景色：主题色（primaryAction - #007AFF）
-- 文字颜色：白色
-- 圆角：12pt
-- 内边距：水平24pt，垂直16pt
+- ⚠️ **必须使用** `AppPrimaryButton` 组件
+- iOS 风格：56pt高度，按压回弹动画，主题色背景
+- 圆角：16pt（`AppDesignTokens.radiusMedium`）
+- 支持 Loading 状态和禁用状态
 
 **推荐使用方式：**
 ```dart
-// 直接使用，会自动应用全局主题
-ElevatedButton(
+// ⚠️ 唯一推荐方式：使用 AppPrimaryButton
+AppPrimaryButton(
+  label: '确定',
+  icon: CupertinoIcons.check_mark, // 可选
   onPressed: () => {},
-  child: Text('确定'),
+  isLoading: false, // 可选
+  isEnabled: true, // 可选
 )
 ```
 
 **使用位置：**
-- [app_theme.dart](mdc:lib/core/theme/app_theme.dart) - `elevatedButtonTheme` - 全局主题配置
-- 所有使用 `ElevatedButton` 的页面
+- [AppPrimaryButton](mdc:lib/core/widgets/app_primary_button.dart) - iOS风格主按钮组件
+- 所有主要操作按钮
+
+**⚠️ 废弃方式（V2.0遗留，严禁在新代码中使用）：**
+- ~~`ElevatedButton`~~ → 迁移到 `AppPrimaryButton`
+- ~~`ElevatedButton.icon`~~ → 迁移到 `AppPrimaryButton`（带 `icon` 参数）
 
 ---
 
@@ -322,23 +541,28 @@ ElevatedButton(
 **命名：`文本按钮样式` 或 `TextButtonStyle`**
 
 **样式特征：**
-- 使用 `TextButton`
-- **自动应用全局主题配置**
-- 文字颜色：主题色（primaryAction）
-- 圆角：12pt
+- 使用 `TextButton`（使用 `AppDesignTokens`）
+- 文字颜色：主题色（`AppDesignTokens.primaryAction(context)`）
+- 圆角：12pt（`AppDesignTokens.radiusMedium`）
 
 **推荐使用方式：**
 ```dart
-// 直接使用，会自动应用全局主题
+// 使用 TextButton + AppDesignTokens
 TextButton(
   onPressed: () => {},
+  style: TextButton.styleFrom(
+    foregroundColor: AppDesignTokens.primaryAction(context),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+    ),
+  ),
   child: Text('取消'),
 )
 ```
 
 **使用位置：**
-- [app_theme.dart](mdc:lib/core/theme/app_theme.dart) - `textButtonTheme` - 全局主题配置
 - 对话框操作按钮
+- 次要操作按钮
 
 ---
 
@@ -391,10 +615,18 @@ EnhancedFloatingActionButton(
 ### 4.6 **带图标按钮样式** (`IconLabelButtonStyle`) 🔸 **特殊场景** [S16]
 **命名：`带图标按钮样式` 或 `IconLabelButtonStyle`**
 
-**仅在需要图标+文字组合按钮时使用**
+**新代码应优先使用 S11 AppPrimaryButton 的 icon 参数实现。**
 
 **推荐使用方式：**
 ```dart
+// 推荐方式：使用 AppPrimaryButton(icon: ...) 实现
+AppPrimaryButton(
+  label: '添加',
+  icon: CupertinoIcons.add,
+  onPressed: () => {},
+)
+
+// 仅在 Material Design 特定场景使用（特殊场景）
 ElevatedButton.icon(
   onPressed: () => {},
   icon: Icon(Icons.add, size: 20),
@@ -506,33 +738,494 @@ unifiedNotifications.showSuccess(context, '操作成功');
 
 ---
 
+## 8. 数据展示与复合组件样式 (Data Display & Composite Styles) - V3.0 新增
+
+### 8.1 **核心数据卡片样式** (`CoreDataCardStyle`) ⭐ **高频使用** [S22]
+**命名：`核心数据卡片样式` 或 `CoreDataCardStyle`**
+
+**样式特征：**
+- **结构：** 大字体主数值（￥2,345.00） + 描述性副标题（年度净收入）
+- **背景：** 强烈的圆角卡片（16pt），主题色或渐变色背景
+- **字体：** 主数值使用 `AppDesignTokens.largeTitle` 或 `AppDesignTokens.title1`
+- **用途：** 用于展示最高层级的关键结果（KPI）
+
+**推荐使用方式：**
+```dart
+AppCard(
+  child: Padding(
+    padding: EdgeInsets.all(AppDesignTokens.spacing24),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '年度净收入',
+          style: AppDesignTokens.caption(context),
+        ),
+        SizedBox(height: AppDesignTokens.spacing8),
+        Text(
+          '￥${totalIncome.toStringAsFixed(2)}',
+          style: AppDesignTokens.largeTitle(context).copyWith(
+            color: AppDesignTokens.primaryAction(context),
+          ),
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+**使用位置：**
+- 页面 B (`/financial-planning/tax-prediction`) 的"结果总览"
+- Tab 主页的资产总览
+- Dashboard 的关键指标卡片
+
+---
+
+### 8.2 **只读结果展示行样式** (`ReadOnlyResultRowStyle`) ⭐ **高频使用** [S23]
+**命名：`只读结果展示行样式` 或 `ReadOnlyResultRowStyle`**
+
+**样式特征：**
+- **结构：** 标题（左侧） + 只读数值（右侧）
+- **数值样式：** 数值使用灰色背景或虚线边框包裹，以区别于输入框
+- **字体：** 标题使用 `AppDesignTokens.body`，数值使用 `AppDesignTokens.headline`
+- **用途：** 用于展示系统自动计算的只读结果，如扣款金额
+
+**推荐使用方式：**
+```dart
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text(
+      '社保（五险）',
+      style: AppDesignTokens.body(context),
+    ),
+    Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDesignTokens.spacing12,
+        vertical: AppDesignTokens.spacing8,
+      ),
+      decoration: BoxDecoration(
+        color: AppDesignTokens.inputFill(context),
+        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+      ),
+      child: Text(
+        '¥${amount.toStringAsFixed(2)}',
+        style: AppDesignTokens.headline(context),
+      ),
+    ),
+  ],
+)
+```
+
+**使用位置：**
+- 页面 A：只读展示社保、公积金、个税的计算金额
+- 页面 B：月度流水预测列表中的只读字段
+
+---
+
+### 8.3 **计算透明度详情样式** (`CalculationTransparencyDetailStyle`) 🔸 **特殊场景** [S24]
+**命名：`计算透明度详情样式` 或 `CalculationTransparencyDetailStyle`**
+
+**样式特征：**
+- **结构：** 列表详情行，Key-Value Pair
+- **字体：** 使用 `AppDesignTokens.microCaption(context)`（10pt，次要灰色）
+- **用途：** 显示计算的底层依据（基数、比例、税率），建立用户信任
+
+**推荐使用方式：**
+```dart
+Text(
+  '基数：¥${base.toStringAsFixed(2)}；比例：${rate.toStringAsFixed(1)}%',
+  style: AppDesignTokens.microCaption(context),
+)
+```
+
+**使用位置：**
+- 紧跟在 8.2 之下，显示社保公积金的基数和比例
+- 个税计算结果的透明度说明
+
+---
+
+### 8.4 **收支流水列表项样式** (`TransactionFlowListItemStyle`) ⭐ **最高频使用** [S25]
+**命名：`收支流水列表项样式` 或 `TransactionFlowListItemStyle`**
+
+**样式特征：**
+- **结构：** 左侧（图标/分类名），中间（描述/账户），右侧（金额，收入绿色，支出红色）
+- **交互：** 可点击（带波纹效果），点击后跳转至交易详情
+- **字体：** 分类名使用 `AppDesignTokens.headline`，金额使用 `AppDesignTokens.headline`（加粗）
+- **用途：** 应用中最常用、最高频的列表展示项
+
+**推荐使用方式：**
+```dart
+InkWell(
+  onTap: () => Navigator.push(...),
+  child: Padding(
+    padding: EdgeInsets.symmetric(
+      horizontal: AppDesignTokens.spacing16,
+      vertical: AppDesignTokens.spacing12,
+    ),
+    child: Row(
+      children: [
+        // 左侧图标/分类
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: categoryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+          ),
+          child: Icon(icon, color: categoryColor),
+        ),
+        SizedBox(width: AppDesignTokens.spacing12),
+        // 中间描述
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                categoryName,
+                style: AppDesignTokens.headline(context),
+              ),
+              SizedBox(height: AppDesignTokens.spacing4),
+              Text(
+                accountName,
+                style: AppDesignTokens.caption(context),
+              ),
+            ],
+          ),
+        ),
+        // 右侧金额
+        Text(
+          isIncome ? '+¥${amount.toStringAsFixed(2)}' : '-¥${amount.toStringAsFixed(2)}',
+          style: AppDesignTokens.headline(context).copyWith(
+            color: isIncome 
+              ? AppDesignTokens.successColor 
+              : AppDesignTokens.errorColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+**使用位置：**
+- Tab 3 收支流水主页
+- 页面 B 月度流水预测列表
+- Dashboard 最近交易列表
+
+---
+
+### 8.5 **AI 自然语言输入框样式** (`AINaturalLanguageInputStyle`) 🔸 **特殊场景** [S26]
+**命名：`AI自然语言输入框样式` 或 `AINaturalLanguageInputStyle`**
+
+**样式特征：**
+- **结构：** 文本输入框 + 语音图标按钮 + AI解析结果预览区域
+- **提示：** 占位符文案强调自然语言能力（如："一句话记录交易，如：今天星巴克拿铁35元"）
+- **用途：** 交易录入的最高效入口
+
+**推荐使用方式：**
+```dart
+Column(
+  children: [
+    Row(
+      children: [
+        Expanded(
+          child: AppTextField(
+            controller: _inputController,
+            hintText: '一句话记录交易，如：今天星巴克拿铁35元',
+            prefixIcon: Icon(CupertinoIcons.chat_bubble_text),
+          ),
+        ),
+        SizedBox(width: AppDesignTokens.spacing8),
+        IconButton(
+          icon: Icon(CupertinoIcons.mic),
+          onPressed: () => _startVoiceInput(),
+        ),
+      ],
+    ),
+    if (_aiPreview != null) ...[
+      SizedBox(height: AppDesignTokens.spacing12),
+      AppCard(
+        child: Padding(
+          padding: EdgeInsets.all(AppDesignTokens.spacing12),
+          child: Text(_aiPreview),
+        ),
+      ),
+    ],
+  ],
+)
+```
+
+**使用位置：**
+- 添加交易页面顶部
+- 全局 FAB 的 AI 记账入口
+
+---
+
+### 8.6 **图表容器卡片样式** (`ChartContainerCardStyle`) ⭐ **高频使用** [S27]
+**命名：`图表容器卡片样式` 或 `ChartContainerCardStyle`**
+
+**样式特征：**
+- **结构：** 卡片顶部有标题/时间切换器，下方是图表区域
+- **背景：** 纯白色或浅灰色背景，12pt 圆角，带有轻微阴影
+- **用途：** 承载复杂的可视化内容
+
+**推荐使用方式：**
+```dart
+AppCard(
+  child: Padding(
+    padding: EdgeInsets.all(AppDesignTokens.spacing16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '月度净收入',
+              style: AppDesignTokens.title1(context),
+            ),
+            AppSegmentedControl<String>(
+              children: const {
+                'month': Text('月'),
+                'year': Text('年'),
+              },
+              groupValue: _selectedPeriod,
+              onValueChanged: (value) => setState(() => _selectedPeriod = value),
+            ),
+          ],
+        ),
+        SizedBox(height: AppDesignTokens.spacing16),
+        // 图表区域
+        SizedBox(
+          height: 200,
+          child: ChartWidget(data: chartData),
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+**使用位置：**
+- 页面 B 的月度净收入柱状图
+- Tab 2 财务规划页面的所有图表
+- Dashboard 的预算进度图表
+
+---
+
+### 8.7 **底部分页导航栏样式** (`BottomNavBarStyle`) ⭐ **全局使用** [S28]
+**命名：`底部分页导航栏样式` 或 `BottomNavBarStyle`**
+
+**样式特征：**
+- **颜色：** 背景色为 `AppDesignTokens.surface(context)`，选中的图标和文字使用 `AppDesignTokens.primaryAction(context)`，未选中使用 `AppDesignTokens.secondaryText(context)`
+- **结构：** 底部四个 Tab（概览、资产、记账、统计、设置）
+- **用途：** 全局导航
+
+**推荐使用方式：**
+```dart
+BottomNavigationBar(
+  currentIndex: _selectedIndex,
+  onTap: _onItemTapped,
+  selectedItemColor: AppDesignTokens.primaryAction(context),
+  unselectedItemColor: AppDesignTokens.secondaryText(context),
+  backgroundColor: AppDesignTokens.surface(context),
+  type: BottomNavigationBarType.fixed,
+  items: [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.dashboard_outlined),
+      activeIcon: Icon(Icons.dashboard),
+      label: '概览',
+    ),
+    // ... 其他 Tab
+  ],
+)
+```
+
+**使用位置：**
+- [MainNavigationScreen](mdc:lib/screens/main_navigation_screen.dart) - 主导航页面
+
+---
+
+## 9. 状态与反馈样式 (State & Feedback Styles) - V3.0 新增
+
+### 9.1 **骨架屏加载样式** (`ShimmerLoadingStyle`) ⭐ **高频使用** [S29]
+**命名：`骨架屏加载样式` 或 `ShimmerLoadingStyle`**
+
+**样式特征：**
+- **动画：** 统一的亮光扫过效果，方向从左到右，速度适中
+- **形状：** 使用灰色/浅色矩形或圆形占位符，形状必须映射真实组件的结构
+- **用途：** 数据请求或计算进行中的等待状态，提升感知性能
+
+**推荐使用方式：**
+```dart
+// 列表项骨架屏（映射 8.4 收支流水列表项样式）
+Row(
+  children: [
+    AppShimmer.circle(size: 40),
+    SizedBox(width: AppDesignTokens.spacing12),
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppShimmer.text(width: 100, height: 16),
+          SizedBox(height: AppDesignTokens.spacing4),
+          AppShimmer.text(width: 60, height: 12),
+        ],
+      ),
+    ),
+    AppShimmer.text(width: 80, height: 16),
+  ],
+)
+
+// 卡片骨架屏（映射 8.1 核心数据卡片样式）
+AppCard(
+  child: Padding(
+    padding: EdgeInsets.all(AppDesignTokens.spacing24),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppShimmer.text(width: 80, height: 12),
+        SizedBox(height: AppDesignTokens.spacing8),
+        AppShimmer.text(width: 150, height: 28),
+      ],
+    ),
+  ),
+)
+```
+
+**使用位置：**
+- 页面 B 初始加载时（等待后端计算结果）
+- Tab 主页的数据概览卡片加载时
+- 交易列表加载时
+
+---
+
+### 9.2 **空状态插画样式** (`EmptyStateIllustrationStyle`) ⭐ **高频使用** [S30]
+**命名：`空状态插画样式` 或 `EmptyStateIllustrationStyle`**
+
+**样式特征：**
+- **结构：** 中间位置的插画图标 + 居中的说明文字 + 一个引导按钮（使用 `AppPrimaryButton`）
+- **配色：** 插画主题色调柔和，避免过于鲜艳，与整体应用风格一致
+- **用途：** 列表或数据为空时的友好引导
+
+**推荐使用方式：**
+```dart
+AppEmptyState(
+  icon: CupertinoIcons.doc_text,
+  title: '暂无交易记录',
+  message: '点击下方按钮添加第一笔交易',
+  action: AppPrimaryButton(
+    label: '添加交易',
+    icon: CupertinoIcons.add,
+    onPressed: () => _navigateToAddTransaction(),
+  ),
+)
+```
+
+**使用位置：**
+- 交易记录为空
+- 规划列表为空
+- 资产列表为空
+- [AppEmptyState](mdc:lib/core/widgets/app_empty_state.dart) - 空状态组件
+
+---
+
+### 9.3 **通知横幅样式** (`NotificationBannerStyle`) 🔸 **特殊场景** [S31]
+**命名：`通知横幅样式` 或 `NotificationBannerStyle`**
+
+**样式特征：**
+- **结构：** 位于页面顶部，带有关闭按钮，图标+文字
+- **配色：**
+  - 成功：绿色背景（`AppDesignTokens.successColor`），白色文字/图标
+  - 警告：黄色背景（`AppDesignTokens.warningColor`），深色文字/图标
+  - 错误：红色背景（`AppDesignTokens.errorColor`），白色文字/图标
+- **用途：** 提示关键信息（如 Policy Data Service 更新失败、清账提醒）
+
+**推荐使用方式：**
+```dart
+Container(
+  padding: EdgeInsets.symmetric(
+    horizontal: AppDesignTokens.spacing16,
+    vertical: AppDesignTokens.spacing12,
+  ),
+  decoration: BoxDecoration(
+    color: AppDesignTokens.errorColor,
+    borderRadius: BorderRadius.only(
+      bottomLeft: Radius.circular(AppDesignTokens.radiusMedium),
+      bottomRight: Radius.circular(AppDesignTokens.radiusMedium),
+    ),
+  ),
+  child: Row(
+    children: [
+      Icon(CupertinoIcons.exclamationmark_triangle, color: Colors.white),
+      SizedBox(width: AppDesignTokens.spacing12),
+      Expanded(
+        child: Text(
+          'Policy Data Service 更新失败，请检查网络连接',
+          style: AppDesignTokens.body(context).copyWith(color: Colors.white),
+        ),
+      ),
+      IconButton(
+        icon: Icon(CupertinoIcons.xmark, color: Colors.white),
+        onPressed: () => _dismissBanner(),
+      ),
+    ],
+  ),
+)
+```
+
+**使用位置：**
+- 页面顶部，如 `FamilyInfoHomeScreen`
+- Policy Data Service 更新失败时
+- 清账提醒时
+
+---
+
 ## 🎯 快速引用指南
 
 ### 默认样式（直接使用，无需指定）
 
-- **[S1] 文本输入框** → 使用 `FormBuilderUtils.buildTextField()` 或 `TextField`
-- **[S4] 下拉框** → 使用 `FormBuilderUtils.buildDropdown()`
-- **[S5] 复选框** → 使用 `FormBuilderUtils.buildCheckbox()` 或 `Checkbox`
-- **[S6] 开关** → 使用 `FormBuilderUtils.buildSwitch()` 或 `SwitchListTile`
+- **[S1] 文本输入框** → 使用 `AppTextField` 组件 ⚠️ **必须使用新组件**
+- **[S4] 下拉框** → 使用 `AppTextField` (Wrapper) + Dropdown ⚠️ **必须使用新组件**
+- **[S5] 复选框** → 使用 `AppCheckbox` 组件 ⚠️ **必须使用新组件**
+- **[S6] 开关** → 使用 `AppSwitch` 组件 ⚠️ **必须使用新组件**
 - **[S7] 单选按钮** → 使用 `RadioListTile`
-- **[S8] 滑块** → 使用 `Slider`
-- **[S11] 主要按钮** → 使用 `ElevatedButton`（自动应用主题）
-- **[S12] 文本按钮** → 使用 `TextButton`（自动应用主题）
-- **[S14] 图标按钮** → 使用 `IconButton`
+- **[S8] 滑块** → 使用 `Slider`（使用 `AppDesignTokens.primaryAction(context)` 作为 `activeColor`）
+- **[S9] 分段选择器** → 使用 `AppSegmentedControl` 组件 ⚠️ **必须使用新组件**
+- **[S11] 主要按钮** → 使用 `AppPrimaryButton` 组件 ⚠️ **必须使用新组件**
+- **[S12] 文本按钮** → 使用 `TextButton`（使用 `AppDesignTokens`）
+- **[S14] 图标按钮** → 使用 `IconButton`（使用 `AppDesignTokens`）
 - **[S17] 确认对话框** → 使用 `unifiedNotifications.showConfirmation()`
 - **[S18] 底部表单** → 使用 `AppAnimations.showAppModalBottomSheet()`
 - **[S19] 标签页** → 使用 `TabBar` / `TabBarView`
 - **[S20] 提示消息** → 使用 `ScaffoldMessenger.showSnackBar()`
 
+### 复合样式（V3.0 新增，高频使用）
+
+- **[S22] 核心数据卡片** → 使用 `AppCard` + `AppDesignTokens.largeTitle/title1` + 主题色
+- **[S23] 只读结果展示行** → 使用 `Row` + `Container`（灰色背景）+ `AppDesignTokens.headline`
+- **[S24] 计算透明度详情** → 使用 `AppDesignTokens.microCaption`（10pt 字体） **(已修正)**
+- **[S25] 收支流水列表项** → 使用 `InkWell` + `Row` + `AppDesignTokens.headline` + 颜色区分
+- **[S26] AI自然语言输入框** → 使用 `AppTextField` + `IconButton` + `AppCard`（预览区域）
+- **[S27] 图表容器卡片** → 使用 `AppCard` + `AppSegmentedControl` + 图表组件
+- **[S28] 底部分页导航栏** → 使用 `BottomNavigationBar` + `AppDesignTokens` 颜色
+
+### 状态样式（V3.0 新增，高频使用）
+
+- **[S29] 骨架屏加载** → 使用 `AppShimmer` 组件，形状必须映射真实组件结构
+- **[S30] 空状态插画** → 使用 `AppEmptyState` 组件 + `AppPrimaryButton`
+- **[S31] 通知横幅** → 使用 `Container` + `AppDesignTokens` 颜色 + `IconButton`（关闭）
+
 ### 特殊样式（仅在特定场景使用）
 
-- **[S2] 金额输入框** → 使用 `AmountInputField` 组件
-- **[S3] 日期选择器** → 使用 `FormBuilderUtils.buildDateField()`
-- **[S9] 分段选择器** → 使用 `AppAnimations.animatedSegmentedControl()`
-- **[S10] 标签芯片** → 使用 `FilterChip` 或 `ChoiceChip`
+- **[S2] 金额输入框** → 使用 `AmountInputField` 组件（**LEGACY**，新代码避免使用）
+- **[S3] 日期选择器** → 使用 `AppTextField` (Wrapper) + DatePicker
+- **[S10] 标签芯片** → 使用 `AppTag` 组件 ⚠️ **必须使用新组件**
 - **[S13] 轮廓按钮** → 使用 `OutlinedButton`
 - **[S15] 浮动操作按钮** → 使用 `EnhancedFloatingActionButton`
-- **[S16] 带图标按钮** → 使用 `ElevatedButton.icon` + 自定义样式
+- **[S16] 带图标按钮** → 使用 `AppPrimaryButton`（带 `icon` 参数）
 - **[S21] 玻璃通知** → 使用 `unifiedNotifications` 或 `GlassNotification`
 
 ---
@@ -541,25 +1234,39 @@ unifiedNotifications.showSuccess(context, '操作成功');
 
 ```
 需要输入文本？
-├─ 是金额？ → 使用 AmountInputField（金额输入框样式）
-├─ 是日期？ → 使用 FormBuilderUtils.buildDateField()（日期选择器样式）
-└─ 其他文本 → 使用 FormBuilderUtils.buildTextField()（标准文本输入框样式）⭐
+├─ 是金额？ → 使用 AmountInputField（金额输入框样式）🔸 LEGACY，**避免在新代码中使用**
+├─ 是日期？ → 使用 AppTextField (Wrapper) + DatePicker（日期选择器样式）🔸
+└─ 其他文本 → 使用 AppTextField（标准文本输入框样式）⭐ ⚠️ 必须使用新组件
 
 需要选择？
-├─ 下拉选择 → 使用 FormBuilderUtils.buildDropdown()（标准下拉框样式）⭐
-├─ 多选 → 使用 FormBuilderUtils.buildCheckbox()（复选框样式）⭐
-├─ 开关 → 使用 SwitchListTile（开关样式）⭐
-├─ 单选 → 使用 RadioListTile（单选按钮样式）⭐
-├─ 数值范围 → 使用 Slider（滑块样式）⭐
-├─ 分段切换 → 使用 AppAnimations.animatedSegmentedControl()（分段选择器样式）🔸
-└─ 标签筛选 → 使用 FilterChip（标签芯片样式）🔸
+├─ 下拉选择 → 使用 AppTextField (Wrapper) + Dropdown（标准下拉框样式）⭐ ⚠️ 必须使用新组件
+├─ 多选 → 使用 AppCheckbox（复选框样式）⭐ ⚠️ 必须使用新组件
+├─ 开关 → 使用 AppSwitch（开关样式）⭐ ⚠️ 必须使用新组件
+├─ 单选 → 使用 RadioListTile（单选按钮样式）⭐（使用 AppDesignTokens）
+├─ 数值范围 → 使用 Slider（滑块样式）⭐（使用 AppDesignTokens.primaryAction）
+├─ 分段切换 → 使用 AppSegmentedControl（分段选择器样式）⭐ ⚠️ 必须使用新组件
+└─ 标签筛选 → 使用 AppTag（标签芯片样式）⭐ ⚠️ 必须使用新组件
 
 需要按钮？
-├─ 主要操作 → 使用 ElevatedButton（主要按钮样式）⭐
-├─ 次要操作 → 使用 TextButton（文本按钮样式）⭐
-├─ 图标操作 → 使用 IconButton（图标按钮样式）⭐
+├─ 主要操作 → 使用 AppPrimaryButton（主要按钮样式）⭐ ⚠️ 必须使用新组件
+├─ 次要操作 → 使用 TextButton（文本按钮样式）⭐（使用 AppDesignTokens）
+├─ 图标操作 → 使用 IconButton（图标按钮样式）⭐（使用 AppDesignTokens）
 ├─ 浮动添加 → 使用 EnhancedFloatingActionButton（浮动操作按钮样式）🔸
-└─ 图标+文字 → 使用 ElevatedButton.icon + 自定义样式（带图标按钮样式）🔸
+└─ 图标+文字 → 使用 AppPrimaryButton（带 icon 参数）⭐ ⚠️ 必须使用新组件
+
+需要展示数据？
+├─ 核心KPI数据 → 使用 CoreDataCardStyle（核心数据卡片样式）⭐ [S22]
+├─ 只读计算结果 → 使用 ReadOnlyResultRowStyle（只读结果展示行样式）⭐ [S23]
+├─ 计算透明度 → 使用 CalculationTransparencyDetailStyle（计算透明度详情样式）🔸 [S24]
+├─ 交易列表项 → 使用 TransactionFlowListItemStyle（收支流水列表项样式）⭐ [S25]
+├─ AI输入 → 使用 AINaturalLanguageInputStyle（AI自然语言输入框样式）🔸 [S26]
+├─ 图表容器 → 使用 ChartContainerCardStyle（图表容器卡片样式）⭐ [S27]
+└─ 底部导航 → 使用 BottomNavBarStyle（底部分页导航栏样式）⭐ [S28]
+
+需要状态反馈？
+├─ 加载中 → 使用 ShimmerLoadingStyle（骨架屏加载样式）⭐ [S29] ⚠️ 必须使用 AppShimmer
+├─ 空状态 → 使用 EmptyStateIllustrationStyle（空状态插画样式）⭐ [S30] ⚠️ 必须使用 AppEmptyState
+└─ 通知横幅 → 使用 NotificationBannerStyle（通知横幅样式）🔸 [S31]
 
 需要对话框？
 ├─ 确认操作 → 使用 unifiedNotifications.showConfirmation()（确认对话框样式）⭐
@@ -572,15 +1279,63 @@ unifiedNotifications.showSuccess(context, '操作成功');
 **图例：**
 - ⭐ = 默认样式（推荐使用）
 - 🔸 = 特殊样式（仅在特定场景使用）
+- ⚠️ = 必须使用新的 iOS Fintech 组件系统
+
+---
+
+## 📋 样式对比表 (V3.0 完整版)
+
+| 样式类型 | 组件 | 主要特征 | 使用场景 |
+|---------|------|---------|---------|
+| **输入框** | `AppTextField` | iOS风格，无边框，灰色填充 | 所有文本输入 |
+| **金额输入** | `AmountInputField` | 左侧输入，右侧单位块 | 金额输入（后续迁移） |
+| **日期选择** | DatePicker | 日历图标前缀 | 日期选择 |
+| **下拉框** | `AppTextField` + Dropdown | iOS风格 | 下拉选择 |
+| **复选框** | `AppCheckbox` | iOS圆形，动画效果 | 多选场景 |
+| **开关** | `AppSwitch` | CupertinoSwitch | 开关切换 |
+| **分段选择** | `AppSegmentedControl` | 无边框，选中项主题色填充 | 方案对比切换器 |
+| **主要按钮** | `AppPrimaryButton` | 56pt高度，按压动画 | 主要操作 |
+| **文本按钮** | `TextButton` | 主题色文字 | 次要操作 |
+| **核心数据卡片** | `AppCard` + Large Text | 大号字体，主题色/渐变色 | Page B 结果总览，资产总览 |
+| **只读结果行** | `Row` + Container | 灰色/虚线包裹只读数值 | Page A 社保个税只读金额 |
+| **计算透明度** | Text (10pt) | 极小字体，次要灰色 | 显示基数、比例、税率 |
+| **收支流水列表项** | `InkWell` + Row | 左图标，右侧金额（红/绿） | Tab 3 收支流水主列表 |
+| **AI语言输入框** | `AppTextField` + IconButton | 文本框 + 语音图标 + 预览区 | 快速记账入口 |
+| **图表容器卡片** | `AppCard` + Chart | 12pt圆角，轻微阴影 | 所有复杂图表的可视化容器 |
+| **底部分页导航栏** | `BottomNavigationBar` | 选中项主题色，未选中项浅灰色 | 全局导航（4个Tab） |
+| **骨架屏加载** | `AppShimmer` | 亮光扫过动画，映射组件结构 | 数据加载等待状态 |
+| **空状态插画** | `AppEmptyState` | 插画+文字+引导按钮 | 列表/数据为空时 |
+| **通知横幅** | Container + Banner | 顶部固定，按状态配色 | 政策更新、清账提醒 |
 
 ---
 
 ## 相关文件
-- [FormBuilderUtils](mdc:lib/core/widgets/form_builder_utils.dart) - 表单构建工具类（推荐使用）
-- [AppTheme](mdc:lib/core/theme/app_theme.dart) - 全局主题配置（自动应用）
-- [AmountInputField](mdc:lib/core/widgets/amount_input_field.dart) - 金额输入组件
+
+### ⚠️ 必须使用的组件（V3.0 新组件系统）
+
+- [AppDesignTokens](mdc:lib/core/theme/app_design_tokens.dart) - 设计令牌系统（**必须使用**）
+  - **当前实现**：iOS Fintech 风格（`#007AFF` 蓝色主题）
+  - **主题支持**：4套主题已定义（ModernForestGreen, EleganceDeepBlue, PremiumGraphite, ClassicBurgundy），切换功能待实现
+  - **风格支持**：SharpProfessional 风格已定义，切换功能待实现
+- [AppTextField](mdc:lib/core/widgets/app_text_field.dart) - iOS风格输入框组件
+- [AppPrimaryButton](mdc:lib/core/widgets/app_primary_button.dart) - iOS风格主按钮组件
+- [AppSwitch](mdc:lib/core/widgets/app_selection_controls.dart) - iOS风格开关组件
+- [AppCheckbox](mdc:lib/core/widgets/app_selection_controls.dart) - iOS风格复选框组件
+- [AppSegmentedControl](mdc:lib/core/widgets/app_selection_controls.dart) - iOS风格分段选择器组件
+- [AppTag](mdc:lib/core/widgets/app_tag.dart) - iOS风格标签组件
+- [AppCard](mdc:lib/core/widgets/app_card.dart) - iOS风格卡片组件
+- [AppShimmer](mdc:lib/core/widgets/app_shimmer.dart) - 骨架屏加载组件
+- [AppEmptyState](mdc:lib/core/widgets/app_empty_state.dart) - 空状态组件
+
+### 🔸 LEGACY 组件（过渡期兼容，后续迁移）
+
+| **文件名** | **样式/功能** | **迁移计划** | **强制行动** |
+|---------|---------|---------|---------|
+| [FormBuilderUtils](mdc:lib/core/widgets/form_builder_utils.dart) | 表单构建工具类 | 移除对 Material / FormBuilder 的依赖，使用新组件 API 重写。 | **新代码严禁引用。** |
+| [AmountInputField](mdc:lib/core/widgets/amount_input_field.dart) | 金额输入组件 (S2) | 迁移到基于 `AppTextField` 的 `suffixIcon` 实现，并移除独立组件。 | **新代码避免使用。** |
+
+### 其他工具类
+
 - [AppAnimations](mdc:lib/core/widgets/app_animations.dart) - 动效系统
 - [UnifiedNotifications](mdc:lib/core/utils/unified_notifications.dart) - 统一通知系统
 - [UI设计系统规范](mdc:.cursor/rules/ui-design-system.mdc) - 整体UI/UX设计系统
-- [列表样式指南](mdc:LIST_STYLE_GUIDE.md) - 列表项样式命名指南
-- [页面-样式映射表](mdc:PAGE_STYLE_MAPPING.md) - 所有页面的样式使用情况

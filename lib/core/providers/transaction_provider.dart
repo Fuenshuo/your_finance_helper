@@ -9,6 +9,7 @@ class TransactionProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   late final StorageService _storageService;
+  bool _isInitialized = false;
 
   // Getters
   List<Transaction> get transactions => _transactions;
@@ -18,7 +19,10 @@ class TransactionProvider with ChangeNotifier {
 
   // 初始化
   Future<void> initialize() async {
-    _storageService = await StorageService.getInstance();
+    if (!_isInitialized) {
+      _storageService = await StorageService.getInstance();
+      _isInitialized = true;
+    }
     await _loadTransactions();
   }
 
