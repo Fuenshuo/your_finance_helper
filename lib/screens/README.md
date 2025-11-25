@@ -149,6 +149,11 @@ if (isFirstLaunch) {
 - **数据来源**：直接消费 `TransactionProvider.transactions`，仅展示已确认交易，并自动排序。
 - **Input Dock**：白色背景、24px 顶部圆角，一行输入 + 快捷发送按钮，悬浮在底部导航上方，保持与底部安全区域隔离。
 - **AI 入口保留**：继续复用解析、确认、澄清等 AI 流程逻辑，但 UI 由聊天式改为时间线。
+- **Rainbow Flux 动画系统（Phase 3）**：
+  - **Step A – Shrink & Spin**：发送后 Input Dock 从全宽压缩为 Send 按钮的能量球，按钮外圈使用 `CustomPainter` 绘制蓝紫粉橙渐变并与旋转控制器联动。
+  - **Step B – Expansion**：AI 解析完成时，能量球膨胀为 Draft Card 的彩虹边框，边框跟随 spring 曲线展开并保持旋转作为聚焦状态。
+  - **Step C – Highlight**：确认按钮触发 `ScaleTransition` + 光晕阴影，提供即时反馈。
+  - **Step D – Absorption**：Draft Card 合并时缩放/上抛，自动滚动到目标日卡片，卡片边框点亮彩虹动画；新交易行通过 `SizeTransition` + slide-in 注入时间线，渐变高亮后自然冷却。
 
 ### 10. unified_transaction_entry_screen_v2.dart - AI 统一记账入口 V2
 
