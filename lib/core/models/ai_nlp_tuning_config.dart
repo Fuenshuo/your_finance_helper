@@ -52,3 +52,4 @@ class AiNlpTuningConfig {
   @override
   String toString() => jsonEncode(toJson());
 }
+

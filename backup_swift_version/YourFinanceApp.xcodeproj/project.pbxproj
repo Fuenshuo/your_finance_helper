@@ -50,6 +50,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A1234567890ABCDEF1234559 = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF123455A /* YourFinanceApp */,
+				A1234567890ABCDEF1234564 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
 		A1234567890ABCDEF123455A /* YourFinanceApp */ = {
 			isa = PBXGroup;
 			children = (
@@ -62,6 +70,22 @@
 				A1234567890ABCDEF123456C /* Preview Content */,
 			);
 			path = YourFinanceApp;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF1234564 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF1234563 /* YourFinanceApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF123456C /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF123456D /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		A1234567890ABCDEF1234586 /* Models */ = {
@@ -92,30 +116,6 @@
 				A1234567890ABCDEF1234585 /* AssetManagementView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		A1234567890ABCDEF123456C /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				A1234567890ABCDEF123456D /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		A1234567890ABCDEF1234559 = {
-			isa = PBXGroup;
-			children = (
-				A1234567890ABCDEF123455A /* YourFinanceApp */,
-				A1234567890ABCDEF1234564 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		A1234567890ABCDEF1234564 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A1234567890ABCDEF1234563 /* YourFinanceApp.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -332,6 +332,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"YourFinanceApp/Preview Content\"";
+				DEVELOPMENT_TEAM = GB5W63C742;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -344,7 +345,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yourfinance.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leo.udoc.finance;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -360,6 +361,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"YourFinanceApp/Preview Content\"";
+				DEVELOPMENT_TEAM = GB5W63C742;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -372,7 +374,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yourfinance.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.leo.udoc.finance;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

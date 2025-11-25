@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/providers/riverpod_providers.dart';
-import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
 import 'package:your_finance_flutter/screens/onboarding_screen.dart';
+import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -30,8 +30,8 @@ class HomeScreen extends ConsumerWidget {
           return const OnboardingScreen();
         }
 
-        // 否则显示新的三层架构主导航
-        return const MainNavigationScreen();
+        // 否则直接进入 AI 聊天式统一记账入口
+        return const UnifiedTransactionEntryScreen();
       },
     );
   }

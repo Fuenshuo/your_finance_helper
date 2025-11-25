@@ -29,20 +29,20 @@ MainNavigationScreen
 
 ### 2. home_screen.dart - 首页路由
 
-**职责**: 应用入口页面，决定跳转到主导航还是引导页
+**职责**: 应用入口页面，根据首启状态在引导页与 AI 聊天式记账入口之间进行切换。
 
 **功能**:
-- 检查首次使用状态
-- 首次使用 → 跳转到引导页
-- 非首次使用 → 跳转到主导航
+- 等待数据库初始化，保证 Provider 数据已就绪
+- 首次使用（没有资产数据） → 显示 `OnboardingScreen`
+- 完成引导或已存在资产 → 直接展示 `UnifiedTransactionEntryScreen`，不再进入旧的多 Tab 导航
 
 **逻辑**:
 ```dart
-if (isFirstLaunch) {
-  → OnboardingScreen
-} else {
-  → MainNavigationScreen
+if (assets.isEmpty) {
+  return OnboardingScreen();
 }
+
+return UnifiedTransactionEntryScreen();
 ```
 
 ### 3. dashboard_screen.dart - 数据概览页
@@ -155,6 +155,21 @@ if (isFirstLaunch) {
 - `TransactionProvider` 获取最近交易历史用于 few-shot。
 - `NaturalLanguageTransactionService` 做实时解析。
 - `Phosphor` 图标库 + `Flutter Animate` 负责动效与 skeleton。
+
+### 10. unified_transaction_entry_screen.dart - Chat-First 统一记账入口
+
+**职责**: 将传统表单式记账入口重构为“智能时间线”——输入只是创建入口，真正保留的是结构化交易。
+
+- **紧凑摘要条**：72px 粘性头部，仅展示“本月支出 + 总资产”指标。
+- **时间线主区域**：交易按日期打包成“日卡片”，每张卡片包含当日所有交易，具备圆角 + 阴影，左侧类别 icon、右侧金额色彩区分，副标题保留原始语句。
+- **AI Command Dock**：永久贴底的极简输入 Dock，仅保留相机 / 语音 / 发送三个操作。
+- **浮动草稿卡**：解析结果需要确认时，以大号卡片悬浮在输入区域上方，突出金额与分类。
+- **无模态体验**：所有确认/澄清操作均在列表/卡片内部完成，避免额外弹窗。
+
+- **交互细节**:
+- 输入区域与时间线同步响应 `viewInsets`，保持“内容优先”。
+- 时间线按实时数据倒序分组，日期标题自动转换为“今天/昨天/具体日期”。
+- 草稿卡与历史卡视觉一致但悬浮展示，操作按钮就地完成确认或重输。
 
 ## 页面关系
 
