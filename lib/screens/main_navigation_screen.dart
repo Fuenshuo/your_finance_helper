@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/widgets/app_bottom_navigation_bar.dart';
-import 'package:your_finance_flutter/features/family_info/screens/family_info_home_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_flow_home_screen.dart';
-import 'package:your_finance_flutter/screens/dashboard_home_screen.dart';
-import 'package:your_finance_flutter/screens/personal_screen.dart';
+import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
+import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
+import 'package:your_finance_flutter/screens/settings_screen.dart';
+import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
-/// 主导航页面 - 重构后的5个Tab导航
-/// Tab 1: 概览 (Dashboard) - 新
-/// Tab 2: 资产 (Assets) - 原Tab 1
-/// Tab 3: 记账 (Timeline) - 原Tab 3
-/// Tab 4: 统计 (Analysis) - 新拆分
-/// Tab 5: 设置 (Settings) - 原Tab 4
+/// 主导航页面 - Flux Ledger 四 Tab 入口
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -21,114 +16,188 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
+  final DebugModeManager _debugManager = DebugModeManager();
 
   static const List<Widget> _screens = [
-    DashboardHomeScreen(), // Tab 1: 概览
-    FamilyInfoHomeScreen(), // Tab 2: 资产
-    TransactionFlowHomeScreen(), // Tab 3: 记账
-    _PlaceholderScreen(title: '统计'), // Tab 4: 统计（待实现）
-    PersonalScreen(), // Tab 5: 设置
+    UnifiedTransactionEntryScreen(),
+    _PlaceholderScreen(
+      title: 'Insights',
+      subtitle: '行为洞察功能即将上线',
+      icon: Icons.insights_outlined,
+    ),
+    _PlaceholderScreen(
+      title: 'Assets',
+      subtitle: '资产与账户模块即将上线',
+      icon: Icons.account_balance_wallet_outlined,
+    ),
+    _PlaceholderScreen(
+      title: 'Me',
+      subtitle: '个人中心即将上线',
+      icon: Icons.person_outline,
+    ),
   ];
 
   static const List<BottomNavigationBarItem> _navItems = [
     BottomNavigationBarItem(
-      icon: Icon(Icons.dashboard_outlined),
-      activeIcon: Icon(Icons.dashboard),
-      label: '概览',
-      tooltip: '财务概览',
+      icon: Icon(Icons.timeline_outlined),
+      activeIcon: Icon(Icons.timeline),
+      label: 'Stream',
+      tooltip: 'Smart Timeline',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.insights_outlined),
+      activeIcon: Icon(Icons.insights),
+      label: 'Insights',
+      tooltip: '图表洞察',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.account_balance_wallet_outlined),
       activeIcon: Icon(Icons.account_balance_wallet),
-      label: '资产',
-      tooltip: '资产管理',
+      label: 'Assets',
+      tooltip: '资产与账户',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.receipt_long_outlined),
-      activeIcon: Icon(Icons.receipt_long),
-      label: '记账',
-      tooltip: '交易记录',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.analytics_outlined),
-      activeIcon: Icon(Icons.analytics),
-      label: '统计',
-      tooltip: '数据分析',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.settings_outlined),
-      activeIcon: Icon(Icons.settings),
-      label: '设置',
-      tooltip: '个人设置',
+      icon: Icon(Icons.person_outline),
+      activeIcon: Icon(Icons.person),
+      label: 'Me',
+      tooltip: '个人中心',
     ),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _debugManager.addListener(_onDebugModeChanged);
+  }
+
+  @override
+  void dispose() {
+    _debugManager.removeListener(_onDebugModeChanged);
+    super.dispose();
+  }
+
+  void _onDebugModeChanged() => setState(() {});
+
+  @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Text(
-            _getAppBarTitle(),
-            style: context.textTheme.headlineMedium,
+          title: GestureDetector(
+            onTap: () {
+              final debugEnabled = _debugManager.handleClick();
+              if (debugEnabled) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🔧 Debug模式已开启'),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            child: const Text('Flux Ledger'),
           ),
-          centerTitle: true,
+          backgroundColor: context.surfaceWhite,
+          elevation: 0,
+          actions: [
+            if (_debugManager.isDebugModeEnabled) ...[
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'DEBUG',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.developer_mode, color: Colors.orange),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    AppAnimations.createRoute<void>(
+                      const DeveloperModeScreen(),
+                    ),
+                  );
+                },
+                tooltip: '开发者模式',
+              ),
+            ],
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () {
+                Navigator.of(context).push(
+                  AppAnimations.createRoute<void>(
+                    const SettingsScreen(),
+                  ),
+                );
+              },
+              tooltip: '设置',
+            ),
+          ],
         ),
+        backgroundColor: context.primaryBackground,
         body: IndexedStack(
           index: _selectedIndex,
           children: _screens,
         ),
-        bottomNavigationBar: AppBottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
+        bottomNavigationBar: BottomNavigationBar(
+          items: _navItems,
           currentIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
-          items: _navItems,
+          backgroundColor: context.surfaceWhite,
           selectedItemColor: context.primaryColor,
           unselectedItemColor: context.secondaryText,
+          selectedLabelStyle: context.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+          unselectedLabelStyle: context.textTheme.bodySmall,
+          type: BottomNavigationBarType.fixed,
+          elevation: 8,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
         ),
       );
-
-  String _getAppBarTitle() {
-    switch (_selectedIndex) {
-      case 0:
-        return '财务概览';
-      case 1:
-        return '资产管理';
-      case 2:
-        return '交易记录';
-      case 3:
-        return '数据分析';
-      case 4:
-        return '个人设置';
-      default:
-        return '家庭资产记账';
-    }
-  }
 }
 
-/// 占位页面（用于Tab 4统计页面，待实现）
+/// 占位页面
 class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen({required this.title});
+  const _PlaceholderScreen({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
 
   final String title;
+  final String subtitle;
+  final IconData icon;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: Center(
+  Widget build(BuildContext context) => SafeArea(
+        child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.analytics_outlined,
-                size: 64,
+                icon,
+                size: 48,
                 color: context.secondaryText,
               ),
-              SizedBox(height: context.spacing16),
+              const SizedBox(height: 12),
               Text(
-                '$title功能开发中...',
-                style: context.textTheme.titleLarge?.copyWith(
-                  color: context.secondaryText,
-                ),
+                title,
+                style: context.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: context.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
               ),
             ],
           ),

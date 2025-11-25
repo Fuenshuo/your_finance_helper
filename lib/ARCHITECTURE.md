@@ -87,6 +87,8 @@ lib/
     └── ai_config_screen.dart          # AI配置页面
 ```
 
+> **导航更新**：`MainNavigationScreen` 现采用四 Tab 结构（Stream / Insights / Assets / Me），其中 Stream Tab 承载新的 Smart Timeline，通过 `Stack + IndexedStack` 让 Input Dock 悬浮在底部导航之上。
+
 ## 模块划分
 
 ### 1. Core 核心功能层

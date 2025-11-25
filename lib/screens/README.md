@@ -8,23 +8,25 @@
 
 ### 1. main_navigation_screen.dart - 主导航页面
 
-**职责**: 提供应用的主导航界面
+**职责**: 提供 Flux Ledger 的主导航界面，承载 Smart Timeline 入口以及扩展模块。
 
 **功能**:
-- 底部导航栏（三个主要模块）
-  - 家庭信息维护
-  - 财务计划
-  - 交易流水
-- 顶部AppBar（每月工资钱包、开发者模式）
-- 页面切换动画
-- 状态保持
+- 底部导航栏（四个主要模块）
+  - **Stream**：Smart Timeline（`UnifiedTransactionEntryScreen`）
+  - **Insights**：图表与洞察占位页面
+  - **Assets**：资产/账户占位页面
+  - **Me**：个人中心与设置占位页面
+- 顶部 AppBar（调试模式点击开启、统一的 Flux Ledger 品牌标题）
+- Stream Tab 内的 Input Dock 通过 `Stack` 固定在底部导航上方
+- 使用 `IndexedStack` 保持页面状态
 
 **导航结构**:
 ```
 MainNavigationScreen
-├── FamilyInfoHomeScreen
-├── FinancialPlanningHomeScreen
-└── TransactionFlowHomeScreen
+├── UnifiedTransactionEntryScreen (Stream)
+├── _PlaceholderScreen (Insights)
+├── _PlaceholderScreen (Assets)
+└── _PlaceholderScreen (Me)
 ```
 
 ### 2. home_screen.dart - 首页路由
@@ -137,7 +139,18 @@ if (isFirstLaunch) {
 - **responsive_test_screen.dart**: 响应式测试页面
 - **personal_screen.dart**: 个人中心页面
 
-### 9. unified_transaction_entry_screen_v2.dart - AI 统一记账入口 V2
+### 9. unified_transaction_entry_screen.dart - Smart Timeline
+
+**职责**: 作为 Phase 1 的首页体验，提供「Smart Timeline」交易流和极简 Input Dock。
+
+**核心功能**:
+- **日卡片分组**：根据日期自动分组（Today / Yesterday / 日期），每个分组包裹在白色卡片（20px圆角 + Diffused Shadow）中。
+- **交易行样式**：系统图标 + 单行标题 + 右侧等宽金额（收入为 `incomeGreen`，支出为 `expenseRed`），对齐 Apple Wallet 风格。
+- **数据来源**：直接消费 `TransactionProvider.transactions`，仅展示已确认交易，并自动排序。
+- **Input Dock**：白色背景、24px 顶部圆角，一行输入 + 快捷发送按钮，悬浮在底部导航上方，保持与底部安全区域隔离。
+- **AI 入口保留**：继续复用解析、确认、澄清等 AI 流程逻辑，但 UI 由聊天式改为时间线。
+
+### 10. unified_transaction_entry_screen_v2.dart - AI 统一记账入口 V2
 
 **职责**: 提供“自然语言 + AI 解析 + 单手操作”一体化的键盘伴侣式记账体验。
 

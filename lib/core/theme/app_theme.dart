@@ -2,22 +2,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // 色彩规范 - 按照UI_UX设计文档
-  static const Color primaryBackground = Color(0xFFF7F7FA); // 淡雅灰
+  // 色彩规范 - 对齐 Flux Ledger 视觉系统
+  static const Color primaryBackground = Color(0xFFF5F6F8); // Pale Cool Grey
   static const Color accentBackground = Color(0xFFEAEAFB); // 温柔紫
   static const Color primaryAction = Color(0xFF007AFF); // 活力蓝
   static const Color primaryText = Color(0xFF1C1C1E); // 深邃灰
   static const Color secondaryText = Color(0xFF8A8A8E); // 中性灰
   static const Color dividerColor = Color(0xFFE5E5EA); // 浅灰
-  static const Color increaseColor = Color(0xFFFF3B30); // 温暖红
-  static const Color decreaseColor = Color(0xFF34C759); // 理性绿
+  static const Color surfaceWhite = Color(0xFFFFFFFF);
+  static const Color expenseRed = Color(0xFFFF453A);
+  static const Color incomeGreen = Color(0xFF32D74B);
+  static const Color textPrimary = primaryText;
+  static const Color increaseColor = incomeGreen;
+  static const Color decreaseColor = expenseRed;
   static const Color warningColor = Color(0xFFFF9500); // 橙色
 
   // 字体规范
   static const String fontFamily = 'Alibaba PuHuiTi'; // 阿里巴巴普惠体
 
   // 布局规范
-  static const double borderRadius = 12.0; // 12pt圆角
+  static const double borderRadius = 20.0; // 20pt圆角
   static const double baseSpacing = 8.0; // 8pt基础单位
 
   // 阴影规范
@@ -90,8 +94,9 @@ class AppTheme {
         colorScheme: const ColorScheme.light(
           primary: primaryAction,
           secondary: accentBackground,
-          onSecondary: primaryText,
-          onSurface: primaryText,
+          onSecondary: textPrimary,
+          onSurface: textPrimary,
+          surface: surfaceWhite,
           outline: dividerColor,
         ),
 
@@ -111,12 +116,12 @@ class AppTheme {
 
         // 卡片主题
         cardTheme: CardThemeData(
-          color: Colors.white,
+          color: surfaceWhite,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),
-          shadowColor: Colors.black.withOpacity(0.04),
+          shadowColor: Colors.black.withOpacity(0.06),
         ),
 
         // 按钮主题
@@ -241,6 +246,7 @@ class AppTheme {
           thickness: 0.5,
           space: 1,
         ),
+        scaffoldBackgroundColor: primaryBackground,
       );
 
   // 深色主题
@@ -414,12 +420,16 @@ extension AppThemeExtensions on BuildContext {
   Color get increaseColor => AppTheme.increaseColor;
   Color get decreaseColor => AppTheme.decreaseColor;
   Color get warningColor => AppTheme.warningColor;
+  Color get surfaceWhite => AppTheme.surfaceWhite;
+  Color get expenseRed => AppTheme.expenseRed;
+  Color get incomeGreen => AppTheme.incomeGreen;
+  Color get textPrimary => AppTheme.textPrimary;
 
   // 别名，为了兼容性
-  Color get successColor => AppTheme.increaseColor; // 温暖红
-  Color get errorColor => AppTheme.decreaseColor; // 理性绿
+  Color get successColor => AppTheme.incomeGreen;
+  Color get errorColor => AppTheme.expenseRed;
   Color get primaryColor => AppTheme.primaryAction; // 兼容性别名
-  Color get surfaceColor => Colors.white; // 表面颜色
+  Color get surfaceColor => AppTheme.surfaceWhite; // 表面颜色
 
   // ColorScheme 兼容性扩展
   ColorScheme get colorScheme => Theme.of(this).colorScheme;

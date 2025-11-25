@@ -195,9 +195,10 @@ core/
 - `responsive_text_styles.dart` - 响应式文本样式
 
 **关键特性**:
-- Material Design 3规范
-- 8pt间距系统
-- 12pt圆角半径
+- Material Design 3 规范 + Flux Ledger 视觉系统（背景 `#F5F6F8`、卡片 `surfaceWhite`）
+- 标准色板：`expenseRed (#FF453A)`、`incomeGreen (#32D74B)`、`textPrimary (#1C1C1E)`
+- 20px 圆角卡片与 24px Input Dock 过渡，统一的 diffused shadow 规范
+- 8pt 间距系统与响应式文本样式
 - 响应式字体大小
 - 深色模式支持（框架已准备）
 

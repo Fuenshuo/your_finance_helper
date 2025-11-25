@@ -1,6 +1,11 @@
+import 'dart:collection';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
@@ -8,11 +13,7 @@ import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/ai/natural_language_transaction_service.dart';
 import 'package:your_finance_flutter/core/services/user_income_profile_service.dart';
-import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/widgets/app_card.dart';
-import 'package:your_finance_flutter/core/widgets/app_primary_button.dart';
-import 'package:your_finance_flutter/core/widgets/app_text_field.dart';
 
 /// 统一记账入口页面
 /// AI自动识别收支类型，零认知负担
@@ -31,9 +32,16 @@ class _UnifiedTransactionEntryScreenState
   late final Future<NaturalLanguageTransactionService> _nlServiceFuture;
 
   bool _isLoading = false;
-  TransactionParseResult? _parseResult;
   int _placeholderIndex = 0;
   late AnimationController _placeholderAnimationController;
+  ParsedTransaction? _draftTransaction;
+  DateTime? _draftDate;
+  String? _draftAccountId;
+  String? _draftAccountName;
+  late final AnimationController _draftMergeController;
+  bool _isConfirmingDraft = false;
+  final NumberFormat _currencyFormatter =
+      NumberFormat.currency(locale: 'zh_CN', symbol: '¥');
 
   // Placeholder轮播问句
   static const List<String> _placeholders = [
@@ -47,11 +55,16 @@ class _UnifiedTransactionEntryScreenState
   void initState() {
     super.initState();
     _nlServiceFuture = NaturalLanguageTransactionService.getInstance();
-    
+
     _placeholderAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat();
+
+    _draftMergeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
 
     _placeholderAnimationController.addListener(() {
       if (_placeholderAnimationController.isCompleted) {
@@ -69,6 +82,7 @@ class _UnifiedTransactionEntryScreenState
   void dispose() {
     _inputController.dispose();
     _placeholderAnimationController.dispose();
+    _draftMergeController.dispose();
     super.dispose();
   }
 
@@ -78,7 +92,6 @@ class _UnifiedTransactionEntryScreenState
 
     setState(() {
       _isLoading = true;
-      _parseResult = null;
     });
 
     try {
@@ -103,12 +116,10 @@ class _UnifiedTransactionEntryScreenState
       );
 
       setState(() {
-        _parseResult = result;
         _isLoading = false;
       });
 
-      // 根据action路由
-      _handleAction(result);
+      _applyDraftResult(result);
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -124,21 +135,28 @@ class _UnifiedTransactionEntryScreenState
     }
   }
 
-  void _handleAction(TransactionParseResult result) {
-    switch (result.action) {
-      case 'auto_save':
-        _handleAutoSave(result.parsed);
-        break;
-      case 'quick_confirm':
-        _showQuickConfirm(result.parsed);
-        break;
-      case 'clarify':
-        _showClarifyDialog(result.parsed);
-        break;
-      case 'transfer_confirm':
-        _showTransferConfirm(result.parsed);
-        break;
+  void _applyDraftResult(TransactionParseResult result) {
+    final parsed = result.parsed;
+    if (!parsed.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('请输入更完整的描述，例如 “星巴克 35”'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
     }
+
+    setState(() {
+      _draftTransaction = parsed;
+      _draftDate = parsed.date ?? DateTime.now();
+      _draftAccountId = parsed.accountId;
+      _draftAccountName = parsed.accountName;
+      _isConfirmingDraft = false;
+      _draftMergeController.reset();
+    });
+    _inputController.clear();
+    FocusScope.of(context).unfocus();
   }
 
   Future<void> _handleAutoSave(ParsedTransaction parsed) async {
@@ -156,14 +174,10 @@ class _UnifiedTransactionEntryScreenState
         // 显示Toast
         if (mounted) {
           HapticFeedback.lightImpact();
-          _showToast(parsed);
         }
 
         // 清空输入
         _inputController.clear();
-        setState(() {
-          _parseResult = null;
-        });
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -186,596 +200,822 @@ class _UnifiedTransactionEntryScreenState
     }
   }
 
-  void _showToast(ParsedTransaction parsed) {
-    final isIncome = parsed.type == TransactionType.income;
-    final emoji = isIncome ? '🎉' : '✅';
-    final message = isIncome
-        ? '${emoji} ${parsed.category?.displayName ?? "收入"}到账 ¥${_formatAmount(parsed.amount ?? 0)}！'
-        : '${emoji} 已记录：${parsed.description ?? parsed.category?.displayName ?? "支出"} ¥${_formatAmount(parsed.amount ?? 0)}';
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Expanded(child: Text(message)),
-            Text(
-              '(点击可修改 ↗️)',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.white70,
-              ),
+  Widget _buildInputDock(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.surfaceWhite,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 30,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
-        backgroundColor: isIncome ? Colors.green : Colors.blue,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: '修改',
-          textColor: Colors.white,
-          onPressed: () {
-            _showQuickEditDialog(parsed);
-          },
-        ),
-      ),
-    );
-  }
-
-  void _showQuickConfirm(ParsedTransaction parsed) {
-    showModalBottomSheet<void>(
-      context: context,
-      isDismissible: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _QuickConfirmBottomSheet(
-        parsed: parsed,
-        onConfirm: (category) async {
-          Navigator.pop(context);
-          final updatedParsed = parsed.copyWith(category: category);
-          await _handleAutoSave(updatedParsed);
-        },
-        onOther: () {
-          Navigator.pop(context);
-          _showClarifyDialog(parsed);
-        },
-      ),
-    );
-  }
-
-  void _showClarifyDialog(ParsedTransaction parsed) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => _ClarifyDialog(
-        parsed: parsed,
-        onSave: (updatedParsed) async {
-          Navigator.pop(context);
-          await _handleAutoSave(updatedParsed);
-        },
-      ),
-    );
-  }
-
-  void _showTransferConfirm(ParsedTransaction parsed) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => _TransferConfirmDialog(
-        parsed: parsed,
-        onConfirm: (direction) async {
-          Navigator.pop(context);
-          // 根据方向更新类型
-          TransactionType? newType;
-          if (direction == 'received') {
-            newType = TransactionType.income;
-          } else if (direction == 'sent') {
-            newType = TransactionType.expense;
-          }
-          // transfer保持原样
-
-          final updatedParsed = parsed.copyWith(type: newType);
-          await _handleAutoSave(updatedParsed);
-
-          // 更新转账方向偏好
-          final profileService = await UserIncomeProfileService.getInstance();
-          await profileService.updateTransferDirectionPreference(direction);
-        },
-      ),
-    );
-  }
-
-  void _showQuickEditDialog(ParsedTransaction parsed) {
-    // TODO: 实现快速编辑对话框
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('快速编辑功能开发中...')),
-    );
-  }
-
-  String _formatAmount(double amount) {
-    return amount.toStringAsFixed(amount.truncateToDouble() == amount ? 0 : 2);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('统一记账入口'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      backgroundColor: context.primaryBackground,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(AppDesignTokens.spacing16),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 状态栏
-            AppCard(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        '💰 总资产',
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: context.secondaryText,
-                        ),
-                      ),
-                      Text(
-                        '¥XXX,XXX',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        '📊 本月收入',
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: context.secondaryText,
-                        ),
-                      ),
-                      Text(
-                        '¥XX,XXX',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        '💸 支出',
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: context.secondaryText,
-                        ),
-                      ),
-                      Text(
-                        '¥X,XXX',
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+            Text(
+              '记一笔',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
-
-            SizedBox(height: AppDesignTokens.spacing24),
-
-            // 统一输入框
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppTextField(
-                    controller: _inputController,
-                    hintText: _placeholders[_placeholderIndex],
-                    onFieldSubmitted: (_) => _handleSubmit(),
-                    enabled: !_isLoading,
-                  ),
-                  SizedBox(height: AppDesignTokens.spacing16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppPrimaryButton(
-                          label: _isLoading ? '处理中...' : '记一笔',
-                          onPressed: _isLoading ? null : _handleSubmit,
-                          isLoading: _isLoading,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: AppDesignTokens.spacing16),
-
-            // 多模态入口
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: _buildMultimodalButton(
-                    icon: Icons.camera_alt_outlined,
-                    label: '拍照',
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('拍照功能开发中...')),
-                      );
-                    },
+                  child: TextField(
+                    controller: _inputController,
+                    enabled: !_isLoading,
+                    onSubmitted: (_) => _handleSubmit(),
+                    decoration: InputDecoration(
+                      hintText: _placeholders[_placeholderIndex],
+                      filled: true,
+                      fillColor: const Color(0xFFF2F2F7),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 18,
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(width: AppDesignTokens.spacing8),
-                Expanded(
-                  child: _buildMultimodalButton(
-                    icon: Icons.mic_outlined,
-                    label: '语音',
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('语音功能开发中...')),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(width: AppDesignTokens.spacing8),
-                Expanded(
-                  child: _buildMultimodalButton(
-                    icon: Icons.paste_outlined,
-                    label: '粘贴',
-                    onPressed: () async {
-                      final clipboardData =
-                          await Clipboard.getData(Clipboard.kTextPlain);
-                      if (clipboardData?.text != null) {
-                        _inputController.text = clipboardData!.text!;
-                      }
-                    },
+                const SizedBox(width: 12),
+                SizedBox(
+                  height: 56,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: _isLoading ? null : _handleSubmit,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.arrow_upward_rounded),
                   ),
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // 解析结果展示（调试用）
-            if (_parseResult != null) ...[
-              SizedBox(height: AppDesignTokens.spacing24),
-              AppCard(
+  Widget _buildDraftCard(
+    BuildContext context,
+    List<Account> accounts,
+  ) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 420),
+      transitionBuilder: (child, animation) {
+        final curved =
+            CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.8, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      child: _draftTransaction == null
+          ? const SizedBox.shrink()
+          : AnimatedBuilder(
+              animation: _draftMergeController,
+              builder: (context, child) {
+                final value = _draftMergeController.value;
+                return Opacity(
+                  opacity: 1 - value,
+                  child: Transform.translate(
+                    offset: Offset(0, -60 * value),
+                    child: Transform.scale(
+                      scale: 1 - value * 0.15,
+                      child: child,
+                    ),
+                  ),
+                );
+              },
+              child: _buildDraftCardContent(context, accounts),
+            ),
+    );
+  }
+
+  Widget _buildDraftCardContent(
+    BuildContext context,
+    List<Account> accounts,
+  ) {
+    final draft = _draftTransaction!;
+    final isExpense = _isParsedExpense(draft);
+    final isIncome = _isParsedIncome(draft);
+    final amount = draft.amount ?? 0;
+    final sign = isExpense
+        ? '-'
+        : isIncome
+            ? '+'
+            : '';
+    final amountColor = isExpense
+        ? context.expenseRed
+        : isIncome
+            ? context.incomeGreen
+            : context.textPrimary;
+    final title = draft.category?.displayName ?? draft.description ?? '未分类';
+    final subtitle = draft.description ?? draft.notes ?? '——';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceWhite,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  '$sign${_currencyFormatter.format(amount.abs())}',
+                  style: context.textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: amountColor,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+              _buildConfirmButton(context),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: context.primaryBackground,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  _categoryIcon(
+                      draft.category ?? TransactionCategory.otherExpense),
+                  color: context.primaryText,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '解析结果（调试）',
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: context.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: AppDesignTokens.spacing8),
-                    Text('类型: ${_parseResult!.parsed.type?.name}'),
-                    Text('分类: ${_parseResult!.parsed.category?.displayName}'),
-                    Text('金额: ¥${_formatAmount(_parseResult!.parsed.amount ?? 0)}'),
-                    Text('置信度: ${(_parseResult!.parsed.confidence * 100).toStringAsFixed(0)}%'),
-                    Text('动作: ${_parseResult!.action}'),
-                    if (_parseResult!.parsed.uncertainty != null)
-                      Text('不确定性: ${_parseResult!.parsed.uncertainty}'),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildDateChip(context),
+              const SizedBox(width: 8),
+              _buildAccountChip(context, accounts),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton(BuildContext context) {
+    final canConfirm =
+        (_draftTransaction?.isValid ?? false) && !_isConfirmingDraft;
+    return ElevatedButton(
+      onPressed: canConfirm ? _confirmDraftTransaction : null,
+      style: ElevatedButton.styleFrom(
+        shape: const CircleBorder(),
+        minimumSize: const Size(56, 56),
+        backgroundColor: context.primaryAction,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      child: _isConfirmingDraft
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Icon(Icons.check_rounded),
+    );
+  }
+
+  Widget _buildDateChip(BuildContext context) {
+    return PopupMenuButton<_DateMenuAction>(
+      tooltip: '选择日期',
+      onSelected: _handleDateMenuSelection,
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: _DateMenuAction.today,
+          child: Text('今天'),
+        ),
+        PopupMenuItem(
+          value: _DateMenuAction.yesterday,
+          child: Text('昨天'),
+        ),
+        PopupMenuItem(
+          value: _DateMenuAction.pick,
+          child: Text('选择日期...'),
+        ),
+      ],
+      child: _buildChipSurface(label: _dateChipLabel),
+    );
+  }
+
+  Widget _buildAccountChip(
+    BuildContext context,
+    List<Account> accounts,
+  ) {
+    return PopupMenuButton<String?>(
+      tooltip: '选择账户',
+      onSelected: (value) => _handleAccountSelection(value, accounts),
+      itemBuilder: (context) => [
+        const PopupMenuItem<String?>(
+          value: null,
+          child: Text('默认账户'),
+        ),
+        ...accounts.map(
+          (account) => PopupMenuItem<String?>(
+            value: account.id,
+            child: Text(account.name),
+          ),
+        ),
+      ],
+      child: _buildChipSurface(label: _accountChipLabel(accounts)),
+    );
+  }
+
+  Widget _buildChipSurface({required String label}) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF2F2F7),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: context.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+
+  String get _dateChipLabel {
+    final date = _draftDate ?? DateTime.now();
+    final today = DateTime.now();
+    if (_isSameDay(date, today)) {
+      return '🕒 Today';
+    }
+    if (_isSameDay(date, today.subtract(const Duration(days: 1)))) {
+      return '🕒 Yesterday';
+    }
+    return '🕒 ${DateFormat('MMM d').format(date)}';
+  }
+
+  String _accountChipLabel(List<Account> accounts) {
+    if (_draftAccountName != null && _draftAccountName!.isNotEmpty) {
+      return '💳 ${_draftAccountName!}';
+    }
+    if (_draftAccountId != null) {
+      Account? match;
+      for (final account in accounts) {
+        if (account.id == _draftAccountId) {
+          match = account;
+          break;
+        }
+      }
+      if (match != null) {
+        return '💳 ${match.name}';
+      }
+    }
+    return '💳 Default';
+  }
+
+  Future<void> _handleDateMenuSelection(_DateMenuAction action) async {
+    DateTime? newDate;
+    switch (action) {
+      case _DateMenuAction.today:
+        newDate = DateTime.now();
+        break;
+      case _DateMenuAction.yesterday:
+        newDate = DateTime.now().subtract(const Duration(days: 1));
+        break;
+      case _DateMenuAction.pick:
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _draftDate ?? DateTime.now(),
+          firstDate: DateTime.now().subtract(const Duration(days: 365)),
+          lastDate: DateTime.now().add(const Duration(days: 365)),
+        );
+        newDate = picked;
+        break;
+    }
+    if (newDate != null) {
+      setState(() {
+        _draftDate = DateTime(
+          newDate!.year,
+          newDate.month,
+          newDate.day,
+        );
+      });
+    }
+  }
+
+  void _handleAccountSelection(String? value, List<Account> accounts) {
+    if (value == null) {
+      setState(() {
+        _draftAccountId = null;
+        _draftAccountName = 'Default';
+      });
+      return;
+    }
+
+    Account? selected;
+    for (final account in accounts) {
+      if (account.id == value) {
+        selected = account;
+        break;
+      }
+    }
+
+    setState(() {
+      _draftAccountId = value;
+      _draftAccountName = selected?.name ?? 'Default';
+    });
+  }
+
+  Future<void> _confirmDraftTransaction() async {
+    final draft = _draftTransaction;
+    if (draft == null || _isConfirmingDraft) return;
+    if (!draft.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('请完善金额和描述后再确认'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isConfirmingDraft = true;
+    });
+
+    try {
+      await _draftMergeController.forward();
+      final updatedDraft = draft.copyWith(
+        date: _draftDate,
+        accountId: _draftAccountId ?? draft.accountId,
+        accountName: _draftAccountName ?? draft.accountName,
+      );
+      await _handleAutoSave(updatedDraft);
+      if (!mounted) return;
+      setState(() {
+        _draftTransaction = null;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isConfirmingDraft = false;
+        });
+      }
+      _draftMergeController.reset();
+    }
+  }
+
+  bool _isParsedExpense(ParsedTransaction parsed) {
+    if (parsed.type != null) {
+      return parsed.type == TransactionType.expense;
+    }
+    return true;
+  }
+
+  bool _isParsedIncome(ParsedTransaction parsed) {
+    if (parsed.type != null) {
+      return parsed.type == TransactionType.income;
+    }
+    return false;
+  }
+
+  Widget _buildTimelineSliver(
+    BuildContext context,
+    List<_TransactionDayGroup> groups,
+    bool isLoading,
+  ) {
+    if (isLoading) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 48),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    if (groups.isEmpty) {
+      return SliverToBoxAdapter(child: _buildEmptyState(context));
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => _buildDayCard(context, groups[index]),
+        childCount: groups.length,
+      ),
+    );
+  }
+
+  Widget _buildDayCard(BuildContext context, _TransactionDayGroup group) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: context.surfaceWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 30,
+            offset: const Offset(0, 20),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                _formatDayLabel(group.date),
+                style: context.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${group.transactions.length} 笔',
+                style: context.textTheme.bodyMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...List.generate(group.transactions.length, (index) {
+            final transaction = group.transactions[index];
+            final row = _buildTransactionRow(context, transaction);
+            if (index == group.transactions.length - 1) {
+              return row;
+            }
+            return Column(
+              children: [
+                row,
+                const SizedBox(height: 12),
+                Divider(color: context.dividerColor.withOpacity(0.3)),
+                const SizedBox(height: 12),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionRow(
+    BuildContext context,
+    Transaction transaction,
+  ) {
+    final isExpense = _isExpense(transaction);
+    final isIncome = _isIncome(transaction);
+    final amountColor = isExpense
+        ? context.expenseRed
+        : isIncome
+            ? context.incomeGreen
+            : context.textPrimary;
+    final sign = isExpense
+        ? '-'
+        : isIncome
+            ? '+'
+            : '';
+    final formattedAmount = _currencyFormatter.format(transaction.amount.abs());
+
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: context.primaryBackground,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            _categoryIcon(transaction.category),
+            color: context.primaryText,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            transaction.description,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          '$sign$formattedAmount',
+          style: context.textTheme.titleMedium?.copyWith(
+            color: amountColor,
+            fontFeatures: const [FontFeature.tabularFigures()],
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: context.surfaceWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.stars_rounded,
+            size: 48,
+            color: context.secondaryText,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '暂无记录',
+            style: context.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '随手记一笔，看看今日现金流。',
+            style: context.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_TransactionDayGroup> _groupTransactions(
+    List<Transaction> transactions,
+  ) {
+    final confirmed = transactions
+        .where(
+            (transaction) => transaction.status == TransactionStatus.confirmed)
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    final grouped = LinkedHashMap<DateTime, List<Transaction>>(
+      equals: (a, b) => _isSameDay(a, b),
+      hashCode: (date) => date.year * 10000 + date.month * 100 + date.day,
+    );
+
+    for (final transaction in confirmed) {
+      final dayKey = DateTime(
+        transaction.date.year,
+        transaction.date.month,
+        transaction.date.day,
+      );
+      grouped.putIfAbsent(dayKey, () => []).add(transaction);
+    }
+
+    return grouped.entries
+        .map(
+          (entry) => _TransactionDayGroup(
+            date: entry.key,
+            transactions: entry.value,
+          ),
+        )
+        .toList();
+  }
+
+  String _formatDayLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    if (_isSameDay(date, today)) {
+      return 'Today';
+    }
+    if (_isSameDay(date, yesterday)) {
+      return 'Yesterday';
+    }
+
+    return DateFormat('MMM d, yyyy').format(date);
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  bool _isExpense(Transaction transaction) {
+    if (transaction.type != null) {
+      return transaction.type == TransactionType.expense;
+    }
+    if (transaction.flow != null) {
+      return transaction.flow == TransactionFlow.walletToExternal ||
+          transaction.flow == TransactionFlow.walletToAsset;
+    }
+    return false;
+  }
+
+  bool _isIncome(Transaction transaction) {
+    if (transaction.type != null) {
+      return transaction.type == TransactionType.income;
+    }
+    if (transaction.flow != null) {
+      return transaction.flow == TransactionFlow.externalToWallet ||
+          transaction.flow == TransactionFlow.assetToWallet;
+    }
+    return false;
+  }
+
+  IconData _categoryIcon(TransactionCategory category) {
+    switch (category) {
+      case TransactionCategory.food:
+        return Icons.restaurant;
+      case TransactionCategory.transport:
+        return Icons.directions_bus_outlined;
+      case TransactionCategory.shopping:
+        return Icons.shopping_bag_outlined;
+      case TransactionCategory.entertainment:
+        return Icons.movie_outlined;
+      case TransactionCategory.healthcare:
+        return Icons.health_and_safety_outlined;
+      case TransactionCategory.education:
+        return Icons.menu_book_outlined;
+      case TransactionCategory.housing:
+        return Icons.house_outlined;
+      case TransactionCategory.utilities:
+        return Icons.lightbulb_outline;
+      case TransactionCategory.insurance:
+        return Icons.verified_user_outlined;
+      case TransactionCategory.salary:
+        return Icons.workspace_premium_outlined;
+      case TransactionCategory.bonus:
+        return Icons.card_giftcard_outlined;
+      case TransactionCategory.investment:
+        return Icons.trending_up_outlined;
+      case TransactionCategory.freelance:
+        return Icons.work_outline;
+      case TransactionCategory.gift:
+        return Icons.cake_outlined;
+      case TransactionCategory.otherIncome:
+      case TransactionCategory.otherExpense:
+        return Icons.category_outlined;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final transactionProvider = context.watch<TransactionProvider>();
+    final accountsProvider = context.watch<AccountProvider>();
+    final groupedTransactions = _groupTransactions(
+      transactionProvider.transactions,
+    );
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final dockBottom = kBottomNavigationBarHeight + bottomInset + 8;
+    final cardBottom = dockBottom + 150;
+    final scrollBottomPadding = dockBottom + 260;
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: context.primaryBackground,
+        body: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Smart Timeline',
+                          style: context.textTheme.displayMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '每一天的现金流都在这里。',
+                          style: context.textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, scrollBottomPadding),
+                  sliver: _buildTimelineSliver(
+                    context,
+                    groupedTransactions,
+                    transactionProvider.isLoading,
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: cardBottom,
+              child: _buildDraftCard(
+                context,
+                accountsProvider.accounts,
+              ),
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: dockBottom,
+              child: _buildInputDock(context),
+            ),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildMultimodalButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(
-          vertical: AppDesignTokens.spacing12,
-        ),
-      ),
-    );
-  }
 }
 
-/// 快速确认底部弹窗
-class _QuickConfirmBottomSheet extends StatelessWidget {
-  const _QuickConfirmBottomSheet({
-    required this.parsed,
-    required this.onConfirm,
-    required this.onOther,
+class _TransactionDayGroup {
+  const _TransactionDayGroup({
+    required this.date,
+    required this.transactions,
   });
 
-  final ParsedTransaction parsed;
-  final void Function(TransactionCategory) onConfirm;
-  final VoidCallback onOther;
-
-  @override
-  Widget build(BuildContext context) {
-    final isIncome = parsed.type == TransactionType.income;
-    final amount = parsed.amount ?? 0;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      padding: EdgeInsets.all(AppDesignTokens.spacing16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 关闭按钮
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isIncome
-                    ? '💰 刚收到 ¥${_formatAmount(amount)}，这是什么收入？'
-                    : '💸 花了 ¥${_formatAmount(amount)}，这是什么支出？',
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          SizedBox(height: AppDesignTokens.spacing16),
-          // 场景化标签
-          Wrap(
-            spacing: AppDesignTokens.spacing8,
-            runSpacing: AppDesignTokens.spacing8,
-            children: [
-              if (isIncome) ...[
-                _buildCategoryButton(
-                  context,
-                  '我的工资',
-                  TransactionCategory.salary,
-                  onConfirm,
-                ),
-                _buildCategoryButton(
-                  context,
-                  '年终奖',
-                  TransactionCategory.bonus,
-                  onConfirm,
-                ),
-                _buildCategoryButton(
-                  context,
-                  '朋友转账',
-                  TransactionCategory.gift,
-                  onConfirm,
-                ),
-              ] else ...[
-                _buildCategoryButton(
-                  context,
-                  '打车',
-                  TransactionCategory.transport,
-                  onConfirm,
-                ),
-                _buildCategoryButton(
-                  context,
-                  '吃饭',
-                  TransactionCategory.food,
-                  onConfirm,
-                ),
-                _buildCategoryButton(
-                  context,
-                  '购物',
-                  TransactionCategory.shopping,
-                  onConfirm,
-                ),
-              ],
-              OutlinedButton(
-                onPressed: onOther,
-                child: const Text('其他'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryButton(
-    BuildContext context,
-    String label,
-    TransactionCategory category,
-    void Function(TransactionCategory) onTap,
-  ) {
-    return ElevatedButton(
-      onPressed: () => onTap(category),
-      child: Text(label),
-    );
-  }
-
-  String _formatAmount(double amount) {
-    return amount.toStringAsFixed(amount.truncateToDouble() == amount ? 0 : 2);
-  }
+  final DateTime date;
+  final List<Transaction> transactions;
 }
 
-/// 降级补全对话框
-class _ClarifyDialog extends StatefulWidget {
-  const _ClarifyDialog({
-    required this.parsed,
-    required this.onSave,
-  });
-
-  final ParsedTransaction parsed;
-  final void Function(ParsedTransaction) onSave;
-
-  @override
-  State<_ClarifyDialog> createState() => _ClarifyDialogState();
-}
-
-class _ClarifyDialogState extends State<_ClarifyDialog> {
-  final TextEditingController _amountController = TextEditingController();
-  TransactionCategory? _selectedCategory;
-  TransactionType? _selectedType;
-
-  @override
-  void initState() {
-    super.initState();
-    _amountController.text =
-        widget.parsed.amount?.toStringAsFixed(0) ?? '';
-    _selectedCategory = widget.parsed.category;
-    _selectedType = widget.parsed.type;
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.parsed.type == TransactionType.income
-          ? '💰 发工资啦！多少钱？'
-          : '💸 这笔钱是什么？'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _amountController,
-            decoration: const InputDecoration(
-              labelText: '金额',
-              prefixText: '¥',
-            ),
-            keyboardType: TextInputType.number,
-          ),
-          SizedBox(height: AppDesignTokens.spacing16),
-          DropdownButtonFormField<TransactionType>(
-            value: _selectedType,
-            decoration: const InputDecoration(labelText: '类型'),
-            items: TransactionType.values.map((type) {
-              return DropdownMenuItem(
-                value: type,
-                child: Text(type.displayName),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedType = value),
-          ),
-          SizedBox(height: AppDesignTokens.spacing16),
-          DropdownButtonFormField<TransactionCategory>(
-            value: _selectedCategory,
-            decoration: const InputDecoration(labelText: '分类'),
-            items: TransactionCategory.values
-                .where((cat) => _selectedType == null ||
-                    (_selectedType == TransactionType.income &&
-                        cat.isIncome) ||
-                    (_selectedType == TransactionType.expense &&
-                        cat.isExpense))
-                .map((cat) {
-              return DropdownMenuItem(
-                value: cat,
-                child: Text(cat.displayName),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedCategory = value),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final amount = double.tryParse(_amountController.text);
-            if (amount != null && _selectedCategory != null) {
-              widget.onSave(
-                widget.parsed.copyWith(
-                  amount: amount,
-                  category: _selectedCategory,
-                  type: _selectedType,
-                ),
-              );
-            }
-          },
-          child: const Text('保存'),
-        ),
-      ],
-    );
-  }
-}
-
-/// 转账确认对话框
-class _TransferConfirmDialog extends StatelessWidget {
-  const _TransferConfirmDialog({
-    required this.parsed,
-    required this.onConfirm,
-  });
-
-  final ParsedTransaction parsed;
-  final void Function(String) onConfirm;
-
-  @override
-  Widget build(BuildContext context) {
-    final amount = parsed.amount ?? 0;
-
-    return AlertDialog(
-      title: const Text('🔄 这笔 ¥ 是？'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '¥${_formatAmount(amount)}',
-            style: context.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: AppDesignTokens.spacing16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => onConfirm('sent'),
-              child: const Text('我转给朋友'),
-            ),
-          ),
-          SizedBox(height: AppDesignTokens.spacing8),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => onConfirm('received'),
-              child: const Text('朋友转给我'),
-            ),
-          ),
-          SizedBox(height: AppDesignTokens.spacing8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () => onConfirm('internal'),
-              child: const Text('银行卡间转账'),
-            ),
-          ),
-          SizedBox(height: AppDesignTokens.spacing8),
-          Text(
-            '💡 银行卡转账不计入预算统计',
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.secondaryText,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatAmount(double amount) {
-    return amount.toStringAsFixed(amount.truncateToDouble() == amount ? 0 : 2);
-  }
-}
-
+enum _DateMenuAction { today, yesterday, pick }
