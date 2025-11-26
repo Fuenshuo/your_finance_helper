@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// 响应式文本样式工具类
 class ResponsiveTextStyles {
@@ -83,7 +84,9 @@ class ResponsiveTextStyles {
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 18),
         fontWeight: FontWeight.w600,
-        color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+        color: isPositive
+            ? AppDesignTokens.moneyPositive(context)
+            : AppDesignTokens.moneyNegative(context),
       );
 
   // 大金额显示样式
@@ -95,7 +98,9 @@ class ResponsiveTextStyles {
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 24),
         fontWeight: FontWeight.w700,
-        color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+        color: isPositive
+            ? AppDesignTokens.moneyPositive(context)
+            : AppDesignTokens.moneyNegative(context),
       );
 
   // StatCard专用金额样式（移动端优化）
@@ -107,7 +112,9 @@ class ResponsiveTextStyles {
         fontFamily: AppTheme.fontFamily,
         fontSize: AppTheme.getResponsiveFontSize(context, 16),
         fontWeight: FontWeight.w600,
-        color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+        color: isPositive
+            ? AppDesignTokens.moneyPositive(context)
+            : AppDesignTokens.moneyNegative(context),
       );
 }
 

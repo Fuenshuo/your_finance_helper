@@ -223,8 +223,15 @@ class NaturalLanguageTransactionService {
     List<EnvelopeBudget>? budgets,
   ) {
     try {
-      // 尝试提取JSON（可能包含markdown代码块）
+      // 尝试提取JSON（可能包含markdown代码块或前缀）
       var jsonStr = response.trim();
+      if (!jsonStr.startsWith('{')) {
+        final start = jsonStr.indexOf('{');
+        final end = jsonStr.lastIndexOf('}');
+        if (start != -1 && end != -1 && end >= start) {
+          jsonStr = jsonStr.substring(start, end + 1).trim();
+        }
+      }
 
       // 移除markdown代码块标记
       if (jsonStr.startsWith('```')) {
@@ -372,6 +379,7 @@ class NaturalLanguageTransactionService {
         '[NaturalLanguageTransactionService._parseAiResponse] 响应内容: $response',
       );
 
+      final fallbackNextStuff = _extractNextStuff(response);
       // 返回一个基础的解析结果（限制description长度，避免超长文本）
       final sanitizedDescription = _sanitizeDescription(response);
 
@@ -379,6 +387,7 @@ class NaturalLanguageTransactionService {
         description: sanitizedDescription,
         confidence: 0.3,
         source: ParsedTransactionSource.naturalLanguage,
+        nextStuff: fallbackNextStuff,
         rawData: {'raw': response},
       );
     }
@@ -435,6 +444,14 @@ class NaturalLanguageTransactionService {
     cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     return cleaned.isEmpty ? '解析失败，请重新输入' : cleaned;
+  }
+
+  String? _extractNextStuff(String response) {
+    final match = RegExp(r'"nextStuff"\s*:\s*"([^"]+)"').firstMatch(response);
+    if (match != null) {
+      return match.group(1)?.trim();
+    }
+    return null;
   }
 
   String _generateDateReference(DateTime now) {

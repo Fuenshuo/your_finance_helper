@@ -76,4 +76,20 @@ node_modules/
 # Backup files
 *.bak
 *.backup
-*.backup2 
+*.backup2
+
+# Temporary test and debug files
+test_*.dart
+debug_*.dart
+
+# AI Generated images
+Gemini_Generated_Image_*.png
+*_Generated_Image_*.png
+B97EFD16*.png
+
+# Development documentation (keep locally, don't commit)
+.doc/
+
+# Debug and development screens
+**/debug_*.dart
+**/debug_mode_manager.dart 

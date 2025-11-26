@@ -1,114 +1,121 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart' as LegacyTheme;
 
 /// 响应式文本样式工具类
 class ResponsiveTextStyles {
   static TextStyle getDisplayLarge(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 34),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 34),
         fontWeight: FontWeight.w600,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getDisplayMedium(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 28),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 28),
         fontWeight: FontWeight.w700,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getHeadlineMedium(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 17),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 17),
         fontWeight: FontWeight.w600,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getBodyLarge(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 17),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 17),
         fontWeight: FontWeight.w400,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getBodyMedium(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 15),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 15),
         fontWeight: FontWeight.w400,
-        color: AppTheme.secondaryText,
+        color: AppDesignTokens.secondaryText(context),
       );
 
   static TextStyle getBodySmall(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 13),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 13),
         fontWeight: FontWeight.w400,
-        color: AppTheme.secondaryText,
+        color: AppDesignTokens.secondaryText(context),
       );
 
   static TextStyle getLabelLarge(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 15),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 15),
         fontWeight: FontWeight.w500,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   // 移动端优化的文本样式
   static TextStyle getMobileTitle(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 20),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 20),
         fontWeight: FontWeight.w600,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getMobileSubtitle(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 16),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 16),
         fontWeight: FontWeight.w500,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getMobileBody(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 14),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 14),
         fontWeight: FontWeight.w400,
-        color: AppTheme.primaryText,
+        color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getMobileCaption(BuildContext context) => TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 12),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 12),
         fontWeight: FontWeight.w400,
-        color: AppTheme.secondaryText,
+        color: AppDesignTokens.secondaryText(context),
       );
 
   // 金额显示样式
   static TextStyle getAmountStyle(BuildContext context,
           {bool isPositive = true}) =>
       TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 18),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 18),
         fontWeight: FontWeight.w600,
-        color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+        color: isPositive
+            ? AppDesignTokens.amountPositiveColor(context)
+            : AppDesignTokens.amountNegativeColor(context),
       );
 
   // 大金额显示样式
   static TextStyle getLargeAmountStyle(BuildContext context,
           {bool isPositive = true}) =>
       TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 24),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 24),
         fontWeight: FontWeight.w700,
-        color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+        color: isPositive
+            ? AppDesignTokens.amountPositiveColor(context)
+            : AppDesignTokens.amountNegativeColor(context),
       );
 
   // StatCard专用金额样式（移动端优化）
   static TextStyle getStatCardAmountStyle(BuildContext context,
           {bool isPositive = true}) =>
       TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontSize: AppTheme.getResponsiveFontSize(context, 16),
+        fontFamily: LegacyTheme.AppTheme.fontFamily,
+        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 16),
         fontWeight: FontWeight.w600,
-        color: isPositive ? AppTheme.increaseColor : AppTheme.decreaseColor,
+        color: isPositive
+            ? AppDesignTokens.amountPositiveColor(context)
+            : AppDesignTokens.amountNegativeColor(context),
       );
 }
 

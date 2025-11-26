@@ -148,12 +148,36 @@ if (isFirstLaunch) {
 - **交易行样式**：系统图标 + 单行标题 + 右侧等宽金额（收入为 `incomeGreen`，支出为 `expenseRed`），对齐 Apple Wallet 风格。
 - **数据来源**：直接消费 `TransactionProvider.transactions`，仅展示已确认交易，并自动排序。
 - **Input Dock**：白色背景、24px 顶部圆角，一行输入 + 快捷发送按钮，悬浮在底部导航上方，保持与底部安全区域隔离。
+- **Input Dock Night Shift**：输入栏、按钮、图标全面接入 `AppDesignTokens` 语义色，浅/深色模式自动切换（fill、hint、文本皆自适应）。
+- **Icon Adaptive Aura**：导航角标和时间线分类图标根据亮/暗主题切换描边与背景光晕，保证色彩对比和品牌层次。
 - **AI 入口保留**：继续复用解析、确认、澄清等 AI 流程逻辑，但 UI 由聊天式改为时间线。
 - **Rainbow Flux 动画系统（Phase 3）**：
   - **Step A – Shrink & Spin**：发送后 Input Dock 从全宽压缩为 Send 按钮的能量球，按钮外圈使用 `CustomPainter` 绘制蓝紫粉橙渐变并与旋转控制器联动。
-  - **Step B – Expansion**：AI 解析完成时，能量球膨胀为 Draft Card 的彩虹边框，边框跟随 spring 曲线展开并保持旋转作为聚焦状态。
+  - **Step A Loading Update**：`_RainbowSendButton` 在 Loading 状态下强制彩虹描边保持可见，避免刚触发发送时 halo/旋转指示器被折叠进度遮挡。
+  - **Step A Input Visibility**：Loading 期间不再触发 Input Dock 折叠动画，发送按钮会在原位持续展示旋转 Loading，直至 AI 解析完成。
+  - **Step A Halo Refresh**：彩虹环改为加粗的实心 360° 渐变闭环，旋转速度提升至 1 秒/圈，加强能量感。
+  - **Step B – Expansion**：AI 解析完成时，能量球膨胀为 Draft Card 的柔和高光边框（已去除彩虹描边），边框跟随 spring 曲线展开并保持聚焦状态。
   - **Step C – Highlight**：确认按钮触发 `ScaleTransition` + 光晕阴影，提供即时反馈。
-  - **Step D – Absorption**：Draft Card 合并时缩放/上抛，自动滚动到目标日卡片，卡片边框点亮彩虹动画；新交易行通过 `SizeTransition` + slide-in 注入时间线，渐变高亮后自然冷却。
+  - **Step D – Absorption**：Draft Card 合并时缩放/上抛，自动滚动到目标日卡片，卡片边框点亮淡色高光；新交易行通过 `flutter_animate().slideY().fadeIn()` 注入时间线，渐变高亮后自然冷却。
+  - **Phase 3.5 - Liquid Morph**：Input Dock 使用 AnimatedContainer 实现宽度/圆角渐变，逐帧收缩至 loading 圆形，同时只有在完全收缩时才展示 Rainbow Halo；Draft Card 入口改为 SpringSimulation（scale/opacity 从 0.2→1），视觉效果像能量泡泡向上爆开。
+- **Draft Card Liquid Pop**：Draft Card 使用 `flutter_animate` 的 `scaleXY + fadeIn + shimmer` 链式动效，自 Send 按钮方向弹出，并以纯白面板 + 淡品牌色描边搭配柔和阴影呈现，无彩虹特效。
+- **Draft Card Cancel Exit**：金额右侧新增圆形“X”按钮，可在无需确认时立刻关闭 Draft、停止光晕动画并恢复输入 Dock。
+- **Flux Toast Pill**：所有解析/错误提示改为悬浮的深色磨砂胶囊 Toast，带图标状态色、轻微上浮动画，不再遮挡底部导航。
+- **Draft Card Launchpad**：Draft Card 弹射改用 `Curves.elasticOut` + `moveY` 曲线，并在生成时触发 `HapticFeedback.mediumImpact()`，实现类似 Apple Wallet 的“能量弹射”体验。
+- **Rolling Amount Numbers**：Draft 卡片上的金额使用 `TweenAnimationBuilder` 0→目标值的缓出指数曲线滚动，搭配等宽字体保持视觉稳定。
+- **Waterfall Timeline**：时间线日卡片在加载时应用按索引递增的 `fadeIn + slideY` 延迟，营造瀑布式注入的动效节奏。
+- **Morphing Aggregation（Phase 3）**：提供「日 / 周」两种视图模式，使用 `SliverAnimatedList` + Anchor Day 策略完成日卡片与同周聚合卡片之间的流体切换，卡片尺寸由 `AnimatedSize` 平滑过渡，确保视图切换时时间线高度无突兀跳变。
+- **Week Trend Pulse**：周视图不再显示完整流水，而是用双向七日趋势柱状图展示每日收入/支出的脉冲，直观对比高峰支出和进账。
+- **Month Insight View**：新增 `ViewMode.month`，以“月度账单卡片”展示本月收入、支出与 Top5 消费类别排名，强调宏观视角而非流水细节。
+- **Month Segmented Breakdown**：月度卡片内置支出/收入分段控制器，切换查看 TOP 列表，默认展示支出构成。
+- **View Toggle Frosted Orb**：日/周切换按钮移至导航栏左侧，采用 44px 圆形 BackdropFilter “磨砂玻璃”样式，与标题/设置图标形成平衡的导航三角，同时释放时间线首屏空间。
+- **Theme Palette Button**：右上角新增磨砂设置按钮，支持在浅色/深色/系统主题之间快速切换，并集中管理视觉设置。
+- **Amount Theme Switcher**：主题弹窗内可切换 3 套金额色彩体系（Flux Blue / Forest Emerald / Graphite Mono），完全依赖 `AppDesignTokens`，确保浅色/深色模式一致生效。
+- **Zoom & Fade Morph**：日/周切换的进/出场动画采用 Fade + Scale 组合（轻微缩放至 0.9），替换之前的 SizeTransition 折叠，带来更柔和的缩放渐隐体验。
+- **Right-edge Scrubber（Phase 4）**：右侧 6px 透明索引条支持全局拖拽；拖拽时根据手势位置跳转到对应日期/周，展示带 `selectionClick` 触感的黑色信息气泡，并实时更新 `_scrubLabel` 与 `_scrollController.jumpTo` 实现秒级定位。
+- **紧凑输入与中文语境**：输入 Dock 缩减为 56px pill、44~52px send button，文本与按钮垂直对齐，标题改为“智能账单”，日期头矩阵与 chip 统一汉化（今天/昨天/日期）。
+- **Monospaced Timeline 数字**：所有金额统一使用 `GoogleFonts.ibmPlexMono` 等宽字体，搭配 `Gap` 布局间距保持 Timeline 数字与输入 Dock 金额对齐。
+- **Smart Timeline Skeleton**：时间线加载阶段以 `AppShimmer` 骨架屏替换 `CircularProgressIndicator`，保持页面结构稳定并为数据注入制造期待感。
 
 ### 10. unified_transaction_entry_screen_v2.dart - AI 统一记账入口 V2
 

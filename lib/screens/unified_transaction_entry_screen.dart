@@ -1,20 +1,32 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/core/providers/theme_provider.dart';
+import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/ai/natural_language_transaction_service.dart';
 import 'package:your_finance_flutter/core/services/user_income_profile_service.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart' hide AppTheme;
+import 'package:your_finance_flutter/core/widgets/app_selection_controls.dart';
+import 'package:your_finance_flutter/core/widgets/app_shimmer.dart';
 
 /// 统一记账入口页面
 /// AI自动识别收支类型，零认知负担
@@ -41,19 +53,40 @@ class _UnifiedTransactionEntryScreenState
   late final AnimationController _draftMergeController;
   late final AnimationController _inputCollapseController;
   late final AnimationController _rainbowRotationController;
-  late final AnimationController _draftCardRevealController;
   late final AnimationController _confirmGlowController;
   late final AnimationController _dayCardHighlightController;
-  late final AnimationController _insertionController;
+  late AnimationController _toastController;
   final ScrollController _scrollController = ScrollController();
   bool _isConfirmingDraft = false;
   final NumberFormat _currencyFormatter =
       NumberFormat.currency(locale: 'zh_CN', symbol: '¥');
-  final Map<String, GlobalKey> _dayCardKeys = {};
+  final Map<String, GlobalKey> _dateKeys = {};
+  final Map<String, GlobalKey> _groupCardKeys = {};
   bool _isScrollScheduled = false;
   String? _pendingScrollDayKey;
   String? _highlightedDayKey;
   String? _recentTransactionId;
+  int _pendingScrollAttempts = 0;
+  int _draftAnimationSeed = 0;
+  GlobalKey<SliverAnimatedListState> _listKey =
+      GlobalKey<SliverAnimatedListState>();
+  ViewMode _viewMode = ViewMode.day;
+  List<_TimelineGroup> _currentGroups = [];
+  List<_TimelineGroup> _dayGroups = [];
+  List<_TimelineGroup> _weekGroups = [];
+  List<_TimelineGroup> _monthGroups = [];
+  bool _didBootstrapGroups = false;
+  bool _isMorphing = false;
+  bool _isScrubbing = false;
+  String _scrubLabel = '';
+  String _lastScrubLabel = '';
+  double _scrubPosition = 0.0;
+  TransactionProvider? _transactionProvider;
+  bool _didRequestThemeStyleInit = false;
+  Timer? _toastTimer;
+  String _toastMessage = '';
+  bool _isToastError = false;
+  _MonthBreakdownTab _monthBreakdownTab = _MonthBreakdownTab.expense;
 
   // Placeholder轮播问句
   static const List<String> _placeholders = [
@@ -83,19 +116,11 @@ class _UnifiedTransactionEntryScreenState
     );
     _rainbowRotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
-    );
-    _draftCardRevealController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 720),
+      duration: const Duration(seconds: 1),
     );
     _confirmGlowController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 260),
-    );
-    _insertionController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 420),
     );
     _dayCardHighlightController = AnimationController(
       vsync: this,
@@ -115,10 +140,20 @@ class _UnifiedTransactionEntryScreenState
             _highlightedDayKey = null;
             _recentTransactionId = null;
           });
-          _insertionController.reset();
           if (!_isLoading && _draftTransaction == null) {
             _rainbowRotationController.stop();
           }
+        }
+      });
+
+    _toastController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.dismissed && mounted) {
+          setState(() {
+            _toastMessage = '';
+          });
         }
       });
 
@@ -134,6 +169,37 @@ class _UnifiedTransactionEntryScreenState
     _placeholderAnimationController.forward();
   }
 
+  List<_TimelineGroup> _groupsByMode(ViewMode mode) {
+    switch (mode) {
+      case ViewMode.day:
+        return _dayGroups;
+      case ViewMode.week:
+        return _weekGroups;
+      case ViewMode.month:
+        return _monthGroups;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider = context.read<TransactionProvider>();
+    if (_transactionProvider != provider) {
+      _transactionProvider?.removeListener(_handleTransactionsUpdated);
+      _transactionProvider = provider;
+      _transactionProvider?.addListener(_handleTransactionsUpdated);
+      _handleTransactionsUpdated();
+    }
+    if (!_didRequestThemeStyleInit) {
+      _didRequestThemeStyleInit = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<ThemeStyleProvider>().initialize();
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
     _inputController.dispose();
@@ -141,11 +207,12 @@ class _UnifiedTransactionEntryScreenState
     _draftMergeController.dispose();
     _inputCollapseController.dispose();
     _rainbowRotationController.dispose();
-    _draftCardRevealController.dispose();
     _confirmGlowController.dispose();
-    _insertionController.dispose();
     _dayCardHighlightController.dispose();
+    _toastController.dispose();
+    _toastTimer?.cancel();
     _scrollController.dispose();
+    _transactionProvider?.removeListener(_handleTransactionsUpdated);
     super.dispose();
   }
 
@@ -156,7 +223,6 @@ class _UnifiedTransactionEntryScreenState
     setState(() {
       _isLoading = true;
     });
-    _inputCollapseController.forward(from: 0);
     if (!_rainbowRotationController.isAnimating) {
       _rainbowRotationController.repeat();
     }
@@ -196,12 +262,7 @@ class _UnifiedTransactionEntryScreenState
         _rainbowRotationController.stop();
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('解析失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showToast('解析失败: $e', isError: true);
       }
     }
   }
@@ -209,12 +270,11 @@ class _UnifiedTransactionEntryScreenState
   void _applyDraftResult(TransactionParseResult result) {
     final parsed = result.parsed;
     if (!parsed.isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请输入更完整的描述，例如 “星巴克 35”'),
-          backgroundColor: Colors.orange,
-        ),
+      final guidance = _guidanceFromNextStuff(
+        parsed,
+        '请输入更完整的描述，例如 “星巴克 35”',
       );
+      _showToast(guidance, isError: true);
       _inputCollapseController.reverse();
       _rainbowRotationController.stop();
       return;
@@ -227,14 +287,42 @@ class _UnifiedTransactionEntryScreenState
       _draftAccountName = parsed.accountName;
       _isConfirmingDraft = false;
       _draftMergeController.reset();
+      _draftAnimationSeed++;
     });
+    HapticFeedback.mediumImpact();
     _inputCollapseController.reverse();
-    _draftCardRevealController.forward(from: 0);
     if (!_rainbowRotationController.isAnimating) {
       _rainbowRotationController.repeat();
     }
     _inputController.clear();
     FocusScope.of(context).unfocus();
+  }
+
+  void _handleTransactionsUpdated() {
+    if (!mounted) return;
+    final transactions = _transactionProvider?.transactions ?? [];
+    final newDayGroups = _groupTransactionsByDay(transactions);
+    final newWeekGroups = _groupTransactionsByWeek(transactions);
+    final newMonthGroups = _groupTransactionsByMonth(transactions);
+    final dayChanged = !_groupListsEqual(_dayGroups, newDayGroups);
+    final weekChanged = !_groupListsEqual(_weekGroups, newWeekGroups);
+    final monthChanged = !_groupListsEqual(_monthGroups, newMonthGroups);
+    if (!dayChanged && !weekChanged && !monthChanged && _didBootstrapGroups) {
+      return;
+    }
+    setState(() {
+      _dayGroups = newDayGroups;
+      _weekGroups = newWeekGroups;
+      _monthGroups = newMonthGroups;
+      if (!_isMorphing) {
+        final target = _groupsByMode(_viewMode);
+        _currentGroups = List<_TimelineGroup>.from(target);
+        _listKey = GlobalKey<SliverAnimatedListState>();
+        _groupCardKeys.clear();
+        _dateKeys.clear();
+      }
+      _didBootstrapGroups = true;
+    });
   }
 
   Future<void> _handleAutoSave(ParsedTransaction parsed) async {
@@ -251,7 +339,6 @@ class _UnifiedTransactionEntryScreenState
           _highlightedDayKey = dayKey;
           _recentTransactionId = transaction.id;
         });
-        _insertionController.forward(from: 0);
         if (!_rainbowRotationController.isAnimating) {
           _rainbowRotationController.repeat();
         }
@@ -271,22 +358,16 @@ class _UnifiedTransactionEntryScreenState
         _inputController.clear();
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('保存失败: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          _showToast('保存失败: $e', isError: true);
         }
       }
     } else {
+      final guidance = _guidanceFromNextStuff(
+        parsed,
+        '解析结果无效，无法保存',
+      );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('解析结果无效，无法保存'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        _showToast(guidance, isError: true);
       }
     }
   }
@@ -300,118 +381,186 @@ class _UnifiedTransactionEntryScreenState
           final collapseValue = Curves.easeInOutCubic.transform(
             _inputCollapseController.value,
           );
-          final availableWidth = MediaQuery.of(context).size.width - 32;
-          final dockWidth = lerpDouble(availableWidth, 78, collapseValue)!;
-          final dockRadius = lerpDouble(24, dockWidth / 2, collapseValue)!;
-          var horizontalPadding = 20 - (18 * collapseValue);
-          if (horizontalPadding < 2) {
-            horizontalPadding = 2;
-          } else if (horizontalPadding > 20) {
-            horizontalPadding = 20;
-          }
-          final verticalPadding = 20 - 6 * collapseValue;
-          return SafeArea(
-            top: false,
-            child: Align(
-              alignment: collapseValue > 0.2
-                  ? Alignment.bottomRight
-                  : Alignment.center,
-              child: SizedBox(
-                width: dockWidth,
+          final contentOpacity = (1 - collapseValue * 1.2).clamp(0.0, 1.0);
+          final bottomPadding = MediaQuery.of(context).padding.bottom + 12;
+          final sendButtonSize = lerpDouble(44, 52, collapseValue)!;
+          final ignoreTextInput = collapseValue > 0.85 || _isLoading;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final textColor = context.fluxPrimaryText;
+          final textFieldStyle = context.textTheme.bodyMedium?.copyWith(
+                fontSize: 16,
+                color: textColor,
+                height: 1.3,
+              ) ??
+              TextStyle(
+                fontSize: 16,
+                color: textColor,
+                height: 1.3,
+              );
+          final hintColor =
+              context.fluxSecondaryText.withOpacity(isDark ? 0.75 : 0.6);
+          final inputFillColor = AppDesignTokens.inputFill(context);
+
+          return Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              ignoring: ignoreTextInput,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: contentOpacity,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: context.surfaceWhite,
-                    borderRadius: BorderRadius.circular(dockRadius),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                            .withOpacity(0.08 + 0.12 * collapseValue),
-                        blurRadius: 30,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        context.fluxPageBackground.withOpacity(0),
+                        context.fluxPageBackground.withOpacity(0.9),
+                      ],
+                      stops: const [0.0, 0.3],
+                    ),
                   ),
-                  padding: EdgeInsets.fromLTRB(
-                    horizontalPadding,
-                    verticalPadding,
-                    horizontalPadding,
-                    16,
+                  padding: EdgeInsets.fromLTRB(16, 10, 16, bottomPadding),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: context.fluxSurface,
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _inputController,
+                            enabled: !_isLoading,
+                            onSubmitted: (_) => _handleSubmit(),
+                            textAlignVertical: TextAlignVertical.center,
+                            style: textFieldStyle,
+                            cursorColor: context.fluxPrimaryAction,
+                            decoration: InputDecoration(
+                              hintText: _placeholders[_placeholderIndex],
+                              hintStyle: textFieldStyle.copyWith(
+                                color: hintColor,
+                              ),
+                              filled: true,
+                              fillColor: inputFillColor,
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Gap(8),
+                        SizedBox(
+                          width: sendButtonSize,
+                          height: sendButtonSize,
+                          child: _RainbowSendButton(
+                            key: const ValueKey('rainbow-send-button'),
+                            isLoading: _isLoading,
+                            collapseProgress: collapseValue,
+                            rotationValue: _rainbowRotationController.value,
+                            onPressed: _isLoading ? null : _handleSubmit,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: 1 - collapseValue,
-                        child: collapseValue >= 0.95
-                            ? const SizedBox.shrink()
-                            : Text(
-                                '记一笔',
-                                style: context.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+
+  Widget _buildToastOverlay(BuildContext context) => AnimatedBuilder(
+        animation: _toastController,
+        builder: (context, child) {
+          final progress = _toastController.value;
+          if ((_toastMessage.isEmpty && progress == 0.0) ||
+              (progress == 0.0 && !_toastController.isAnimating)) {
+            return const SizedBox.shrink();
+          }
+          final opacity = Curves.easeOutCubic.transform(progress);
+          if (opacity <= 0) {
+            return const SizedBox.shrink();
+          }
+          final slide = Curves.easeOutBack.transform(progress);
+          final viewInsets = MediaQuery.of(context).padding;
+          final bottomPadding =
+              kBottomNavigationBarHeight + viewInsets.bottom + 100;
+
+          return Positioned(
+            left: 0,
+            right: 0,
+            bottom: bottomPadding,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: opacity,
+                child: Transform.translate(
+                  offset: Offset(0, 20 * (1 - slide)),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
                       ),
-                      SizedBox(height: collapseValue >= 0.95 ? 0 : 12),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final sendButtonSize =
-                              lerpDouble(56, 74, collapseValue)!;
-                          final gap = collapseValue >= 0.95 ? 0.0 : 12.0;
-                          final inputWidth =
-                              (constraints.maxWidth - sendButtonSize - gap)
-                                  .clamp(0.0, double.infinity);
-                          final animatedInputWidth =
-                              inputWidth * (1 - collapseValue);
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (animatedInputWidth > 4)
-                                SizedBox(
-                                  width: animatedInputWidth,
-                                  child: Opacity(
-                                    opacity: 1 - collapseValue,
-                                    child: TextField(
-                                      controller: _inputController,
-                                      enabled: !_isLoading,
-                                      onSubmitted: (_) => _handleSubmit(),
-                                      decoration: InputDecoration(
-                                        hintText:
-                                            _placeholders[_placeholderIndex],
-                                        filled: true,
-                                        fillColor: const Color(0xFFF2F2F7),
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (animatedInputWidth > 4) SizedBox(width: gap),
-                              SizedBox(
-                                height: sendButtonSize,
-                                width: sendButtonSize,
-                                child: _RainbowSendButton(
-                                  isLoading: _isLoading,
-                                  collapseProgress: collapseValue,
-                                  rotationValue:
-                                      _rainbowRotationController.value,
-                                  onPressed: _isLoading ? null : _handleSubmit,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1C1C1E).withOpacity(0.96),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _isToastError
+                                ? Icons.error_rounded
+                                : Icons.check_circle_rounded,
+                            color: _isToastError
+                                ? const Color(0xFFFF453A)
+                                : const Color(0xFF32D74B),
+                            size: 18,
+                          ),
+                          const Gap(10),
+                          Flexible(
+                            child: Text(
+                              _toastMessage,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -425,52 +574,88 @@ class _UnifiedTransactionEntryScreenState
     List<Account> accounts,
   ) =>
       AnimatedSwitcher(
-        duration: const Duration(milliseconds: 420),
-        transitionBuilder: (child, animation) {
-          final curved =
-              CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 0.8, end: 1).animate(curved),
-              child: child,
-            ),
-          );
-        },
+        duration: const Duration(milliseconds: 280),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
         child: _draftTransaction == null
             ? const SizedBox.shrink()
-            : AnimatedBuilder(
-                animation: Listenable.merge([
-                  _draftMergeController,
-                  _draftCardRevealController,
-                  _rainbowRotationController,
-                ]),
-                builder: (context, child) {
-                  final mergeValue = _draftMergeController.value;
-                  final revealValue = _draftCardRevealController.value;
-                  final intensity = (1 - mergeValue) *
-                      Curves.easeOutExpo.transform(revealValue.clamp(0.0, 1.0));
-                  final transformed = Opacity(
-                    opacity: 1 - mergeValue,
-                    child: Transform.translate(
-                      offset: Offset(0, -60 * mergeValue),
-                      child: Transform.scale(
-                        scale: 1 - mergeValue * 0.2,
-                        child: child,
-                      ),
-                    ),
-                  );
-                  return _RainbowGlowBorder(
-                    borderRadius: 24,
-                    borderWidth: 1.5 + intensity * 1.5,
-                    intensity: intensity,
-                    rotation: _rainbowRotationController.value * 2 * math.pi,
-                    child: transformed,
-                  );
-                },
-                child: _buildDraftCardContent(context, accounts),
-              ),
+            : _buildLiquidDraftCard(context, accounts),
       );
+
+  Widget _buildLiquidDraftCard(
+    BuildContext context,
+    List<Account> accounts,
+  ) {
+    final haloWrappedCard = AnimatedBuilder(
+      animation: Listenable.merge([
+        _rainbowRotationController,
+        _inputCollapseController,
+      ]),
+      builder: (context, child) {
+        final haloIntensity = (!_isLoading && _draftTransaction != null)
+            ? Curves.easeOutExpo.transform(
+                (1 - _inputCollapseController.value).clamp(0.0, 1.0),
+              )
+            : 0.0;
+        if (haloIntensity <= 0) {
+          return child!;
+        }
+        return _RainbowGlowBorder(
+          borderRadius: 24,
+          borderWidth: haloIntensity,
+          intensity: haloIntensity,
+          rotation: _rainbowRotationController.value * 2 * math.pi,
+          child: child!,
+        );
+      },
+      child: _buildDraftCardContent(context, accounts),
+    );
+
+    final draftCard = AnimatedBuilder(
+      animation: _draftMergeController,
+      builder: (context, child) {
+        final mergeValue = _draftMergeController.value.clamp(0.0, 1.0);
+        final opacity = (1 - mergeValue).clamp(0.0, 1.0);
+        final lift = -60 * mergeValue;
+        final scale = 1 - mergeValue * 0.12;
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(0, lift),
+            child: Transform.scale(
+              scale: scale,
+              alignment: Alignment.bottomRight,
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: haloWrappedCard,
+    );
+
+    return draftCard
+        .animate(
+          key: ValueKey('draft-card-$_draftAnimationSeed'),
+        )
+        .scaleXY(
+          begin: 0.2,
+          end: 1,
+          duration: 800.ms,
+          curve: Curves.elasticOut,
+          alignment: Alignment.bottomRight,
+        )
+        .moveY(
+          begin: 50,
+          end: 0,
+          duration: 520.ms,
+          curve: Curves.easeOutQuart,
+        )
+        .fadeIn(duration: 240.ms)
+        .shimmer(
+          duration: 1.seconds,
+          color: Colors.white.withOpacity(0.5),
+        );
+  }
 
   Widget _buildDraftCardContent(
     BuildContext context,
@@ -486,26 +671,29 @@ class _UnifiedTransactionEntryScreenState
             ? '+'
             : '';
     final amountColor = isExpense
-        ? context.expenseRed
+        ? context.fluxNegativeAmount
         : isIncome
-            ? context.incomeGreen
-            : context.textPrimary;
+            ? context.fluxPositiveAmount
+            : context.fluxPrimaryText;
     final title = draft.category?.displayName ?? draft.description ?? '未分类';
     final subtitle = draft.description ?? draft.notes ?? '——';
 
     return Container(
       decoration: BoxDecoration(
-        color: context.surfaceWhite,
-        borderRadius: BorderRadius.circular(24),
+        color: context.fluxSurface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: context.fluxPrimaryAction.withOpacity(0.1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: context.fluxPrimaryAction.withOpacity(0.15),
             blurRadius: 40,
-            offset: const Offset(0, 20),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -513,36 +701,46 @@ class _UnifiedTransactionEntryScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  '$sign${_currencyFormatter.format(amount.abs())}',
-                  style: context.textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: amountColor,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                child: TweenAnimationBuilder<double>(
+                  key: ValueKey('draft-amount-$_draftAnimationSeed'),
+                  tween: Tween<double>(begin: 0, end: amount.abs()),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutExpo,
+                  builder: (context, value, child) => Text(
+                    '$sign${_currencyFormatter.format(value)}',
+                    style: GoogleFonts.ibmPlexMono(
+                      textStyle: context.textTheme.displayMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: amountColor,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
                   ),
                 ),
               ),
+              _buildCancelButton(context),
+              const Gap(12),
               _buildConfirmButton(context),
             ],
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           Row(
             children: [
               Container(
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: context.primaryBackground,
+                  color: context.fluxPageBackground,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   _categoryIcon(
                     draft.category ?? TransactionCategory.otherExpense,
                   ),
-                  color: context.primaryText,
+                  color: context.fluxPrimaryText,
                 ),
               ),
-              const SizedBox(width: 12),
+              const Gap(12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,7 +753,7 @@ class _UnifiedTransactionEntryScreenState
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const Gap(4),
                     Text(
                       subtitle,
                       maxLines: 1,
@@ -567,15 +765,47 @@ class _UnifiedTransactionEntryScreenState
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           Row(
             children: [
               _buildDateChip(context),
-              const SizedBox(width: 8),
+              const Gap(8),
               _buildAccountChip(context, accounts),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCancelButton(BuildContext context) {
+    final isDisabled = _isConfirmingDraft;
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: isDisabled ? 0.0 : 1.0,
+      child: IgnorePointer(
+        ignoring: isDisabled,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: context.fluxSurface,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: context.fluxSecondaryText.withOpacity(0.2),
+            ),
+          ),
+          child: IconButton(
+            tooltip: '取消',
+            splashRadius: 24,
+            onPressed: _handleCancelDraft,
+            icon: Icon(
+              PhosphorIcons.x(),
+              size: 20,
+              color: context.fluxSecondaryText,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -597,8 +827,8 @@ class _UnifiedTransactionEntryScreenState
               boxShadow: glow > 0
                   ? [
                       BoxShadow(
-                        color:
-                            context.primaryAction.withOpacity(0.4 * (1 - glow)),
+                        color: context.fluxPrimaryAction
+                            .withOpacity(0.4 * (1 - glow)),
                         blurRadius: 30,
                         spreadRadius: 6,
                       ),
@@ -614,7 +844,7 @@ class _UnifiedTransactionEntryScreenState
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
           minimumSize: const Size(56, 56),
-          backgroundColor: context.primaryAction,
+          backgroundColor: context.fluxPrimaryAction,
           foregroundColor: Colors.white,
           elevation: 0,
         ),
@@ -677,14 +907,19 @@ class _UnifiedTransactionEntryScreenState
   Widget _buildChipSurface({required String label}) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F2F7),
+          color: AppDesignTokens.inputFill(context),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           label,
           style: context.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+                fontWeight: FontWeight.w600,
+                color: context.fluxPrimaryText,
+              ) ??
+              TextStyle(
+                fontWeight: FontWeight.w600,
+                color: context.fluxPrimaryText,
+              ),
         ),
       );
 
@@ -692,12 +927,12 @@ class _UnifiedTransactionEntryScreenState
     final date = _draftDate ?? DateTime.now();
     final today = DateTime.now();
     if (_isSameDay(date, today)) {
-      return '🕒 Today';
+      return '🕒 今天';
     }
     if (_isSameDay(date, today.subtract(const Duration(days: 1)))) {
-      return '🕒 Yesterday';
+      return '🕒 昨天';
     }
-    return '🕒 ${DateFormat('MMM d').format(date)}';
+    return '🕒 ${DateFormat('M月d日').format(date)}';
   }
 
   String _accountChipLabel(List<Account> accounts) {
@@ -769,16 +1004,27 @@ class _UnifiedTransactionEntryScreenState
     });
   }
 
+  void _handleCancelDraft() {
+    setState(() {
+      _draftTransaction = null;
+      _isConfirmingDraft = false;
+    });
+    _draftMergeController.reset();
+    if (!_isLoading) {
+      _rainbowRotationController.stop();
+    }
+    _inputCollapseController.reverse();
+  }
+
   Future<void> _confirmDraftTransaction() async {
     final draft = _draftTransaction;
     if (draft == null || _isConfirmingDraft) return;
     if (!draft.isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请完善金额和描述后再确认'),
-          backgroundColor: Colors.orange,
-        ),
+      final guidance = _guidanceFromNextStuff(
+        draft,
+        '请完善金额和描述后再确认',
       );
+      _showToast(guidance, isError: true);
       return;
     }
 
@@ -826,14 +1072,68 @@ class _UnifiedTransactionEntryScreenState
 
   Widget _buildTimelineSliver(
     BuildContext context,
-    List<_TransactionDayGroup> groups,
+    List<_TimelineGroup> groups,
     bool isLoading,
   ) {
-    if (isLoading) {
-      return const SliverToBoxAdapter(
+    if (isLoading && !_didBootstrapGroups) {
+      return SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 48),
-          child: Center(child: CircularProgressIndicator()),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+          child: Column(
+            children: List.generate(
+              3,
+              (index) => Padding(
+                padding: EdgeInsets.only(bottom: index == 2 ? 0 : 16),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: context.fluxSurface,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppShimmer.text(width: 120, height: 18),
+                      const Gap(16),
+                      ...List.generate(
+                        3,
+                        (rowIndex) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: rowIndex == 2 ? 0 : 16,
+                          ),
+                          child: Row(
+                            children: [
+                              AppShimmer.circle(size: 42),
+                              const Gap(12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AppShimmer.text(
+                                      height: 14,
+                                    ),
+                                    const Gap(8),
+                                    AppShimmer.text(
+                                      width: 120,
+                                      height: 12,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Gap(12),
+                              AppShimmer.text(
+                                width: 60,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -842,79 +1142,445 @@ class _UnifiedTransactionEntryScreenState
       return SliverToBoxAdapter(child: _buildEmptyState(context));
     }
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) => _buildDayCard(context, groups[index]),
-        childCount: groups.length,
+    return SliverAnimatedList(
+      key: _listKey,
+      initialItemCount: groups.length,
+      itemBuilder: (context, index, animation) {
+        final group = groups[index];
+        final card = _buildGroupCard(context, group);
+
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            ),
+            child: card,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildViewToggleButton(
+    BuildContext context,
+    EdgeInsets viewInsets,
+  ) =>
+      Positioned(
+        top: viewInsets.top + 12,
+        left: 16,
+        child: ClipOval(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.08)
+                    : context.fluxSurface.withOpacity(0.6),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.white.withOpacity(0.5),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.black.withOpacity(0.4)
+                        : Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: PhosphorIcon(
+                  _viewModeIcon(_viewMode),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : context.fluxPrimaryAction,
+                ),
+                tooltip: '切换到${_viewModeLabel(_nextViewMode(_viewMode))}视图',
+                onPressed: _isMorphing ? null : _toggleViewMode,
+              ),
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildThemeSettingsButton(
+    BuildContext context,
+    EdgeInsets viewInsets,
+    ThemeMode currentMode,
+    ThemeStyleProvider themeStyleProvider,
+  ) =>
+      Positioned(
+        top: viewInsets.top + 12,
+        right: 16,
+        child: ClipOval(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.08)
+                    : context.fluxSurface.withOpacity(0.6),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.white.withOpacity(0.5),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.black.withOpacity(0.4)
+                        : Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: PhosphorIcon(
+                  PhosphorIcons.palette(),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : context.fluxPrimaryAction,
+                ),
+                tooltip:
+                    '主题：${themeStyleProvider.getThemeDisplayName(themeStyleProvider.currentTheme)} · 金额：${themeStyleProvider.getMoneyThemeDisplayName(themeStyleProvider.currentMoneyTheme)} · ${_themeModeTitle(currentMode)}',
+                onPressed: () =>
+                    _showThemeSettingsSheet(context, themeStyleProvider),
+              ),
+            ),
+          ),
+        ),
+      );
+
+  Future<void> _showThemeSettingsSheet(
+    BuildContext context,
+    ThemeStyleProvider themeStyleProvider,
+  ) async {
+    final themeProvider = context.read<ThemeProvider>();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.fluxSurface,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 20),
+                ),
+              ],
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            '主题设置',
+                            style: context.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: context.fluxSecondaryText.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '金额主题',
+                          style: context.textTheme.labelMedium?.copyWith(
+                            color: context.fluxSecondaryText.withOpacity(0.6),
+                          ),
+                        ),
+                      ),
+                    ),
+                    ...MoneyTheme.values.map((moneyTheme) {
+                      final isSelected =
+                          themeStyleProvider.currentMoneyTheme == moneyTheme;
+                      return ListTile(
+                        leading: Icon(
+                          PhosphorIcons.wallet(),
+                          color: isSelected
+                              ? context.fluxPrimaryAction
+                              : context.fluxSecondaryText,
+                        ),
+                        title: Text(
+                          themeStyleProvider
+                              .getMoneyThemeDisplayName(moneyTheme),
+                          style: context.textTheme.titleSmall?.copyWith(
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _moneyThemeDescription(moneyTheme),
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: context.fluxSecondaryText.withOpacity(0.6),
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? PhosphorIcon(
+                                PhosphorIcons.checkCircle(),
+                                color: context.fluxPrimaryAction,
+                              )
+                            : null,
+                        onTap: () {
+                          themeStyleProvider.setMoneyTheme(moneyTheme);
+                          Navigator.of(sheetContext).pop();
+                        },
+                      );
+                    }),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '显示模式',
+                          style: context.textTheme.labelMedium?.copyWith(
+                            color: context.fluxSecondaryText.withOpacity(0.6),
+                          ),
+                        ),
+                      ),
+                    ),
+                    ...ThemeMode.values.map((mode) {
+                      final isSelected = themeProvider.themeMode == mode;
+                      return ListTile(
+                        leading: PhosphorIcon(
+                          _themeModeIcon(mode),
+                          color: isSelected
+                              ? context.fluxPrimaryAction
+                              : context.fluxSecondaryText,
+                        ),
+                        title: Text(
+                          _themeModeTitle(mode),
+                          style: context.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _themeModeDescription(mode),
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: context.fluxSecondaryText.withOpacity(0.6),
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? PhosphorIcon(
+                                PhosphorIcons.checkCircle(),
+                                color: context.fluxPrimaryAction,
+                              )
+                            : null,
+                        onTap: () {
+                          themeProvider.setThemeMode(mode);
+                          Navigator.of(sheetContext).pop();
+                        },
+                      );
+                    }),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildDayCard(BuildContext context, _TransactionDayGroup group) {
-    final dayKey = _dayKeyFromDate(group.date);
-    final cardKey =
-        _dayCardKeys.putIfAbsent(dayKey, () => GlobalObjectKey(dayKey));
-    final isHighlighted = _highlightedDayKey == dayKey;
+  Widget _buildScrubber(List<_TimelineGroup> groups) {
+    if (groups.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final mediaQuery = MediaQuery.of(context);
+    final topSafe = mediaQuery.padding.top + 12;
+    final bottomSafe =
+        kBottomNavigationBarHeight + mediaQuery.padding.bottom + 160;
+    final availableHeight = (mediaQuery.size.height - topSafe - bottomSafe)
+        .clamp(1.0, mediaQuery.size.height);
+    final bubbleTop = (topSafe + availableHeight * _scrubPosition)
+        .clamp(topSafe, mediaQuery.size.height - bottomSafe);
 
-    final Widget card = Container(
-      key: cardKey,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: context.surfaceWhite,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 30,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Positioned.fill(
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Text(
-                _formatDayLabel(group.date),
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onVerticalDragStart: (details) {
+                setState(() {
+                  _isScrubbing = true;
+                });
+                _handleScrubberDrag(details.globalPosition.dy, groups);
+              },
+              onVerticalDragUpdate: (details) =>
+                  _handleScrubberDrag(details.globalPosition.dy, groups),
+              onVerticalDragEnd: _endScrubbing,
+              onVerticalDragCancel: _endScrubbing,
+              child: Container(
+                width: 44,
+                margin: EdgeInsets.only(
+                  top: topSafe,
+                  bottom: bottomSafe,
+                  right: 4,
+                ),
+                alignment: Alignment.centerRight,
+                child: Container(
+                  width: 6,
+                  decoration: BoxDecoration(
+                    color: _isScrubbing
+                        ? Colors.black.withOpacity(0.18)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
               ),
-              const Spacer(),
-              Text(
-                '${group.transactions.length} 笔',
-                style: context.textTheme.bodyMedium,
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 12),
-          ...List.generate(group.transactions.length, (index) {
-            final transaction = group.transactions[index];
-            final isLast = index == group.transactions.length - 1;
-            final row = _buildTransactionRow(
-              context,
-              transaction,
-              transaction.id == _recentTransactionId,
-            );
-            if (isLast) {
-              return row;
-            }
-            return Column(
-              children: [
-                row,
-                const SizedBox(height: 12),
-                Divider(color: context.dividerColor.withOpacity(0.3)),
-                const SizedBox(height: 12),
-              ],
-            );
-          }),
+          if (_isScrubbing && _scrubLabel.isNotEmpty)
+            Positioned(
+              top: bubbleTop - 24,
+              right: 56,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 120),
+                opacity: _isScrubbing ? 1 : 0,
+                child: _ScrubBubble(label: _scrubLabel),
+              ),
+            ),
         ],
       ),
     );
+  }
 
-    if (!isHighlighted) {
+  void _handleScrubberDrag(double globalDy, List<_TimelineGroup> groups) {
+    if (groups.isEmpty || !_scrollController.hasClients) {
+      return;
+    }
+    final mediaQuery = MediaQuery.of(context);
+    final topSafe = mediaQuery.padding.top + 12;
+    final bottomSafe =
+        kBottomNavigationBarHeight + mediaQuery.padding.bottom + 160;
+    final availableHeight = (mediaQuery.size.height - topSafe - bottomSafe)
+        .clamp(1.0, mediaQuery.size.height);
+    final clampedDy = (globalDy - topSafe).clamp(0.0, availableHeight);
+    final relative = (clampedDy / availableHeight).clamp(0.0, 1.0);
+    final position = _scrollController.position;
+    final targetOffset = position.maxScrollExtent * relative;
+    position.jumpTo(targetOffset);
+    final index =
+        (relative * (groups.length - 1)).round().clamp(0, groups.length - 1);
+    final group = groups[index];
+    final label = switch (group.mode) {
+      ViewMode.day => _formatDayLabel(group.startDate),
+      ViewMode.week => _formatWeekRange(group.startDate, group.endDate),
+      ViewMode.month => _formatMonthLabel(group.startDate),
+    };
+    if (_lastScrubLabel != label) {
+      HapticFeedback.selectionClick();
+      _lastScrubLabel = label;
+    }
+    setState(() {
+      _scrubLabel = label;
+      _scrubPosition = relative;
+    });
+  }
+
+  void _endScrubbing([_]) {
+    if (!_isScrubbing) return;
+    setState(() {
+      _isScrubbing = false;
+      _scrubLabel = '';
+      _lastScrubLabel = '';
+    });
+  }
+
+  Widget _buildGroupCard(BuildContext context, _TimelineGroup group) {
+    final groupKey = group.uniqueKey;
+    final cardKey = _groupCardKeys.putIfAbsent(
+      groupKey,
+      () => GlobalObjectKey(groupKey),
+    );
+    for (final date in group.representedDates) {
+      _dateKeys[_dayKeyFromDate(date)] = cardKey;
+    }
+
+    final isHighlighted = _highlightedDayKey != null &&
+        group.representedDates
+            .any((date) => _dayKeyFromDate(date) == _highlightedDayKey);
+
+    final card = switch (group.mode) {
+      ViewMode.day => _buildDayCard(
+          context,
+          group as _TransactionDayGroup,
+          cardKey,
+          _formatDayLabel(group.startDate),
+        ),
+      ViewMode.week => _buildWeekTrendCard(
+          context,
+          group as _TransactionWeekGroup,
+          cardKey,
+        ),
+      ViewMode.month => _buildMonthSummaryCard(
+          context,
+          group as _TransactionMonthGroup,
+          cardKey,
+          _formatMonthLabel(group.startDate),
+        ),
+    };
+
+    if (!isHighlighted || group.mode != ViewMode.day) {
       return card;
     }
 
@@ -929,7 +1595,7 @@ class _UnifiedTransactionEntryScreenState
         );
         return _RainbowGlowBorder(
           borderRadius: 20,
-          borderWidth: 1.2 + intensity * 1.2,
+          borderWidth: intensity,
           intensity: intensity,
           rotation: _rainbowRotationController.value * 2 * math.pi,
           child: child!,
@@ -939,109 +1605,1044 @@ class _UnifiedTransactionEntryScreenState
     );
   }
 
+  Widget _buildDayCard(
+    BuildContext context,
+    _TransactionDayGroup group,
+    Key cardKey,
+    String headerLabel,
+  ) {
+    double totalIncome = 0;
+    double totalExpense = 0;
+    for (final transaction in group.transactions) {
+      final amount = transaction.amount.abs();
+      if (_isIncome(transaction)) {
+        totalIncome += amount;
+      } else if (_isExpense(transaction)) {
+        totalExpense += amount;
+      }
+    }
+    final netCashflow = totalIncome - totalExpense;
+    final totalFlow = totalIncome + totalExpense;
+    final incomeRatio = totalFlow == 0 ? 0.5 : totalIncome / totalFlow;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+      child: Container(
+        key: cardKey,
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: context.fluxSurface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 30,
+              offset: const Offset(0, 20),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      headerLabel,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: context.fluxSecondaryText,
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      '${group.transactions.length} 笔记录',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.fluxSecondaryText.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '净现金流',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.fluxSecondaryText.withOpacity(0.6),
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      _formatSignedAmount(netCashflow),
+                      style: context.textTheme.titleMedium?.copyWith(
+                        color: netCashflow >= 0
+                            ? context.fluxPositiveAmount
+                            : context.fluxNegativeAmount,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const Gap(16),
+            Row(
+              children: [
+                _buildSummaryPill(
+                  context,
+                  label: '收入',
+                  amount: totalIncome,
+                  color: context.fluxPositiveAmount,
+                ),
+                const Gap(12),
+                _buildSummaryPill(
+                  context,
+                  label: '支出',
+                  amount: totalExpense,
+                  color: context.fluxNegativeAmount,
+                ),
+              ],
+            ),
+            const Gap(12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                return Stack(
+                  children: [
+                    Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: context.fluxSurface.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 350),
+                      height: 8,
+                      width: width * incomeRatio,
+                      decoration: BoxDecoration(
+                        color: context.fluxPositiveAmount.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const Gap(20),
+            ...List.generate(group.transactions.length, (index) {
+              final transaction = group.transactions[index];
+              final isLast = index == group.transactions.length - 1;
+              return Column(
+                children: [
+                  _buildTransactionRow(
+                    context,
+                    transaction,
+                    transaction.id == _recentTransactionId,
+                  ),
+                  if (!isLast) const Gap(8),
+                ],
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeekTrendCard(
+    BuildContext context,
+    _TransactionWeekGroup group,
+    Key cardKey,
+  ) {
+    final headerLabel = _formatWeekRange(group.startDate, group.endDate);
+    final trendPoints = _computeWeekTrendPoints(group);
+    final maxAmount = trendPoints
+        .map((point) => math.max(point.income, point.expense))
+        .fold<double>(0, math.max);
+    final netCashflow = trendPoints.fold<double>(
+      0,
+      (previousValue, point) => previousValue + point.income - point.expense,
+    );
+    const maxSectionHeight = 56.0;
+    final labelHeight = (context.textTheme.bodySmall?.fontSize ?? 14) + 12;
+    final chartHeight = (maxSectionHeight * 2) + 32 + labelHeight;
+    final netColor = netCashflow >= 0
+        ? context.fluxPositiveAmount
+        : context.fluxNegativeAmount;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+      child: Container(
+        key: cardKey,
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: context.fluxSurface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 30,
+              offset: const Offset(0, 20),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      headerLabel,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: context.fluxSecondaryText,
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      '7天收入 / 支出趋势',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.fluxSecondaryText.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '净现金流',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.fluxSecondaryText.withOpacity(0.6),
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      _formatSignedAmount(netCashflow),
+                      style: context.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: netColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const Gap(20),
+            SizedBox(
+              height: chartHeight,
+              child: Row(
+                children: [
+                  for (final point in trendPoints) ...[
+                    Expanded(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: maxSectionHeight,
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: _buildTrendBarSegment(
+                                context,
+                                height: maxAmount == 0
+                                    ? 0
+                                    : maxSectionHeight *
+                                        (point.income / maxAmount),
+                                color: context.fluxPositiveAmount,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 2,
+                            width: 16,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            decoration: BoxDecoration(
+                              color: context.fluxSecondaryText.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          SizedBox(
+                            height: maxSectionHeight,
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: _buildTrendBarSegment(
+                                context,
+                                height: maxAmount == 0
+                                    ? 0
+                                    : maxSectionHeight *
+                                        (point.expense / maxAmount),
+                                color: context.fluxNegativeAmount,
+                              ),
+                            ),
+                          ),
+                          const Gap(8),
+                          Text(
+                            point.shortLabel,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              fontWeight: point.isToday
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: point.isToday
+                                  ? context.fluxPrimaryAction
+                                  : context.fluxSecondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (point != trendPoints.last) const Gap(4),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<_DailyTrendPoint> _computeWeekTrendPoints(
+    _TransactionWeekGroup group,
+  ) {
+    final points = <_DailyTrendPoint>[];
+    final today = DateTime.now();
+    final normalizedToday = DateTime(today.year, today.month, today.day);
+    for (var date = group.startDate;
+        !date.isAfter(group.endDate);
+        date = date.add(const Duration(days: 1))) {
+      double income = 0;
+      double expense = 0;
+      for (final transaction in group.transactions) {
+        if (_isSameDay(transaction.date, date)) {
+          final amount = transaction.amount.abs();
+          if (_isIncome(transaction)) {
+            income += amount;
+          } else if (_isExpense(transaction)) {
+            expense += amount;
+          }
+        }
+      }
+      points.add(
+        _DailyTrendPoint(
+          date: date,
+          income: income,
+          expense: expense,
+          shortLabel: _weekdayAbbreviation(date),
+          isToday: _isSameDay(date, normalizedToday),
+        ),
+      );
+    }
+    return points;
+  }
+
+  Widget _buildTrendBarSegment(
+    BuildContext context, {
+    required double height,
+    required Color color,
+  }) {
+    if (height <= 2) {
+      return Container(
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.3),
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+    return Container(
+      width: 10,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+    );
+  }
+
+  Widget _buildMonthSummaryCard(
+    BuildContext context,
+    _TransactionMonthGroup group,
+    Key cardKey,
+    String headerLabel,
+  ) {
+    final netCashflow = group.totalIncome - group.totalExpense;
+    final netColor = netCashflow >= 0
+        ? context.fluxPositiveAmount
+        : context.fluxNegativeAmount;
+    final incomeColor = context.fluxPositiveAmount;
+    final expenseColor = context.fluxNegativeAmount;
+    final incomeCategories = group.categorySummaries
+        .where((summary) => summary.type == TransactionType.income)
+        .toList();
+    final expenseCategories = group.categorySummaries
+        .where((summary) => summary.type == TransactionType.expense)
+        .toList();
+    final maxIncomeAmount =
+        incomeCategories.isEmpty ? 1.0 : incomeCategories.first.amount;
+    final maxExpenseAmount =
+        expenseCategories.isEmpty ? 1.0 : expenseCategories.first.amount;
+    final mutedTextColor = context.fluxSecondaryText.withOpacity(0.6);
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOutCubic,
+      child: Container(
+        key: cardKey,
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: context.fluxSurface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 30,
+              offset: const Offset(0, 20),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      headerLabel,
+                      style: context.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: context.fluxSecondaryText,
+                      ),
+                    ),
+                    const Gap(4),
+                    Text(
+                      '${group.transactions.length} 笔记录',
+                      style: context.textTheme.bodySmall
+                          ?.copyWith(color: mutedTextColor),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '净现金流',
+                      style: context.textTheme.bodySmall
+                          ?.copyWith(color: mutedTextColor),
+                    ),
+                    const Gap(4),
+                    Text(
+                      _formatSignedAmount(netCashflow),
+                      style: context.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: netColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const Gap(16),
+            Row(
+              children: [
+                _buildSummaryPill(
+                  context,
+                  label: '本月收入',
+                  amount: group.totalIncome,
+                  color: incomeColor,
+                ),
+                const Gap(12),
+                _buildSummaryPill(
+                  context,
+                  label: '本月支出',
+                  amount: group.totalExpense,
+                  color: expenseColor,
+                ),
+              ],
+            ),
+            const Gap(20),
+            const Gap(12),
+            AppSegmentedControl<_MonthBreakdownTab>(
+              groupValue: _monthBreakdownTab,
+              onValueChanged: (value) {
+                if (value == null) return;
+                setState(() => _monthBreakdownTab = value);
+              },
+              children: const {
+                _MonthBreakdownTab.expense: Text('支出构成'),
+                _MonthBreakdownTab.income: Text('收入来源'),
+              },
+            ),
+            const Gap(16),
+            _buildCategoryColumn(
+              context,
+              title: _monthBreakdownTab == _MonthBreakdownTab.expense
+                  ? '支出类别 TOP5'
+                  : '收入来源 TOP5',
+              summaries: (_monthBreakdownTab == _MonthBreakdownTab.expense
+                      ? expenseCategories
+                      : incomeCategories)
+                  .take(8)
+                  .toList(),
+              maxAmount: _monthBreakdownTab == _MonthBreakdownTab.expense
+                  ? maxExpenseAmount
+                  : maxIncomeAmount,
+              color: _monthBreakdownTab == _MonthBreakdownTab.expense
+                  ? expenseColor
+                  : incomeColor,
+              emptyPlaceholder: _monthBreakdownTab == _MonthBreakdownTab.expense
+                  ? '暂无支出记录'
+                  : '暂无收入记录',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryPill(
+    BuildContext context, {
+    required String label,
+    required double amount,
+    required Color color,
+  }) =>
+      Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(
+              Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.08,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: color.withOpacity(
+                    Theme.of(context).brightness == Brightness.dark ? 0.9 : 0.7,
+                  ),
+                ),
+              ),
+              const Gap(6),
+              Text(
+                _currencyFormatter.format(amount),
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _buildCategoryColumn(
+    BuildContext context, {
+    required String title,
+    required List<_CategorySummary> summaries,
+    required double maxAmount,
+    required Color color,
+    required String emptyPlaceholder,
+  }) {
+    final labelStyle = context.textTheme.bodySmall?.copyWith(
+      color: context.fluxSecondaryText.withOpacity(0.7),
+      fontWeight: FontWeight.w600,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: labelStyle),
+        const Gap(10),
+        if (summaries.isEmpty)
+          Text(
+            emptyPlaceholder,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.fluxSecondaryText.withOpacity(0.5),
+            ),
+          )
+        else
+          ...summaries.map(
+            (summary) => _buildCategorySummaryRow(
+              context,
+              summary,
+              maxAmount,
+              color,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCategorySummaryRow(
+    BuildContext context,
+    _CategorySummary summary,
+    double maxAmount,
+    Color barColor,
+  ) {
+    final progress =
+        maxAmount == 0 ? 0.0 : (summary.amount / maxAmount).clamp(0.0, 1.0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bubbleColor = barColor.withOpacity(isDark ? 0.25 : 0.12);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: bubbleColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: PhosphorIcon(
+                    _categoryIcon(summary.category),
+                    color: barColor,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const Gap(10),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        summary.category.displayName,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: context.fluxPrimaryText,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Gap(12),
+                    Text(
+                      _currencyFormatter.format(summary.amount),
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: barColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const Gap(4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: isDark
+                  ? Colors.white.withOpacity(0.15)
+                  : context.fluxSurface.withOpacity(0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatSignedAmount(double value) {
+    final formatted = _currencyFormatter.format(value.abs());
+    if (value == 0) return formatted;
+    return value > 0 ? '+$formatted' : '-$formatted';
+  }
+
+  void _toggleViewMode() {
+    if (_isMorphing) return;
+    const modes = ViewMode.values;
+    final nextIndex = (_viewMode.index + 1) % modes.length;
+    final targetMode = modes[nextIndex];
+    final targetGroups = _groupsByMode(targetMode);
+    if (targetGroups.isEmpty) {
+      setState(() {
+        _viewMode = targetMode;
+        _currentGroups = [];
+        _listKey = GlobalKey<SliverAnimatedListState>();
+      });
+      return;
+    }
+    setState(() {
+      _isMorphing = true;
+    });
+    _performMorphTransition(targetMode, targetGroups);
+  }
+
+  void _performMorphTransition(
+    ViewMode targetMode,
+    List<_TimelineGroup> targetGroups,
+  ) {
+    final listState = _listKey.currentState;
+    if (listState == null) {
+      setState(() {
+        _viewMode = targetMode;
+        _currentGroups = List<_TimelineGroup>.from(targetGroups);
+        _listKey = GlobalKey<SliverAnimatedListState>();
+        _isMorphing = false;
+      });
+      return;
+    }
+
+    if (targetGroups.isEmpty) {
+      setState(() {
+        _viewMode = targetMode;
+        _currentGroups.clear();
+        _isMorphing = false;
+      });
+      return;
+    }
+
+    final now = DateTime.now();
+    var anchorIndex =
+        _currentGroups.indexWhere((group) => group.containsDate(now));
+    if (anchorIndex == -1 && _currentGroups.isNotEmpty) {
+      anchorIndex = 0;
+    }
+    final anchorGroup = _findAnchorGroup(targetGroups, now);
+    final anchorKey = anchorGroup.uniqueKey;
+    final targetAnchorIndex =
+        targetGroups.indexWhere((group) => group.uniqueKey == anchorKey);
+
+    setState(() {
+      _viewMode = targetMode;
+      if (_currentGroups.isEmpty) {
+        _currentGroups.add(anchorGroup);
+        listState.insertItem(
+          0,
+          duration: const Duration(milliseconds: 260),
+        );
+        anchorIndex = 0;
+      } else if (anchorIndex >= 0 && anchorIndex < _currentGroups.length) {
+        _currentGroups[anchorIndex] = anchorGroup;
+      }
+    });
+
+    for (var i = _currentGroups.length - 1; i >= 0; i--) {
+      if (i == anchorIndex &&
+          _currentGroups[i].uniqueKey == anchorGroup.uniqueKey) {
+        continue;
+      }
+      final removedGroup = _currentGroups.removeAt(i);
+      listState.removeItem(
+        i,
+        (context, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.95, end: 1.0).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeInOut,
+              ),
+            ),
+            child: _buildGroupCard(context, removedGroup),
+          ),
+        ),
+        duration: const Duration(milliseconds: 200),
+      );
+    }
+
+    final before = <_TimelineGroup>[];
+    final after = <_TimelineGroup>[];
+    for (var i = 0; i < targetGroups.length; i++) {
+      final group = targetGroups[i];
+      if (group.uniqueKey == anchorKey) continue;
+      if (targetAnchorIndex != -1 && i < targetAnchorIndex) {
+        before.add(group);
+      } else {
+        after.add(group);
+      }
+    }
+
+    for (var i = before.length - 1; i >= 0; i--) {
+      final group = before[i];
+      final insertIndex = anchorIndex.clamp(0, _currentGroups.length);
+      _currentGroups.insert(insertIndex, group);
+      listState.insertItem(
+        insertIndex,
+      );
+    }
+
+    anchorIndex += before.length;
+
+    var insertIndex = anchorIndex + 1;
+    for (final group in after) {
+      final effectiveIndex = insertIndex.clamp(0, _currentGroups.length);
+      _currentGroups.insert(effectiveIndex, group);
+      listState.insertItem(
+        effectiveIndex,
+      );
+      insertIndex++;
+    }
+
+    setState(() {
+      _isMorphing = false;
+    });
+  }
+
   Widget _buildTransactionRow(
     BuildContext context,
     Transaction transaction,
     bool isNewlyInserted,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconBackground = isDark
+        ? Colors.white.withOpacity(0.1)
+        : context.fluxPrimaryAction.withOpacity(0.1);
+    final iconColor = isDark ? Colors.white : context.fluxPrimaryAction;
     final isExpense = _isExpense(transaction);
     final isIncome = _isIncome(transaction);
     final amountColor = isExpense
-        ? context.expenseRed
+        ? context.fluxNegativeAmount
         : isIncome
-            ? context.incomeGreen
-            : context.textPrimary;
+            ? context.fluxPositiveAmount
+            : context.fluxPrimaryText;
     final sign = isExpense
         ? '-'
         : isIncome
             ? '+'
             : '';
     final formattedAmount = _currencyFormatter.format(transaction.amount.abs());
+    final title = transaction.category.displayName;
+    final subtitle = (transaction.notes?.trim().isNotEmpty ?? false)
+        ? transaction.notes!.trim()
+        : transaction.description;
 
-    final row = Row(
-      children: [
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: context.primaryBackground,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(
-            _categoryIcon(transaction.category),
-            color: context.primaryText,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            transaction.description,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: context.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: context.textPrimary,
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: iconBackground,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: PhosphorIcon(
+                _categoryIcon(transaction.category),
+                color: iconColor,
+                size: 22,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          '$sign$formattedAmount',
-          style: context.textTheme.titleMedium?.copyWith(
-            color: amountColor,
-            fontFeatures: const [FontFeature.tabularFigures()],
-            fontWeight: FontWeight.w700,
+          const Gap(12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: context.fluxPrimaryText,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textScaleFactor: 0.9,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: context.fluxSecondaryText,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          const Gap(12),
+          Text(
+            '$sign$formattedAmount',
+            style: GoogleFonts.ibmPlexMono(
+              textStyle: context.textTheme.titleMedium?.copyWith(
+                color: amountColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final slidable = Slidable(
+      key: ValueKey(transaction.id),
+      startActionPane: ActionPane(
+        motion: const BehindMotion(),
+        extentRatio: 0.25,
+        children: [
+          CustomSlidableAction(
+            onPressed: (_) => _handleEditTransaction(transaction),
+            backgroundColor: Colors.transparent,
+            child: _buildFloatingSlidableButton(
+              color: context.fluxPrimaryAction,
+              icon: PhosphorIcons.pencilSimple(),
+            ),
+          ),
+        ],
+      ),
+      endActionPane: ActionPane(
+        motion: const BehindMotion(),
+        extentRatio: 0.25,
+        children: [
+          CustomSlidableAction(
+            onPressed: (_) => _confirmDeleteTransaction(transaction),
+            backgroundColor: Colors.transparent,
+            child: _buildFloatingSlidableButton(
+              color: context.fluxNegativeAmount,
+              icon: PhosphorIcons.trash(),
+            ),
+          ),
+        ],
+      ),
+      child: content,
     );
 
     if (!isNewlyInserted) {
-      return row;
+      return slidable;
     }
 
-    final entryAnimation = CurvedAnimation(
-      parent: _insertionController,
+    return TweenAnimationBuilder<double>(
+      key: ValueKey('txn-${transaction.id}-highlight'),
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 540),
       curve: Curves.easeOutCubic,
-    );
-
-    return SizeTransition(
-      sizeFactor: entryAnimation,
-      axisAlignment: -1,
-      child: TweenAnimationBuilder<double>(
-        key: ValueKey('txn-${transaction.id}'),
-        tween: Tween(begin: 0, end: 1),
-        duration: const Duration(milliseconds: 420),
-        curve: Curves.easeOutCubic,
-        builder: (context, value, child) {
-          final overlayColor = Color.lerp(
-            context.primaryAction.withOpacity(0.15),
-            Colors.transparent,
-            value,
-          )!;
-          return Container(
-            decoration: BoxDecoration(
-              color: overlayColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: overlayColor == Colors.transparent
-                ? EdgeInsets.zero
-                : const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Transform.translate(
-              offset: Offset(0, (1 - value) * -12),
-              child: Opacity(opacity: value, child: child),
-            ),
-          );
-        },
-        child: row,
-      ),
+      builder: (context, value, child) {
+        final overlayColor = Color.lerp(
+          context.fluxPrimaryAction.withOpacity(0.18),
+          Colors.transparent,
+          value,
+        )!;
+        return Container(
+          decoration: overlayColor == Colors.transparent
+              ? null
+              : BoxDecoration(
+                  color: overlayColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+          padding: overlayColor == Colors.transparent
+              ? EdgeInsets.zero
+              : const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: child,
+        );
+      },
+      child: slidable
+          .animate(
+            key: ValueKey('txn-${transaction.id}-entry'),
+          )
+          .slideY(
+            begin: -0.5,
+            end: 0,
+            duration: 360.ms,
+            curve: Curves.easeOutCubic,
+          )
+          .fadeIn(
+            duration: 260.ms,
+            curve: Curves.easeOut,
+          ),
     );
   }
+
+  Future<void> _confirmDeleteTransaction(Transaction transaction) async {
+    HapticFeedback.lightImpact();
+    final shouldDelete = await showCupertinoDialog<bool>(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: const Text('删除交易'),
+            content: const Text('确定要删除这条记录吗？此操作不可撤销。'),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('取消'),
+              ),
+              CupertinoDialogAction(
+                isDestructiveAction: true,
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('删除'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!shouldDelete) return;
+
+    await context.read<TransactionProvider>().deleteTransaction(transaction.id);
+  }
+
+  void _handleEditTransaction(Transaction transaction) {
+    // TODO: Navigate to edit flow when ready.
+    print('Edit todo for transaction ${transaction.id}');
+  }
+
+  Widget _buildFloatingSlidableButton({
+    required Color color,
+    required IconData icon,
+  }) =>
+      Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.25),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Center(
+          child: PhosphorIcon(
+            icon,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+      );
 
   Widget _buildEmptyState(BuildContext context) => Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: context.surfaceWhite,
+          color: context.fluxSurface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -1056,18 +2657,18 @@ class _UnifiedTransactionEntryScreenState
             Icon(
               Icons.stars_rounded,
               size: 48,
-              color: context.secondaryText,
+              color: context.fluxSecondaryText,
             ),
-            const SizedBox(height: 12),
+            const Gap(12),
             Text(
               '暂无记录',
               style: context.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
+            const Gap(4),
             Text(
-              '随手记一笔，看看今日现金流。',
+              '开始记录，看看今日现金流。',
               style: context.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -1075,7 +2676,7 @@ class _UnifiedTransactionEntryScreenState
         ),
       );
 
-  List<_TransactionDayGroup> _groupTransactions(
+  List<_TimelineGroup> _groupTransactionsByDay(
     List<Transaction> transactions,
   ) {
     final confirmed = transactions
@@ -1109,11 +2710,179 @@ class _UnifiedTransactionEntryScreenState
         .toList();
   }
 
+  List<_TimelineGroup> _groupTransactionsByWeek(
+    List<Transaction> transactions,
+  ) {
+    final confirmed = transactions
+        .where(
+          (transaction) => transaction.status == TransactionStatus.confirmed,
+        )
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    final Map<DateTime, List<Transaction>> grouped = LinkedHashMap(
+      equals: (a, b) =>
+          a.year == b.year && a.month == b.month && a.day == b.day,
+      hashCode: (date) => date.year * 10000 + date.month * 100 + date.day,
+    );
+    final order = <DateTime>[];
+
+    for (final transaction in confirmed) {
+      final weekStart = _startOfIsoWeek(transaction.date);
+      final key = DateTime(weekStart.year, weekStart.month, weekStart.day);
+      if (!grouped.containsKey(key)) {
+        order.add(key);
+        grouped[key] = [];
+      }
+      grouped[key]!.add(transaction);
+    }
+
+    return order
+        .map(
+          (start) => _TransactionWeekGroup(
+            startDate: start,
+            endDate: _endOfIsoWeek(start),
+            transactions: grouped[start] ?? [],
+          ),
+        )
+        .toList();
+  }
+
+  List<_TimelineGroup> _groupTransactionsByMonth(
+    List<Transaction> transactions,
+  ) {
+    final confirmed = transactions
+        .where(
+          (transaction) => transaction.status == TransactionStatus.confirmed,
+        )
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    final Map<DateTime, List<Transaction>> grouped = LinkedHashMap(
+      equals: (a, b) => a.year == b.year && a.month == b.month,
+      hashCode: (date) => date.year * 100 + date.month,
+    );
+    final order = <DateTime>[];
+
+    for (final transaction in confirmed) {
+      final monthStart =
+          DateTime(transaction.date.year, transaction.date.month);
+      if (!grouped.containsKey(monthStart)) {
+        order.add(monthStart);
+        grouped[monthStart] = [];
+      }
+      grouped[monthStart]!.add(transaction);
+    }
+
+    return order.map((monthStart) {
+      final transactionsInMonth = grouped[monthStart] ?? [];
+      double totalIncome = 0;
+      double totalExpense = 0;
+      final incomeTotals = <TransactionCategory, double>{};
+      final expenseTotals = <TransactionCategory, double>{};
+
+      for (final transaction in transactionsInMonth) {
+        final amount = transaction.amount.abs();
+        if (_isIncome(transaction)) {
+          totalIncome += amount;
+          incomeTotals.update(
+            transaction.category,
+            (value) => value + amount,
+            ifAbsent: () => amount,
+          );
+        } else if (_isExpense(transaction)) {
+          totalExpense += amount;
+          expenseTotals.update(
+            transaction.category,
+            (value) => value + amount,
+            ifAbsent: () => amount,
+          );
+        }
+      }
+
+      final summaries = incomeTotals.entries
+          .map(
+            (entry) => _CategorySummary(
+              category: entry.key,
+              amount: entry.value,
+              type: TransactionType.income,
+            ),
+          )
+          .followedBy(
+            expenseTotals.entries.map(
+              (entry) => _CategorySummary(
+                category: entry.key,
+                amount: entry.value,
+                type: TransactionType.expense,
+              ),
+            ),
+          )
+          .toList()
+        ..sort((a, b) => b.amount.compareTo(a.amount));
+
+      final monthEnd =
+          DateTime(monthStart.year, monthStart.month + 1, 0, 23, 59, 59);
+
+      return _TransactionMonthGroup(
+        startDate: monthStart,
+        endDate: monthEnd,
+        transactions: transactionsInMonth,
+        totalIncome: totalIncome,
+        totalExpense: totalExpense,
+        categorySummaries: summaries,
+      );
+    }).toList();
+  }
+
+  bool _groupListsEqual(
+    List<_TimelineGroup> previous,
+    List<_TimelineGroup> next,
+  ) {
+    if (identical(previous, next)) {
+      return true;
+    }
+    if (previous.length != next.length) {
+      return false;
+    }
+    for (var i = 0; i < previous.length; i++) {
+      if (previous[i].uniqueKey != next[i].uniqueKey ||
+          previous[i].transactions.length != next[i].transactions.length) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  DateTime _startOfIsoWeek(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    final difference = normalized.weekday - DateTime.monday;
+    return normalized.subtract(Duration(days: difference));
+  }
+
+  DateTime _endOfIsoWeek(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    final difference = DateTime.sunday - normalized.weekday;
+    return normalized.add(Duration(days: difference));
+  }
+
+  _TimelineGroup _findAnchorGroup(
+    List<_TimelineGroup> groups,
+    DateTime target,
+  ) {
+    for (final group in groups) {
+      if (group.containsDate(target)) {
+        return group;
+      }
+    }
+    return groups.first;
+  }
+
   void _scheduleScrollToHighlightedCard() {
     if (_pendingScrollDayKey == null || _isScrollScheduled) {
       return;
     }
     _isScrollScheduled = true;
+    _pendingScrollAttempts = 0;
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _runScrollToHighlighted());
   }
@@ -1124,9 +2893,14 @@ class _UnifiedTransactionEntryScreenState
       _isScrollScheduled = false;
       return;
     }
-    final key = _dayCardKeys[dayKey];
+    final key = _dateKeys[dayKey];
     final context = key?.currentContext;
     if (context == null) {
+      if (_pendingScrollAttempts >= 5) {
+        _isScrollScheduled = false;
+        return;
+      }
+      _pendingScrollAttempts++;
       WidgetsBinding.instance
           .addPostFrameCallback((_) => _runScrollToHighlighted());
       return;
@@ -1139,6 +2913,7 @@ class _UnifiedTransactionEntryScreenState
     ).whenComplete(() {
       _pendingScrollDayKey = null;
       _isScrollScheduled = false;
+      _pendingScrollAttempts = 0;
     });
   }
 
@@ -1151,13 +2926,111 @@ class _UnifiedTransactionEntryScreenState
     final yesterday = today.subtract(const Duration(days: 1));
 
     if (_isSameDay(date, today)) {
-      return 'Today';
+      return '今天';
     }
     if (_isSameDay(date, yesterday)) {
-      return 'Yesterday';
+      return '昨天';
     }
 
-    return DateFormat('MMM d, yyyy').format(date);
+    return DateFormat('M月d日').format(date);
+  }
+
+  String _formatWeekRange(DateTime start, DateTime end) =>
+      '${DateFormat('MM.dd').format(start)} - ${DateFormat('MM.dd').format(end)}';
+
+  String _formatMonthLabel(DateTime date) =>
+      DateFormat('yyyy年 M月').format(date);
+
+  String _weekdayAbbreviation(DateTime date) {
+    switch (date.weekday) {
+      case DateTime.monday:
+        return 'M';
+      case DateTime.tuesday:
+        return 'T';
+      case DateTime.wednesday:
+        return 'W';
+      case DateTime.thursday:
+        return 'T';
+      case DateTime.friday:
+        return 'F';
+      case DateTime.saturday:
+        return 'S';
+      case DateTime.sunday:
+        return 'S';
+      default:
+        return '';
+    }
+  }
+
+  String _themeModeTitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return '浅色模式';
+      case ThemeMode.dark:
+        return '深色模式';
+      case ThemeMode.system:
+        return '跟随系统';
+    }
+  }
+
+  String _themeModeDescription(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return '明亮背景，适合白天使用';
+      case ThemeMode.dark:
+        return '降低眩光，夜间更舒适';
+      case ThemeMode.system:
+        return '根据系统设置自动切换';
+    }
+  }
+
+  String _themePaletteDescription(AppTheme theme) => switch (theme) {
+        AppTheme.modernForestGreen => '森绿 + 鸟语黄绿',
+        AppTheme.eleganceDeepBlue => '藏青 + 墨绿色点缀',
+        AppTheme.premiumGraphite => '石墨灰 + 常春藤绿',
+        AppTheme.classicBurgundy => '紫红 + 柔和绿色',
+      };
+
+  String _moneyThemeDescription(MoneyTheme theme) => switch (theme) {
+        MoneyTheme.fluxBlue => 'Flux 蓝调：收入蓝、支出红、对比最强',
+        MoneyTheme.forestEmerald => '森绿调：自然系收入绿、支出赤，适合极简预算',
+        MoneyTheme.graphiteMono => '石墨调：黑白灰+渐层，适合夜间与审计场景',
+      };
+
+  IconData _themeModeIcon(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return PhosphorIcons.sun();
+      case ThemeMode.dark:
+        return PhosphorIcons.moon();
+      case ThemeMode.system:
+        return PhosphorIcons.monitor();
+    }
+  }
+
+  ViewMode _nextViewMode(ViewMode mode) =>
+      ViewMode.values[(mode.index + 1) % ViewMode.values.length];
+
+  IconData _viewModeIcon(ViewMode mode) {
+    switch (mode) {
+      case ViewMode.day:
+        return PhosphorIcons.rows();
+      case ViewMode.week:
+        return PhosphorIcons.calendar();
+      case ViewMode.month:
+        return PhosphorIcons.chartPie();
+    }
+  }
+
+  String _viewModeLabel(ViewMode mode) {
+    switch (mode) {
+      case ViewMode.day:
+        return '日';
+      case ViewMode.week:
+        return '周';
+      case ViewMode.month:
+        return '月';
+    }
   }
 
   bool _isSameDay(DateTime a, DateTime b) =>
@@ -1188,36 +3061,37 @@ class _UnifiedTransactionEntryScreenState
   IconData _categoryIcon(TransactionCategory category) {
     switch (category) {
       case TransactionCategory.food:
-        return Icons.restaurant;
+        return PhosphorIcons.coffee();
       case TransactionCategory.transport:
-        return Icons.directions_bus_outlined;
+        return PhosphorIcons.carSimple();
       case TransactionCategory.shopping:
-        return Icons.shopping_bag_outlined;
+        return PhosphorIcons.shoppingBag();
       case TransactionCategory.entertainment:
-        return Icons.movie_outlined;
+        return PhosphorIcons.popcorn();
       case TransactionCategory.healthcare:
-        return Icons.health_and_safety_outlined;
+        return PhosphorIcons.firstAidKit();
       case TransactionCategory.education:
-        return Icons.menu_book_outlined;
+        return PhosphorIcons.bookBookmark();
       case TransactionCategory.housing:
-        return Icons.house_outlined;
+        return PhosphorIcons.house();
       case TransactionCategory.utilities:
-        return Icons.lightbulb_outline;
+        return PhosphorIcons.plug();
       case TransactionCategory.insurance:
-        return Icons.verified_user_outlined;
+        return PhosphorIcons.shieldCheck();
       case TransactionCategory.salary:
-        return Icons.workspace_premium_outlined;
+        return PhosphorIcons.wallet();
       case TransactionCategory.bonus:
-        return Icons.card_giftcard_outlined;
+        return PhosphorIcons.gift();
       case TransactionCategory.investment:
-        return Icons.trending_up_outlined;
+        return PhosphorIcons.trendUp();
       case TransactionCategory.freelance:
-        return Icons.work_outline;
+        return PhosphorIcons.briefcase();
       case TransactionCategory.gift:
-        return Icons.cake_outlined;
+        return PhosphorIcons.seal();
       case TransactionCategory.otherIncome:
+        return PhosphorIcons.sparkle();
       case TransactionCategory.otherExpense:
-        return Icons.category_outlined;
+        return PhosphorIcons.dotsThreeCircle();
     }
   }
 
@@ -1225,87 +3099,266 @@ class _UnifiedTransactionEntryScreenState
   Widget build(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
     final accountsProvider = context.watch<AccountProvider>();
-    final groupedTransactions = _groupTransactions(
-      transactionProvider.transactions,
-    );
+    final themeMode = context.watch<ThemeProvider>().themeMode;
+    final themeStyleProvider = context.watch<ThemeStyleProvider>();
+    final groupedTransactions = _currentGroups;
     _scheduleScrollToHighlightedCard();
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    final dockBottom = kBottomNavigationBarHeight + bottomInset + 8;
+    final viewInsets = MediaQuery.of(context).padding;
+    final dockBottom = kBottomNavigationBarHeight + viewInsets.bottom + 8;
     final cardBottom = dockBottom + 150;
     final scrollBottomPadding = dockBottom + 260;
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: context.primaryBackground,
-        body: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Smart Timeline',
-                          style: context.textTheme.displayMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '每一天的现金流都在这里。',
-                          style: context.textTheme.bodyMedium,
-                        ),
-                      ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CustomScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      viewInsets.top + 60,
+                      16,
+                      scrollBottomPadding,
+                    ),
+                    sliver: _buildTimelineSliver(
+                      context,
+                      groupedTransactions,
+                      transactionProvider.isLoading,
                     ),
                   ),
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(16, 0, 16, scrollBottomPadding),
-                  sliver: _buildTimelineSliver(
-                    context,
-                    groupedTransactions,
-                    transactionProvider.isLoading,
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: cardBottom,
-              child: _buildDraftCard(
-                context,
-                accountsProvider.accounts,
+                ],
               ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: dockBottom,
-              child: _buildInputDock(context),
-            ),
-          ],
+              _buildViewToggleButton(context, viewInsets),
+              _buildThemeSettingsButton(
+                context,
+                viewInsets,
+                themeMode,
+                themeStyleProvider,
+              ),
+              _buildScrubber(groupedTransactions),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: cardBottom,
+                child: _buildDraftCard(
+                  context,
+                  accountsProvider.accounts,
+                ),
+              ),
+              _buildInputDock(context),
+              _buildToastOverlay(context),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  void _showToast(String message, {bool isError = false}) {
+    _toastTimer?.cancel();
+    setState(() {
+      _toastMessage = message;
+      _isToastError = isError;
+    });
+    _toastController.forward(from: 0);
+    HapticFeedback.lightImpact();
+    _toastTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        _toastController.reverse();
+      }
+    });
+  }
+
+  String _guidanceFromNextStuff(
+    ParsedTransaction parsed,
+    String fallback,
+  ) {
+    final raw = parsed.nextStuff;
+    if (raw == null || raw.trim().isEmpty) {
+      return fallback;
+    }
+    final sanitized = _sanitizeNextStuff(raw);
+    if (sanitized.isEmpty) {
+      return fallback;
+    }
+    return sanitized;
+  }
+
+  String _sanitizeNextStuff(String nextStuff) {
+    var cleaned = nextStuff.trim();
+    final technicalPatterns = [
+      RegExp('你是一个.*?记账助手', caseSensitive: false),
+      RegExp('不要使用.*?敬语', caseSensitive: false),
+      RegExp('语气要像.*?', caseSensitive: false),
+      RegExp('保持.*?松弛感', caseSensitive: false),
+      RegExp('优先级.*?', caseSensitive: false),
+      RegExp('如果.*?缺失.*?', caseSensitive: false),
+      RegExp('引导语.*?', caseSensitive: false),
+      RegExp('简洁.*?自然.*?', caseSensitive: false),
+      RegExp('不超过.*?字', caseSensitive: false),
+      RegExp('#.*?', caseSensitive: false),
+      RegExp('<.*?>', caseSensitive: false),
+      RegExp(r'\{.*?\}', caseSensitive: false),
+    ];
+    for (final pattern in technicalPatterns) {
+      cleaned = cleaned.replaceAll(pattern, '').trim();
+    }
+    cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (cleaned.length > 18) {
+      cleaned = cleaned.substring(0, 18);
+    }
+    return cleaned;
+  }
 }
 
-class _TransactionDayGroup {
-  const _TransactionDayGroup({
-    required this.date,
+class _ScrubBubble extends StatelessWidget {
+  const _ScrubBubble({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: context.textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ) ??
+              const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      );
+}
+
+abstract class _TimelineGroup {
+  const _TimelineGroup({
+    required this.startDate,
+    required this.endDate,
     required this.transactions,
   });
 
-  final DateTime date;
+  final DateTime startDate;
+  final DateTime endDate;
   final List<Transaction> transactions;
+
+  ViewMode get mode;
+
+  Iterable<DateTime> get representedDates;
+
+  String get uniqueKey =>
+      '${mode.name}-${startDate.microsecondsSinceEpoch}-${endDate.microsecondsSinceEpoch}';
+
+  bool containsDate(DateTime date) =>
+      !date.isBefore(startDate) && !date.isAfter(endDate);
 }
+
+class _TransactionDayGroup extends _TimelineGroup {
+  _TransactionDayGroup({
+    required DateTime date,
+    required super.transactions,
+  }) : super(
+          startDate: date,
+          endDate: date,
+        );
+
+  @override
+  ViewMode get mode => ViewMode.day;
+
+  @override
+  Iterable<DateTime> get representedDates => [startDate];
+}
+
+class _TransactionWeekGroup extends _TimelineGroup {
+  _TransactionWeekGroup({
+    required super.startDate,
+    required super.endDate,
+    required super.transactions,
+  });
+
+  @override
+  ViewMode get mode => ViewMode.week;
+
+  @override
+  Iterable<DateTime> get representedDates {
+    final totalDays = endDate.difference(startDate).inDays;
+    return List<DateTime>.generate(
+      totalDays + 1,
+      (index) => startDate.add(Duration(days: index)),
+    );
+  }
+}
+
+class _TransactionMonthGroup extends _TimelineGroup {
+  _TransactionMonthGroup({
+    required super.startDate,
+    required super.endDate,
+    required super.transactions,
+    required this.totalIncome,
+    required this.totalExpense,
+    required this.categorySummaries,
+  });
+
+  final double totalIncome;
+  final double totalExpense;
+  final List<_CategorySummary> categorySummaries;
+
+  @override
+  ViewMode get mode => ViewMode.month;
+
+  @override
+  Iterable<DateTime> get representedDates => [startDate];
+}
+
+class _CategorySummary {
+  const _CategorySummary({
+    required this.category,
+    required this.amount,
+    required this.type,
+  });
+
+  final TransactionCategory category;
+  final double amount;
+  final TransactionType type;
+}
+
+enum _MonthBreakdownTab { expense, income }
+
+class _DailyTrendPoint {
+  const _DailyTrendPoint({
+    required this.date,
+    required this.income,
+    required this.expense,
+    required this.shortLabel,
+    required this.isToday,
+  });
+
+  final DateTime date;
+  final double income;
+  final double expense;
+  final String shortLabel;
+  final bool isToday;
+}
+
+enum ViewMode { day, week, month }
 
 enum _DateMenuAction { today, yesterday, pick }
 
@@ -1315,6 +3368,7 @@ class _RainbowSendButton extends StatelessWidget {
     required this.collapseProgress,
     required this.rotationValue,
     required this.onPressed,
+    super.key,
   });
 
   final bool isLoading;
@@ -1324,18 +3378,22 @@ class _RainbowSendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseIntensity = isLoading ? 0.6 : 0.25;
-    final intensity = (baseIntensity + collapseProgress * 0.75).clamp(0.0, 1.0);
+    final clampedProgress = collapseProgress.clamp(0.0, 1.0);
+    // Keep the border visible throughout loading so the painter can render the halo.
+    final borderReveal =
+        isLoading ? 1.0 : ((clampedProgress - 0.75) / 0.25).clamp(0.0, 1.0);
+    final baseIntensity = isLoading ? 0.6 : 0.0;
+    final intensity = (baseIntensity + borderReveal * 0.8).clamp(0.0, 1.0);
     return _RainbowGlowBorder(
       borderRadius: 999,
-      borderWidth: 1.2 + collapseProgress * 1.2,
+      borderWidth: borderReveal,
       intensity: intensity,
       rotation: rotationValue * 2 * math.pi,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
-          backgroundColor: context.primaryAction,
+          backgroundColor: context.fluxPrimaryAction,
           foregroundColor: Colors.white,
           elevation: 0,
           padding: EdgeInsets.zero,
@@ -1350,7 +3408,10 @@ class _RainbowSendButton extends StatelessWidget {
                     color: Colors.white,
                   ),
                 )
-              : const Icon(Icons.arrow_upward_rounded),
+              : const Icon(
+                  Icons.arrow_upward_rounded,
+                  size: 24,
+                ),
         ),
       ),
     );
@@ -1374,7 +3435,7 @@ class _RainbowGlowBorder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (intensity <= 0) {
+    if (intensity <= 0 || borderWidth <= 0) {
       return child;
     }
     return CustomPaint(
@@ -1404,28 +3465,32 @@ class _RainbowBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (intensity <= 0) {
+    final visibility = borderWidth.clamp(0.0, 1.0);
+    if (intensity <= 0 || visibility <= 0) {
       return;
     }
     final rect = Offset.zero & size;
+    final activeIntensity = (intensity * visibility).clamp(0.0, 1.0);
     final gradient = SweepGradient(
-      startAngle: rotation,
-      endAngle: rotation + 2 * math.pi,
       colors: [
         const Color(0xFF2F80ED),
         const Color(0xFF8E2DE2),
         const Color(0xFFF562A7),
         const Color(0xFFFFA751),
         const Color(0xFF2F80ED),
-      ].map((color) => color.withOpacity(intensity)).toList(),
+      ].map((color) => color.withOpacity(activeIntensity)).toList(),
+      stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+      transform: GradientRotation(rotation),
     );
+    final stroke = lerpDouble(4.0, 10.0, visibility)!;
     final paint = Paint()
       ..shader = gradient.createShader(rect)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth
-      ..maskFilter = MaskFilter.blur(BlurStyle.outer, 4 * intensity);
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.butt
+      ..maskFilter = MaskFilter.blur(BlurStyle.outer, 2.4 * activeIntensity);
     final rrect = RRect.fromRectAndRadius(
-      rect.deflate(borderWidth / 2),
+      rect.deflate(stroke / 2),
       Radius.circular(radius),
     );
     canvas.drawRRect(rrect, paint);
@@ -1437,4 +3502,14 @@ class _RainbowBorderPainter extends CustomPainter {
       intensity != oldDelegate.intensity ||
       borderWidth != oldDelegate.borderWidth ||
       radius != oldDelegate.radius;
+}
+
+extension _FluxColorContext on BuildContext {
+  Color get fluxSurface => AppDesignTokens.surface(this);
+  Color get fluxPrimaryAction => AppDesignTokens.primaryAction(this);
+  Color get fluxPrimaryText => AppDesignTokens.primaryText(this);
+  Color get fluxSecondaryText => AppDesignTokens.secondaryText(this);
+  Color get fluxPositiveAmount => AppDesignTokens.amountPositiveColor(this);
+  Color get fluxNegativeAmount => AppDesignTokens.amountNegativeColor(this);
+  Color get fluxPageBackground => AppDesignTokens.pageBackground(this);
 }

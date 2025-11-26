@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 class AppTheme {
   // 色彩规范 - 对齐 Flux Ledger 视觉系统
@@ -96,7 +97,6 @@ class AppTheme {
           secondary: accentBackground,
           onSecondary: textPrimary,
           onSurface: textPrimary,
-          surface: surfaceWhite,
           outline: dividerColor,
         ),
 
@@ -260,7 +260,6 @@ class AppTheme {
           primary: Color(0xFF0A84FF), // iOS深色模式蓝
           secondary: Color(0xFF2C2C2E),
           onSecondary: Colors.white,
-          onSurface: Colors.white,
           outline: Color(0xFF38383A),
         ),
 
@@ -411,25 +410,25 @@ class AppTheme {
 // 扩展方法，方便使用设计规范
 extension AppThemeExtensions on BuildContext {
   // 获取主题色彩
-  Color get primaryBackground => AppTheme.primaryBackground;
-  Color get accentBackground => AppTheme.accentBackground;
-  Color get primaryAction => AppTheme.primaryAction;
-  Color get primaryText => AppTheme.primaryText;
-  Color get secondaryText => AppTheme.secondaryText;
-  Color get dividerColor => AppTheme.dividerColor;
-  Color get increaseColor => AppTheme.increaseColor;
-  Color get decreaseColor => AppTheme.decreaseColor;
-  Color get warningColor => AppTheme.warningColor;
-  Color get surfaceWhite => AppTheme.surfaceWhite;
-  Color get expenseRed => AppTheme.expenseRed;
-  Color get incomeGreen => AppTheme.incomeGreen;
-  Color get textPrimary => AppTheme.textPrimary;
+  Color get primaryBackground => AppDesignTokens.pageBackground(this);
+  Color get accentBackground => AppDesignTokens.surface(this);
+  Color get primaryAction => AppDesignTokens.primaryAction(this);
+  Color get primaryText => AppDesignTokens.primaryText(this);
+  Color get secondaryText => AppDesignTokens.secondaryText(this);
+  Color get dividerColor => AppDesignTokens.dividerColor(this);
+  Color get increaseColor => AppDesignTokens.moneyPositive(this);
+  Color get decreaseColor => AppDesignTokens.moneyNegative(this);
+  Color get warningColor => AppDesignTokens.warningColor;
+  Color get surfaceWhite => AppDesignTokens.surface(this);
+  Color get expenseRed => AppDesignTokens.moneyNegative(this);
+  Color get incomeGreen => AppDesignTokens.moneyPositive(this);
+  Color get textPrimary => AppDesignTokens.primaryText(this);
 
   // 别名，为了兼容性
-  Color get successColor => AppTheme.incomeGreen;
-  Color get errorColor => AppTheme.expenseRed;
-  Color get primaryColor => AppTheme.primaryAction; // 兼容性别名
-  Color get surfaceColor => AppTheme.surfaceWhite; // 表面颜色
+  Color get successColor => AppDesignTokens.moneyPositive(this);
+  Color get errorColor => AppDesignTokens.moneyNegative(this);
+  Color get primaryColor => AppDesignTokens.primaryAction(this); // 兼容性别名
+  Color get surfaceColor => AppDesignTokens.surface(this); // 表面颜色
 
   // ColorScheme 兼容性扩展
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
