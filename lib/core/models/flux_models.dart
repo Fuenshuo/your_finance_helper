@@ -938,3 +938,4 @@ class FlowInsights extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+

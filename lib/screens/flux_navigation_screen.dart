@@ -325,3 +325,4 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
   }
 }
 
+
