@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,12 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/app_selection_controls.dart';
 import 'package:your_finance_flutter/core/widgets/app_shimmer.dart';
+import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
+import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
+import 'package:your_finance_flutter/features/insights/widgets/weekly_trend_chart.dart';
+import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
+import 'package:your_finance_flutter/features/insights/widgets/daily_pacer_widget.dart';
+import 'package:your_finance_flutter/features/insights/widgets/insight_bubble.dart';
 
 /// Segmented视图模式，对应日/周/月洞察。
 enum InsightViewMode { day, week, month }
@@ -26,23 +33,58 @@ class FlowInsightsScreen extends StatefulWidget {
 
 class _FlowInsightsScreenState extends State<FlowInsightsScreen> {
   late final InsightService _service;
-  late final Stream<InsightSnapshot<DailyInsight>> _dailyStream;
-  late final Stream<InsightSnapshot<WeeklyInsight>> _weeklyStream;
-  late final Stream<InsightSnapshot<MonthlyInsight>> _monthlyStream;
-
   InsightViewMode _viewMode = InsightViewMode.day;
+
+  // Single stream controller for current view mode
+  late final StreamController<dynamic> _currentStreamController;
+  StreamSubscription<dynamic>? _currentSubscription;
+  dynamic _currentData;
 
   @override
   void initState() {
     super.initState();
     _service = widget._overrideService ?? MockInsightService();
-    _dailyStream = _service.dailyInsights();
-    _weeklyStream = _service.weeklyInsights();
-    _monthlyStream = _service.monthlyInsights();
+    _currentStreamController = StreamController<dynamic>.broadcast();
+    _updateCurrentStream();
+  }
+
+  void _updateCurrentStream() {
+    // Cancel previous subscription
+    _currentSubscription?.cancel();
+
+    // Subscribe to the new stream based on view mode
+    late Stream<dynamic> newStream;
+    switch (_viewMode) {
+      case InsightViewMode.day:
+        newStream = _service.dailyInsights();
+        break;
+      case InsightViewMode.week:
+        newStream = _service.weeklyInsights();
+        break;
+      case InsightViewMode.month:
+        newStream = _service.monthlyInsights();
+        break;
+    }
+
+    _currentSubscription = newStream.listen(
+      (dynamic data) {
+        _currentData = data;
+        if (!_currentStreamController.isClosed) {
+          _currentStreamController.add(data);
+        }
+      },
+      onError: (Object error) {
+        if (!_currentStreamController.isClosed) {
+          _currentStreamController.addError(error);
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
+    _currentSubscription?.cancel();
+    _currentStreamController.close();
     _service.dispose();
     super.dispose();
   }
@@ -114,8 +156,11 @@ class _FlowInsightsScreenState extends State<FlowInsightsScreen> {
         AppSegmentedControl<InsightViewMode>(
           groupValue: _viewMode,
           onValueChanged: (value) {
-            if (value != null) {
-              setState(() => _viewMode = value);
+            if (value != null && value != _viewMode) {
+              setState(() {
+                _viewMode = value;
+                _updateCurrentStream();
+              });
             }
           },
           children: const {
@@ -129,29 +174,28 @@ class _FlowInsightsScreenState extends State<FlowInsightsScreen> {
   }
 
   Widget _buildViewBody(BuildContext context) {
-    return switch (_viewMode) {
-      InsightViewMode.day => StreamBuilder<InsightSnapshot<DailyInsight>>(
-          stream: _dailyStream,
-          builder: (context, snapshot) => _DayViewWidget(
-            snapshot: snapshot.data,
-            isWaiting: snapshot.connectionState == ConnectionState.waiting,
-          ),
-        ),
-      InsightViewMode.week => StreamBuilder<InsightSnapshot<WeeklyInsight>>(
-          stream: _weeklyStream,
-          builder: (context, snapshot) => _WeekViewWidget(
-            snapshot: snapshot.data,
-            isWaiting: snapshot.connectionState == ConnectionState.waiting,
-          ),
-        ),
-      InsightViewMode.month => StreamBuilder<InsightSnapshot<MonthlyInsight>>(
-          stream: _monthlyStream,
-          builder: (context, snapshot) => _MonthViewWidget(
-            snapshot: snapshot.data,
-            isWaiting: snapshot.connectionState == ConnectionState.waiting,
-          ),
-        ),
-    };
+    return StreamBuilder(
+      key: ValueKey(_viewMode), // Important: different key for each view mode
+      stream: _currentStreamController.stream,
+      builder: (context, snapshot) {
+        final isWaiting = snapshot.connectionState == ConnectionState.waiting;
+
+        return switch (_viewMode) {
+          InsightViewMode.day => _DayViewWidget(
+              snapshot: snapshot.data as InsightSnapshot<DailyInsight>?,
+              isWaiting: isWaiting,
+            ),
+          InsightViewMode.week => _WeekViewWidget(
+              snapshot: snapshot.data as InsightSnapshot<WeeklyInsight>?,
+              isWaiting: isWaiting,
+            ),
+          InsightViewMode.month => _MonthViewWidget(
+              snapshot: snapshot.data as InsightSnapshot<MonthlyInsight>?,
+              isWaiting: isWaiting,
+            ),
+        };
+      },
+    );
   }
 }
 
@@ -169,42 +213,48 @@ class _DayViewWidget extends StatelessWidget {
     final insight = snapshot?.data;
     final isThinking = (snapshot?.isLoading ?? true) || isWaiting;
 
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Daily Budget Pacer',
-            style: AppDesignTokens.headline(context),
+    // Convert DailyInsight to DailyCap for the new widget
+    final dailyCap = insight != null ? DailyCap(
+      id: 'daily_cap_${DateTime.now().toIso8601String().split('T').first}',
+      date: DateTime.now(),
+      referenceAmount: 200.0, // Default daily budget
+      currentSpending: insight.spent,
+      percentage: insight.spent / 200.0,
+      status: _convertSentimentToCapStatus(insight.sentiment),
+      latestInsight: null, // Will be handled by Flux Loop
+    ) : null;
+
+    return Column(
+      children: [
+        if (dailyCap != null)
+          DailyPacerWidget(dailyCap: dailyCap)
+        else
+          const _PacerSkeleton(),
+        if (isThinking) ...[
+          const Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: _ThinkingBanner(message: 'AI CFO 正在分析今日行为...'),
           ),
-          const SizedBox(height: AppDesignTokens.spacing16),
-          if (insight == null)
-            const _PacerSkeleton()
-          else
-            _DailyPacerBar(insight: insight),
-          const SizedBox(height: AppDesignTokens.spacing16),
-          if (insight == null)
-            const _InsightCommentSkeleton()
-          else
-            _MicroInsightCard(
-              comment: insight.aiComment,
-              sentiment: insight.sentiment,
-            ),
-          if (isThinking) ...[
-            const Padding(
-              padding: EdgeInsets.only(top: AppDesignTokens.spacing16),
-              child: _ThinkingBanner(message: 'AI CFO 正在分析今日行为...'),
-            ),
-          ] else ...[
-            const SizedBox(height: AppDesignTokens.spacing16),
-            Text(
-              '最后更新 · ${_formatTime(snapshot?.generatedAt)}',
-              style: AppDesignTokens.caption(context),
-            ),
-          ],
+        ] else ...[
+          const SizedBox(height: 16),
+          Text(
+            '最后更新 · ${_formatTime(snapshot?.generatedAt)}',
+            style: AppDesignTokens.caption(context),
+          ),
         ],
-      ),
+      ],
     );
+  }
+
+  CapStatus _convertSentimentToCapStatus(InsightSentiment sentiment) {
+    switch (sentiment) {
+      case InsightSentiment.safe:
+        return CapStatus.safe;
+      case InsightSentiment.warning:
+        return CapStatus.warning;
+      case InsightSentiment.overload:
+        return CapStatus.danger;
+    }
   }
 
   static String _formatTime(DateTime? timestamp) {
@@ -329,7 +379,7 @@ class _MicroInsightCard extends StatelessWidget {
   }
 }
 
-class _WeekViewWidget extends StatelessWidget {
+class _WeekViewWidget extends StatefulWidget {
   const _WeekViewWidget({
     required this.snapshot,
     required this.isWaiting,
@@ -339,9 +389,14 @@ class _WeekViewWidget extends StatelessWidget {
   final bool isWaiting;
 
   @override
+  State<_WeekViewWidget> createState() => _WeekViewWidgetState();
+}
+
+class _WeekViewWidgetState extends State<_WeekViewWidget> {
+  @override
   Widget build(BuildContext context) {
-    final insight = snapshot?.data;
-    final isThinking = (snapshot?.isLoading ?? true) || isWaiting;
+    final insight = widget.snapshot?.data;
+    final isThinking = (widget.snapshot?.isLoading ?? true) || widget.isWaiting;
 
     return Column(
       children: [
@@ -349,27 +404,85 @@ class _WeekViewWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Week Pulse',
-                style: AppDesignTokens.headline(context),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '周消费趋势',
+                    style: AppDesignTokens.headline(context),
+                  ),
+                  if (false) // _isAnalyzing removed
+                    Row(
+                      children: [
+                        PhosphorIcon(
+                          PhosphorIconsRegular.spinner,
+                          size: 16,
+                          color: AppDesignTokens.secondaryText(context),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '侦探分析中...',
+                          style: AppDesignTokens.caption(context),
+                        ),
+                      ],
+                    ),
+                ],
               ),
-              const SizedBox(height: AppDesignTokens.spacing16),
+              const SizedBox(height: 16),
               if (insight == null)
                 const _WeekSkeleton()
               else
-                _WeeklyBars(
-                  insight: insight,
+                WeeklyTrendChart(
+                  weeklyInsight: insight,
                   showThinking: isThinking,
                 ),
+              if (isThinking) ...[
+                const Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: _ThinkingBanner(message: 'AI 侦探正在分析本周消费模式...'),
+                ),
+              ],
             ],
           ),
         ),
+        if (isThinking) ...[
+          const Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: _ThinkingBanner(message: 'AI CFO 正在分析本周趋势...'),
+          ),
+        ]
+        // TODO: Implement InsightBubble overlay for anomalies
+        // Currently disabled due to layout conflicts - needs proper Stack positioning
+        else if (!isThinking && insight != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Text(
+              '最后更新 · ${_formatTime(widget.snapshot?.generatedAt)}',
+              style: AppDesignTokens.caption(context),
+            ),
+          ),
+        ]
+        else if (!isThinking && insight == null) ...[
+          const SizedBox(height: 16),
+          Text(
+            '暂无数据',
+            style: AppDesignTokens.caption(context),
+          ),
+        ],
       ],
     );
   }
+
+  String _formatTime(DateTime? timestamp) {
+    if (timestamp == null) return '--:--';
+    final hours = timestamp.hour.toString().padLeft(2, '0');
+    final minutes = timestamp.minute.toString().padLeft(2, '0');
+    return '$hours:$minutes';
+  }
 }
 
-class _WeeklyBars extends StatelessWidget {
+// Removed _WeeklyBars class - replaced with WeeklyTrendChart
+/*
   const _WeeklyBars({
     required this.insight,
     required this.showThinking,
@@ -479,6 +592,7 @@ class _WeeklyBars extends StatelessWidget {
     );
   }
 }
+*/
 
 class _AverageLine extends StatelessWidget {
   const _AverageLine({
@@ -582,7 +696,7 @@ class _DetectiveBubble extends StatelessWidget {
                 AppShimmer.text(height: 14)
               else
                 Text(
-                  insight.anomalyReason,
+                  '检测到 ${insight.anomalies.length} 个异常模式',
                   style: AppDesignTokens.body(context),
                 ),
             ],

@@ -5,11 +5,13 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart' as provider;
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/providers/flux_providers.dart';
 import 'package:your_finance_flutter/core/router/flux_router.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/theme/flux_theme.dart';
-import 'package:your_finance_flutter/widgets/flux_widgets.dart';
+import 'package:your_finance_flutter/screens/flux_ui_architecture.dart';
 
 /// 🌊 Flux 主导航屏幕
 class FluxNavigationScreen extends StatefulWidget {
@@ -153,55 +155,77 @@ class FluxBottomNavigationBar extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-          boxShadow: FluxTheme.flowBottomNavShadow,
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_outlined),
-                activeIcon: Icon(Icons.dashboard),
-                label: '流仪表板',
-                tooltip: '实时资金流可视化',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.waterfall_chart_outlined),
-                activeIcon: Icon(Icons.waterfall_chart),
-                label: '流管道',
-                tooltip: '管理持续性资金流',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.insights_outlined),
-                activeIcon: Icon(Icons.insights),
-                label: '流洞察',
-                tooltip: 'AI智能分析与建议',
-              ),
-            ],
-            currentIndex: navigationShell.currentIndex,
-            onTap: (index) {
-              navigationShell.goBranch(
-                index,
-                initialLocation: index == navigationShell.currentIndex,
-              );
-            },
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            selectedItemColor: FluxTheme.flowBlue,
-            unselectedItemColor: FluxTheme.neutralGray,
-            selectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) {
+    final navTheme = Theme.of(context).bottomNavigationBarTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = navTheme.backgroundColor ?? context.surfaceWhite;
+    final selectedColor = navTheme.selectedItemColor ?? context.primaryAction;
+    final unselectedColor = navTheme.unselectedItemColor ??
+        context.secondaryText.withOpacity(isDark ? 0.85 : 0.7);
+    final navShadow = [
+      BoxShadow(
+        color: isDark ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.06),
+        blurRadius: 12,
+        offset: const Offset(0, -2),
+      ),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        boxShadow: navShadow,
+      ),
+      child: SafeArea(
+        child: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard),
+              label: '流仪表板',
+              tooltip: '实时资金流可视化',
             ),
-            unselectedLabelStyle: const TextStyle(fontSize: 12),
-            type: BottomNavigationBarType.fixed,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.waterfall_chart_outlined),
+              activeIcon: Icon(Icons.waterfall_chart),
+              label: '流管道',
+              tooltip: '管理持续性资金流',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.insights_outlined),
+              activeIcon: Icon(Icons.insights),
+              label: '流洞察',
+              tooltip: 'AI智能分析与建议',
+            ),
+          ],
+          currentIndex: navigationShell.currentIndex,
+          onTap: (index) {
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: selectedColor,
+          unselectedItemColor: unselectedColor,
+          selectedLabelStyle:
+              navTheme.selectedLabelStyle ??
+              const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+          unselectedLabelStyle:
+              navTheme.unselectedLabelStyle ??
+              const TextStyle(
+                fontSize: 12,
+              ),
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
         ),
-      );
+      ),
+    );
+  }
 }
 
 /// 🌊 浮动操作按钮

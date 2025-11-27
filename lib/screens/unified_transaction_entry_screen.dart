@@ -1219,55 +1219,58 @@ class _UnifiedTransactionEntryScreenState
     EdgeInsets viewInsets,
     ThemeMode currentMode,
     ThemeStyleProvider themeStyleProvider,
-  ) =>
-      Positioned(
-        top: viewInsets.top + 12,
-        right: 16,
-        child: ClipOval(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.08)
-                    : context.fluxSurface.withOpacity(0.6),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.white.withOpacity(0.5),
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final capsuleColor = isDark
+        ? Colors.white.withOpacity(0.12)
+        : context.fluxSurface.withOpacity(0.65);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.2)
+        : context.fluxSecondaryText.withOpacity(0.25);
+    final shadowColor = isDark
+        ? Colors.black.withOpacity(0.45)
+        : Colors.black.withOpacity(0.05);
+    final iconColor = isDark ? Colors.white : context.fluxPrimaryAction;
+
+    return Positioned(
+      top: viewInsets.top + 12,
+      right: 16,
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: capsuleColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: shadowColor,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black.withOpacity(0.4)
-                        : Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+              ],
+            ),
+            child: IconButton(
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: PhosphorIcon(
+                _themeModeIcon(currentMode),
+                color: iconColor,
               ),
-              child: IconButton(
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: PhosphorIcon(
-                  PhosphorIcons.palette(),
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : context.fluxPrimaryAction,
-                ),
-                tooltip:
-                    '主题：${themeStyleProvider.getThemeDisplayName(themeStyleProvider.currentTheme)} · 金额：${themeStyleProvider.getMoneyThemeDisplayName(themeStyleProvider.currentMoneyTheme)} · ${_themeModeTitle(currentMode)}',
-                onPressed: () =>
-                    _showThemeSettingsSheet(context, themeStyleProvider),
-              ),
+              tooltip:
+                  '主题：${themeStyleProvider.getThemeDisplayName(themeStyleProvider.currentTheme)} · 金额：${themeStyleProvider.getMoneyThemeDisplayName(themeStyleProvider.currentMoneyTheme)} · ${_themeModeTitle(currentMode)}',
+              onPressed: () =>
+                  _showThemeSettingsSheet(context, themeStyleProvider),
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 
   Future<void> _showThemeSettingsSheet(
     BuildContext context,
@@ -2983,13 +2986,6 @@ class _UnifiedTransactionEntryScreenState
         return '根据系统设置自动切换';
     }
   }
-
-  String _themePaletteDescription(AppTheme theme) => switch (theme) {
-        AppTheme.modernForestGreen => '森绿 + 鸟语黄绿',
-        AppTheme.eleganceDeepBlue => '藏青 + 墨绿色点缀',
-        AppTheme.premiumGraphite => '石墨灰 + 常春藤绿',
-        AppTheme.classicBurgundy => '紫红 + 柔和绿色',
-      };
 
   String _moneyThemeDescription(MoneyTheme theme) => switch (theme) {
         MoneyTheme.fluxBlue => 'Flux 蓝调：收入蓝、支出红、对比最强',

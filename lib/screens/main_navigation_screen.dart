@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/core/widgets/app_bottom_navigation_bar.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
 import 'package:your_finance_flutter/screens/dialogs/flux_insights_dialog.dart';
@@ -173,21 +174,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           index: _selectedIndex,
           children: _screens,
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: AppBottomNavigationBar(
           items: _navItems,
           currentIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
-          backgroundColor: context.surfaceWhite,
-          selectedItemColor: context.primaryColor,
-          unselectedItemColor: context.secondaryText,
-          selectedLabelStyle: context.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-          unselectedLabelStyle: context.textTheme.bodySmall,
-          type: BottomNavigationBarType.fixed,
-          elevation: 8,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
         ),
       );
 }
