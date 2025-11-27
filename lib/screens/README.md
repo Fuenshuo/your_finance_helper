@@ -19,6 +19,7 @@
 - 顶部 AppBar（调试模式点击开启、统一的 Flux Ledger 品牌标题）
 - Stream Tab 内的 Input Dock 通过 `Stack` 固定在底部导航上方
 - 使用 `IndexedStack` 保持页面状态
+- 底部导航栏使用 `AppBottomNavigationBar`，自动引用 `AppDesignTokens` 语义色以适配浅/深色模式（含指示色与背景）
 
 **导航结构**:
 ```
@@ -172,6 +173,7 @@ if (isFirstLaunch) {
 - **Month Segmented Breakdown**：月度卡片内置支出/收入分段控制器，切换查看 TOP 列表，默认展示支出构成。
 - **View Toggle Frosted Orb**：日/周切换按钮移至导航栏左侧，采用 44px 圆形 BackdropFilter “磨砂玻璃”样式，与标题/设置图标形成平衡的导航三角，同时释放时间线首屏空间。
 - **Theme Palette Button**：右上角新增磨砂设置按钮，支持在浅色/深色/系统主题之间快速切换，并集中管理视觉设置。
+  - 图标会根据当前主题在 Sun / Moon / Monitor 之间切换，磨砂胶囊的填充、描边、阴影也跟随亮/暗模式动态调整，确保在夜间环境下可见性一致。
 - **Amount Theme Switcher**：主题弹窗内可切换 3 套金额色彩体系（Flux Blue / Forest Emerald / Graphite Mono），完全依赖 `AppDesignTokens`，确保浅色/深色模式一致生效。
 - **Zoom & Fade Morph**：日/周切换的进/出场动画采用 Fade + Scale 组合（轻微缩放至 0.9），替换之前的 SizeTransition 折叠，带来更柔和的缩放渐隐体验。
 - **Right-edge Scrubber（Phase 4）**：右侧 6px 透明索引条支持全局拖拽；拖拽时根据手势位置跳转到对应日期/周，展示带 `selectionClick` 触感的黑色信息气泡，并实时更新 `_scrubLabel` 与 `_scrollController.jumpTo` 实现秒级定位。
@@ -214,6 +216,16 @@ if (isFirstLaunch) {
 - `AppShimmer` 骨架 + `_ThinkingBanner` 保证 AI 分析时的可视状态。
 - 设计令牌：`AppDesignTokens` 间距/字体、`AppThemeExtensions` 语义色，满足 UI 设计系统规范。
 - `dialogs/flux_insights_dialog.dart` 首次登陆时通过 `SharedPreferences` 控制只弹一次的上线提示，CTA 直接跳转到 Insights Tab。
+
+### 12. flux_navigation_screen.dart - Flux 流式导航容器
+
+**职责**: 面向 `go_router` 的流式导航入口，承载 Flux Loop 相关的 3 Tab（仪表板、管道、洞察）。
+
+**功能**:
+- 自带 `FluxBottomNavigationBar`，根据 `BottomNavigationBarTheme` 自动吸收语义色，浅/深色模式下自动切换选中/未选中图标颜色。
+- 底部胶囊使用动态阴影（暗色模式降低透明度）与主题背景色，确保夜间观感。
+- 支持 `StatefulNavigationShell`，点击当前 Tab 时可选择回到根路由或保持状态。
+- 与 `FluxFloatingActionButton` 和 `FlowStatusIndicator` 联动，用于快速进入 Flow Entry。
 
 ## 页面关系
 
