@@ -4,12 +4,122 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';
+import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
+import 'package:your_finance_flutter/features/insights/services/ai_analysis_service.dart';
+import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
+import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
 
 /// Sentiment for the AI CFO commentary.
 enum InsightSentiment {
   safe,
   warning,
   overload,
+}
+
+/// Flux Loop job manager for background AI analysis
+class FluxLoopManager {
+  static final Map<String, FluxLoopJob> _activeJobs = {};
+  static final Map<String, StreamController<FluxLoopJob>> _jobControllers = {};
+
+  /// Trigger a new analysis job
+  static Future<FluxLoopJob> triggerAnalysis({
+    required JobType type,
+    required String transactionId,
+  }) async {
+    final jobId = 'flux_${type.name}_${DateTime.now().millisecondsSinceEpoch}';
+
+    final job = FluxLoopJob(
+      id: jobId,
+      type: type,
+      status: JobStatus.queued,
+      createdAt: DateTime.now(),
+      metadata: {'transactionId': transactionId},
+    );
+
+    _activeJobs[jobId] = job;
+    _jobControllers[jobId] = StreamController<FluxLoopJob>.broadcast();
+
+    // Start background processing
+    _processJob(jobId);
+
+    return job;
+  }
+
+  /// Get job status stream
+  static Stream<FluxLoopJob> jobStatusStream(String jobId) {
+    return _jobControllers[jobId]?.stream ?? Stream.empty();
+  }
+
+  /// Process job in background
+  static Future<void> _processJob(String jobId) async {
+    final job = _activeJobs[jobId];
+    if (job == null) return;
+
+    try {
+      // Update status to processing
+      final processingJob = job.copyWith(status: JobStatus.processing);
+      _activeJobs[jobId] = processingJob;
+      _jobControllers[jobId]?.add(processingJob);
+
+      // Simulate AI processing time (in real app, this would call AI service)
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Generate mock result based on job type
+      final result = await _generateJobResult(processingJob);
+
+      // Complete job
+      final completedJob = processingJob.copyWith(
+        status: JobStatus.completed,
+        completedAt: DateTime.now(),
+        result: result,
+      );
+
+      _activeJobs[jobId] = completedJob;
+      _jobControllers[jobId]?.add(completedJob);
+
+    } catch (e) {
+      // Fail job
+      final failedJob = job.copyWith(
+        status: JobStatus.failed,
+        completedAt: DateTime.now(),
+        error: e.toString(),
+      );
+
+      _activeJobs[jobId] = failedJob;
+      _jobControllers[jobId]?.add(failedJob);
+    }
+  }
+
+  /// Generate mock result for job type
+  static Future<String> _generateJobResult(FluxLoopJob job) async {
+    switch (job.type) {
+      case JobType.dailyAnalysis:
+        return '{"type": "daily_cap", "insights": ["消费控制良好"], "recommendations": ["继续保持"]}';
+      case JobType.weeklyPatterns:
+        return '{"type": "weekly_anomalies", "anomalies": [], "patterns": ["周末消费较高"]}';
+      case JobType.monthlyHealth:
+        return '{"type": "monthly_health", "score": 85, "grade": "B", "factors": ["预算控制良好"]}';
+      case JobType.microInsight:
+        return '{"sentiment": "positive", "message": "今日消费适中", "actions": ["保持习惯"]}';
+    }
+  }
+
+  /// Clean up completed jobs
+  static void cleanup() {
+    final now = DateTime.now();
+    final expiredJobs = _activeJobs.entries.where((entry) {
+      final job = entry.value;
+      return job.status == JobStatus.completed &&
+             job.completedAt != null &&
+             now.difference(job.completedAt!).inMinutes > 30;
+    }).map((e) => e.key).toList();
+
+    for (final jobId in expiredJobs) {
+      _activeJobs.remove(jobId);
+      _jobControllers[jobId]?.close();
+      _jobControllers.remove(jobId);
+    }
+  }
 }
 
 /// A minimal daily pacer insight.
@@ -49,19 +159,44 @@ class DailyPoint extends Equatable {
 /// Seven day anomaly tracker.
 class WeeklyInsight extends Equatable {
   const WeeklyInsight({
-    required this.data,
-    required this.averageSpend,
-    required this.anomalyDate,
-    required this.anomalyReason,
+    required this.totalSpent,
+    required this.averageSpent,
+    required this.anomalies,
+    required this.monday,
+    required this.tuesday,
+    required this.wednesday,
+    required this.thursday,
+    required this.friday,
+    required this.saturday,
+    required this.sunday,
   });
 
-  final List<DailyPoint> data;
-  final double averageSpend;
-  final String anomalyDate;
-  final String anomalyReason;
+  final double totalSpent;
+  final double averageSpent;
+  final List<WeeklyAnomaly> anomalies;
+
+  // Daily spending amounts
+  final double monday;
+  final double tuesday;
+  final double wednesday;
+  final double thursday;
+  final double friday;
+  final double saturday;
+  final double sunday;
 
   @override
-  List<Object?> get props => [data, averageSpend, anomalyDate, anomalyReason];
+  List<Object?> get props => [
+    totalSpent,
+    averageSpent,
+    anomalies,
+    monday,
+    tuesday,
+    wednesday,
+    thursday,
+    friday,
+    saturday,
+    sunday,
+  ];
 }
 
 /// Monthly CFO report snapshot.
@@ -148,6 +283,7 @@ class MockInsightService implements InsightService {
   final Duration maxDelay;
 
   final _random = Random();
+  final _patternDetectionService = PatternDetectionService.instance;
 
   final _dailyController =
       StreamController<InsightSnapshot<DailyInsight>>.broadcast();
@@ -241,7 +377,7 @@ class MockInsightService implements InsightService {
       ),
     );
     await Future<void>.delayed(_randomDelay());
-    _cachedWeekly = _buildWeeklyInsight();
+    _cachedWeekly = await _buildWeeklyInsight();
     _cachedWeeklyAt = DateTime.now();
     _weeklyController.add(
       InsightSnapshot.ready(
@@ -324,28 +460,31 @@ class MockInsightService implements InsightService {
     );
   }
 
-  WeeklyInsight _buildWeeklyInsight() {
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final values = labels
-        .map(
-          (label) => DailyPoint(
-            label: label,
-            amount: 80 + _random.nextInt(120) + _random.nextDouble() * 20,
-          ),
-        )
-        .toList();
+  Future<WeeklyInsight> _buildWeeklyInsight() async {
+    final dailySpending = List.generate(7, (index) => 100.0 + _random.nextInt(200));
+    final weekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+    final categoryBreakdown = ['餐饮', '交通', '购物', '娱乐', '购物', '娱乐', '餐饮']; // 7 categories for 7 days
 
-    final average = values.fold<double>(0, (sum, point) => sum + point.amount) /
-        values.length;
-    final highest = values.reduce(
-      (current, next) => current.amount >= next.amount ? current : next,
+    final anomalies = await _patternDetectionService.detectWeeklyAnomalies(
+      dailySpending,
+      weekStart,
+      categoryBreakdown,
     );
 
+    final totalSpent = dailySpending.reduce((a, b) => a + b);
+    final averageSpent = totalSpent / 7;
+
     return WeeklyInsight(
-      data: values,
-      averageSpend: average,
-      anomalyDate: highest.label,
-      anomalyReason: '${highest.label} spike due to Dining Out',
+      totalSpent: totalSpent,
+      averageSpent: averageSpent,
+      anomalies: anomalies,
+      monday: dailySpending[0],
+      tuesday: dailySpending[1],
+      wednesday: dailySpending[2],
+      thursday: dailySpending[3],
+      friday: dailySpending[4],
+      saturday: dailySpending[5],
+      sunday: dailySpending[6],
     );
   }
 
@@ -360,5 +499,46 @@ class MockInsightService implements InsightService {
       score: double.parse(score.toStringAsFixed(1)),
       cfoReport: '固定支出稳定，弹性预算仍有 12% 的压缩空间。建议把餐饮订阅改为家庭套餐，释放 600 元月度现金流。',
     );
+  }
+
+  // --- Flux Loop Integration ---
+
+  /// Trigger Flux Loop analysis for transaction changes
+  Future<FluxLoopJob> triggerAnalysis({
+    required JobType type,
+    required String transactionId,
+  }) async {
+    return FluxLoopManager.triggerAnalysis(
+      type: type,
+      transactionId: transactionId,
+    );
+  }
+
+  /// Trigger weekly pattern analysis
+  Future<FluxLoopJob> triggerWeeklyAnalysis({
+    required DateTime weekStart,
+    required List<double> dailySpending,
+    required List<String> categoryBreakdown,
+  }) async {
+    final jobId = 'weekly_${weekStart.toIso8601String().split('T').first}';
+
+    // Check if weekly analysis already exists and is recent
+    final existingJob = FluxLoopManager._activeJobs[jobId];
+    if (existingJob != null &&
+        existingJob.status == JobStatus.completed &&
+        existingJob.completedAt != null &&
+        DateTime.now().difference(existingJob.completedAt!).inHours < 1) {
+      return existingJob; // Return cached result
+    }
+
+    return FluxLoopManager.triggerAnalysis(
+      type: JobType.weeklyPatterns,
+      transactionId: 'weekly_${weekStart.toIso8601String()}',
+    );
+  }
+
+  /// Get status stream for a specific job
+  Stream<FluxLoopJob> jobStatusStream(String jobId) {
+    return FluxLoopManager.jobStatusStream(jobId);
   }
 }

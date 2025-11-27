@@ -5,22 +5,24 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:rxdart/rxdart.dart';
 
-import '../models/flux_models.dart';
+import '../models/flux_models.dart' as flux_models;
 import '../services/flux_services.dart';
 import '../theme/flux_theme.dart';
 
 /// 流仪表板提供者 - 核心数据概览
 class FlowDashboardProvider extends ChangeNotifier {
   FlowDashboardData _dashboardData = FlowDashboardData.empty();
-  FlowHealthStatus _overallHealth = FlowHealthStatus.neutral;
+  flux_models.FlowHealthStatus _overallHealth = flux_models.FlowHealthStatus.neutral;
   bool _isLoading = false;
   String? _error;
 
   FlowDashboardData get dashboardData => _dashboardData;
-  FlowHealthStatus get overallHealth => _overallHealth;
+  flux_models.FlowHealthStatus get overallHealth => _overallHealth;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -86,15 +88,15 @@ class FlowDashboardProvider extends ChangeNotifier {
     );
   }
 
-  FlowHealthStatus _calculateOverallHealth(FlowAnalyticsData analytics) {
+  flux_models.FlowHealthStatus _calculateOverallHealth(FlowAnalyticsData analytics) {
     final netFlow = analytics.basicStats.netFlow;
     final anomalyCount = analytics.anomalies.length;
 
-    if (netFlow > 0 && anomalyCount == 0) return FlowHealthStatus.healthy;
-    if (netFlow < -1000 || anomalyCount > 2) return FlowHealthStatus.danger;
-    if (netFlow < 0 || anomalyCount > 0) return FlowHealthStatus.warning;
+    if (netFlow > 0 && anomalyCount == 0) return flux_models.FlowHealthStatus.healthy;
+    if (netFlow < -1000 || anomalyCount > 2) return flux_models.FlowHealthStatus.danger;
+    if (netFlow < 0 || anomalyCount > 0) return flux_models.FlowHealthStatus.warning;
 
-    return FlowHealthStatus.neutral;
+    return flux_models.FlowHealthStatus.neutral;
   }
 
   double _calculateHealthScore(FlowAnalyticsData analytics) {
@@ -106,16 +108,16 @@ class FlowDashboardProvider extends ChangeNotifier {
     return (netFlowScore + anomalyScore + regularityScore).clamp(0, 100);
   }
 
-  Future<List<CategoryFlow>> _getTopCategories(List<Flow> flows) async {
+  Future<List<CategoryFlow>> _getTopCategories(List<flux_models.Flow> flows) async {
     // 统计各类别资金流
     final categoryMap = <String, double>{};
 
     for (final flow in flows) {
-      final categoryId = flow.category.id;
-      final amount = flow.amount.value;
+      final categoryId = flow.category.id as String;
+      final amount = flow.amount.value as num;
 
       categoryMap[categoryId] = (categoryMap[categoryId] ?? 0) +
-          (flow.type == FlowType.income ? amount : -amount);
+          (flow.type == flux_models.FlowType.income ? amount : -amount);
     }
 
     // 转换为CategoryFlow列表
@@ -130,7 +132,7 @@ class FlowDashboardProvider extends ChangeNotifier {
       ..sort((a, b) => b.amount.abs().compareTo(a.amount.abs()));
   }
 
-  Future<List<FlowInsight>> _getRecentInsights() async {
+  Future<List<flux_models.FlowInsight>> _getRecentInsights() async {
     // 获取最近的洞察
     final insights = await FlowInsightService().insightsStream.first;
     return insights
@@ -149,11 +151,11 @@ class FlowDashboardProvider extends ChangeNotifier {
 
 /// 流管道提供者 - 管理持续性资金流
 class FlowStreamsProvider extends ChangeNotifier {
-  List<FlowStream> _streams = [];
+  List<flux_models.FlowStream> _streams = [];
   bool _isLoading = false;
   String? _error;
 
-  List<FlowStream> get streams => _streams;
+  List<flux_models.FlowStream> get streams => _streams;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -177,12 +179,12 @@ class FlowStreamsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addStream(FlowStream stream) async {
+  Future<void> addStream(flux_models.FlowStream stream) async {
     // TODO: 实现添加流管道
     await loadStreams();
   }
 
-  Future<void> updateStream(String streamId, FlowStream updatedStream) async {
+  Future<void> updateStream(String streamId, flux_models.FlowStream updatedStream) async {
     // TODO: 实现更新流管道
     await loadStreams();
   }
@@ -205,11 +207,11 @@ class FlowStreamsProvider extends ChangeNotifier {
 
 /// 流洞察提供者 - 管理AI洞察
 class FlowInsightsProvider extends ChangeNotifier {
-  List<FlowInsight> _insights = [];
+  List<flux_models.FlowInsight> _insights = [];
   bool _isLoading = false;
   String? _error;
 
-  List<FlowInsight> get insights => _insights;
+  List<flux_models.FlowInsight> get insights => _insights;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -246,7 +248,7 @@ class FlowInsightsProvider extends ChangeNotifier {
 
   Future<void> markInsightAsRead(String insightId) async {
     final insight = _insights.firstWhere((i) => i.id == insightId);
-    final updatedInsight = FlowInsight(
+    final updatedInsight = flux_models.FlowInsight(
       id: insight.id,
       userId: insight.userId,
       type: insight.type,
@@ -267,7 +269,7 @@ class FlowInsightsProvider extends ChangeNotifier {
 
   Future<void> markInsightAsActioned(String insightId) async {
     final insight = _insights.firstWhere((i) => i.id == insightId);
-    final updatedInsight = FlowInsight(
+    final updatedInsight = flux_models.FlowInsight(
       id: insight.id,
       userId: insight.userId,
       type: insight.type,
@@ -312,7 +314,7 @@ class FlowAnalyticsProvider extends ChangeNotifier {
 
   Future<void> loadAnalytics({
     DateTimeRange? period,
-    List<FlowType>? flowTypes,
+    List<flux_models.FlowType>? flowTypes,
   }) async {
     _isLoading = true;
     _error = null;
@@ -440,9 +442,9 @@ class FlowDashboardData {
   final double totalOutflow;
   final double netFlow;
   final List<CategoryFlow> topCategories;
-  final List<Flow> recentFlows;
+  final List<flux_models.Flow> recentFlows;
   final double healthScore;
-  final List<FlowInsight> insights;
+  final List<flux_models.FlowInsight> insights;
   final DateTime lastUpdated;
 
   const FlowDashboardData({

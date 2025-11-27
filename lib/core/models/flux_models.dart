@@ -1,8 +1,5 @@
-import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-
-part 'flux_models.g.dart';
 
 /// 🌊 Flux Ledger (流式记账) - 核心数据模型
 ///
@@ -429,6 +426,30 @@ enum RecurrenceType {
 
   /// 自定义间隔
   custom,
+}
+
+/// 流健康状态 - 财务健康状况评估
+enum FlowHealthStatus {
+  /// 优秀
+  excellent,
+
+  /// 良好
+  good,
+
+  /// 健康
+  healthy,
+
+  /// 中性/正常
+  neutral,
+
+  /// 警告/需要关注
+  warning,
+
+  /// 危险/需要立即行动
+  danger,
+
+  /// 危险/需要立即行动
+  critical,
 }
 
 // ==================== 流管道系统 ====================
@@ -863,79 +884,6 @@ enum RecommendationAction {
 
   /// 查看详情
   viewDetails,
-}
-
-// ==================== Drift 数据库表定义 ====================
-
-/// Flow 表的 Drift 定义
-class Flows extends Table {
-  TextColumn get id => text()();
-  TextColumn get userId => text()();
-  TextColumn get type => textEnum<FlowType>()();
-  RealColumn get amount => real()();
-  TextColumn get currency => text()();
-  TextColumn get sourceJson => text()();
-  TextColumn get destinationJson => text()();
-  TextColumn get categoryJson => text()();
-  TextColumn get tagsJson => text()();
-  TextColumn get metadataJson => text()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// FlowStream 表的 Drift 定义
-class FlowStreams extends Table {
-  TextColumn get id => text()();
-  TextColumn get userId => text()();
-  TextColumn get name => text()();
-  TextColumn get description => text()();
-  TextColumn get type => textEnum<FlowStreamType>()();
-  TextColumn get status => textEnum<FlowStreamStatus>()();
-  TextColumn get configJson => text()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();
-  DateTimeColumn get lastExecutionAt => dateTime().nullable()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// FlowPattern 表的 Drift 定义
-class FlowPatterns extends Table {
-  TextColumn get id => text()();
-  TextColumn get userId => text()();
-  TextColumn get name => text()();
-  TextColumn get type => textEnum<PatternType>()();
-  TextColumn get dataJson => text()();
-  TextColumn get confidenceJson => text()();
-  DateTimeColumn get firstDetected => dateTime()();
-  DateTimeColumn get lastUpdated => dateTime()();
-  BoolColumn get isActive => boolean()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// FlowInsight 表的 Drift 定义
-class FlowInsights extends Table {
-  TextColumn get id => text()();
-  TextColumn get userId => text()();
-  TextColumn get type => textEnum<InsightType>()();
-  TextColumn get title => text()();
-  TextColumn get description => text()();
-  TextColumn get severity => textEnum<InsightSeverity>()();
-  TextColumn get dataJson => text()();
-  TextColumn get relatedFlowIdsJson => text()();
-  DateTimeColumn get generatedAt => dateTime()();
-  DateTimeColumn get expiresAt => dateTime().nullable()();
-  BoolColumn get isRead => boolean()();
-  BoolColumn get isActioned => boolean()();
-
-  @override
-  Set<Column> get primaryKey => {id};
 }
 
 

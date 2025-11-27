@@ -2,8 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
+import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
+import 'package:your_finance_flutter/features/insights/providers/insights_provider.dart';
 
 class TransactionProvider with ChangeNotifier {
+  TransactionProvider({
+    InsightsProvider? insightsProvider,
+  }) : _insightsProvider = insightsProvider;
+
+  final InsightsProvider? _insightsProvider;
+
   List<Transaction> _transactions = [];
   List<Transaction> _draftTransactions = []; // 草稿交易
   bool _isLoading = false;
@@ -48,6 +56,10 @@ class TransactionProvider with ChangeNotifier {
     try {
       _transactions.add(transaction);
       await _storageService.saveTransactions(_transactions);
+
+      // Trigger Flux Loop analysis for new transaction
+      await _triggerInsightAnalysis(transaction.id, JobType.dailyAnalysis);
+
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -64,6 +76,10 @@ class TransactionProvider with ChangeNotifier {
         _transactions[index] =
             updatedTransaction.copyWith(updateDate: DateTime.now());
         await _storageService.saveTransactions(_transactions);
+
+        // Trigger Flux Loop analysis for updated transaction
+        await _triggerInsightAnalysis(updatedTransaction.id, JobType.dailyAnalysis);
+
         notifyListeners();
       }
     } catch (e) {
@@ -77,10 +93,31 @@ class TransactionProvider with ChangeNotifier {
     try {
       _transactions.removeWhere((t) => t.id == transactionId);
       await _storageService.saveTransactions(_transactions);
+
+      // Trigger Flux Loop analysis for deleted transaction
+      await _triggerInsightAnalysis(transactionId, JobType.dailyAnalysis);
+
       notifyListeners();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+    }
+  }
+
+  // Helper method to trigger insight analysis
+  Future<void> _triggerInsightAnalysis(String transactionId, JobType jobType) async {
+    try {
+      // Only trigger if insights provider is available
+      if (_insightsProvider != null) {
+        await _insightsProvider!.onTransactionChanged(
+          transactionId: transactionId,
+          analysisType: jobType,
+        );
+      }
+    } catch (e) {
+      // Don't let insight analysis failures break transaction operations
+      // Log error but don't set it as the main error
+      debugPrint('Failed to trigger insight analysis: $e');
     }
   }
 
