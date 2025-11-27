@@ -36,6 +36,7 @@ dependencies:
   # State management
   provider: ^6.1.2  # Keep for now during migration to Riverpod
   flutter_riverpod: ^2.5.1  # For future Riverpod migration
+  rxdart: ^0.27.7
 
   # Data persistence - Drift (Moor) for complex relational data
   drift: ^2.18.0
@@ -49,6 +50,9 @@ dependencies:
   # Charts
   fl_chart: ^0.66.0
   syncfusion_flutter_charts: ^31.1.19
+
+  # Voice recognition for transaction input
+  speech_to_text: ^6.1.1
   
   # UUID generation
   uuid: ^4.4.0
