@@ -1,0 +1,29 @@
+# your_finance Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-11-27
+
+## Active Technologies
+
+- Dart 3.x (Flutter framework) + Provider (state management), SharedPreferences (local storage), awesome-flutter libraries (charts, animations, AI integration) (001-financial-insights)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+# Add commands for Dart 3.x (Flutter framework)
+
+## Code Style
+
+Dart 3.x (Flutter framework): Follow standard conventions
+
+## Recent Changes
+
+- 001-financial-insights: Added Dart 3.x (Flutter framework) + Provider (state management), SharedPreferences (local storage), awesome-flutter libraries (charts, animations, AI integration)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
