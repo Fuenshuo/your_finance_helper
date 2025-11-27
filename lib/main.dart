@@ -10,8 +10,10 @@ import 'package:your_finance_flutter/core/providers/income_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/theme_provider.dart';
 import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/features/insights/providers/insights_provider.dart';
 import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/services/data_migration_service.dart';
+import 'package:your_finance_flutter/features/insights/services/insight_service.dart' as insights_service;
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 
@@ -81,7 +83,11 @@ void main() async {
           provider.ChangeNotifierProvider(
               create: (_) => ExpensePlanProvider()..initialize()),
           provider.ChangeNotifierProvider(
-              create: (_) => TransactionProvider()..initialize()),
+              create: (_) => TransactionProvider(
+                insightsProvider: InsightsProvider(insights_service.InsightService()),
+              )..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => InsightsProvider(insights_service.InsightService())),
         ],
         child: const MyApp(),
       ),

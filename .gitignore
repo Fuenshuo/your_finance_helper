@@ -93,3 +93,6 @@ B97EFD16*.png
 # Debug and development screens
 **/debug_*.dart
 **/debug_mode_manager.dart 
+
+specs/
+.specify/
