@@ -164,6 +164,9 @@ core/
 - `depreciation_service.dart` - 资产折旧服务
 - `asset_history_service.dart` - 资产历史服务
 - `total_assets_service.dart` - 总资产计算服务
+- `insight_service.dart` - Flux Insights AI CFO 分析服务（新）
+  - `InsightService` 抽象 + `MockInsightService` 模拟 LLM 调用
+  - 支持日/周/月洞察数据模型与 Flux Loop「Thinking → Smart Insight」状态
 - `dio_http_service.dart` - HTTP请求服务
 - `logging_service.dart` - 日志服务
 - `persistent_storage_service.dart` - 持久化存储服务

@@ -6,7 +6,7 @@
 export 'flux_navigation_screen.dart';
 export 'flux_dashboard_screen.dart';
 export 'flux_streams_screen.dart';
-export 'flux_insights_screen.dart';
+export 'insights_screen.dart';
 export 'flux_onboarding_screen.dart';
 export 'flux_settings_screen.dart';
 export 'flux_developer_screen.dart';

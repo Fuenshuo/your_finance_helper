@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
+import 'package:your_finance_flutter/screens/dialogs/flux_insights_dialog.dart';
+import 'package:your_finance_flutter/screens/insights_screen.dart';
 import 'package:your_finance_flutter/screens/settings_screen.dart';
 import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
@@ -15,16 +18,14 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  static const String _insightsDialogKey = 'has_seen_flux_insights_v1';
+
   int _selectedIndex = 0;
   final DebugModeManager _debugManager = DebugModeManager();
 
   static const List<Widget> _screens = [
     UnifiedTransactionEntryScreen(),
-    _PlaceholderScreen(
-      title: 'Insights',
-      subtitle: '行为洞察功能即将上线',
-      icon: Icons.insights_outlined,
-    ),
+    FlowInsightsScreen(),
     _PlaceholderScreen(
       title: 'Assets',
       subtitle: '资产与账户模块即将上线',
@@ -68,6 +69,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _debugManager.addListener(_onDebugModeChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showFluxInsightsDialogIfNeeded();
+    });
   }
 
   @override
@@ -77,6 +81,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _onDebugModeChanged() => setState(() {});
+
+  Future<void> _showFluxInsightsDialogIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeen = prefs.getBool(_insightsDialogKey) ?? false;
+
+    if (hasSeen || !mounted) {
+      return;
+    }
+
+    await prefs.setBool(_insightsDialogKey, true);
+
+    if (!mounted) {
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => FluxInsightsDialog(
+        onConfirm: () => setState(() => _selectedIndex = 1),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(

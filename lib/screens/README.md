@@ -198,6 +198,23 @@ if (isFirstLaunch) {
 - `NaturalLanguageTransactionService` 做实时解析。
 - `Phosphor` 图标库 + `Flutter Animate` 负责动效与 skeleton。
 
+### 11. insights_screen.dart - Flux Insights 2.0
+
+**职责**: 提供 AI CFO 风格的洞察体验，涵盖日/周/月三个视角。
+
+**核心体验**:
+- **Day · Daily Pacer**：厚重的 LinearProgress + Sparkle 评论，动态情绪色（安全/预警/过载）。
+- **Week · Red/Black List**：7 日纵向条形图 + 虚线平均线 + Anomaly Chat Bubble 指向峰值。
+- **Month · CFO Report**：Bento Grid（结构 vs 报告），显示固定/弹性开销比例与财务健康评分，含骨架与淡入动画。
+- 通过 `InsightService`（默认 `MockInsightService`）模拟 Flux Loop：“Thinking…” 状态 → 智能洞察。
+- 使用 `AppSegmentedControl` + `AnimatedSwitcher` 切换 Day/Week/Month，UI 采用圆角白卡 + Phosphor 图标。
+
+**技术要点**:
+- `StreamBuilder` 监听 `InsightSnapshot<T>`，在缓存数据与加载态之间平滑过渡。
+- `AppShimmer` 骨架 + `_ThinkingBanner` 保证 AI 分析时的可视状态。
+- 设计令牌：`AppDesignTokens` 间距/字体、`AppThemeExtensions` 语义色，满足 UI 设计系统规范。
+- `dialogs/flux_insights_dialog.dart` 首次登陆时通过 `SharedPreferences` 控制只弹一次的上线提示，CTA 直接跳转到 Insights Tab。
+
 ## 页面关系
 
 ```

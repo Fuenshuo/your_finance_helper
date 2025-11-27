@@ -44,7 +44,7 @@ dependencies:
   path: ^1.9.0
 
   # Local storage - keep for simple preferences
-  shared_preferences: ^2.1.2
+  shared_preferences: ^2.2.3
   
   # Charts
   fl_chart: ^0.66.0
