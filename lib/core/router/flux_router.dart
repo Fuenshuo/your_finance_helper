@@ -6,7 +6,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../screens/flux_screens.dart';
+import '../../screens/flux_navigation_screen.dart';
+import '../../screens/dashboard_home_screen.dart';
+import '../../features/insights/screens/flux_insights_screen.dart';
 
 /// Flux Ledger 路由配置
 final fluxRouter = GoRouter(
@@ -24,20 +26,20 @@ final fluxRouter = GoRouter(
           routes: [
             GoRoute(
               path: FluxRoutes.dashboard,
-              builder: (context, state) => const FlowDashboardScreen(),
+              builder: (context, state) => const DashboardHomeScreen(),
               routes: [
-                // 仪表板相关子路由
-                GoRoute(
-                  path: 'flow-detail/:flowId',
-                  builder: (context, state) {
-                    final flowId = state.pathParameters['flowId']!;
-                    return FlowDetailScreen(flowId: flowId);
-                  },
-                ),
-                GoRoute(
-                  path: 'analytics',
-                  builder: (context, state) => const FlowAnalyticsScreen(),
-                ),
+                // 仪表板相关子路由 - TODO: 待实现
+                // GoRoute(
+                //   path: 'flow-detail/:flowId',
+                //   builder: (context, state) {
+                //     final flowId = state.pathParameters['flowId']!;
+                //     return FlowDetailScreen(flowId: flowId);
+                //   },
+                // ),
+                // GoRoute(
+                //   path: 'analytics',
+                //   builder: (context, state) => const FlowAnalyticsScreen(),
+                // ),
               ],
             ),
           ],
@@ -48,27 +50,27 @@ final fluxRouter = GoRouter(
           routes: [
             GoRoute(
               path: FluxRoutes.streams,
-              builder: (context, state) => const FlowStreamsScreen(),
+              builder: (context, state) => const Placeholder(), // TODO: 实现流管道屏幕
               routes: [
-                // 管道相关子路由
-                GoRoute(
-                  path: 'create',
-                  builder: (context, state) => const FlowStreamCreateScreen(),
-                ),
-                GoRoute(
-                  path: 'edit/:streamId',
-                  builder: (context, state) {
-                    final streamId = state.pathParameters['streamId']!;
-                    return FlowStreamEditScreen(streamId: streamId);
-                  },
-                ),
-                GoRoute(
-                  path: 'detail/:streamId',
-                  builder: (context, state) {
-                    final streamId = state.pathParameters['streamId']!;
-                    return FlowStreamDetailScreen(streamId: streamId);
-                  },
-                ),
+                // 管道相关子路由 - TODO: 待实现
+                // GoRoute(
+                //   path: 'create',
+                //   builder: (context, state) => const FlowStreamCreateScreen(),
+                // ),
+                // GoRoute(
+                //   path: 'edit/:streamId',
+                //   builder: (context, state) {
+                //     final streamId = state.pathParameters['streamId']!;
+                //     return FlowStreamEditScreen(streamId: streamId);
+                //   },
+                // ),
+                // GoRoute(
+                //   path: 'detail/:streamId',
+                //   builder: (context, state) {
+                //     final streamId = state.pathParameters['streamId']!;
+                //     return FlowStreamDetailScreen(streamId: streamId);
+                //   },
+                // ),
               ],
             ),
           ],
@@ -103,25 +105,26 @@ final fluxRouter = GoRouter(
     // 独立页面路由
     GoRoute(
       path: FluxRoutes.onboarding,
-      builder: (context, state) => const FluxOnboardingScreen(),
+      builder: (context, state) => const Placeholder(), // TODO: 实现引导屏幕
     ),
 
     GoRoute(
       path: FluxRoutes.settings,
-      builder: (context, state) => const FluxSettingsScreen(),
+      builder: (context, state) => const Placeholder(), // TODO: 实现设置屏幕
       routes: [
-        GoRoute(
-          path: 'theme',
-          builder: (context, state) => const FluxThemeSettingsScreen(),
-        ),
-        GoRoute(
-          path: 'data',
-          builder: (context, state) => const FluxDataSettingsScreen(),
-        ),
-        GoRoute(
-          path: 'ai',
-          builder: (context, state) => const FluxAISettingsScreen(),
-        ),
+        // 设置相关子路由 - TODO: 待实现
+        // GoRoute(
+        //   path: 'theme',
+        //   builder: (context, state) => const FluxThemeSettingsScreen(),
+        // ),
+        // GoRoute(
+        //   path: 'data',
+        //   builder: (context, state) => const FluxDataSettingsScreen(),
+        // ),
+        // GoRoute(
+        //   path: 'ai',
+        //   builder: (context, state) => const FluxAISettingsScreen(),
+        // ),
       ],
     ),
 
