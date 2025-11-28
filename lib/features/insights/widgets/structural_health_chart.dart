@@ -87,42 +87,44 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
 
     return Column(
       children: [
-        // Donut Chart with centered score
+        // Donut Chart with centered score overlay
         AspectRatio(
           aspectRatio: 1.0, // Square aspect ratio for donut chart
-          child: PieChart(
-            PieChartData(
-              sections: _buildChartSections(allocation),
-              centerSpaceRadius: 60, // Thin 15px ring (60 radius - 45 inner = 15px)
-              sectionsSpace: 0, // No space between sections for thin ring
-              centerSpaceColor: Colors.transparent,
-            ),
-          ),
-        ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Donut chart background
+              PieChart(
+                PieChartData(
+                  sections: _buildChartSections(allocation),
+                  centerSpaceRadius: 60, // Thin 15px ring (60 radius - 45 inner = 15px)
+                  sectionsSpace: 0, // No space between sections for thin ring
+                  centerSpaceColor: Colors.transparent,
+                ),
+              ),
 
-        const SizedBox(height: 16),
-
-        // Centered Score Display (overlay on chart center)
-        Positioned.fill(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _healthScore?.score.toStringAsFixed(0) ?? '75',
-                  style: AppDesignTokens.largeTitle(context).copyWith(
-                    color: AppDesignTokens.primaryText(context),
-                    fontWeight: FontWeight.bold,
+              // Centered Score Display (overlay on chart center)
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _healthScore?.score.toStringAsFixed(0) ?? '75',
+                    style: AppDesignTokens.largeTitle(context).copyWith(
+                      color: AppDesignTokens.primaryText(context),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  'Health Score',
-                  style: AppDesignTokens.caption(context),
-                ),
-              ],
-            ),
+                  Text(
+                    'Health Score',
+                    style: AppDesignTokens.caption(context),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
+
+        const SizedBox(height: 24),
 
         const SizedBox(height: 24),
 
