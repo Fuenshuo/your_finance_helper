@@ -9,11 +9,6 @@ class PerformanceMonitor {
   static final Map<String, List<int>> _paintTimes = {};
   static final Map<String, Stopwatch> _activeOperations = {};
 
-/// 性能监控工具类
-class PerformanceMonitor {
-  static final Map<String, List<int>> _buildTimes = {};
-  static final Map<String, List<int>> _paintTimes = {};
-
   /// 监控 Widget 构建时间
   static T monitorBuild<T>(String widgetName, T Function() buildFunction) {
     if (!kDebugMode) {
