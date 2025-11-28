@@ -30,11 +30,7 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Stream页面的主题色定义
-  static const Color _streamPrimaryColor = Color(0xFF007AFF); // 活力蓝
-  static const Color _streamAccentColor = Color(0xFFFF9500);  // 橙色
-  static const Color _streamSuccessColor = Color(0xFF34C759); // 绿色
-  static const Color _streamBackgroundColor = Color(0xFFF2F2F7); // 浅灰背景
+  // Stream页面的主题色定义已在 StreamThemeColors 类中
 
   @override
   void initState() {
