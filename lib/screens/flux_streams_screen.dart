@@ -127,7 +127,7 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDark ? Colors.black : _streamBackgroundColor,
+      color: isDark ? Colors.black : StreamThemeColors.background,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
