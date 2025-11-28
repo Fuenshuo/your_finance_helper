@@ -130,18 +130,18 @@ final fluxRouter = GoRouter(
 
     GoRoute(
       path: FluxRoutes.flowEntry,
-      builder: (context, state) => const FlowEntryWizard(),
+      builder: (context, state) => const Placeholder(), // TODO: 实现流程录入向导
     ),
 
     GoRoute(
       path: FluxRoutes.developer,
-      builder: (context, state) => const FluxDeveloperScreen(),
+      builder: (context, state) => const Placeholder(), // TODO: 实现开发者屏幕
     ),
 
     // 数据迁移相关路由
     GoRoute(
       path: '/migration',
-      builder: (context, state) => const FluxMigrationScreen(),
+      builder: (context, state) => const Placeholder(), // TODO: 实现数据迁移屏幕
     ),
   ],
 
@@ -305,7 +305,7 @@ class FluxFloatingActionButton extends StatelessWidget {
 // ==================== 路由守卫 ====================
 
 /// 路由守卫 - 检查用户认证状态
-class FluxAuthGuard extends GoRouteRedirect {
+class FluxAuthGuard {
   @override
   String? redirect(BuildContext context, GoRouterState state) {
     // TODO: 实现认证检查
