@@ -49,7 +49,7 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : _streamBackgroundColor,
+      backgroundColor: isDark ? Colors.black : StreamThemeColors.background,
       appBar: AppBar(
         backgroundColor: isDark ? Colors.black : Colors.white,
         elevation: 0,
@@ -66,7 +66,7 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen>
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: _streamPrimaryColor,
+                        color: StreamThemeColors.primary,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
