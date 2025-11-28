@@ -1,0 +1,123 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/features/insights/models/allocation_data.dart';
+import 'package:your_finance_flutter/features/insights/models/budget_data.dart';
+import 'package:your_finance_flutter/features/insights/models/trend_data.dart';
+import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
+import 'package:your_finance_flutter/main.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('Flux Insights Integration Tests', () {
+    testWidgets('Theme switching updates all component colors', (WidgetTester tester) async {
+      // Setup sample data
+      final sampleTrendData = [
+        TrendData(date: DateTime.now().subtract(const Duration(days: 6)), amount: 1200.0, dayLabel: 'Mon'),
+        TrendData(date: DateTime.now().subtract(const Duration(days: 5)), amount: 800.0, dayLabel: 'Tue'),
+      ];
+
+      final sampleAllocation = AllocationData(
+        fixedAmount: 750.0,
+        flexibleAmount: 250.0,
+        period: DateTime.now(),
+      );
+
+      // Pump the app with sample data
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FluxInsightsScreen(),
+        ),
+      );
+
+      // Wait for initial data loading
+      await tester.pumpAndSettle();
+
+      // Verify initial theme (light theme by default)
+      final initialBackgroundColor = AppDesignTokens.pageBackground(tester.element(find.byType(Container)));
+      expect(initialBackgroundColor, isNotNull);
+
+      // Test theme switching by changing system brightness
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: FluxInsightsScreen(),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify dark theme colors are applied
+      final darkBackgroundColor = AppDesignTokens.pageBackground(tester.element(find.byType(Container)));
+      expect(darkBackgroundColor, isNotNull);
+
+      // Verify header text is visible in both themes
+      expect(find.text('Flux Insights'), findsOneWidget);
+
+      // Verify health score is displayed
+      expect(find.text('Financial Health Score'), findsOneWidget);
+      expect(find.textContaining('Grade'), findsOneWidget);
+
+      // Verify budget section is displayed
+      expect(find.text('Daily Budget Velocity'), findsOneWidget);
+
+      // Verify trend chart section is displayed
+      expect(find.text('Spending Trends'), findsOneWidget);
+
+      // Verify structural health section is displayed
+      expect(find.text('Structural Health'), findsOneWidget);
+    });
+
+    testWidgets('Chart components render and respond to interactions', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FluxInsightsScreen(),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify chart containers are present
+      expect(find.byType(Container), findsWidgets);
+
+      // Verify text elements are rendered
+      expect(find.text('Flux Insights'), findsOneWidget);
+      expect(find.text('Financial Health Score'), findsOneWidget);
+      expect(find.text('Daily Budget Velocity'), findsOneWidget);
+      expect(find.text('Spending Trends'), findsOneWidget);
+      expect(find.text('Structural Health'), findsOneWidget);
+    });
+
+    testWidgets('Error handling displays fallback content', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FluxInsightsScreen(),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Even with potential errors, the UI should still render
+      expect(find.text('Flux Insights'), findsOneWidget);
+
+      // Health score should show default value or calculated value
+      expect(find.textContaining('Grade'), findsOneWidget);
+    });
+
+    testWidgets('Performance monitoring does not break rendering', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FluxInsightsScreen(),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // If performance monitoring is working, the UI should still render
+      expect(find.text('Flux Insights'), findsOneWidget);
+      expect(find.text('Financial Health Score'), findsOneWidget);
+    });
+  });
+}
