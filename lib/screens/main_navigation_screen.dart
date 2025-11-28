@@ -9,6 +9,7 @@ import 'package:your_finance_flutter/screens/dialogs/flux_insights_dialog.dart';
 import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
 import 'package:your_finance_flutter/screens/settings_screen.dart';
 import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
+import 'package:your_finance_flutter/screens/flux_streams_screen.dart';
 
 /// 主导航页面 - Flux Ledger 四 Tab 入口
 class MainNavigationScreen extends StatefulWidget {
