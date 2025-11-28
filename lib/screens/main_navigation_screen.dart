@@ -26,7 +26,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   static const List<Widget> _screens = [
     UnifiedTransactionEntryScreen(),
-    FluxInsightsScreen(),
+    FluxStreamsScreen(),
     _PlaceholderScreen(
       title: 'Assets',
       subtitle: '资产与账户模块即将上线',
