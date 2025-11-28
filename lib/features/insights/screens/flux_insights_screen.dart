@@ -30,8 +30,12 @@ class FluxInsightsScreen extends StatefulWidget {
 class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
   late FinancialCalculationService _calculationService;
   HealthScore? _healthScore;
-  late List<TrendData> _trendData;
-  late AllocationData _allocationData;
+  late List<TrendData> _trendData = [];
+  late AllocationData _allocationData = AllocationData(
+    fixedAmount: 0.0,
+    flexibleAmount: 0.0,
+    period: DateTime.now(),
+  );
 
   @override
   void initState() {
