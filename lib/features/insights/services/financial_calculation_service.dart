@@ -45,11 +45,14 @@ class FinancialCalculationService {
       if (jsonString == null) return [];
 
       final jsonList = jsonDecode(jsonString) as List;
-      return jsonList.map((json) => TrendData(
-        date: DateTime.parse(json['date']),
-        amount: json['amount'].toDouble(),
-        dayLabel: json['dayLabel'],
-      )).toList();
+      return jsonList.map((json) {
+        final map = json as Map<String, dynamic>;
+        return TrendData(
+          date: DateTime.parse(map['date'] as String),
+          amount: (map['amount'] as num).toDouble(),
+          dayLabel: map['dayLabel'] as String,
+        );
+      }).toList();
     } catch (e) {
       print('[FinancialCalculationService] Error loading trend data: $e');
       return [];
@@ -81,9 +84,9 @@ class FinancialCalculationService {
 
       final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
       return AllocationData(
-        fixedAmount: jsonData['fixedAmount'].toDouble(),
-        flexibleAmount: jsonData['flexibleAmount'].toDouble(),
-        period: DateTime.parse(jsonData['period']),
+        fixedAmount: (jsonData['fixedAmount'] as num).toDouble(),
+        flexibleAmount: (jsonData['flexibleAmount'] as num).toDouble(),
+        period: DateTime.parse(jsonData['period'] as String),
       );
     } catch (e) {
       print('[FinancialCalculationService] Error loading allocation data: $e');
