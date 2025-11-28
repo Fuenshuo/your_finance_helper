@@ -41,7 +41,7 @@ class AppDesignTokens {
     _currentMoneyTheme = theme;
   }
 
-  /  // 获取当前主题
+  /// 获取当前主题
   static AppTheme getCurrentTheme() => _currentTheme;
 
   /// 设置当前主题
@@ -49,127 +49,13 @@ class AppDesignTokens {
     _currentTheme = theme;
   }
 
-  /// 获取主题上下文相关的动态颜色
-  static Color pageBackground(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark
-        ? const Color(0xFF000000) // Pure black for dark mode
-        : const Color(0xFFF5F7FA); // Light background for light mode
-  }
 
-  static Color primaryText(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark
-        ? const Color(0xFFFFFFFF)
-        : const Color(0xFF1C1C1E);
-  }
 
-  static Color secondaryText(BuildContext context) {
-    return const Color(0xFF8A8A8E); // Same in both themes
-  }
 
-  static Color amountPositiveColor(BuildContext context) {
-    return _currentMoneyTheme == MoneyTheme.fluxBlue
-        ? const Color(0xFF0A84FF) // Flux blue for positive amounts
-        : const Color(0xFF2E7D32); // Green alternative
-  }
 
-  static Color amountNegativeColor(BuildContext context) {
-    return const Color(0xFFFF3B30); // Red for negative amounts (universal)
-  }
 
-  static Color amountNeutralColor(BuildContext context) {
-    return const Color(0xFF8A8A8E); // Neutral grey
-  }
 
-  static Color primaryAction(BuildContext context) {
-    return const Color(0xFF007AFF); // Primary action color
-  }
 
-  static Color successColor(BuildContext context) {
-    return const Color(0xFF8BC34A); // Success green
-  }
-
-  static Color surface(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark
-        ? const Color(0xFF1C1C1E) // Dark surface
-        : const Color(0xFFFFFFFF); // Light surface
-  }
-
-  static Color inputFill(BuildContext context) {
-    return const Color(0xFFF2F2F7); // Input field fill color
-  }
-
-  static BoxShadow cardShadow(BuildContext context) {
-    return BoxShadow(
-      color: Colors.black.withOpacity(0.04),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
-    );
-  }
-
-  // Typography with Google Fonts
-  static TextStyle largeTitle(BuildContext context) {
-    return GoogleFonts.barlowCondensed(
-      fontSize: 32,
-      fontWeight: FontWeight.bold,
-      color: primaryText(context),
-    );
-  }
-
-  static TextStyle title1(BuildContext context) {
-    return GoogleFonts.barlowCondensed(
-      fontSize: 28,
-      fontWeight: FontWeight.w600,
-      color: primaryText(context),
-    );
-  }
-
-  static TextStyle headline(BuildContext context) {
-    return GoogleFonts.inter(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      color: primaryText(context),
-    );
-  }
-
-  static TextStyle body(BuildContext context) {
-    return GoogleFonts.inter(
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      color: primaryText(context),
-    );
-  }
-
-  static TextStyle caption(BuildContext context) {
-    return GoogleFonts.inter(
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      color: secondaryText(context),
-    );
-  }
-
-  static TextStyle microCaption(BuildContext context) {
-    return GoogleFonts.inter(
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      color: secondaryText(context),
-    );
-  }
-
-  // Spacing constants
-  static const double spacing4 = 4.0;
-  static const double spacing8 = 8.0;
-  static const double spacing12 = 12.0;
-  static const double spacing16 = 16.0;
-  static const double spacing24 = 24.0;
-  static const double spacing32 = 32.0;
-
-  // Border radius constants
-  static const double radiusSmall = 8.0;
-  static const double radiusMedium = 12.0;
-  static const double radiusLarge = 16.0;
 
   /// 获取当前风格
   static AppStyle getCurrentStyle() => _currentStyle;
