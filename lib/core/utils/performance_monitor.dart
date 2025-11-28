@@ -7,6 +7,12 @@ import 'package:your_finance_flutter/core/utils/logger.dart';
 class PerformanceMonitor {
   static final Map<String, List<int>> _buildTimes = {};
   static final Map<String, List<int>> _paintTimes = {};
+  static final Map<String, Stopwatch> _activeOperations = {};
+
+/// 性能监控工具类
+class PerformanceMonitor {
+  static final Map<String, List<int>> _buildTimes = {};
+  static final Map<String, List<int>> _paintTimes = {};
 
   /// 监控 Widget 构建时间
   static T monitorBuild<T>(String widgetName, T Function() buildFunction) {
@@ -122,6 +128,50 @@ class PerformanceMonitor {
   static void endProfiling() {
     if (kDebugMode) {
       developer.Timeline.finishSync();
+    }
+  }
+
+  /// 开始操作性能监控
+  static void startOperation(String operationName) {
+    if (!kDebugMode) return;
+
+    final stopwatch = Stopwatch()..start();
+    _activeOperations[operationName] = stopwatch;
+  }
+
+  /// 结束操作性能监控
+  static void endOperation(String operationName) {
+    if (!kDebugMode) return;
+
+    final stopwatch = _activeOperations.remove(operationName);
+    if (stopwatch == null) return;
+
+    stopwatch.stop();
+    final durationMs = stopwatch.elapsedMilliseconds;
+
+    // 记录超过阈值的操作
+    if (durationMs > _getOperationThreshold(operationName)) {
+      Logger.debug('⚡ $operationName 耗时: ${durationMs}ms');
+    }
+  }
+
+  /// 记录错误信息
+  static void logError(String message, [String? operationName]) {
+    if (!kDebugMode) return;
+
+    final prefix = operationName != null ? '[$operationName] ' : '';
+    Logger.debug('❌ ${prefix}错误: $message');
+  }
+
+  /// 获取操作时间阈值
+  static int _getOperationThreshold(String operationName) {
+    switch (operationName) {
+      case 'FinancialCalculationService.calculateHealthScore':
+        return 50; // 50ms
+      case 'FluxInsightsScreen.build':
+        return 100; // 100ms
+      default:
+        return 20; // 默认20ms
     }
   }
 }
