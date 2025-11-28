@@ -111,15 +111,15 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen>
           // Insights Tab
           FluxInsightsScreen(
             colorTheme: const InsightsColorTheme(
-              primary: StreamThemeColors._streamPrimaryColor,
-              accent: StreamThemeColors._streamAccentColor,
-              success: StreamThemeColors._streamSuccessColor,
-              error: Colors.red,
-              warning: StreamThemeColors._streamAccentColor,
-              background: StreamThemeColors._streamBackgroundColor,
-              surface: Color(0xFF1C1C1E), // 深灰表面
-              textPrimary: Color(0xFF1C1C1E),
-              textSecondary: Color(0xFF8A8A8E),
+              primary: StreamThemeColors.primary,
+              accent: StreamThemeColors.accent,
+              success: StreamThemeColors.success,
+              error: Color(0xFFFF3B30),
+              warning: StreamThemeColors.warning,
+              background: StreamThemeColors.background,
+              surface: StreamThemeColors.surface,
+              textPrimary: StreamThemeColors.textPrimary,
+              textSecondary: StreamThemeColors.textSecondary,
             ),
           ),
         ],
