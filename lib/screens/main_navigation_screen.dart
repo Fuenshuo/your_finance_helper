@@ -6,7 +6,7 @@ import 'package:your_finance_flutter/core/widgets/app_bottom_navigation_bar.dart
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
 import 'package:your_finance_flutter/screens/dialogs/flux_insights_dialog.dart';
-import 'package:your_finance_flutter/screens/insights_screen.dart';
+import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
 import 'package:your_finance_flutter/screens/settings_screen.dart';
 import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
@@ -26,7 +26,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   static const List<Widget> _screens = [
     UnifiedTransactionEntryScreen(),
-    FlowInsightsScreen(),
+    FluxInsightsScreen(),
     _PlaceholderScreen(
       title: 'Assets',
       subtitle: '资产与账户模块即将上线',

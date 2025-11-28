@@ -79,14 +79,18 @@ final fluxRouter = GoRouter(
           routes: [
             GoRoute(
               path: FluxRoutes.insights,
-              builder: (context, state) => const FlowInsightsScreen(),
+              builder: (context, state) => const FluxInsightsScreen(),
               routes: [
                 // 洞察相关子路由
                 GoRoute(
                   path: 'detail/:insightId',
                   builder: (context, state) {
-                    final insightId = state.pathParameters['insightId']!;
-                    return FlowInsightDetailScreen(insightId: insightId);
+                    // Placeholder for insight detail - FluxInsightsScreen focuses on main dashboard
+                    return const Scaffold(
+                      body: Center(
+                        child: Text('Insight Detail - Coming Soon'),
+                      ),
+                    );
                   },
                 ),
               ],
