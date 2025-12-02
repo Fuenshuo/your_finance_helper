@@ -59,3 +59,4 @@ class HealthFactor extends Equatable {
   @override
   List<Object?> get props => [name, impact, description];
 }
+

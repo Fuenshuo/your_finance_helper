@@ -79,3 +79,4 @@ enum JobStatus {
   completed, // Finished successfully
   failed, // Failed with error
 }
+

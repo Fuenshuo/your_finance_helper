@@ -207,3 +207,4 @@ class InsightsProvider with ChangeNotifier {
     await initialize();
   }
 }
+

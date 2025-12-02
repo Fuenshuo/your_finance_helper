@@ -103,3 +103,4 @@ class FluxInsightsDialog extends StatelessWidget {
     );
   }
 }
+
