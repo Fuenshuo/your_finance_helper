@@ -9,7 +9,8 @@ import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart'
+    as ai_factory;
 import 'package:your_finance_flutter/core/services/ai/ai_tuning_config_service.dart';
 import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
 import 'package:your_finance_flutter/core/services/user_income_profile_service.dart';
@@ -61,7 +62,7 @@ class NaturalLanguageTransactionService {
       }
 
       // 2. 创建AI服务实例
-      final aiService = AiServiceFactory.createService(config);
+      final aiService = ai_factory.aiServiceFactory.createService(config);
 
       // 3. 构建提示词
       final systemPrompt = await _buildSystemPrompt(

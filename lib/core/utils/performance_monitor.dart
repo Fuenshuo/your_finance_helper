@@ -90,7 +90,7 @@ class PerformanceMonitor {
     final max = times.reduce((a, b) => a > b ? a : b);
     final min = times.reduce((a, b) => a < b ? a : b);
 
-    Logger.debug('📊 $widgetName 构建统计 (最近${times.length}次):');
+    Logger.debug('[CHART] $widgetName 构建统计 (最近${times.length}次):');
     Logger.debug('   平均: ${avg.toStringAsFixed(1)}μs');
     Logger.debug('   最大: $maxμs');
     Logger.debug('   最小: $minμs');
@@ -98,7 +98,7 @@ class PerformanceMonitor {
 
   /// 打印所有统计信息
   static void printAllStats() {
-    Logger.debug('📈 性能统计报告:');
+    Logger.debug('[REPORT] 性能统计报告:');
     for (final widgetName in _buildTimes.keys) {
       _printBuildStats(widgetName);
     }
@@ -159,7 +159,7 @@ class PerformanceMonitor {
     if (!kDebugMode) return;
 
     final prefix = operationName != null ? '[$operationName] ' : '';
-    Logger.debug('❌ ${prefix}错误: $message');
+    Logger.debug('[ERROR] ${prefix}错误: $message');
   }
 
   /// 获取操作时间阈值

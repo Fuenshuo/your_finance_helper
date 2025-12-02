@@ -9,13 +9,13 @@ import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dar
 import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart' as ai_factory;
 
 /// Flux Loop Insight Service - orchestrates AI-powered financial insights
 class InsightService {
   InsightService({
     AiService? aiService,
-  }) : _aiService = aiService ?? AiServiceFactory.createService(_createDefaultConfig());
+  }) : _aiService = aiService ?? ai_factory.aiServiceFactory.createService(_createDefaultConfig());
 
   final AiService _aiService;
 

@@ -449,7 +449,7 @@ class MockInsightService implements InsightService {
     final comment = switch (sentiment) {
       InsightSentiment.safe => '今日非常克制，比平时少花 ¥50，攒了一杯咖啡钱。',
       InsightSentiment.warning => '午餐社交有点超标，下午别忘了切回清单模式。',
-      InsightSentiment.overload => '外出高消费已触顶，今晚尝试无花费挑战⚡️。',
+      InsightSentiment.overload => '外出高消费已触顶，今晚尝试无花费挑战[挑战]。',
     };
 
     return DailyInsight(

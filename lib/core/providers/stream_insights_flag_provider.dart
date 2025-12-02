@@ -57,7 +57,7 @@ class StreamInsightsFlagProvider extends ChangeNotifier {
   }
 
   static Future<void> writeOverride({bool? value}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     if (value == null) {
       await prefs.remove(_debugOverrideKey);
     } else {
@@ -68,11 +68,11 @@ class StreamInsightsFlagProvider extends ChangeNotifier {
   }
 
   static Future<void> reset() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final Set<String> keysToRemove = _instances.isEmpty
+    final prefs = await SharedPreferences.getInstance();
+    final keysToRemove = _instances.isEmpty
         ? <String>{_defaultFlagKey}
         : _instances.map((instance) => instance.flagKey).toSet();
-    for (final String key in keysToRemove) {
+    for (final key in keysToRemove) {
       await prefs.remove(key);
     }
     await prefs.remove(_debugOverrideKey);
@@ -87,13 +87,13 @@ class StreamInsightsFlagProvider extends ChangeNotifier {
   }
 
   static void _notifyAll() {
-    for (final StreamInsightsFlagProvider instance in _instances) {
+    for (final instance in _instances) {
       instance.notifyListeners();
     }
   }
 
   static void _notifyReset(SharedPreferences prefs) {
-    for (final StreamInsightsFlagProvider instance in _instances) {
+    for (final instance in _instances) {
       instance._prefs = prefs;
       instance._isInitialized = true;
       instance._flagValue = instance.defaultValue;

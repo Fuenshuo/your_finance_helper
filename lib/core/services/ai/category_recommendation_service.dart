@@ -65,7 +65,7 @@ class CategoryRecommendationService {
       }
 
       // 2. 创建AI服务实例
-      final aiService = AiServiceFactory.createService(config);
+      final aiService = aiServiceFactory.createService(config);
 
       // 3. 构建提示词
       final systemPrompt =

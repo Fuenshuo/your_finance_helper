@@ -65,7 +65,7 @@ class InvoiceRecognitionService {
       );
 
       // 4. 创建AI服务实例
-      final aiService = AiServiceFactory.createService(config);
+      final aiService = aiServiceFactory.createService(config);
 
       // 5. 构建提示词
       final systemPrompt = await _buildSystemPrompt(accounts, budgets);

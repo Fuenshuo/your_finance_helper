@@ -15,7 +15,6 @@ import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
-import 'package:your_finance_flutter/core/models/analysis_summary.dart';
 import 'package:your_finance_flutter/core/models/flux_view_state.dart';
 import 'package:your_finance_flutter/core/models/insights_drawer_state.dart';
 import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
@@ -237,34 +236,11 @@ class _UnifiedTransactionEntryScreenState
     super.didChangeDependencies();
     final provider = context.read<TransactionProvider>();
 
-    print(
-      '[UnifiedTransactionEntryScreen.didChangeDependencies] 🔄 Provider 变更检测',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen.didChangeDependencies] 📊 当前交易数: ${provider.transactions.length}',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen.didChangeDependencies] 🔄 当前草稿数: ${provider.draftTransactions.length}',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen.didChangeDependencies] ⚡ 是否正在加载: ${provider.isLoading}',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen.didChangeDependencies] ❌ 错误信息: ${provider.error ?? "无"}',
-    );
-
     if (_transactionProvider != provider) {
-      print(
-        '[UnifiedTransactionEntryScreen.didChangeDependencies] 🔄 TransactionProvider 实例变更，重新绑定监听器',
-      );
       _transactionProvider?.removeListener(_handleTransactionsUpdated);
       _transactionProvider = provider;
       _transactionProvider?.addListener(_handleTransactionsUpdated);
       _handleTransactionsUpdated();
-    } else {
-      print(
-        '[UnifiedTransactionEntryScreen.didChangeDependencies] ✅ TransactionProvider 实例相同，无需重新绑定',
-      );
     }
     if (!_didRequestThemeStyleInit) {
       _didRequestThemeStyleInit = true;
@@ -388,95 +364,27 @@ class _UnifiedTransactionEntryScreenState
   }
 
   void _handleTransactionsUpdated() {
-    if (!mounted) {
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ❌ 组件已卸载，跳过更新',
-      );
-      return;
-    }
+    if (!mounted) return;
 
     final transactions = _transactionProvider?.transactions ?? [];
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 收到交易数据更新',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📈 交易总数: ${transactions.length}',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 🔄 是否首次引导: $_didBootstrapGroups',
-    );
 
     if (transactions.isEmpty) {
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ⚠️ 警告：交易数据为空！这可能是因为：',
-      );
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated]   1. 首次使用应用 - 这是正常的',
-      );
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated]   2. 数据被意外清除 - 需要检查应用设置',
-      );
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated]   3. 从其他设备同步数据失败 - 检查网络连接',
-      );
-
-      // 设置空状态标志，可以在UI中显示欢迎界面
       setState(() {
         _didBootstrapGroups = true;
         _currentGroups = [];
       });
       return;
-    } else {
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ✅ 交易数据样例:',
-      );
-      final sampleTransaction = transactions
-          .take(3)
-          .map((t) => '${t.id}: ${t.amount} (${t.date})')
-          .join(', ');
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📋 $sampleTransaction',
-      );
     }
 
     final newDayGroups = _groupTransactionsByDay(transactions);
     final newWeekGroups = _groupTransactionsByWeek(transactions);
     final newMonthGroups = _groupTransactionsByMonth(transactions);
 
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 分组结果:',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📅 按日分组: ${newDayGroups.length} 组',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📆 按周分组: ${newWeekGroups.length} 组',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 按月分组: ${newMonthGroups.length} 组',
-    );
-
     final dayChanged = !_groupListsEqual(_dayGroups, newDayGroups);
     final weekChanged = !_groupListsEqual(_weekGroups, newWeekGroups);
     final monthChanged = !_groupListsEqual(_monthGroups, newMonthGroups);
 
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 🔄 变更检测:',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📅 日分组变更: $dayChanged',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📆 周分组变更: $weekChanged',
-    );
-    print(
-      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 月分组变更: $monthChanged',
-    );
-
     if (!dayChanged && !weekChanged && !monthChanged && _didBootstrapGroups) {
-      print(
-        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ⏭️ 无实质变更，跳过状态更新',
-      );
       return;
     }
     setState(() {
@@ -665,17 +573,6 @@ class _UnifiedTransactionEntryScreenState
         pane: viewState.pane,
         timeframe: viewState.timeframe,
         flagEnabled: flagEnabled,
-      );
-
-      unawaited(
-        service.logTelemetry(
-          StreamInsightsTelemetryEvent.analysis(
-            summary: summary,
-            pane: viewState.pane,
-            timeframe: viewState.timeframe,
-            flagEnabled: flagEnabled,
-          ),
-        ),
       );
     } catch (error) {
       Logger.warning(
@@ -3641,18 +3538,10 @@ class _UnifiedTransactionEntryScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
-    print('[UnifiedTransactionEntryScreen.build] 🎨 开始构建UI');
-    print('[UnifiedTransactionEntryScreen.build] 📊 当前分组数量:');
-    print(
-      '[UnifiedTransactionEntryScreen.build] 📅 日分组: ${_currentGroups.length} 组',
-    );
-
-    return PerformanceMonitor.monitorBuild(
-      'UnifiedTransactionEntryScreen',
-      () => _buildUnifiedContent(context),
-    );
-  }
+  Widget build(BuildContext context) => PerformanceMonitor.monitorBuild(
+        'UnifiedTransactionEntryScreen',
+        () => _buildUnifiedContent(context),
+      );
 
   Widget _buildUnifiedContent(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();

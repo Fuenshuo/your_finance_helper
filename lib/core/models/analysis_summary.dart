@@ -14,13 +14,25 @@ class AnalysisSummary extends Equatable {
 
   factory AnalysisSummary.fromJson(Map<String, dynamic> json) {
     return AnalysisSummary(
-      analysisId: json['analysisId'] as String,
-      generatedAt: DateTime.parse(json['generatedAt'] as String),
+      analysisId: json['analysisId'] as String? ?? 'local-analysis-${DateTime.now().millisecondsSinceEpoch}',
+      generatedAt: json['generatedAt'] != null
+          ? DateTime.parse(json['generatedAt'] as String)
+          : DateTime.now(),
       improvementsFound: json['improvementsFound'] as int? ?? 0,
       topRecommendation: json['topRecommendation'] as String? ?? '',
       deepLink: json['deepLink'] != null
           ? Uri.tryParse(json['deepLink'] as String)
           : null,
+    );
+  }
+
+  /// Creates an empty AnalysisSummary for error cases
+  factory AnalysisSummary.empty() {
+    return AnalysisSummary(
+      analysisId: 'empty-analysis-${DateTime.now().millisecondsSinceEpoch}',
+      generatedAt: DateTime.now(),
+      improvementsFound: 0,
+      topRecommendation: '',
     );
   }
 

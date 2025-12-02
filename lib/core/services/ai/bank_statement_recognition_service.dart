@@ -200,7 +200,7 @@ class BankStatementRecognitionService {
       }
 
       // 2. 创建AI服务实例
-      final aiService = AiServiceFactory.createService(config);
+      final aiService = aiServiceFactory.createService(config);
 
       // 3. 处理图片
       final imageService = ImageProcessingService.getInstance();

@@ -3,7 +3,8 @@ import 'dart:convert';
 /// 配置自然语言解析所需的LLM和Prompt参数
 class AiNlpTuningConfig {
   const AiNlpTuningConfig({
-    this.modelId = 'Qwen/Qwen2.5-7B-Instruct',
+    // this.modelId = 'Qwen/Qwen2.5-7B-Instruct',
+    this.modelId = 'MiniMaxAI/MiniMax-M2',
     this.temperature = 0.3,
     this.maxTokens = 500,
     this.promptFilename = 'natural_language_prompt.txt',
@@ -52,4 +53,3 @@ class AiNlpTuningConfig {
   @override
   String toString() => jsonEncode(toJson());
 }
-

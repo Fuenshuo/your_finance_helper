@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:your_finance_flutter/core/models/budget.dart' show SalaryIncome;
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart' as ai_factory;
 import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
 import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
 import 'package:your_finance_flutter/core/utils/ai_date_parser.dart';
@@ -99,7 +99,7 @@ class PayrollRecognitionService {
       }
 
       // 2. 创建AI服务实例
-      final aiService = AiServiceFactory.createService(config);
+      final aiService = ai_factory.aiServiceFactory.createService(config);
 
       // 3. 处理图片
       final imageService = ImageProcessingService.getInstance();

@@ -32,42 +32,42 @@ class TransactionProvider with ChangeNotifier {
       print('[TransactionProvider.initialize] 🔧 获取 StorageService 实例');
       _storageService = await StorageService.getInstance();
       _isInitialized = true;
-      print('[TransactionProvider.initialize] ✅ StorageService 初始化完成');
+      print('[TransactionProvider.initialize] [SUCCESS] StorageService 初始化完成');
     } else {
-      print('[TransactionProvider.initialize] ℹ️ TransactionProvider 已经初始化过，跳过 StorageService 获取');
+      print('[TransactionProvider.initialize] [INFO] TransactionProvider 已经初始化过，跳过 StorageService 获取');
     }
     await _loadTransactions();
-    print('[TransactionProvider.initialize] 🎯 TransactionProvider 初始化完成');
+    print('[TransactionProvider.initialize] [TARGET] TransactionProvider 初始化完成');
   }
 
   // 加载交易数据
   Future<void> _loadTransactions() async {
-    print('[TransactionProvider._loadTransactions] 📂 开始加载交易数据');
+    print('[TransactionProvider._loadTransactions] [FOLDER] 开始加载交易数据');
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
-      print('[TransactionProvider._loadTransactions] 🔄 状态已设置为加载中');
+      print('[TransactionProvider._loadTransactions] [LOADING] 状态已设置为加载中');
 
-      print('[TransactionProvider._loadTransactions] 💾 从 StorageService 加载正式交易');
+      print('[TransactionProvider._loadTransactions] [STORAGE] 从 StorageService 加载正式交易');
       _transactions = await _storageService.loadTransactions();
-      print('[TransactionProvider._loadTransactions] ✅ 正式交易加载完成，数量: ${_transactions.length}');
+      print('[TransactionProvider._loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${_transactions.length}');
 
-      print('[TransactionProvider._loadTransactions] 📝 从 StorageService 加载草稿交易');
+      print('[TransactionProvider._loadTransactions] [DRAFT] 从 StorageService 加载草稿交易');
       _draftTransactions = await _storageService.loadDraftTransactions();
-      print('[TransactionProvider._loadTransactions] ✅ 草稿交易加载完成，数量: ${_draftTransactions.length}');
+      print('[TransactionProvider._loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${_draftTransactions.length}');
 
-      print('[TransactionProvider._loadTransactions] 🎯 数据加载完成统计:');
-      print('[TransactionProvider._loadTransactions] 📊 正式交易: ${_transactions.length} 笔');
-      print('[TransactionProvider._loadTransactions] 📝 草稿交易: ${_draftTransactions.length} 笔');
-      print('[TransactionProvider._loadTransactions] 📈 总计: ${_transactions.length + _draftTransactions.length} 笔');
+      print('[TransactionProvider._loadTransactions] [STATS] 数据加载完成统计:');
+      print('[TransactionProvider._loadTransactions] [CHART] 正式交易: ${_transactions.length} 笔');
+      print('[TransactionProvider._loadTransactions] [DRAFT] 草稿交易: ${_draftTransactions.length} 笔');
+      print('[TransactionProvider._loadTransactions] [TREND] 总计: ${_transactions.length + _draftTransactions.length} 笔');
 
       if (_transactions.isEmpty && _draftTransactions.isEmpty) {
-        print('[TransactionProvider._loadTransactions] ⚠️ 警告：没有找到任何交易数据！');
+        print('[TransactionProvider._loadTransactions] [WARN] 警告：没有找到任何交易数据！');
       }
 
     } catch (e) {
-      print('[TransactionProvider._loadTransactions] ❌ 数据加载失败: $e');
+      print('[TransactionProvider._loadTransactions] [ERROR] 数据加载失败: $e');
       _error = e.toString();
     } finally {
       _isLoading = false;

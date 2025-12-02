@@ -32,16 +32,16 @@ class BudgetProvider with ChangeNotifier {
 
   // 初始化预算数据
   Future<void> initialize() async {
-    Logger.info('🔄 BudgetProvider 开始初始化');
+    Logger.info('[INIT] BudgetProvider 开始初始化');
     _isLoading = true;
     notifyListeners();
 
     try {
       if (!_isInitialized) {
         _storageService = await StorageService.getInstance();
-        Logger.info('✅ StorageService 初始化完成');
+        Logger.info('[SUCCESS] StorageService 初始化完成');
       } else {
-        Logger.info('♻️ StorageService 已初始化，执行数据刷新');
+        Logger.info('[RECYCLE] StorageService 已初始化，执行数据刷新');
       }
 
       // 加载所有数据
@@ -53,7 +53,7 @@ class BudgetProvider with ChangeNotifier {
       Logger.info('✅ BudgetProvider 初始化完成，工资收入数量: ${_salaryIncomes.length}');
       notifyListeners();
     } catch (e) {
-      Logger.error('❌ BudgetProvider 初始化失败: $e');
+      Logger.error('[ERROR] BudgetProvider 初始化失败: $e');
       _isLoading = false;
       _error = e.toString();
       notifyListeners();
@@ -67,7 +67,7 @@ class BudgetProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      Logger.debug('📊 开始加载预算数据');
+      Logger.debug('[CHART] 开始加载预算数据');
       _envelopeBudgets = await _storageService.loadEnvelopeBudgets();
       Logger.debug('✅ 信封预算加载完成: ${_envelopeBudgets.length} 个');
 
@@ -77,7 +77,7 @@ class BudgetProvider with ChangeNotifier {
       _salaryIncomes = await _storageService.loadSalaryIncomes(); // 新增：加载工资收入
       Logger.debug('✅ 工资收入加载完成: ${_salaryIncomes.length} 个');
       if (_salaryIncomes.isNotEmpty) {
-        Logger.debug('💼 工资收入详情:');
+        Logger.debug('[SALARY] 工资收入详情:');
         for (var i = 0; i < _salaryIncomes.length; i++) {
           final income = _salaryIncomes[i];
           Logger.debug(
@@ -95,7 +95,7 @@ class BudgetProvider with ChangeNotifier {
       Logger.debug('✅ 每月工资钱包加载完成: ${_monthlyWallets.length} 个');
 
       if (_salaryIncomes.isNotEmpty) {
-        Logger.debug('💼 工资收入详情:');
+        Logger.debug('[SALARY] 工资收入详情:');
         for (var i = 0; i < _salaryIncomes.length; i++) {
           final income = _salaryIncomes[i];
           Logger.debug(
@@ -203,9 +203,9 @@ class BudgetProvider with ChangeNotifier {
   // 添加工资收入
   Future<void> addSalaryIncome(SalaryIncome income) async {
     try {
-      Logger.debug('📝 添加工资收入: ${income.name}, ID: ${income.id}');
+      Logger.debug('[NOTE] 添加工资收入: ${income.name}, ID: ${income.id}');
       _salaryIncomes.add(income);
-      Logger.debug('📝 工资收入列表长度: ${_salaryIncomes.length}');
+      Logger.debug('[NOTE] 工资收入列表长度: ${_salaryIncomes.length}');
       await _storageService.saveSalaryIncomes(_salaryIncomes);
       Logger.info('✅ 工资收入保存成功');
       notifyListeners();
@@ -219,16 +219,16 @@ class BudgetProvider with ChangeNotifier {
 
   // 更新工资收入
   Future<void> updateSalaryIncome(SalaryIncome updatedIncome) async {
-    Logger.debug('📝 更新工资收入: ${updatedIncome.name}');
-    Logger.debug('📝 查找ID为: ${updatedIncome.id} 的工资收入');
-    Logger.debug('📝 当前工资收入列表中的ID:');
+    Logger.debug('[NOTE] 更新工资收入: ${updatedIncome.name}');
+    Logger.debug('[NOTE] 查找ID为: ${updatedIncome.id} 的工资收入');
+    Logger.debug('[NOTE] 当前工资收入列表中的ID:');
     for (var i = 0; i < _salaryIncomes.length; i++) {
       Logger.debug('  ID ${i + 1}: ${_salaryIncomes[i].id}');
     }
     if (_salaryIncomes.isEmpty) {
       Logger.warning('⚠️ 警告: 工资收入列表为空，可能数据尚未加载完成');
     }
-    Logger.debug('📝 更新的奖金数量: ${updatedIncome.bonuses.length}');
+    Logger.debug('[NOTE] 更新的奖金数量: ${updatedIncome.bonuses.length}');
     for (var i = 0; i < updatedIncome.bonuses.length; i++) {
       final bonus = updatedIncome.bonuses[i];
       Logger.debug('  奖金${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
@@ -247,11 +247,11 @@ class BudgetProvider with ChangeNotifier {
 
     try {
       final index = _salaryIncomes.indexWhere((i) => i.id == updatedIncome.id);
-      Logger.debug('📝 找到索引: $index');
+      Logger.debug('[NOTE] 找到索引: $index');
       if (index != -1) {
         _salaryIncomes[index] =
             updatedIncome.copyWith(updateDate: DateTime.now());
-        Logger.debug('📝 保存工资收入到存储...');
+        Logger.debug('[NOTE] 保存工资收入到存储...');
         await _storageService.saveSalaryIncomes(_salaryIncomes);
         Logger.info('✅ 工资收入保存成功');
         Logger.debug('📢 通知监听器');
@@ -260,16 +260,16 @@ class BudgetProvider with ChangeNotifier {
         Logger.warning('❌ 未找到要更新的工资收入');
         // 如果没找到，可能是数据还没加载完成，尝试重新加载
         if (_salaryIncomes.isEmpty && !_isLoading) {
-          Logger.debug('🔄 尝试重新加载工资收入数据...');
+          Logger.debug('[UPDATE] 尝试重新加载工资收入数据...');
           await _loadBudgets();
           // 再次尝试查找
           final newIndex =
               _salaryIncomes.indexWhere((i) => i.id == updatedIncome.id);
-          Logger.debug('📝 重新加载后找到索引: $newIndex');
+          Logger.debug('[NOTE] 重新加载后找到索引: $newIndex');
           if (newIndex != -1) {
             _salaryIncomes[newIndex] =
                 updatedIncome.copyWith(updateDate: DateTime.now());
-            Logger.debug('📝 保存工资收入到存储...');
+            Logger.debug('[NOTE] 保存工资收入到存储...');
             await _storageService.saveSalaryIncomes(_salaryIncomes);
             Logger.info('✅ 工资收入保存成功');
             Logger.debug('📢 通知监听器');

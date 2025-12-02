@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart' as ai_factory;
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/glass_notification.dart';
@@ -163,7 +163,7 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
         updatedAt: DateTime.now(),
       );
 
-      final service = AiServiceFactory.createService(config);
+      final service = ai_factory.aiServiceFactory.createService(config);
       final isValid = await service.validateApiKey();
 
       if (mounted) {

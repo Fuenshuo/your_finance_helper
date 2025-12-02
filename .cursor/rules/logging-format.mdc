@@ -17,36 +17,36 @@ print('[页面类名.方法名] 操作描述: 关键信息');
 
 ### 详细格式
 ```dart
-print('[页面类名.方法名] 📝 操作描述: 关键信息 | 上下文: ${contextInfo} | 状态: ${stateInfo}');
+print('[页面类名.方法名] [NOTE] 操作描述: 关键信息 | 上下文: ${contextInfo} | 状态: ${stateInfo}');
 ```
 
 ## 日志级别分类
 
 ### 🔵 页面导航日志
 ```dart
-print('[页面类名.initState] 📱 页面初始化: 参数=${widget.param}');
-print('[页面类名.build] 🎨 构建UI: 数据项=${data.length}');
-print('[页面类名.dispose] 🗑️ 页面销毁: 清理资源');
+print('[页面类名.initState] [MOBILE] 页面初始化: 参数=${widget.param}');
+print('[页面类名.build] [PAINT] 构建UI: 数据项=${data.length}');
+print('[页面类名.dispose] [TRASH] 页面销毁: 清理资源');
 ```
 
 ### 🟡 数据操作日志
 ```dart
-print('[页面类名._loadData] 📊 加载数据: 用户ID=${userId}, 类型=${dataType}');
-print('[页面类名._saveData] 💾 保存数据: 记录数=${records.length}');
-print('[页面类名._calculateResult] 🧮 计算结果: 总金额=${totalAmount}');
+print('[页面类名._loadData] [CHART] 加载数据: 用户ID=${userId}, 类型=${dataType}');
+print('[页面类名._saveData] [SAVE] 保存数据: 记录数=${records.length}');
+print('[页面类名._calculateResult] [CALC] 计算结果: 总金额=${totalAmount}');
 ```
 
 ### 🔴 错误和异常日志
 ```dart
-print('[页面类名._handleError] ❌ 错误处理: ${error.message} | 堆栈: ${stackTrace}');
-print('[页面类名._validateInput] ⚠️ 验证失败: 字段=${fieldName}, 值=${fieldValue}');
+print('[页面类名._handleError] [ERROR] 错误处理: ${error.message} | 堆栈: ${stackTrace}');
+print('[页面类名._validateInput] [WARN] 验证失败: 字段=${fieldName}, 值=${fieldValue}');
 ```
 
 ### 🟢 业务流程日志
 ```dart
-print('[页面类名._processBonus] 🎁 处理奖金: 类型=${bonusType}, 金额=${amount}');
-print('[页面类名._calculateTax] 💰 计算税费: 收入=${income}, 税率=${taxRate}');
-print('[页面类名._updateBudget] 📈 更新预算: 原金额=${oldAmount}, 新金额=${newAmount}');
+print('[页面类名._processBonus] [BONUS] 处理奖金: 类型=${bonusType}, 金额=${amount}');
+print('[页面类名._calculateTax] [TAX] 计算税费: 收入=${income}, 税率=${taxRate}');
+print('[页面类名._updateBudget] [BUDGET] 更新预算: 原金额=${oldAmount}, 新金额=${newAmount}');
 ```
 
 ## 上下文信息要求
@@ -67,23 +67,23 @@ print('[页面类名._updateBudget] 📈 更新预算: 原金额=${oldAmount}, �
 
 ### 奖金管理页面
 ```dart
-print('[BonusDialogManager._showBonusDialog] 🎁 奖金对话框: 类型=${type}, 金额=${amount}');
-print('[BonusDialogManager._getBasicSalary] 💼 获取基本工资: 用户薪资记录=${salaryRecords.length}');
-print('[BonusManagementWidget._addBonus] ➕ 添加奖金: 名称=${bonusName}, 类型=${bonusType}');
+print('[BonusDialogManager._showBonusDialog] [BONUS] 奖金对话框: 类型=${type}, 金额=${amount}');
+print('[BonusDialogManager._getBasicSalary] [SALARY] 获取基本工资: 用户薪资记录=${salaryRecords.length}');
+print('[BonusManagementWidget._addBonus] [ADD] 添加奖金: 名称=${bonusName}, 类型=${bonusType}');
 ```
 
 ### 薪资设置页面
 ```dart
-print('[SalaryIncomeSetupScreen._calculatePreview] 🧮 预览计算: 基本工资=${basicSalary}, 奖金数=${bonuses.length}');
-print('[SalaryIncomeSetupScreen._saveSalaryIncome] 💾 保存薪资设置: 总收入=${totalIncome}');
-print('[SalaryIncomeSetupScreen._navigateToPreview] ➡️ 导航到预览: 薪资ID=${salaryId}');
+print('[SalaryIncomeSetupScreen._calculatePreview] [CALC] 预览计算: 基本工资=${basicSalary}, 奖金数=${bonuses.length}');
+print('[SalaryIncomeSetupScreen._saveSalaryIncome] [SAVE] 保存薪资设置: 总收入=${totalIncome}');
+print('[SalaryIncomeSetupScreen._navigateToPreview] [NAV] 导航到预览: 薪资ID=${salaryId}');
 ```
 
 ### 数据服务层
 ```dart
-print('[StorageService.loadSalaryIncomes] 📂 加载薪资数据: 文件大小=${fileSize}字节');
-print('[PersonalIncomeTaxService.calculateTax] 💰 计算个税: 应纳税所得额=${taxableIncome}');
-print('[AssetHistoryService.recordChange] 📝 记录变更: 类型=${changeType}, 资产ID=${assetId}');
+print('[StorageService.loadSalaryIncomes] [FOLDER] 加载薪资数据: 文件大小=${fileSize}字节');
+print('[PersonalIncomeTaxService.calculateTax] [TAX] 计算个税: 应纳税所得额=${taxableIncome}');
+print('[AssetHistoryService.recordChange] [RECORD] 记录变更: 类型=${changeType}, 资产ID=${assetId}');
 ```
 
 ## 实现指南
@@ -91,7 +91,7 @@ print('[AssetHistoryService.recordChange] 📝 记录变更: 类型=${changeType
 ### 1. 方法入口日志
 ```dart
 void _loadData() {
-  print('[$runtimeType._loadData] 📊 开始加载数据: 参数=${widget.param}');
+  print('[$runtimeType._loadData] [CHART] 开始加载数据: 参数=${widget.param}');
   // ... 业务逻辑
 }
 ```
@@ -99,13 +99,13 @@ void _loadData() {
 ### 2. 关键节点日志
 ```dart
 Future<void> _saveData() async {
-  print('[$runtimeType._saveData] 💾 开始保存数据: 记录数=${data.length}');
-  
+  print('[$runtimeType._saveData] [SAVE] 开始保存数据: 记录数=${data.length}');
+
   try {
     await storageService.save(data);
-    print('[$runtimeType._saveData] ✅ 保存成功: ID=${savedId}');
+    print('[$runtimeType._saveData] [SUCCESS] 保存成功: ID=${savedId}');
   } catch (e) {
-    print('[$runtimeType._saveData] ❌ 保存失败: ${e.message}');
+    print('[$runtimeType._saveData] [ERROR] 保存失败: ${e.message}');
     rethrow;
   }
 }
@@ -114,7 +114,7 @@ Future<void> _saveData() async {
 ### 3. 状态变更日志
 ```dart
 void _updateState() {
-  print('[$runtimeType._updateState] 🔄 状态更新: 原值=${oldValue}, 新值=${newValue}');
+  print('[$runtimeType._updateState] [UPDATE] 状态更新: 原值=${oldValue}, 新值=${newValue}');
   setState(() => currentValue = newValue);
 }
 ```
@@ -141,7 +141,7 @@ if (isDebugMode) {
 final startTime = DateTime.now();
 // ... 执行操作
 final duration = DateTime.now().difference(startTime);
-print('[$runtimeType.${methodName}] ⏱️ 执行时间: ${duration.inMilliseconds}ms');
+print('[$runtimeType.${methodName}] [TIMER] 执行时间: ${duration.inMilliseconds}ms');
 ```
 
 ## 常见问题解决

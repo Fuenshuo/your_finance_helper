@@ -18,6 +18,8 @@ class PromptLoader {
       'lib/core/services/ai/prompts/payroll_recognition_prompt.txt';
   static const String _assetValuationPromptPath =
       'lib/core/services/ai/prompts/asset_valuation_prompt.txt';
+  static const String _transactionAnalysisPromptPath =
+      'lib/core/services/ai/prompts/transaction_analysis_prompt.txt';
 
   /// 加载自然语言记账提示词
   static Future<String> loadNaturalLanguagePrompt({
@@ -84,6 +86,12 @@ class PromptLoader {
   static Future<String> loadAssetValuationPrompt() async {
     final template = await _loadTemplate(_assetValuationPromptPath);
     return template; // 资产估值不需要替换占位符
+  }
+
+  /// 加载交易分析提示词
+  static Future<String> loadTransactionAnalysisPrompt() async {
+    final template = await _loadTemplate(_transactionAnalysisPromptPath);
+    return template; // 交易分析提示词将在调用处替换占位符
   }
 
   /// 加载模板文件

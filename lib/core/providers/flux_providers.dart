@@ -1,19 +1,27 @@
-/// 🌊 Flux Ledger 核心提供者
+/// [FLUX] Flux Ledger 核心提供者
 ///
 /// 基于Riverpod + Provider的混合状态管理架构
 /// 支持流式数据和实时响应
+library;
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart' as provider;
-import 'package:rxdart/rxdart.dart';
-
-import '../models/flux_models.dart' as flux_models;
-import '../services/flux_services.dart';
-import '../theme/flux_theme.dart';
-import 'stream_insights_flag_provider.dart';
+import 'package:your_finance_flutter/core/models/flux_models.dart'
+    as flux_models;
+import 'package:your_finance_flutter/core/providers/stream_insights_flag_provider.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart'
+    as ai_factory;
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
+import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
+import 'package:your_finance_flutter/core/services/dio_http_service.dart';
+import 'package:your_finance_flutter/core/services/flux_services.dart';
+import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
+import 'package:your_finance_flutter/features/insights/services/analysis_data_source.dart';
+import 'package:your_finance_flutter/features/insights/services/serverless_ai_data_source.dart';
+import 'package:your_finance_flutter/features/insights/services/stream_insights_analysis_service.dart';
 
 /// Feature flag identifiers (Flux Stream + Insights merge rollout).
 const String streamInsightsFeatureFlag = 'stream_insights';
@@ -96,7 +104,8 @@ class FlowDashboardProvider extends ChangeNotifier {
   }
 
   flux_models.FlowHealthStatus _calculateOverallHealth(
-      FlowAnalyticsData analytics) {
+    FlowAnalyticsData analytics,
+  ) {
     final netFlow = analytics.basicStats.netFlow;
     final anomalyCount = analytics.anomalies.length;
 
@@ -122,12 +131,13 @@ class FlowDashboardProvider extends ChangeNotifier {
   }
 
   Future<List<CategoryFlow>> _getTopCategories(
-      List<flux_models.Flow> flows) async {
+    List<flux_models.Flow> flows,
+  ) async {
     // 统计各类别资金流
     final categoryMap = <String, double>{};
 
     for (final flow in flows) {
-      final categoryId = flow.category.id as String;
+      final categoryId = flow.category.id;
       final amount = flow.amount.value as num;
 
       categoryMap[categoryId] = (categoryMap[categoryId] ?? 0) +
@@ -136,12 +146,14 @@ class FlowDashboardProvider extends ChangeNotifier {
 
     // 转换为CategoryFlow列表
     return categoryMap.entries
-        .map((entry) => CategoryFlow(
-              categoryId: entry.key,
-              categoryName: entry.key, // 临时使用ID作为名称
-              amount: entry.value,
-              flowCount: flows.where((f) => f.category.id == entry.key).length,
-            ))
+        .map(
+          (entry) => CategoryFlow(
+            categoryId: entry.key,
+            categoryName: entry.key, // 临时使用ID作为名称
+            amount: entry.value,
+            flowCount: flows.where((f) => f.category.id == entry.key).length,
+          ),
+        )
         .toList()
       ..sort((a, b) => b.amount.abs().compareTo(a.amount.abs()));
   }
@@ -150,9 +162,11 @@ class FlowDashboardProvider extends ChangeNotifier {
     // 获取最近的洞察
     final insights = await FlowInsightService().insightsStream.first;
     return insights
-        .where((insight) => insight.generatedAt.isAfter(
-              DateTime.now().subtract(const Duration(days: 7)),
-            ))
+        .where(
+          (insight) => insight.generatedAt.isAfter(
+            DateTime.now().subtract(const Duration(days: 7)),
+          ),
+        )
         .toList();
   }
 
@@ -199,7 +213,9 @@ class FlowStreamsProvider extends ChangeNotifier {
   }
 
   Future<void> updateStream(
-      String streamId, flux_models.FlowStream updatedStream) async {
+    String streamId,
+    flux_models.FlowStream updatedStream,
+  ) async {
     // TODO: 实现更新流管道
     await loadStreams();
   }
@@ -451,17 +467,6 @@ class LegacyDataProvider extends ChangeNotifier {
 
 /// 仪表板数据
 class FlowDashboardData {
-  final DateTimeRange period;
-  final int totalFlows;
-  final double totalInflow;
-  final double totalOutflow;
-  final double netFlow;
-  final List<CategoryFlow> topCategories;
-  final List<flux_models.Flow> recentFlows;
-  final double healthScore;
-  final List<flux_models.FlowInsight> insights;
-  final DateTime lastUpdated;
-
   const FlowDashboardData({
     required this.period,
     required this.totalFlows,
@@ -475,75 +480,76 @@ class FlowDashboardData {
     required this.lastUpdated,
   });
 
-  factory FlowDashboardData.empty() {
-    return FlowDashboardData(
-      period: DateTimeRange(
-        start: DateTime.now().subtract(const Duration(days: 30)),
-        end: DateTime.now(),
-      ),
-      totalFlows: 0,
-      totalInflow: 0,
-      totalOutflow: 0,
-      netFlow: 0,
-      topCategories: [],
-      recentFlows: [],
-      healthScore: 0,
-      insights: [],
-      lastUpdated: DateTime.now(),
-    );
-  }
+  factory FlowDashboardData.empty() => FlowDashboardData(
+        period: DateTimeRange(
+          start: DateTime.now().subtract(const Duration(days: 30)),
+          end: DateTime.now(),
+        ),
+        totalFlows: 0,
+        totalInflow: 0,
+        totalOutflow: 0,
+        netFlow: 0,
+        topCategories: [],
+        recentFlows: [],
+        healthScore: 0,
+        insights: [],
+        lastUpdated: DateTime.now(),
+      );
+  final DateTimeRange period;
+  final int totalFlows;
+  final double totalInflow;
+  final double totalOutflow;
+  final double netFlow;
+  final List<CategoryFlow> topCategories;
+  final List<flux_models.Flow> recentFlows;
+  final double healthScore;
+  final List<flux_models.FlowInsight> insights;
+  final DateTime lastUpdated;
 }
 
 /// 类别资金流
 class CategoryFlow {
-  final String categoryId;
-  final String categoryName;
-  final double amount;
-  final int flowCount;
-
   const CategoryFlow({
     required this.categoryId,
     required this.categoryName,
     required this.amount,
     required this.flowCount,
   });
+  final String categoryId;
+  final String categoryName;
+  final double amount;
+  final int flowCount;
 }
 
 // ==================== Riverpod提供者 ====================
 
 /// 流引擎提供者
-final flowEngineProvider = Provider<FlowEngine>((ref) {
-  return FlowEngine();
-});
+final flowEngineProvider = Provider<FlowEngine>((ref) => FlowEngine());
 
 /// 流分析服务提供者
-final flowAnalysisServiceProvider = Provider<FlowAnalysisService>((ref) {
-  return FlowAnalysisService();
-});
+final flowAnalysisServiceProvider =
+    Provider<FlowAnalysisService>((ref) => FlowAnalysisService());
 
 /// 流洞察服务提供者
-final flowInsightServiceProvider = Provider<FlowInsightService>((ref) {
-  return FlowInsightService();
-});
+final flowInsightServiceProvider =
+    Provider<FlowInsightService>((ref) => FlowInsightService());
 
 /// 实时流服务提供者
-final realtimeFlowServiceProvider = Provider<RealtimeFlowService>((ref) {
-  return RealtimeFlowService();
-});
+final realtimeFlowServiceProvider =
+    Provider<RealtimeFlowService>((ref) => RealtimeFlowService());
 
 /// 流仪表板状态提供者
 final flowDashboardStateProvider =
     StateNotifierProvider<FlowDashboardNotifier, AsyncValue<FlowDashboardData>>(
-  (ref) => FlowDashboardNotifier(ref),
+  FlowDashboardNotifier.new,
 );
 
 class FlowDashboardNotifier
     extends StateNotifier<AsyncValue<FlowDashboardData>> {
-  final Ref ref;
-
   FlowDashboardNotifier(this.ref) : super(const AsyncValue.loading()) {
     initialize();
   }
+  final Ref ref;
 
   Future<void> initialize() async {
     state = const AsyncValue.loading();
@@ -572,4 +578,39 @@ final streamInsightsFlagStateProvider =
   unawaited(provider.initialize());
   ref.onDispose(provider.dispose);
   return provider;
+});
+
+/// HTTP service provider
+final dioHttpServiceProvider = Provider<DioHttpService>((ref) {
+  throw UnimplementedError('Use DioHttpService.getInstance() instead');
+});
+
+/// Performance monitor provider
+final performanceMonitorProvider =
+    Provider<PerformanceMonitor>((ref) => PerformanceMonitor());
+
+/// Prompt loader provider
+final promptLoaderProvider = Provider<PromptLoader>((ref) => PromptLoader());
+
+/// AI service factory provider
+final aiServiceFactoryProvider =
+    Provider<AiServiceFactoryImpl>((ref) => ai_factory.aiServiceFactory);
+
+/// AI config service provider
+final aiConfigServiceProvider = FutureProvider<AiConfigService>((ref) async {
+  return AiConfigService.getInstance();
+});
+
+/// Analysis data source provider - fixed to Serverless AI
+final analysisDataSourceProvider = FutureProvider<AnalysisDataSource>((ref) async {
+  final aiFactory = ref.watch(aiServiceFactoryProvider);
+  final aiConfigService = await ref.watch(aiConfigServiceProvider.future);
+  return ServerlessAiDataSource(aiFactory, aiConfigService);
+});
+
+/// Stream insights analysis service provider (facade pattern)
+final streamInsightsAnalysisServiceProvider =
+    FutureProvider<StreamInsightsAnalysisService>((ref) async {
+  final dataSource = await ref.watch(analysisDataSourceProvider.future);
+  return StreamInsightsAnalysisService(dataSource);
 });
