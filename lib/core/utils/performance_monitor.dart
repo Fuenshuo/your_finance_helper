@@ -1,6 +1,8 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
+import 'package:your_finance_flutter/core/models/analysis_summary.dart';
+import 'package:your_finance_flutter/core/models/flux_view_state.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// 性能监控工具类
@@ -8,6 +10,8 @@ class PerformanceMonitor {
   static final Map<String, List<int>> _buildTimes = {};
   static final Map<String, List<int>> _paintTimes = {};
   static final Map<String, Stopwatch> _activeOperations = {};
+  static final _BottomTabUsageAggregator _bottomTabUsageAggregator =
+      _BottomTabUsageAggregator();
 
   /// 监控 Widget 构建时间
   static T monitorBuild<T>(String widgetName, T Function() buildFunction) {
@@ -167,6 +171,180 @@ class PerformanceMonitor {
         return 100; // 100ms
       default:
         return 20; // 默认20ms
+    }
+  }
+
+  /// Emits a telemetry event describing Stream/Insights interactions.
+  static void logStreamInsightsEvent(StreamInsightsTelemetryEvent event) {
+    _emitTelemetry(event);
+  }
+
+  /// Helper for view toggle telemetry (timeline <-> insights).
+  static void logViewToggleTelemetry({
+    required FluxPane pane,
+    required FluxTimeframe timeframe,
+    required bool flagEnabled,
+    Map<String, Object?> metadata = const <String, Object?>{},
+  }) {
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.viewToggle(
+        pane: pane,
+        timeframe: timeframe,
+        flagEnabled: flagEnabled,
+        metadata: metadata,
+      ),
+    );
+  }
+
+  /// Drawer open/collapse telemetry helper.
+  static void logDrawerTelemetry({
+    required bool expanded,
+    required FluxPane pane,
+    required FluxTimeframe timeframe,
+    required bool flagEnabled,
+    Map<String, Object?> metadata = const <String, Object?>{},
+  }) {
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.drawer(
+        expanded: expanded,
+        pane: pane,
+        timeframe: timeframe,
+        flagEnabled: flagEnabled,
+        metadata: metadata,
+      ),
+    );
+  }
+
+  /// Records analysis summary telemetry payloads.
+  static void logAnalysisSummaryTelemetry({
+    required AnalysisSummary summary,
+    required FluxPane pane,
+    required FluxTimeframe timeframe,
+    required bool flagEnabled,
+  }) {
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.analysis(
+        summary: summary,
+        pane: pane,
+        timeframe: timeframe,
+        flagEnabled: flagEnabled,
+      ),
+    );
+  }
+
+  /// Logs feature flag state changes to telemetry.
+  static void logFlagTelemetry({
+    required bool flagEnabled,
+    required FluxPane pane,
+    required FluxTimeframe timeframe,
+  }) {
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.flag(
+        flagEnabled: flagEnabled,
+        pane: pane,
+        timeframe: timeframe,
+      ),
+    );
+  }
+
+  /// Logs a flag exposure event for A/B tracking.
+  static void logFlagExposureTelemetry({required bool flagEnabled}) {
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.flagExposure(flagEnabled: flagEnabled),
+    );
+  }
+
+  /// Logs a bottom navigation selection and records usage metrics.
+  static void logBottomTabSelection({
+    required int index,
+    required String label,
+    required bool flagEnabled,
+    Map<String, Object?> metadata = const <String, Object?>{},
+  }) {
+    _bottomTabUsageAggregator.recordSelection(
+      index: index,
+      label: label,
+      flagEnabled: flagEnabled,
+    );
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.bottomTabSelection(
+        index: index,
+        label: label,
+        flagEnabled: flagEnabled,
+        metadata: metadata,
+      ),
+    );
+  }
+
+  /// Emits telemetry when the Insights tab selection rate drops as expected.
+  static void logUsageReductionTelemetry({
+    required int legacySelections,
+    required int mergedSelections,
+    required double reductionRatio,
+  }) {
+    _emitTelemetry(
+      StreamInsightsTelemetryEvent.usageReduction(
+        legacySelections: legacySelections,
+        mergedSelections: mergedSelections,
+        reductionRatio: reductionRatio,
+      ),
+    );
+  }
+
+  static void _emitTelemetry(StreamInsightsTelemetryEvent event) {
+    Logger.debug('📡 StreamInsightsTelemetry => ${event.toJson()}');
+    developer.log(
+      event.type.value,
+      name: 'StreamInsightsTelemetry',
+      time: event.occurredAt,
+      error: event.toJson(),
+    );
+  }
+}
+
+class _BottomTabUsageAggregator {
+  int _legacyInsightsSelections = 0;
+  int _mergedInsightsSelections = 0;
+  bool _reportedReduction = false;
+
+  void recordSelection({
+    required int index,
+    required String label,
+    required bool flagEnabled,
+  }) {
+    final normalizedLabel = label.toLowerCase();
+    final bool isInsightsTab = normalizedLabel.contains('insight');
+
+    if (isInsightsTab) {
+      if (flagEnabled) {
+        _mergedInsightsSelections++;
+      } else {
+        _legacyInsightsSelections++;
+      }
+      _maybeReportReduction();
+    }
+  }
+
+  void _maybeReportReduction() {
+    if (_reportedReduction || _legacyInsightsSelections < 5) {
+      return;
+    }
+    final double mergedRate = _legacyInsightsSelections == 0
+        ? 0
+        : _mergedInsightsSelections / _legacyInsightsSelections;
+    final double reduction = 1 - mergedRate;
+    if (reduction >= 0.8) {
+      Logger.debug(
+        '📉 StreamInsights bottom tab reduction achieved: '
+        'legacy=$_legacyInsightsSelections, merged=$_mergedInsightsSelections, '
+        'reduction=${(reduction * 100).toStringAsFixed(1)}%',
+      );
+      PerformanceMonitor.logUsageReductionTelemetry(
+        legacySelections: _legacyInsightsSelections,
+        mergedSelections: _mergedInsightsSelections,
+        reductionRatio: reduction,
+      );
+      _reportedReduction = true;
     }
   }
 }

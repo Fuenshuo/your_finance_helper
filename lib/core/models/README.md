@@ -283,6 +283,47 @@
 - 银行账单识别
 - AI解析结果展示和确认
 
+### 13. flux_view_state.dart - Flux视图状态模型
+
+**职责**: 统一管理Stream时间范围、当前Pane以及特性开关，确保单页Stream+Insights体验的状态一致性。
+
+**核心内容**:
+- `FluxViewState` - 基于 `Equatable` 的不可变数据模型，包含 `timeframe`、`pane`、`isFlagEnabled`、`lastDrawerUpdate` 字段，并提供 `toJson/fromJson` 序列化。
+- `fluxViewStateProvider` - Riverpod `StateNotifierProvider`，封装 `FluxViewStateNotifier`，负责切换时间范围、Pane以及处理Drawer时间戳更新。
+- `FluxViewStateNotifier` - 暴露 `setTimeframe`、`setPane`、`syncFlag`、`markDrawerUpdated`、`reset` 等方法，自动在flag关闭时回落到 `FluxPane.timeline`，默认在初始态即开启Stream Insights合并体验（`isFlagEnabled = true`），方便本地/测试环境直接体验。
+
+**使用场景**:
+- `UnifiedTransactionEntryScreen` 中的Day/Week/Month分段控制
+- Flux Insights pane与时间轴的切换动画
+- Drawer消息节流与telemetry事件的状态来源
+
+### 14. insights_drawer_state.dart - Insights抽屉状态模型
+
+**职责**: 抽象Drawer显隐、展开状态、最新消息与改进计数器，并封装定时器控制逻辑。
+
+**核心内容**:
+- `InsightsDrawerState` - 不可变状态对象，包含 `isVisible`、`isExpanded`、`message`、`improvementCount`、`collapseTimer` 等字段。
+- `insightsDrawerControllerProvider` - Riverpod Provider，暴露 `InsightsDrawerController`。
+- `InsightsDrawerController` - 处理分析结果的聚合(`handleAnalysisSummary`)、延迟展开、自动折叠(`collapseNow`)以及计数器更新。
+
+**使用场景**:
+- 统一记账入口页头部的Insights Drawer动画控制
+- 测试用例（T017/T018）模拟消息堆积与延迟展开场景
+- Telemetry记录抽屉打开/收起事件
+
+### 15. analysis_summary.dart - Insights分析总结 & Telemetry事件
+
+**职责**: 定义 `/insights/analysis` 与 `/telemetry/stream-insights` 对应的数据结构，方便序列化与Riverpod状态共享。
+
+**核心内容**:
+- `AnalysisSummary` - 包含 `analysisId`、`generatedAt`、`improvementsFound`、`topRecommendation`、`deepLink` 等字段，提供 `copyWith`、`toJson/fromJson`。
+- `StreamInsightsTelemetryEventType` - 规范化事件字符串（view_toggled、drawer_open、drawer_collapse、analysis_summary、flag_state）。
+- `StreamInsightsTelemetryEvent` - 统一的Telemetry载体，支持 `viewToggle`、`drawer`、`analysis`、`flag` 工厂方法以及JSON序列化。
+
+**使用场景**:
+- Drawer控制器在收到新的 `AnalysisSummary` 时，向Telemetry记录 `analysis_summary` 事件。
+- `PerformanceMonitor` 通过 `StreamInsightsTelemetryEvent` 将view切换、抽屉显隐、flag变化日志化。
+
 ## 设计原则
 
 ### 1. 不可变性优先

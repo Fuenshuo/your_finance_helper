@@ -27,27 +27,52 @@ class TransactionProvider with ChangeNotifier {
 
   // 初始化
   Future<void> initialize() async {
+    print('[TransactionProvider.initialize] 🚀 开始初始化 TransactionProvider');
     if (!_isInitialized) {
+      print('[TransactionProvider.initialize] 🔧 获取 StorageService 实例');
       _storageService = await StorageService.getInstance();
       _isInitialized = true;
+      print('[TransactionProvider.initialize] ✅ StorageService 初始化完成');
+    } else {
+      print('[TransactionProvider.initialize] ℹ️ TransactionProvider 已经初始化过，跳过 StorageService 获取');
     }
     await _loadTransactions();
+    print('[TransactionProvider.initialize] 🎯 TransactionProvider 初始化完成');
   }
 
   // 加载交易数据
   Future<void> _loadTransactions() async {
+    print('[TransactionProvider._loadTransactions] 📂 开始加载交易数据');
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
+      print('[TransactionProvider._loadTransactions] 🔄 状态已设置为加载中');
 
+      print('[TransactionProvider._loadTransactions] 💾 从 StorageService 加载正式交易');
       _transactions = await _storageService.loadTransactions();
+      print('[TransactionProvider._loadTransactions] ✅ 正式交易加载完成，数量: ${_transactions.length}');
+
+      print('[TransactionProvider._loadTransactions] 📝 从 StorageService 加载草稿交易');
       _draftTransactions = await _storageService.loadDraftTransactions();
+      print('[TransactionProvider._loadTransactions] ✅ 草稿交易加载完成，数量: ${_draftTransactions.length}');
+
+      print('[TransactionProvider._loadTransactions] 🎯 数据加载完成统计:');
+      print('[TransactionProvider._loadTransactions] 📊 正式交易: ${_transactions.length} 笔');
+      print('[TransactionProvider._loadTransactions] 📝 草稿交易: ${_draftTransactions.length} 笔');
+      print('[TransactionProvider._loadTransactions] 📈 总计: ${_transactions.length + _draftTransactions.length} 笔');
+
+      if (_transactions.isEmpty && _draftTransactions.isEmpty) {
+        print('[TransactionProvider._loadTransactions] ⚠️ 警告：没有找到任何交易数据！');
+      }
+
     } catch (e) {
+      print('[TransactionProvider._loadTransactions] ❌ 数据加载失败: $e');
       _error = e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();
+      print('[TransactionProvider._loadTransactions] 🔄 加载状态已重置为 false');
     }
   }
 
@@ -344,5 +369,15 @@ class TransactionProvider with ChangeNotifier {
   // 刷新数据
   Future<void> refresh() async {
     await _loadTransactions();
+  }
+
+  @visibleForTesting
+  void seedTransactionsForTesting({
+    List<Transaction> transactions = const [],
+    List<Transaction> draftTransactions = const [],
+  }) {
+    _transactions = List<Transaction>.from(transactions);
+    _draftTransactions = List<Transaction>.from(draftTransactions);
+    _isInitialized = true;
   }
 }

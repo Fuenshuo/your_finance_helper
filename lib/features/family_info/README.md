@@ -55,7 +55,7 @@ family_info/
 - 工资预览和计算
 
 **关键组件**:
-- `SalaryBasicInfoWidget` - 基本工资信息
+- `SalaryBasicInfoWidget` - 基本工资信息与补录模式开关
 - `BonusManagementWidget` - 奖金管理
 - `TaxDeductionsWidget` - 税务扣除
 - `SalarySummaryWidget` - 工资汇总
@@ -231,10 +231,10 @@ family_info/
 - `expandable_calculation_item.dart` - 可展开计算项
 - `monthly_allowance_adjustment_widget.dart` - 月度津贴调整组件
 - `quarterly_bonus_calculator.dart` - 季度奖金计算器
-- `salary_basic_info_widget.dart` - 工资基本信息组件
+- `salary_basic_info_widget.dart` - 工资基本信息组件，内置年中补录/自动估算开关与滑块
 - `salary_history_widget.dart` - 工资历史组件
 - `salary_summary_widget.dart` - 工资汇总组件
-- `tax_deductions_widget.dart` - 税务扣除组件
+- `tax_deductions_widget.dart` - 税务扣除组件，暴露 `onCalculateTax` 回调与即时「重新计算」按钮
 
 ## Services 服务说明
 

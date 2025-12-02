@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:rxdart/rxdart.dart';
 
 import '../models/flux_models.dart';
@@ -242,11 +243,13 @@ class FlowAnalysisService {
     DateTimeRange period,
   ) async {
     final inflows = flows.where((f) => f.type == FlowType.income);
-    final outflows = flows.where((f) =>
-        f.type == FlowType.expense || f.type == FlowType.transfer);
+    final outflows = flows.where(
+        (f) => f.type == FlowType.expense || f.type == FlowType.transfer);
 
-    final totalInflow = inflows.fold<double>(0, (sum, f) => sum + f.amount.value);
-    final totalOutflow = outflows.fold<double>(0, (sum, f) => sum + f.amount.value);
+    final totalInflow =
+        inflows.fold<double>(0, (sum, f) => sum + f.amount.value);
+    final totalOutflow =
+        outflows.fold<double>(0, (sum, f) => sum + f.amount.value);
     final netFlow = totalInflow - totalOutflow;
 
     return FlowBasicStats(
@@ -254,11 +257,13 @@ class FlowAnalysisService {
       totalOutflow: totalOutflow,
       netFlow: netFlow,
       flowCount: flows.length,
-      averageFlow: flows.isEmpty ? 0 : (totalInflow + totalOutflow) / flows.length,
+      averageFlow:
+          flows.isEmpty ? 0 : (totalInflow + totalOutflow) / flows.length,
     );
   }
 
-  Future<FlowTrends> _analyzeTrends(List<Flow> flows, DateTimeRange period) async {
+  Future<FlowTrends> _analyzeTrends(
+      List<Flow> flows, DateTimeRange period) async {
     // 趋势分析逻辑
     return FlowTrends.empty();
   }
@@ -441,7 +446,8 @@ enum AnomalyType {
 
 /// 流预测服务 - AI驱动的资金流预测
 class FlowPredictionService {
-  static final FlowPredictionService _instance = FlowPredictionService._internal();
+  static final FlowPredictionService _instance =
+      FlowPredictionService._internal();
   factory FlowPredictionService() => _instance;
 
   FlowPredictionService._internal();
@@ -452,7 +458,8 @@ class FlowPredictionService {
     required int daysAhead,
   }) async {
     // 1. 分析历史模式
-    final patterns = await FlowPatternService().identifyPatterns(historicalFlows);
+    final patterns =
+        await FlowPatternService().identifyPatterns(historicalFlows);
 
     // 2. 生成预测
     final predictions = await _generatePredictions(patterns, daysAhead);
@@ -657,7 +664,8 @@ class RealtimeFlowService {
 
   RealtimeFlowService._internal();
 
-  final StreamController<Flow> _flowStreamController = StreamController.broadcast();
+  final StreamController<Flow> _flowStreamController =
+      StreamController.broadcast();
 
   /// 资金流实时数据流
   Stream<Flow> get flowStream => _flowStreamController.stream;
@@ -693,5 +701,3 @@ class FluxServiceManager {
     RealtimeFlowService().dispose();
   }
 }
-
-

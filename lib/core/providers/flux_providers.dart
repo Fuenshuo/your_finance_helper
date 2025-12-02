@@ -13,11 +13,19 @@ import 'package:rxdart/rxdart.dart';
 import '../models/flux_models.dart' as flux_models;
 import '../services/flux_services.dart';
 import '../theme/flux_theme.dart';
+import 'stream_insights_flag_provider.dart';
+
+/// Feature flag identifiers (Flux Stream + Insights merge rollout).
+const String streamInsightsFeatureFlag = 'stream_insights';
+
+/// Default state now keeps the merged UI enabled unless explicitly disabled.
+bool get streamInsightsFlagDefaultValue => true;
 
 /// 流仪表板提供者 - 核心数据概览
 class FlowDashboardProvider extends ChangeNotifier {
   FlowDashboardData _dashboardData = FlowDashboardData.empty();
-  flux_models.FlowHealthStatus _overallHealth = flux_models.FlowHealthStatus.neutral;
+  flux_models.FlowHealthStatus _overallHealth =
+      flux_models.FlowHealthStatus.neutral;
   bool _isLoading = false;
   String? _error;
 
@@ -69,7 +77,6 @@ class FlowDashboardProvider extends ChangeNotifier {
         insights: await _getRecentInsights(),
         lastUpdated: DateTime.now(),
       );
-
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -88,27 +95,34 @@ class FlowDashboardProvider extends ChangeNotifier {
     );
   }
 
-  flux_models.FlowHealthStatus _calculateOverallHealth(FlowAnalyticsData analytics) {
+  flux_models.FlowHealthStatus _calculateOverallHealth(
+      FlowAnalyticsData analytics) {
     final netFlow = analytics.basicStats.netFlow;
     final anomalyCount = analytics.anomalies.length;
 
-    if (netFlow > 0 && anomalyCount == 0) return flux_models.FlowHealthStatus.healthy;
-    if (netFlow < -1000 || anomalyCount > 2) return flux_models.FlowHealthStatus.danger;
-    if (netFlow < 0 || anomalyCount > 0) return flux_models.FlowHealthStatus.warning;
+    if (netFlow > 0 && anomalyCount == 0)
+      return flux_models.FlowHealthStatus.healthy;
+    if (netFlow < -1000 || anomalyCount > 2)
+      return flux_models.FlowHealthStatus.danger;
+    if (netFlow < 0 || anomalyCount > 0)
+      return flux_models.FlowHealthStatus.warning;
 
     return flux_models.FlowHealthStatus.neutral;
   }
 
   double _calculateHealthScore(FlowAnalyticsData analytics) {
     // 基于多种指标计算健康评分 (0-100)
-    final netFlowScore = (analytics.basicStats.netFlow + 10000).clamp(0, 20000) / 20000 * 40;
-    final anomalyScore = (10 - analytics.anomalies.length).clamp(0, 10) / 10 * 30;
+    final netFlowScore =
+        (analytics.basicStats.netFlow + 10000).clamp(0, 20000) / 20000 * 40;
+    final anomalyScore =
+        (10 - analytics.anomalies.length).clamp(0, 10) / 10 * 30;
     final regularityScore = analytics.basicStats.averageFlow > 0 ? 30 : 0;
 
     return (netFlowScore + anomalyScore + regularityScore).clamp(0, 100);
   }
 
-  Future<List<CategoryFlow>> _getTopCategories(List<flux_models.Flow> flows) async {
+  Future<List<CategoryFlow>> _getTopCategories(
+      List<flux_models.Flow> flows) async {
     // 统计各类别资金流
     final categoryMap = <String, double>{};
 
@@ -184,7 +198,8 @@ class FlowStreamsProvider extends ChangeNotifier {
     await loadStreams();
   }
 
-  Future<void> updateStream(String streamId, flux_models.FlowStream updatedStream) async {
+  Future<void> updateStream(
+      String streamId, flux_models.FlowStream updatedStream) async {
     // TODO: 实现更新流管道
     await loadStreams();
   }
@@ -517,11 +532,13 @@ final realtimeFlowServiceProvider = Provider<RealtimeFlowService>((ref) {
 });
 
 /// 流仪表板状态提供者
-final flowDashboardStateProvider = StateNotifierProvider<FlowDashboardNotifier, AsyncValue<FlowDashboardData>>(
+final flowDashboardStateProvider =
+    StateNotifierProvider<FlowDashboardNotifier, AsyncValue<FlowDashboardData>>(
   (ref) => FlowDashboardNotifier(ref),
 );
 
-class FlowDashboardNotifier extends StateNotifier<AsyncValue<FlowDashboardData>> {
+class FlowDashboardNotifier
+    extends StateNotifier<AsyncValue<FlowDashboardData>> {
   final Ref ref;
 
   FlowDashboardNotifier(this.ref) : super(const AsyncValue.loading()) {
@@ -545,4 +562,14 @@ class FlowDashboardNotifier extends StateNotifier<AsyncValue<FlowDashboardData>>
   }
 }
 
-
+/// Stream + Insights merge feature flag provider.
+final streamInsightsFlagStateProvider =
+    ChangeNotifierProvider<StreamInsightsFlagProvider>((ref) {
+  final provider = StreamInsightsFlagProvider(
+    flagKey: streamInsightsFeatureFlag,
+    defaultValue: streamInsightsFlagDefaultValue,
+  );
+  unawaited(provider.initialize());
+  ref.onDispose(provider.dispose);
+  return provider;
+});

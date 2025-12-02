@@ -43,6 +43,8 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  print('[main.dart] 🚀 使用传统主函数启动应用');
+
   // 初始化日志系统
   await Logger.init(
     enableFileLogging: true,

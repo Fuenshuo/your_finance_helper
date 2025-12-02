@@ -185,7 +185,8 @@ class FluxRoutes {
   // 工具方法
   static String flowDetail(String flowId) => '/dashboard/flow-detail/$flowId';
   static String streamDetail(String streamId) => '/streams/detail/$streamId';
-  static String insightDetail(String insightId) => '/insights/detail/$insightId';
+  static String insightDetail(String insightId) =>
+      '/insights/detail/$insightId';
 }
 
 /// 检查是否首次启动
@@ -306,7 +307,6 @@ class FluxFloatingActionButton extends StatelessWidget {
 
 /// 路由守卫 - 检查用户认证状态
 class FluxAuthGuard {
-  @override
   String? redirect(BuildContext context, GoRouterState state) {
     // TODO: 实现认证检查
     // final isAuthenticated = ref.watch(authProvider).isAuthenticated;
@@ -318,8 +318,7 @@ class FluxAuthGuard {
 }
 
 /// 路由守卫 - 检查数据迁移状态
-class FluxMigrationGuard extends GoRouteRedirect {
-  @override
+class FluxMigrationGuard {
   String? redirect(BuildContext context, GoRouterState state) {
     // TODO: 实现迁移检查
     // final needsMigration = ref.watch(migrationProvider).needsMigration;
@@ -353,10 +352,12 @@ extension FluxNavigationExtension on BuildContext {
   void goToFlowDetail(String flowId) => go(FluxRoutes.flowDetail(flowId));
 
   /// 导航到特定流管道详情
-  void goToStreamDetail(String streamId) => go(FluxRoutes.streamDetail(streamId));
+  void goToStreamDetail(String streamId) =>
+      go(FluxRoutes.streamDetail(streamId));
 
   /// 导航到特定洞察详情
-  void goToInsightDetail(String insightId) => go(FluxRoutes.insightDetail(insightId));
+  void goToInsightDetail(String insightId) =>
+      go(FluxRoutes.insightDetail(insightId));
 
   /// 返回上一页
   void goBack() => pop();
@@ -416,5 +417,3 @@ class FluxErrorScreen extends StatelessWidget {
     );
   }
 }
-
-

@@ -7,6 +7,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-27
 - SharedPreferences for local data persistence (existing app architecture) (003-flux-insights-redesign)
 - Dart 3.x with Flutter 3.24+ + fl_chart ^0.63.0, google_fonts ^6.1.0, shared_preferences ^2.2.0 (003-flux-insights-redesign)
 - SharedPreferences for local data persistence (trend data, allocation data) (003-flux-insights-redesign)
+- Dart 3.x / Flutter 3.x + Flutter framework, Riverpod + Provider (state), go_router, AppDesignTokens, AppAnimations, InsightsProvider services (004-stream-insights-merge)
+- SharedPreferences + in-memory providers (no new persistence requirements) (004-stream-insights-merge)
 
 - Dart 3.x (Flutter framework) + Provider (state management), SharedPreferences (local storage), awesome-flutter libraries (charts, animations, AI integration) (001-financial-insights)
 
@@ -26,10 +28,10 @@ tests/
 Dart 3.x (Flutter framework): Follow standard conventions
 
 ## Recent Changes
+- 004-stream-insights-merge: Added Dart 3.x / Flutter 3.x + Flutter framework, Riverpod + Provider (state), go_router, AppDesignTokens, AppAnimations, InsightsProvider services
 - 003-flux-insights-redesign: Added Dart 3.x with Flutter 3.24+ + fl_chart ^0.63.0, google_fonts ^6.1.0, shared_preferences ^2.2.0
 - 003-flux-insights-redesign: Added Dart 3.x with Flutter 3.24+ (stable channel) + fl_chart ^0.63.0 (chart visualization), google_fonts ^6.1.0 (typography), flutter/material.dart (UI framework)
 
-- 001-financial-insights: Added Dart 3.x (Flutter framework) + Provider (state management), SharedPreferences (local storage), awesome-flutter libraries (charts, animations, AI integration)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

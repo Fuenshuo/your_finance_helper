@@ -11,31 +11,6 @@ import 'package:your_finance_flutter/features/insights/widgets/daily_budget_velo
 import 'package:your_finance_flutter/features/insights/widgets/trend_radar_chart.dart';
 import 'package:your_finance_flutter/features/insights/widgets/structural_health_chart.dart';
 
-/// Insights颜色主题接口
-class InsightsColorTheme {
-  final Color primary;
-  final Color accent;
-  final Color success;
-  final Color error;
-  final Color warning;
-  final Color background;
-  final Color surface;
-  final Color textPrimary;
-  final Color textSecondary;
-
-  const InsightsColorTheme({
-    required this.primary,
-    required this.accent,
-    required this.success,
-    required this.error,
-    required this.warning,
-    required this.background,
-    required this.surface,
-    required this.textPrimary,
-    required this.textSecondary,
-  });
-}
-
 /// Flux Insights Premium High-Density UI Screen
 ///
 /// Features:
@@ -46,12 +21,7 @@ class InsightsColorTheme {
 /// - Trend radar chart
 /// - Structural health donut chart
 class FluxInsightsScreen extends StatefulWidget {
-  final InsightsColorTheme? colorTheme;
-
-  const FluxInsightsScreen({
-    super.key,
-    this.colorTheme,
-  });
+  const FluxInsightsScreen({super.key});
 
   @override
   State<FluxInsightsScreen> createState() => _FluxInsightsScreenState();
@@ -66,34 +36,6 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
     flexibleAmount: 0.0,
     period: DateTime.now(),
   );
-
-  // 颜色获取辅助方法 - 优先使用自定义主题，否则使用AppDesignTokens
-  Color _getPrimaryColor(BuildContext context) =>
-      widget.colorTheme?.primary ?? AppDesignTokens.primaryAction(context);
-
-  Color _getSuccessColor(BuildContext context) =>
-      widget.colorTheme?.success ?? _getSuccessColor(context);
-
-  Color _getErrorColor(BuildContext context) =>
-      widget.colorTheme?.error ?? AppDesignTokens.amountNegativeColor(context);
-
-  Color _getWarningColor(BuildContext context) =>
-      widget.colorTheme?.warning ?? AppDesignTokens.warningColor;
-
-  Color _getAccentColor(BuildContext context) =>
-      widget.colorTheme?.accent ?? AppDesignTokens.accentColor;
-
-  Color _getBackgroundColor(BuildContext context) =>
-      widget.colorTheme?.background ?? AppDesignTokens.pageBackground(context);
-
-  Color _getSurfaceColor(BuildContext context) =>
-      widget.colorTheme?.surface ?? _getSurfaceColor(context);
-
-  Color _getPrimaryTextColor(BuildContext context) =>
-      widget.colorTheme?.textPrimary ?? AppDesignTokens.primaryText(context);
-
-  Color _getSecondaryTextColor(BuildContext context) =>
-      widget.colorTheme?.textSecondary ?? AppDesignTokens.secondaryText(context);
 
   @override
   void initState() {
@@ -187,7 +129,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
     PerformanceMonitor.startOperation('FluxInsightsScreen.build');
 
     final result = Container(
-      color: _getBackgroundColor(context),
+      color: AppDesignTokens.pageBackground(context),
       child: CustomScrollView(
         slivers: [
           // Immersive Header - NO Scaffold AppBar
@@ -202,7 +144,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
               child: Text(
                 'Flux Insights',
                 style: AppDesignTokens.largeTitle(context).copyWith(
-                  color: _getPrimaryTextColor(context),
+                  color: AppDesignTokens.primaryText(context),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -219,7 +161,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
-                    color: _getSurfaceColor(context),
+                    color: AppDesignTokens.surface(context),
                     child: Column(
                       children: [
                         Text(
@@ -230,7 +172,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
                         Text(
                           _healthScore?.score.toStringAsFixed(0) ?? '75',
                           style: AppDesignTokens.largeTitle(context).copyWith(
-                            color: _getSuccessColor(context),
+                            color: AppDesignTokens.amountPositiveColor(context),
                           ),
                         ),
                         Text(
@@ -248,7 +190,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
-                    color: _getSurfaceColor(context),
+                    color: AppDesignTokens.surface(context),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -276,7 +218,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                color: _getSurfaceColor(context),
+                color: AppDesignTokens.surface(context),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -298,7 +240,7 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                color: _getSurfaceColor(context),
+                color: AppDesignTokens.surface(context),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

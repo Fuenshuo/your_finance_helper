@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:your_finance_flutter/core/services/insight_service.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
 import 'package:your_finance_flutter/features/insights/widgets/weekly_trend_chart.dart';
 
@@ -16,7 +17,8 @@ void main() {
 
     // Week with anomalies
     anomalousWeeklyData = [200.0, 180.0, 400.0, 190.0, 210.0, 200.0, 200.0];
-    final anomalyDate = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 3)); // Wednesday
+    final anomalyDate = DateTime.now()
+        .subtract(Duration(days: DateTime.now().weekday - 3)); // Wednesday
     anomalousAnomalies = [
       WeeklyAnomaly(
         id: 'anomaly_1',
@@ -33,14 +35,13 @@ void main() {
   });
 
   group('WeeklyTrendChart Widget Tests', () {
-    testWidgets('should display weekly trend chart', (WidgetTester tester) async {
+    testWidgets('should display weekly trend chart',
+        (WidgetTester tester) async {
+      final insight = _buildWeeklyInsight(normalWeeklyData, normalAnomalies);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyTrendChart(
-              weeklyData: normalWeeklyData,
-              anomalies: normalAnomalies,
-            ),
+            body: WeeklyTrendChart(weeklyInsight: insight),
           ),
         ),
       );
@@ -49,14 +50,14 @@ void main() {
       expect(find.byType(WeeklyTrendChart), findsOneWidget);
     });
 
-    testWidgets('should display chart with anomaly highlighting', (WidgetTester tester) async {
+    testWidgets('should display chart with anomaly highlighting',
+        (WidgetTester tester) async {
+      final insight =
+          _buildWeeklyInsight(anomalousWeeklyData, anomalousAnomalies);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyTrendChart(
-              weeklyData: anomalousWeeklyData,
-              anomalies: anomalousAnomalies,
-            ),
+            body: WeeklyTrendChart(weeklyInsight: insight),
           ),
         ),
       );
@@ -65,14 +66,13 @@ void main() {
       expect(find.byType(WeeklyTrendChart), findsOneWidget);
     });
 
-    testWidgets('should handle empty anomalies list', (WidgetTester tester) async {
+    testWidgets('should handle empty anomalies list',
+        (WidgetTester tester) async {
+      final insight = _buildWeeklyInsight(normalWeeklyData, normalAnomalies);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyTrendChart(
-              weeklyData: normalWeeklyData,
-              anomalies: normalAnomalies,
-            ),
+            body: WeeklyTrendChart(weeklyInsight: insight),
           ),
         ),
       );
@@ -82,13 +82,12 @@ void main() {
     });
 
     testWidgets('should handle single anomaly', (WidgetTester tester) async {
+      final insight =
+          _buildWeeklyInsight(anomalousWeeklyData, anomalousAnomalies);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyTrendChart(
-              weeklyData: anomalousWeeklyData,
-              anomalies: anomalousAnomalies,
-            ),
+            body: WeeklyTrendChart(weeklyInsight: insight),
           ),
         ),
       );
@@ -97,7 +96,8 @@ void main() {
       expect(find.byType(WeeklyTrendChart), findsOneWidget);
     });
 
-    testWidgets('should handle multiple anomalies', (WidgetTester tester) async {
+    testWidgets('should handle multiple anomalies',
+        (WidgetTester tester) async {
       final multiAnomalies = [
         WeeklyAnomaly(
           id: 'anomaly_1',
@@ -123,13 +123,14 @@ void main() {
         ),
       ];
 
+      final insight = _buildWeeklyInsight(
+        [200.0, 180.0, 300.0, 190.0, 210.0, 500.0, 200.0],
+        multiAnomalies,
+      );
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyTrendChart(
-              weeklyData: [200.0, 180.0, 300.0, 190.0, 210.0, 500.0, 200.0],
-              anomalies: multiAnomalies,
-            ),
+            body: WeeklyTrendChart(weeklyInsight: insight),
           ),
         ),
       );
@@ -142,13 +143,11 @@ void main() {
       testWidgets('should handle zero spending', (WidgetTester tester) async {
         final zeroData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
+        final insight = _buildWeeklyInsight(zeroData, []);
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: WeeklyTrendChart(
-                weeklyData: zeroData,
-                anomalies: [],
-              ),
+              body: WeeklyTrendChart(weeklyInsight: insight),
             ),
           ),
         );
@@ -157,16 +156,15 @@ void main() {
         expect(find.byType(WeeklyTrendChart), findsOneWidget);
       });
 
-      testWidgets('should handle very high spending', (WidgetTester tester) async {
+      testWidgets('should handle very high spending',
+          (WidgetTester tester) async {
         final highData = [1000.0, 1200.0, 800.0, 1500.0, 900.0, 1100.0, 1300.0];
 
+        final insight = _buildWeeklyInsight(highData, []);
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: WeeklyTrendChart(
-                weeklyData: highData,
-                anomalies: [],
-              ),
+              body: WeeklyTrendChart(weeklyInsight: insight),
             ),
           ),
         );
@@ -176,4 +174,27 @@ void main() {
       });
     });
   });
+}
+
+WeeklyInsight _buildWeeklyInsight(
+  List<double> weeklyData,
+  List<WeeklyAnomaly> anomalies,
+) {
+  assert(weeklyData.length == 7, 'Weekly data must contain 7 entries');
+  final total =
+      weeklyData.fold<double>(0, (previous, value) => previous + value);
+  final average = weeklyData.isEmpty ? 0.0 : total / weeklyData.length;
+
+  return WeeklyInsight(
+    totalSpent: total,
+    averageSpent: average,
+    anomalies: anomalies,
+    monday: weeklyData[0],
+    tuesday: weeklyData[1],
+    wednesday: weeklyData[2],
+    thursday: weeklyData[3],
+    friday: weeklyData[4],
+    saturday: weeklyData[5],
+    sunday: weeklyData[6],
+  );
 }

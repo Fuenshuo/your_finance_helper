@@ -2,6 +2,8 @@
 ///
 /// 从传统记账到流式思维的革命性转变
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +47,7 @@ class FluxAppLifecycleObserver extends WidgetsBindingObserver {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  print('[main_flux.dart] 🚀 使用 Flux 主函数启动应用');
   FluxLogger.business('🌊 Flux', '🚀 Flux Ledger Starting Up');
 
   // 初始化Flux服务层
@@ -78,6 +81,9 @@ void main() async {
           provider.ChangeNotifierProvider(
             create: (_) => LegacyDataProvider()..initialize(),
           ),
+          provider.ChangeNotifierProvider(
+            create: (_) => TransactionProvider()..initialize(),
+          ),
         ],
         child: const FluxLedgerApp(),
       ),
@@ -93,12 +99,10 @@ Future<void> _initializeFluxServices() async {
     // 初始化服务管理器
     await FluxServiceManager().initialize();
 
-    // 初始化核心引擎
-    await FlowEngine()._processor._initialize();
-
     FluxLogger.business('🌊 Flux', '✅ Flux Services Initialized Successfully');
   } catch (e, stackTrace) {
-    FluxLogger.error('🌊 Flux', '❌ Flux Services Initialization Failed', e, stackTrace);
+    FluxLogger.error(
+        '🌊 Flux', '❌ Flux Services Initialization Failed', e, stackTrace);
     rethrow;
   }
 }
@@ -149,9 +153,8 @@ class FluxLedgerApp extends StatelessWidget {
     return ThemeData(
       brightness: brightness,
       primaryColor: FluxTheme.flowBlue,
-      scaffoldBackgroundColor: isDark
-          ? const Color(0xFF121212)
-          : FluxTheme.flowBackground,
+      scaffoldBackgroundColor:
+          isDark ? const Color(0xFF121212) : FluxTheme.flowBackground,
 
       // 应用栏主题
       appBarTheme: AppBarTheme(
@@ -171,14 +174,15 @@ class FluxLedgerApp extends StatelessWidget {
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         selectedItemColor: FluxTheme.flowBlue,
         unselectedItemColor: FluxTheme.neutralGray,
-        selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        selectedLabelStyle:
+            const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
         unselectedLabelStyle: const TextStyle(fontSize: 12),
         elevation: 8,
         type: BottomNavigationBarType.fixed,
       ),
 
       // 卡片主题
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: isDark ? const Color(0xFF1E1E1E) : FluxTheme.flowCardBackground,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -206,7 +210,8 @@ class FluxLedgerApp extends StatelessWidget {
             width: 2,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
 
       // 按钮主题
@@ -291,12 +296,27 @@ class FluxLedgerApp extends StatelessWidget {
       ),
 
       // 扩展主题
-      extensions: [
+      extensions: const [
         // 金额样式扩展
         AmountTextTheme(
-          positive: FluxTheme.flowAmountPositive(null),
-          negative: FluxTheme.flowAmountNegative(null),
-          neutral: FluxTheme.flowAmountNeutral(null),
+          positive: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: FluxTheme.incomeGreen,
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
+          negative: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: FluxTheme.expenseRed,
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
+          neutral: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1C1C1E),
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
         ),
       ],
     );
@@ -347,11 +367,12 @@ extension AmountTextThemeExtension on BuildContext {
   AmountTextTheme get amountTheme {
     return Theme.of(this).extension<AmountTextTheme>() ??
         const AmountTextTheme(
-          positive: TextStyle(color: FluxTheme.incomeGreen, fontWeight: FontWeight.w700),
-          negative: TextStyle(color: FluxTheme.expenseRed, fontWeight: FontWeight.w700),
-          neutral: TextStyle(color: Color(0xFF1C1C1E), fontWeight: FontWeight.w600),
+          positive: TextStyle(
+              color: FluxTheme.incomeGreen, fontWeight: FontWeight.w700),
+          negative: TextStyle(
+              color: FluxTheme.expenseRed, fontWeight: FontWeight.w700),
+          neutral:
+              TextStyle(color: Color(0xFF1C1C1E), fontWeight: FontWeight.w600),
         );
   }
 }
-
-

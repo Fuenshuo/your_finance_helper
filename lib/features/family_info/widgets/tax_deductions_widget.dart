@@ -15,6 +15,7 @@ class TaxDeductionsWidget extends StatefulWidget {
     required this.otherTaxDeductionsController, // 其他税收扣除
     required this.specialDeductionMonthly,
     required this.onSpecialDeductionChanged,
+    this.onCalculateTax,
     super.key,
   });
   final TextEditingController personalIncomeTaxController;
@@ -26,6 +27,7 @@ class TaxDeductionsWidget extends StatefulWidget {
   final TextEditingController otherTaxDeductionsController; // 其他税收扣除
   final double specialDeductionMonthly;
   final void Function(double) onSpecialDeductionChanged;
+  final VoidCallback? onCalculateTax;
 
   @override
   State<TaxDeductionsWidget> createState() => _TaxDeductionsWidgetState();
@@ -57,6 +59,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.errorColor,
                   ),
                 ),
+                _RecalculateHint(onRecalculate: widget.onCalculateTax),
                 const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 社保（五险）（Phase 1.4 将改为只读展示）
@@ -69,6 +72,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.primaryAction(context),
                   ),
                 ),
+                _RecalculateHint(onRecalculate: widget.onCalculateTax),
                 const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 公积金（Phase 1.4 将改为只读展示）
@@ -81,6 +85,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.successColor(context),
                   ),
                 ),
+                _RecalculateHint(onRecalculate: widget.onCalculateTax),
                 const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 专项附加扣除
@@ -89,8 +94,8 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                   decoration: BoxDecoration(
                     color:
                         AppDesignTokens.primaryAction(context).withOpacity(0.1),
-                    borderRadius:
-                        BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+                    borderRadius: BorderRadius.circular(
+                        AppDesignTokens.radiusMedium(context)),
                     border: Border.all(
                       color: AppDesignTokens.primaryAction(context)
                           .withOpacity(0.3),
@@ -137,6 +142,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                             widget.onSpecialDeductionChanged(
                               newValue.clamp(0, 5000),
                             );
+                            widget.onCalculateTax?.call();
                           }
                         },
                       ),
@@ -155,6 +161,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.successColor(context),
                   ),
                 ),
+                _RecalculateHint(onRecalculate: widget.onCalculateTax),
                 const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 其他扣除
@@ -167,6 +174,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.secondaryText(context),
                   ),
                 ),
+                _RecalculateHint(onRecalculate: widget.onCalculateTax),
 
                 const SizedBox(height: AppDesignTokens.spacing16),
 
@@ -180,6 +188,7 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.secondaryText(context),
                   ),
                 ),
+                _RecalculateHint(onRecalculate: widget.onCalculateTax),
 
                 const SizedBox(height: AppDesignTokens.spacing12),
 
@@ -189,8 +198,8 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                   decoration: BoxDecoration(
                     color:
                         AppDesignTokens.primaryAction(context).withOpacity(0.1),
-                    borderRadius:
-                        BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+                    borderRadius: BorderRadius.circular(
+                        AppDesignTokens.radiusMedium(context)),
                     border: Border.all(
                       color: AppDesignTokens.primaryAction(context)
                           .withOpacity(0.3),
@@ -228,4 +237,23 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
           ),
         ),
       );
+}
+
+class _RecalculateHint extends StatelessWidget {
+  const _RecalculateHint({required this.onRecalculate});
+
+  final VoidCallback? onRecalculate;
+
+  @override
+  Widget build(BuildContext context) {
+    if (onRecalculate == null) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton.icon(
+        onPressed: onRecalculate,
+        icon: const Icon(Icons.refresh, size: 16),
+        label: const Text('重新计算'),
+      ),
+    );
+  }
 }

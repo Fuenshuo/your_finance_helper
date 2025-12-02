@@ -135,7 +135,8 @@ ${context != null ? '额外上下文：$context' : ''}
       }
 
       final jsonStr = response.substring(jsonStart, jsonEnd + 1);
-      final Map<String, dynamic> data = json.decode(jsonStr);
+      final Map<String, dynamic> data =
+          json.decode(jsonStr) as Map<String, dynamic>;
 
       return MicroInsight(
         id: 'ai_${dailyCapId}_${DateTime.now().millisecondsSinceEpoch}',
@@ -143,19 +144,22 @@ ${context != null ? '额外上下文：$context' : ''}
         generatedAt: DateTime.now(),
         sentiment: _parseSentiment(data['sentiment'] as String? ?? 'neutral'),
         message: data['message'] as String? ?? '消费情况正常，请继续保持。',
-        actions: List<String>.from(data['actions'] ?? []),
+        actions: List<String>.from((data['actions'] as Iterable?) ?? const []),
         trigger: trigger,
       );
     } catch (e) {
       // Fallback parsing
-      return _generateFallbackInsight(dailyCapId, DailyCap(
-        id: dailyCapId,
-        date: DateTime.now(),
-        referenceAmount: 200.0,
-        currentSpending: 0.0,
-        percentage: 0.0,
-        status: CapStatus.safe,
-      ), trigger);
+      return _generateFallbackInsight(
+          dailyCapId,
+          DailyCap(
+            id: dailyCapId,
+            date: DateTime.now(),
+            referenceAmount: 200.0,
+            currentSpending: 0.0,
+            percentage: 0.0,
+            status: CapStatus.safe,
+          ),
+          trigger);
     }
   }
 
@@ -171,7 +175,8 @@ ${context != null ? '额外上下文：$context' : ''}
     }
   }
 
-  String _buildAnomalyExplanationPrompt(WeeklyAnomaly anomaly, String? context) {
+  String _buildAnomalyExplanationPrompt(
+      WeeklyAnomaly anomaly, String? context) {
     final isHigh = anomaly.deviation > 0;
     final percent = anomaly.deviation.abs().toStringAsFixed(0);
     final categories = anomaly.categories.join('、');
@@ -207,7 +212,8 @@ ${context != null ? '额外上下文：$context' : ''}
   String _generateFallbackAnomalyExplanation(WeeklyAnomaly anomaly) {
     final isHigh = anomaly.deviation > 0;
     final percent = anomaly.deviation.abs().toStringAsFixed(0);
-    final categories = anomaly.categories.isNotEmpty ? anomaly.categories[0] : '消费';
+    final categories =
+        anomaly.categories.isNotEmpty ? anomaly.categories[0] : '消费';
 
     if (isHigh) {
       return '$categories 支出异常激增 $percent%，侦探发现这可能是周末娱乐或特殊聚会导致的消费高峰。建议关注此类异常以优化预算分配。';
@@ -247,7 +253,8 @@ ${context != null ? '额外上下文：$context' : ''}
       actions = ['保持良好的消费习惯'];
     } else if (spending < budget) {
       sentiment = Sentiment.neutral;
-      message = '今日消费适中，已使用 ${(spending / budget * 100).toStringAsFixed(0)}% 的预算。';
+      message =
+          '今日消费适中，已使用 ${(spending / budget * 100).toStringAsFixed(0)}% 的预算。';
       actions = ['合理安排剩余预算'];
     } else {
       sentiment = Sentiment.negative;

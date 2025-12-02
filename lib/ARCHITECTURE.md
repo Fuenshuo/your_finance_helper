@@ -89,6 +89,10 @@ lib/
 
 > **导航更新**：`MainNavigationScreen` 现采用四 Tab 结构（Stream / Insights / Assets / Me），其中 Stream Tab 承载新的 Smart Timeline，通过 `Stack + IndexedStack` 让 Input Dock 悬浮在底部导航之上。
 
+### 应用入口
+- `main_flux.dart`：Flux Ledger 专用入口，负责初始化 `FluxServiceManager`、注册 `ProviderScope` + `MultiProvider` 栈，并使用 `FluxLogger` 输出业务/错误日志。为了保证 `flutter analyze` 通过，它引用的 `FluxLogger` 目前是 `core/utils/flux_logger.dart` 中的轻量桩实现（封装 `debugPrint`），后续可平滑替换为真正的结构化日志流水线。
+- `FluxLedgerApp` 构建了完整的 `ThemeData`（含 M3 语义、CardThemeData、新的 Amount Theme 扩展），且不再访问私有 `_processor`，避免跨文件私有字段引用导致的构建失败。
+
 ## 模块划分
 
 ### 1. Core 核心功能层

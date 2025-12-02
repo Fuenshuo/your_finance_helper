@@ -2,7 +2,7 @@
 
 ## 概述
 
-`screens` 包包含应用级别的通用页面，这些页面不属于特定的功能模块，而是为整个应用提供导航、设置、开发者工具等功能。
+`screens` 包包含应用级别的通用页面，这些页面不属于特定的功能模块，而是为整个应用提供导航、设置、开发者工具等功能。`flux_screens.dart` 仅导出当前实现的 Flux 体验（`flux_navigation_screen.dart` + `flux_streams_screen.dart` + `unified_transaction_entry_screen.dart`），避免引用尚未落地的占位文件导致构建失败。
 
 ## 页面列表
 
@@ -11,21 +11,29 @@
 **职责**: 提供 Flux Ledger 的主导航界面，承载 Smart Timeline 入口以及扩展模块。
 
 **功能**:
-- 底部导航栏（四个主要模块）
-  - **Stream**：Smart Timeline（`UnifiedTransactionEntryScreen`）
-  - **Insights**：图表与洞察占位页面
-  - **Assets**：资产/账户占位页面
-  - **Me**：个人中心与设置占位页面
+- 底部导航栏（Feature Flag 感知）
+  - **Flag OFF**：保留四个主要模块（Stream/Insights/Assets/Me），Insights Tab 指向旧版洞察页面
+  - **Flag ON**：收敛为三个模块（Stream/Assets/Me），Insights 入口由 Stream Header + Drawer 统一承载
 - 顶部 AppBar（调试模式点击开启、统一的 Flux Ledger 品牌标题）
 - Stream Tab 内的 Input Dock 通过 `Stack` 固定在底部导航上方
 - 使用 `IndexedStack` 保持页面状态
 - 底部导航栏使用 `AppBottomNavigationBar`，自动引用 `AppDesignTokens` 语义色以适配浅/深色模式（含指示色与背景）
+- Feature Flag 监听：`stream_insights_flag_provider` 变化时，会同步 `FluxViewState` 并在 UI 中动态增减 Tab
+- Flag OFF 时才弹出首登的 Flux Insights 引导对话框；Flag ON 时会直接进入合并后的体验
+- Telemetry：进入页面后立即记录 `flag_variant_exposed` 事件，并为每次底部 Tab 切换发送 `bottom_tab_select` 事件（含 legacy/merged 变体），用于 A/B 转化分母与使用率聚合
 
 **导航结构**:
 ```
+Flag OFF:
 MainNavigationScreen
-├── UnifiedTransactionEntryScreen (Stream)
-├── _PlaceholderScreen (Insights)
+├── UnifiedTransactionEntryScreen (legacy layout, drawer关闭)
+├── FluxInsightsScreen (Insights)
+├── _PlaceholderScreen (Assets)
+└── _PlaceholderScreen (Me)
+
+Flag ON:
+MainNavigationScreen
+├── UnifiedTransactionEntryScreen (merged layout)
 ├── _PlaceholderScreen (Assets)
 └── _PlaceholderScreen (Me)
 ```
@@ -172,6 +180,13 @@ if (isFirstLaunch) {
 - **Month Insight View**：新增 `ViewMode.month`，以“月度账单卡片”展示本月收入、支出与 Top5 消费类别排名，强调宏观视角而非流水细节。
 - **Month Segmented Breakdown**：月度卡片内置支出/收入分段控制器，切换查看 TOP 列表，默认展示支出构成。
 - **View Toggle Frosted Orb**：日/周切换按钮移至导航栏左侧，采用 44px 圆形 BackdropFilter “磨砂玻璃”样式，与标题/设置图标形成平衡的导航三角，同时释放时间线首屏空间。
+- **Frosted Segmented Control + AnimatedSwitcher**：头部引入 `AppSegmentedControl`（Key=`unified_timeframe_segmented_control`）驱动 `fluxViewStateProvider`，下方 `AnimatedSwitcher` 在 Timeline / Insights Pane 之间切换，Input Dock 保持在切换器之外，实现「一页内完成所有流转」的 US1 体验。
+- **Insights Nav Chip（Flag 感知）**：`unified_insights_nav_chip` 仅在 flag 打开时展示，负责在 Timeline/Insights Pane 之间切换；flag 关闭时整个 Header/Drawer 被隐藏，屏幕回退到 legacy Timeline 堆叠（保留 Draft Card + Input Dock）。
+- **Telemetry + Performance**：
+  - `PerformanceMonitor.monitorBuild('UnifiedTransactionEntryScreen', …)` 追踪 build 耗时，确保合并后仍符合 60fps 目标
+  - `_setPane` / Drawer 控制器 会发出 `view_toggled`、`drawer_open`、`drawer_collapse` 事件，`metadata.source` 标识触发来源（chip、drawer、bottom_tab 等），帮助观察切换路径
+- **Insights Pane Placeholder**：`AnimatedSwitcher` 的第二个 Pane 暂时渲染磨砂卡片占位（敬请期待提示），提供抽屉入口的视觉锚点，方便 T014 接入实时分析内容与交互动效。
+- **Insights Drawer (US2)**：`insights_drawer_controller_provider` 控制的呼吸式抽屉悬浮在 Header 下方，卡片态展示最新 AI 摘要、图标态仅保留提示与 Badge；支持自动倒计时收起、Rainbow 动画期间的延迟展开与重复交易合并。
 - **Theme Palette Button**：右上角新增磨砂设置按钮，支持在浅色/深色/系统主题之间快速切换，并集中管理视觉设置。
   - 图标会根据当前主题在 Sun / Moon / Monitor 之间切换，磨砂胶囊的填充、描边、阴影也跟随亮/暗模式动态调整，确保在夜间环境下可见性一致。
 - **Amount Theme Switcher**：主题弹窗内可切换 3 套金额色彩体系（Flux Blue / Forest Emerald / Graphite Mono），完全依赖 `AppDesignTokens`，确保浅色/深色模式一致生效。
@@ -180,6 +195,8 @@ if (isFirstLaunch) {
 - **紧凑输入与中文语境**：输入 Dock 缩减为 56px pill、44~52px send button，文本与按钮垂直对齐，标题改为“智能账单”，日期头矩阵与 chip 统一汉化（今天/昨天/日期）。
 - **Monospaced Timeline 数字**：所有金额统一使用 `GoogleFonts.ibmPlexMono` 等宽字体，搭配 `Gap` 布局间距保持 Timeline 数字与输入 Dock 金额对齐。
 - **Smart Timeline Skeleton**：时间线加载阶段以 `AppShimmer` 骨架屏替换 `CircularProgressIndicator`，保持页面结构稳定并为数据注入制造期待感。
+- **FluxViewState Provider**：统一使用 `fluxViewStateProvider`（`FluxTimeframe` + `FluxPane`）管理 Day/Week/Month 与 Timeline/Insights Pane 状态，`UnifiedTransactionEntryScreen` 监听该 provider 并在 `_handleTimeframeChanged` 中平滑重建 `_currentGroups`，取代本地 `ViewMode` 枚举。
+- **Testing Hook**：`UnifiedTransactionEntryScreen(initialDraft: ...)` 允许在 Widget 测试中直接注入 `ParsedTransaction`，无需触发 AI 服务即可验证 Draft Card 动画与确认流程。
 
 ### 10. unified_transaction_entry_screen_v2.dart - AI 统一记账入口 V2
 
@@ -226,6 +243,25 @@ if (isFirstLaunch) {
 - 底部胶囊使用动态阴影（暗色模式降低透明度）与主题背景色，确保夜间观感。
 - 支持 `StatefulNavigationShell`，点击当前 Tab 时可选择回到根路由或保持状态。
 - 与 `FluxFloatingActionButton` 和 `FlowStatusIndicator` 联动，用于快速进入 Flow Entry。
+- `FlowPulseIndicator` 直接消费 `FlowDashboardProvider.overallHealth`（core models 的 `FlowHealthStatus`），移除了与 UI 文档中枚举重复定义导致的类型冲突。
+
+### 13. flux_streams_screen.dart - Flux Streams 复合视图
+
+**职责**: 将 Stream（交易时间线）与 Insights（洞察）整合为同一页面，通过头部交互切换不同视图。
+
+**关键交互**:
+- 顶部 `View Toggle`（Day/Week/Month）常驻可见，使用 `AppSegmentedControl` 控制当前时间范围。
+- Mock「添加交易」按钮会模拟新增一条流水并触发 2 秒的异步分析；分析过程中界面保持不变。
+- 分析完成后，View Toggle 右侧会出现「Insights Drawer」动画 —— 先展开展示提示文字（例如 “3 improvements found”），2 秒后自动收回仅保留图标。
+- 点击 Drawer 图标会切换到 Insights 视图；再次点击 View Toggle 任意分段会返回 Stream 视图并完全收起 Drawer。
+- 右上角在主题按钮旁新增「Test drawer」小图标，可直接触发抽屉动画，方便调试与演示。
+
+**技术要点**:
+- 使用 `AnimatedSwitcher` 在 Stream / Insights 两种主体之间切换，保持 350ms 的流畅渐变。
+- Drawer 动画通过 `AnimatedContainer` 控制宽度，最大宽度不超过屏幕的 50%，并支持 icon-only 状态。
+- 交易列表采用 `AppCard` + `PhosphorIcons`，维持 Flux Ledger 既有的卡片、圆角与色彩系统。
+- `FluxInsightsScreen` 复用既有 Premium UI，实现 Stream / Insights 在单页面内的无缝切换。
+- Drawer 宽度计算与模拟交易的金额增量统一转为 `double`，`clamp` 返回值显式转换，避免 analyzer 在 Phase 3 新逻辑里报出 `num → double` 隐式转换告警。
 
 ## 页面关系
 

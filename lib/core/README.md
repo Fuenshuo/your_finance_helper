@@ -116,6 +116,12 @@ core/
 - `income_plan_provider.dart` - 收入计划状态管理
 - `transaction_provider.dart` - 交易状态管理
 - `riverpod_providers.dart` - Riverpod状态管理（新架构）
+- `flux_providers.dart` - Flux流体验Provider集合（新增 `streamInsightsFeatureFlag` 和默认false的getter，提供单页Stream+Insights合并的特性开关入口）
+- `stream_insights_flag_provider.dart` - SharedPreferences驱动的功能开关Provider，支持本地debug override/RemoteConfig写入与Riverpod绑定
+- **Testing Helpers**:
+  - `TransactionProvider.seedTransactionsForTesting()` - 直接注入交易与草稿数据，避免依赖StorageService
+  - `AccountProvider.seedAccountsForTesting()` - 为单元测试快速提供账户列表
+  - `BudgetProvider.seedBudgetsForTesting()` - 注入信封/零基预算与工资数据，加速UI与服务层测试
 
 **关键特性**:
 - Provider模式（ChangeNotifier）
@@ -217,7 +223,8 @@ core/
 
 **主要工具**:
 - `logger.dart` - 日志工具（结构化日志）
-- `performance_monitor.dart` - 性能监控
+- `flux_logger.dart` - Flux Ledger 入口使用的轻量日志桩，统一业务/错误日志格式
+- `performance_monitor.dart` - 性能监控 & Stream Insights Telemetry 帮助方法
 - `notification_manager.dart` - 通知管理
 - `unified_notifications.dart` - 统一通知系统
 - `debug_mode_manager.dart` - 调试模式管理
@@ -227,6 +234,7 @@ core/
 **关键特性**:
 - 结构化日志输出
 - 性能指标收集
+- Stream + Insights Telemetry 事件封装（view toggle / drawer / flag / analysis）
 - 调试工具支持
 - 表单验证工具
 

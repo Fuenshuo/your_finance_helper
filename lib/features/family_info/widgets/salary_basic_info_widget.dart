@@ -11,12 +11,20 @@ class SalaryBasicInfoWidget extends StatefulWidget {
     required this.basicSalaryController,
     required this.salaryDay,
     required this.onSalaryDayChanged,
+    this.isMidYearMode = false,
+    this.useAutoCalculation = false,
+    this.onMidYearModeChanged,
+    this.onAutoCalculationChanged,
     super.key,
   });
   final TextEditingController nameController;
   final TextEditingController basicSalaryController;
   final int salaryDay;
   final void Function(int) onSalaryDayChanged;
+  final bool isMidYearMode;
+  final bool useAutoCalculation;
+  final ValueChanged<bool>? onMidYearModeChanged;
+  final ValueChanged<bool>? onAutoCalculationChanged;
 
   @override
   State<SalaryBasicInfoWidget> createState() => _SalaryBasicInfoWidgetState();
@@ -76,11 +84,30 @@ class _SalaryBasicInfoWidgetState extends State<SalaryBasicInfoWidget> {
                     Text(
                       '${widget.salaryDay}日',
                       style: AppDesignTokens.headline(context).copyWith(
-                            color: AppDesignTokens.primaryAction(context),
-                          ),
+                        color: AppDesignTokens.primaryAction(context),
+                      ),
                     ),
                   ],
                 ),
+
+                // Mode toggles
+                if (widget.onMidYearModeChanged != null) ...[
+                  SizedBox(height: AppDesignTokens.spacing16),
+                  SwitchListTile.adaptive(
+                    title: const Text('启用补录模式（年中调整）'),
+                    subtitle: const Text('根据今年已发工资重新计算累计数据'),
+                    value: widget.isMidYearMode,
+                    onChanged: widget.onMidYearModeChanged,
+                  ),
+                ],
+                if (widget.onAutoCalculationChanged != null) ...[
+                  SwitchListTile.adaptive(
+                    title: const Text('自动估算累计金额'),
+                    subtitle: const Text('开启后会根据当前补贴/税费估算累计值'),
+                    value: widget.useAutoCalculation,
+                    onChanged: widget.onAutoCalculationChanged,
+                  ),
+                ],
               ],
             ),
           ),

@@ -50,6 +50,7 @@ class DioHttpService {
   String _getBaseUrl() {
     // For now, use a placeholder. In production, this would come from environment variables
     // or a configuration service
+    // TODO: 配置开发环境的有效API端点
     return 'https://api.yourfinance.com/v1';
   }
 

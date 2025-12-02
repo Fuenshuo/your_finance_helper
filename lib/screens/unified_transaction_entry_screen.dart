@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,10 +15,15 @@ import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
+import 'package:your_finance_flutter/core/models/analysis_summary.dart';
+import 'package:your_finance_flutter/core/models/flux_view_state.dart';
+import 'package:your_finance_flutter/core/models/insights_drawer_state.dart';
 import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/core/providers/flux_providers.dart';
+import 'package:your_finance_flutter/core/providers/stream_insights_flag_provider.dart';
 import 'package:your_finance_flutter/core/providers/theme_provider.dart';
 import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
@@ -25,27 +31,53 @@ import 'package:your_finance_flutter/core/services/ai/natural_language_transacti
 import 'package:your_finance_flutter/core/services/user_income_profile_service.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart' hide AppTheme;
+import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
+import 'package:your_finance_flutter/core/widgets/app_primary_button.dart';
 import 'package:your_finance_flutter/core/widgets/app_selection_controls.dart';
 import 'package:your_finance_flutter/core/widgets/app_shimmer.dart';
+import 'package:your_finance_flutter/features/insights/services/stream_insights_analysis_service.dart';
+
+const _timeframeControlKey = Key('unified_timeframe_segmented_control');
+const _timelineViewKey = Key('unified_timeline_view');
+const _insightsViewKey = Key('unified_insights_view');
+const _insightsNavChipKey = Key('unified_insights_nav_chip');
+const _inputDockKey = Key('unified_input_dock');
+const _timelineGroupListKey = Key('unified_timeline_group_list');
+const _draftCardKey = Key('unified_draft_card');
+const bool _enableTimelineMorph = false;
+const Duration _paneSwitchAnimationBudget = Duration(milliseconds: 420);
+const Duration _drawerAnimationBudget = Duration(milliseconds: 520);
+const String _paneSwitchOperationName =
+    'UnifiedTransactionEntryScreen.pane_switch';
+const String _drawerExpandOperationName =
+    'UnifiedTransactionEntryScreen.drawer_expand';
+const String _drawerCollapseOperationName =
+    'UnifiedTransactionEntryScreen.drawer_collapse';
 
 /// 统一记账入口页面
 /// AI自动识别收支类型，零认知负担
-class UnifiedTransactionEntryScreen extends StatefulWidget {
-  const UnifiedTransactionEntryScreen({super.key});
+class UnifiedTransactionEntryScreen extends ConsumerStatefulWidget {
+  const UnifiedTransactionEntryScreen({
+    super.key,
+    this.initialDraft,
+  });
+
+  final ParsedTransaction? initialDraft;
 
   @override
-  State<UnifiedTransactionEntryScreen> createState() =>
+  ConsumerState<UnifiedTransactionEntryScreen> createState() =>
       _UnifiedTransactionEntryScreenState();
 }
 
 class _UnifiedTransactionEntryScreenState
-    extends State<UnifiedTransactionEntryScreen> with TickerProviderStateMixin {
+    extends ConsumerState<UnifiedTransactionEntryScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _inputController = TextEditingController();
   late final Future<NaturalLanguageTransactionService> _nlServiceFuture;
 
   bool _isLoading = false;
-  int _placeholderIndex = 0;
-  late AnimationController _placeholderAnimationController;
+  final int _placeholderIndex = 0;
   ParsedTransaction? _draftTransaction;
   DateTime? _draftDate;
   String? _draftAccountId;
@@ -57,6 +89,7 @@ class _UnifiedTransactionEntryScreenState
   late final AnimationController _dayCardHighlightController;
   late AnimationController _toastController;
   final ScrollController _scrollController = ScrollController();
+  Timer? _insightsAnalysisTimer;
   bool _isConfirmingDraft = false;
   final NumberFormat _currencyFormatter =
       NumberFormat.currency(locale: 'zh_CN', symbol: '¥');
@@ -70,7 +103,6 @@ class _UnifiedTransactionEntryScreenState
   int _draftAnimationSeed = 0;
   GlobalKey<SliverAnimatedListState> _listKey =
       GlobalKey<SliverAnimatedListState>();
-  ViewMode _viewMode = ViewMode.day;
   List<_TimelineGroup> _currentGroups = [];
   List<_TimelineGroup> _dayGroups = [];
   List<_TimelineGroup> _weekGroups = [];
@@ -87,6 +119,10 @@ class _UnifiedTransactionEntryScreenState
   String _toastMessage = '';
   bool _isToastError = false;
   _MonthBreakdownTab _monthBreakdownTab = _MonthBreakdownTab.expense;
+  late final ProviderSubscription<FluxViewState> _viewStateSubscription;
+  ProviderSubscription<StreamInsightsFlagProvider>? _flagSubscription;
+  ProviderSubscription<InsightsDrawerState>? _drawerSubscription;
+  final Map<String, Timer> _operationTimers = <String, Timer>{};
 
   // Placeholder轮播问句
   static const List<String> _placeholders = [
@@ -99,12 +135,39 @@ class _UnifiedTransactionEntryScreenState
   @override
   void initState() {
     super.initState();
-    _nlServiceFuture = NaturalLanguageTransactionService.getInstance();
+    print('[UnifiedTransactionEntryScreen.initState] 🎯 页面初始化开始');
 
-    _placeholderAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
+    _nlServiceFuture = NaturalLanguageTransactionService.getInstance();
+    final initialDraft = widget.initialDraft;
+    if (initialDraft != null) {
+      _draftTransaction = initialDraft;
+      _draftDate = initialDraft.date ?? DateTime.now();
+      _draftAccountId = initialDraft.accountId;
+      _draftAccountName = initialDraft.accountName;
+    }
+
+    // 记录初始状态
+    print(
+      '[UnifiedTransactionEntryScreen.initState] 📊 草稿状态: ${_draftTransaction != null ? "有草稿" : "无草稿"}',
+    );
+
+    _viewStateSubscription = ref.listenManual<FluxViewState>(
+      fluxViewStateProvider,
+      (previous, next) {
+        if (previous?.timeframe != next.timeframe) {
+          _handleTimeframeChanged(previous?.timeframe, next.timeframe);
+        }
+      },
+    );
+    _flagSubscription = ref.listenManual<StreamInsightsFlagProvider>(
+      streamInsightsFlagStateProvider,
+      (previous, next) => _syncFlagState(next.isEnabled),
+    );
+    _drawerSubscription = ref.listenManual<InsightsDrawerState>(
+      insightsDrawerControllerProvider,
+      _handleDrawerStateChanged,
+    );
+    _syncFlagState(ref.read(streamInsightsFlagStateProvider).isEnabled);
 
     _draftMergeController = AnimationController(
       vsync: this,
@@ -156,26 +219,15 @@ class _UnifiedTransactionEntryScreenState
           });
         }
       });
-
-    _placeholderAnimationController.addListener(() {
-      if (_placeholderAnimationController.isCompleted) {
-        setState(() {
-          _placeholderIndex = (_placeholderIndex + 1) % _placeholders.length;
-        });
-        _placeholderAnimationController.reset();
-        _placeholderAnimationController.forward();
-      }
-    });
-    _placeholderAnimationController.forward();
   }
 
-  List<_TimelineGroup> _groupsByMode(ViewMode mode) {
-    switch (mode) {
-      case ViewMode.day:
+  List<_TimelineGroup> _groupsByTimeframe(FluxTimeframe timeframe) {
+    switch (timeframe) {
+      case FluxTimeframe.day:
         return _dayGroups;
-      case ViewMode.week:
+      case FluxTimeframe.week:
         return _weekGroups;
-      case ViewMode.month:
+      case FluxTimeframe.month:
         return _monthGroups;
     }
   }
@@ -184,11 +236,35 @@ class _UnifiedTransactionEntryScreenState
   void didChangeDependencies() {
     super.didChangeDependencies();
     final provider = context.read<TransactionProvider>();
+
+    print(
+      '[UnifiedTransactionEntryScreen.didChangeDependencies] 🔄 Provider 变更检测',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen.didChangeDependencies] 📊 当前交易数: ${provider.transactions.length}',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen.didChangeDependencies] 🔄 当前草稿数: ${provider.draftTransactions.length}',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen.didChangeDependencies] ⚡ 是否正在加载: ${provider.isLoading}',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen.didChangeDependencies] ❌ 错误信息: ${provider.error ?? "无"}',
+    );
+
     if (_transactionProvider != provider) {
+      print(
+        '[UnifiedTransactionEntryScreen.didChangeDependencies] 🔄 TransactionProvider 实例变更，重新绑定监听器',
+      );
       _transactionProvider?.removeListener(_handleTransactionsUpdated);
       _transactionProvider = provider;
       _transactionProvider?.addListener(_handleTransactionsUpdated);
       _handleTransactionsUpdated();
+    } else {
+      print(
+        '[UnifiedTransactionEntryScreen.didChangeDependencies] ✅ TransactionProvider 实例相同，无需重新绑定',
+      );
     }
     if (!_didRequestThemeStyleInit) {
       _didRequestThemeStyleInit = true;
@@ -203,7 +279,6 @@ class _UnifiedTransactionEntryScreenState
   @override
   void dispose() {
     _inputController.dispose();
-    _placeholderAnimationController.dispose();
     _draftMergeController.dispose();
     _inputCollapseController.dispose();
     _rainbowRotationController.dispose();
@@ -213,7 +288,21 @@ class _UnifiedTransactionEntryScreenState
     _toastTimer?.cancel();
     _scrollController.dispose();
     _transactionProvider?.removeListener(_handleTransactionsUpdated);
+    _viewStateSubscription.close();
+    _flagSubscription?.close();
+    _drawerSubscription?.close();
+    _insightsAnalysisTimer?.cancel();
+    _cancelOperationTimers();
     super.dispose();
+  }
+
+  void _syncFlagState(bool isEnabled) {
+    ref.read(fluxViewStateProvider.notifier).syncFlag(isEnabled: isEnabled);
+    if (!isEnabled) {
+      ref
+          .read(insightsDrawerControllerProvider.notifier)
+          .collapseNow(reason: 'flag_disabled');
+    }
   }
 
   Future<void> _handleSubmit() async {
@@ -299,15 +388,95 @@ class _UnifiedTransactionEntryScreenState
   }
 
   void _handleTransactionsUpdated() {
-    if (!mounted) return;
+    if (!mounted) {
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ❌ 组件已卸载，跳过更新',
+      );
+      return;
+    }
+
     final transactions = _transactionProvider?.transactions ?? [];
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 收到交易数据更新',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📈 交易总数: ${transactions.length}',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 🔄 是否首次引导: $_didBootstrapGroups',
+    );
+
+    if (transactions.isEmpty) {
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ⚠️ 警告：交易数据为空！这可能是因为：',
+      );
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated]   1. 首次使用应用 - 这是正常的',
+      );
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated]   2. 数据被意外清除 - 需要检查应用设置',
+      );
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated]   3. 从其他设备同步数据失败 - 检查网络连接',
+      );
+
+      // 设置空状态标志，可以在UI中显示欢迎界面
+      setState(() {
+        _didBootstrapGroups = true;
+        _currentGroups = [];
+      });
+      return;
+    } else {
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ✅ 交易数据样例:',
+      );
+      final sampleTransaction = transactions
+          .take(3)
+          .map((t) => '${t.id}: ${t.amount} (${t.date})')
+          .join(', ');
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📋 $sampleTransaction',
+      );
+    }
+
     final newDayGroups = _groupTransactionsByDay(transactions);
     final newWeekGroups = _groupTransactionsByWeek(transactions);
     final newMonthGroups = _groupTransactionsByMonth(transactions);
+
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 分组结果:',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📅 按日分组: ${newDayGroups.length} 组',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📆 按周分组: ${newWeekGroups.length} 组',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 按月分组: ${newMonthGroups.length} 组',
+    );
+
     final dayChanged = !_groupListsEqual(_dayGroups, newDayGroups);
     final weekChanged = !_groupListsEqual(_weekGroups, newWeekGroups);
     final monthChanged = !_groupListsEqual(_monthGroups, newMonthGroups);
+
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 🔄 变更检测:',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📅 日分组变更: $dayChanged',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📆 周分组变更: $weekChanged',
+    );
+    print(
+      '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] 📊 月分组变更: $monthChanged',
+    );
+
     if (!dayChanged && !weekChanged && !monthChanged && _didBootstrapGroups) {
+      print(
+        '[UnifiedTransactionEntryScreen._handleTransactionsUpdated] ⏭️ 无实质变更，跳过状态更新',
+      );
       return;
     }
     setState(() {
@@ -315,7 +484,8 @@ class _UnifiedTransactionEntryScreenState
       _weekGroups = newWeekGroups;
       _monthGroups = newMonthGroups;
       if (!_isMorphing) {
-        final target = _groupsByMode(_viewMode);
+        final currentTimeframe = ref.read(fluxViewStateProvider).timeframe;
+        final target = _groupsByTimeframe(currentTimeframe);
         _currentGroups = List<_TimelineGroup>.from(target);
         _listKey = GlobalKey<SliverAnimatedListState>();
         _groupCardKeys.clear();
@@ -323,6 +493,79 @@ class _UnifiedTransactionEntryScreenState
       }
       _didBootstrapGroups = true;
     });
+  }
+
+  void _handleTimeframeChanged(
+    FluxTimeframe? previous,
+    FluxTimeframe current,
+  ) {
+    if (!_didBootstrapGroups) {
+      return;
+    }
+    final targetGroups = _groupsByTimeframe(current);
+    if (_currentGroups.isEmpty || previous == null) {
+      setState(() {
+        _currentGroups = List<_TimelineGroup>.from(targetGroups);
+        _listKey = GlobalKey<SliverAnimatedListState>();
+        _isMorphing = false;
+      });
+      return;
+    }
+    if (targetGroups.isEmpty) {
+      setState(() {
+        _currentGroups.clear();
+        _listKey = GlobalKey<SliverAnimatedListState>();
+        _isMorphing = false;
+      });
+      return;
+    }
+    if (!_enableTimelineMorph) {
+      setState(() {
+        _currentGroups = List<_TimelineGroup>.from(targetGroups);
+        _listKey = GlobalKey<SliverAnimatedListState>();
+        _isMorphing = false;
+      });
+      return;
+    }
+    if (_isMorphing) return;
+    setState(() {
+      _isMorphing = true;
+    });
+    _performMorphTransition(targetGroups);
+  }
+
+  void _handleDrawerStateChanged(
+    InsightsDrawerState? previous,
+    InsightsDrawerState next,
+  ) {
+    final wasExpanded = previous?.isExpanded ?? false;
+    final isExpanded = next.isExpanded;
+    if (wasExpanded == isExpanded) {
+      return;
+    }
+    final operationName =
+        isExpanded ? _drawerExpandOperationName : _drawerCollapseOperationName;
+    _scheduleOperationMeasurement(operationName, _drawerAnimationBudget);
+  }
+
+  void _scheduleOperationMeasurement(
+    String operationName,
+    Duration animationBudget,
+  ) {
+    _operationTimers.remove(operationName)?.cancel();
+    PerformanceMonitor.endOperation(operationName);
+    PerformanceMonitor.startOperation(operationName);
+    _operationTimers[operationName] = Timer(animationBudget, () {
+      PerformanceMonitor.endOperation(operationName);
+      _operationTimers.remove(operationName);
+    });
+  }
+
+  void _cancelOperationTimers() {
+    for (final timer in _operationTimers.values) {
+      timer.cancel();
+    }
+    _operationTimers.clear();
   }
 
   Future<void> _handleAutoSave(ParsedTransaction parsed) async {
@@ -354,6 +597,10 @@ class _UnifiedTransactionEntryScreenState
           HapticFeedback.lightImpact();
         }
 
+        if (ref.read(streamInsightsFlagStateProvider).isEnabled) {
+          _triggerInsightsAnalysis(transaction);
+        }
+
         // 清空输入
         _inputController.clear();
       } catch (e) {
@@ -370,6 +617,95 @@ class _UnifiedTransactionEntryScreenState
         _showToast(guidance, isError: true);
       }
     }
+  }
+
+  void _triggerInsightsAnalysis(Transaction transaction) {
+    _insightsAnalysisTimer?.cancel();
+    _insightsAnalysisTimer = Timer(const Duration(milliseconds: 350), () {
+      unawaited(_runInsightsAnalysis(transaction));
+    });
+  }
+
+  Future<void> _runInsightsAnalysis(Transaction transaction) async {
+    final flagProvider = ref.read(streamInsightsFlagStateProvider);
+    final flagEnabled = flagProvider.isEnabled;
+    if (!flagEnabled) {
+      return;
+    }
+
+    try {
+      final service = await StreamInsightsAnalysisService.getInstance();
+      final viewState = ref.read(fluxViewStateProvider);
+      final summary = await service.requestAnalysis(
+        transactionIds: <String>[transaction.id],
+        timeframe: viewState.timeframe,
+        pane: viewState.pane,
+        flagEnabled: flagEnabled,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final drawerController =
+          ref.read(insightsDrawerControllerProvider.notifier);
+      final deferDuration = _drawerDeferDuration();
+      drawerController.handleAnalysisSummary(
+        summaryText: summary.topRecommendation.isNotEmpty
+            ? summary.topRecommendation
+            : _buildDrawerSummary(transaction),
+        improvementDelta:
+            summary.improvementsFound <= 0 ? 1 : summary.improvementsFound,
+        collapseAfter: const Duration(seconds: 6),
+        deferExpansionBy: deferDuration == Duration.zero ? null : deferDuration,
+      );
+
+      PerformanceMonitor.logAnalysisSummaryTelemetry(
+        summary: summary,
+        pane: viewState.pane,
+        timeframe: viewState.timeframe,
+        flagEnabled: flagEnabled,
+      );
+
+      unawaited(
+        service.logTelemetry(
+          StreamInsightsTelemetryEvent.analysis(
+            summary: summary,
+            pane: viewState.pane,
+            timeframe: viewState.timeframe,
+            flagEnabled: flagEnabled,
+          ),
+        ),
+      );
+    } catch (error) {
+      Logger.warning(
+        'StreamInsightsAnalysis',
+        '分析请求失败：$error',
+      );
+    }
+  }
+
+  Duration _drawerDeferDuration() {
+    if (_rainbowRotationController.isAnimating) {
+      return const Duration(milliseconds: 900);
+    }
+    if (_inputCollapseController.isAnimating ||
+        _inputCollapseController.value > 0) {
+      return const Duration(milliseconds: 600);
+    }
+    return Duration.zero;
+  }
+
+  String _buildDrawerSummary(Transaction transaction) {
+    final description = transaction.description.trim();
+    final amount = transaction.amount;
+    final buffer = StringBuffer('分析完成');
+    if (description.isNotEmpty) {
+      buffer.write('：$description');
+    }
+    buffer.write(' · ${_currencyFormatter.format(amount)}');
+    buffer.write('，查看洞察获取建议');
+    return buffer.toString();
   }
 
   Widget _buildInputDock(BuildContext context) => AnimatedBuilder(
@@ -424,6 +760,7 @@ class _UnifiedTransactionEntryScreenState
                   ),
                   padding: EdgeInsets.fromLTRB(16, 10, 16, bottomPadding),
                   child: Container(
+                    key: _inputDockKey,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -676,9 +1013,17 @@ class _UnifiedTransactionEntryScreenState
             ? context.fluxPositiveAmount
             : context.fluxPrimaryText;
     final title = draft.category?.displayName ?? draft.description ?? '未分类';
-    final subtitle = draft.description ?? draft.notes ?? '——';
+    var subtitle = draft.notes ?? '';
+    if (subtitle.isEmpty) {
+      if (draft.description != null && draft.description != title) {
+        subtitle = draft.description!;
+      } else {
+        subtitle = 'AI帮你整理的草稿';
+      }
+    }
 
     return Container(
+      key: _draftCardKey,
       decoration: BoxDecoration(
         color: context.fluxSurface,
         borderRadius: BorderRadius.circular(20),
@@ -1142,77 +1487,305 @@ class _UnifiedTransactionEntryScreenState
       return SliverToBoxAdapter(child: _buildEmptyState(context));
     }
 
-    return SliverAnimatedList(
-      key: _listKey,
-      initialItemCount: groups.length,
-      itemBuilder: (context, index, animation) {
-        final group = groups[index];
-        final card = _buildGroupCard(context, group);
+    return KeyedSubtree(
+      key: _timelineGroupListKey,
+      child: SliverAnimatedList(
+        key: _listKey,
+        initialItemCount: groups.length,
+        itemBuilder: (context, index, animation) {
+          final group = groups[index];
+          final card = _buildGroupCard(context, group);
 
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutBack,
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack,
+              ),
+              child: card,
             ),
-            child: card,
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildViewToggleButton(
+  Widget _buildTimelineView(
     BuildContext context,
     EdgeInsets viewInsets,
-  ) =>
-      Positioned(
-        top: viewInsets.top + 12,
-        left: 16,
-        child: ClipOval(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.08)
-                    : context.fluxSurface.withOpacity(0.6),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.white.withOpacity(0.5),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black.withOpacity(0.4)
-                        : Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+    double scrollBottomPadding,
+    bool isLoading,
+    List<_TimelineGroup> groupedTransactions, {
+    double headerOffset = 60,
+  }) =>
+      KeyedSubtree(
+        key: _timelineViewKey,
+        child: CustomScrollView(
+          key: const PageStorageKey<String>('unified_timeline_scroll'),
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                viewInsets.top + headerOffset,
+                16,
+                scrollBottomPadding,
               ),
-              child: IconButton(
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: PhosphorIcon(
-                  _viewModeIcon(_viewMode),
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : context.fluxPrimaryAction,
+              sliver: _buildTimelineSliver(
+                context,
+                groupedTransactions,
+                isLoading,
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildInsightsView(
+    BuildContext context,
+    EdgeInsets viewInsets,
+    double scrollBottomPadding,
+  ) =>
+      KeyedSubtree(
+        key: _insightsViewKey,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            viewInsets.top + 60,
+            16,
+            scrollBottomPadding,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: context.fluxSurface,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color:
+                    context.fluxPrimaryAction.withAlpha((255 * 0.12).round()),
+              ),
+              boxShadow: [
+                AppDesignTokens.primaryShadow(context),
+              ],
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: context.fluxPrimaryAction
+                            .withAlpha((255 * 0.1).round()),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        PhosphorIcons.sparkle(),
+                        size: 28,
+                        color: context.fluxPrimaryAction,
+                      ),
+                    ),
+                    const Gap(16),
+                    Text(
+                      'Flux Insights',
+                      style: context.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.fluxPrimaryText,
+                      ),
+                    ),
+                    const Gap(8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'AI 分析将在这里展示你的消费与收入洞察。T014 将接入抽屉交互与实时摘要。',
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: context.fluxSecondaryText,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const Gap(16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.fluxPrimaryAction
+                            .withAlpha((255 * 0.08).round()),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '敬请期待 👀',
+                        style: context.textTheme.labelLarge?.copyWith(
+                          color: context.fluxPrimaryAction,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                tooltip: '切换到${_viewModeLabel(_nextViewMode(_viewMode))}视图',
-                onPressed: _isMorphing ? null : _toggleViewMode,
               ),
             ),
           ),
         ),
       );
+
+  Widget _buildHeader(
+    BuildContext context,
+    EdgeInsets viewInsets,
+    FluxViewState viewState,
+  ) =>
+      Positioned(
+        top: viewInsets.top + 12,
+        left: 16,
+        right: 16,
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildTimeframeControl(context, viewState.timeframe),
+            ),
+            const SizedBox(width: 12),
+            _buildInsightsNavChip(context, viewState),
+          ],
+        ),
+      );
+
+  Widget _buildInsightsDrawerOverlay(
+    BuildContext context,
+    EdgeInsets viewInsets,
+  ) {
+    final flagEnabled = ref.watch(streamInsightsFlagStateProvider).isEnabled;
+    if (!flagEnabled) {
+      return const SizedBox.shrink();
+    }
+    final drawerState = ref.watch(insightsDrawerControllerProvider);
+    if (!drawerState.isVisible) {
+      return const SizedBox.shrink();
+    }
+    final controller = ref.read(insightsDrawerControllerProvider.notifier);
+    return Positioned(
+      left: 16,
+      right: 16,
+      top: viewInsets.top + 72,
+      child: _InsightsDrawer(
+        state: drawerState,
+        onExpand: () => controller.setExpanded(true),
+        onMinimize: () => controller.setExpanded(false),
+        onClose: () => controller.collapseNow(reason: 'manual_close'),
+      ),
+    );
+  }
+
+  Widget _buildTimeframeControl(
+    BuildContext context,
+    FluxTimeframe timeframe,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor =
+        isDark ? Colors.white.withOpacity(0.08) : Colors.white;
+    final borderColor =
+        isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          key: _timeframeControlKey,
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              AppDesignTokens.primaryShadow(context),
+            ],
+          ),
+          child: AppSegmentedControl<FluxTimeframe>(
+            groupValue: timeframe,
+            onValueChanged: (value) {
+              if (value == null) return;
+              _setTimeframe(value);
+            },
+            children: const {
+              FluxTimeframe.day: Text('Day'),
+              FluxTimeframe.week: Text('Week'),
+              FluxTimeframe.month: Text('Month'),
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInsightsNavChip(
+    BuildContext context,
+    FluxViewState viewState,
+  ) {
+    final isActive = viewState.isShowingInsights;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor =
+        isDark ? Colors.white.withOpacity(0.08) : Colors.white;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.12)
+        : Colors.black.withOpacity(0.05);
+    final label = isActive ? 'Timeline' : 'Insights';
+    final icon = isActive ? PhosphorIcons.arrowLeft() : PhosphorIcons.sparkle();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: _insightsNavChipKey,
+          onTap: () =>
+              _setPane(isActive ? FluxPane.timeline : FluxPane.insights),
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: borderColor),
+              boxShadow: [
+                AppDesignTokens.primaryShadow(context),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: isActive
+                      ? context.fluxPrimaryAction
+                      : context.fluxSecondaryText,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ) ??
+                      TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: context.fluxPrimaryText,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildThemeSettingsButton(
     BuildContext context,
@@ -1525,10 +2098,10 @@ class _UnifiedTransactionEntryScreenState
     final index =
         (relative * (groups.length - 1)).round().clamp(0, groups.length - 1);
     final group = groups[index];
-    final label = switch (group.mode) {
-      ViewMode.day => _formatDayLabel(group.startDate),
-      ViewMode.week => _formatWeekRange(group.startDate, group.endDate),
-      ViewMode.month => _formatMonthLabel(group.startDate),
+    final label = switch (group.timeframe) {
+      FluxTimeframe.day => _formatDayLabel(group.startDate),
+      FluxTimeframe.week => _formatWeekRange(group.startDate, group.endDate),
+      FluxTimeframe.month => _formatMonthLabel(group.startDate),
     };
     if (_lastScrubLabel != label) {
       HapticFeedback.selectionClick();
@@ -1563,19 +2136,19 @@ class _UnifiedTransactionEntryScreenState
         group.representedDates
             .any((date) => _dayKeyFromDate(date) == _highlightedDayKey);
 
-    final card = switch (group.mode) {
-      ViewMode.day => _buildDayCard(
+    final card = switch (group.timeframe) {
+      FluxTimeframe.day => _buildDayCard(
           context,
           group as _TransactionDayGroup,
           cardKey,
           _formatDayLabel(group.startDate),
         ),
-      ViewMode.week => _buildWeekTrendCard(
+      FluxTimeframe.week => _buildWeekTrendCard(
           context,
           group as _TransactionWeekGroup,
           cardKey,
         ),
-      ViewMode.month => _buildMonthSummaryCard(
+      FluxTimeframe.month => _buildMonthSummaryCard(
           context,
           group as _TransactionMonthGroup,
           cardKey,
@@ -1583,7 +2156,7 @@ class _UnifiedTransactionEntryScreenState
         ),
     };
 
-    if (!isHighlighted || group.mode != ViewMode.day) {
+    if (!isHighlighted || group.timeframe != FluxTimeframe.day) {
       return card;
     }
 
@@ -2282,34 +2855,37 @@ class _UnifiedTransactionEntryScreenState
     return value > 0 ? '+$formatted' : '-$formatted';
   }
 
-  void _toggleViewMode() {
+  void _setTimeframe(FluxTimeframe timeframe) {
     if (_isMorphing) return;
-    const modes = ViewMode.values;
-    final nextIndex = (_viewMode.index + 1) % modes.length;
-    final targetMode = modes[nextIndex];
-    final targetGroups = _groupsByMode(targetMode);
-    if (targetGroups.isEmpty) {
-      setState(() {
-        _viewMode = targetMode;
-        _currentGroups = [];
-        _listKey = GlobalKey<SliverAnimatedListState>();
-      });
-      return;
-    }
-    setState(() {
-      _isMorphing = true;
-    });
-    _performMorphTransition(targetMode, targetGroups);
+    ref.read(fluxViewStateProvider.notifier).setTimeframe(timeframe);
   }
 
-  void _performMorphTransition(
-    ViewMode targetMode,
-    List<_TimelineGroup> targetGroups,
-  ) {
+  void _setPane(
+    FluxPane pane, {
+    String source = 'header_chip',
+  }) {
+    final currentState = ref.read(fluxViewStateProvider);
+    if (currentState.pane == pane) {
+      return;
+    }
+    _scheduleOperationMeasurement(
+      _paneSwitchOperationName,
+      _paneSwitchAnimationBudget,
+    );
+    ref.read(fluxViewStateProvider.notifier).setPane(pane);
+    final flagEnabled = ref.read(streamInsightsFlagStateProvider).isEnabled;
+    PerformanceMonitor.logViewToggleTelemetry(
+      pane: pane,
+      timeframe: currentState.timeframe,
+      flagEnabled: flagEnabled,
+      metadata: <String, Object?>{'source': source},
+    );
+  }
+
+  void _performMorphTransition(List<_TimelineGroup> targetGroups) {
     final listState = _listKey.currentState;
     if (listState == null) {
       setState(() {
-        _viewMode = targetMode;
         _currentGroups = List<_TimelineGroup>.from(targetGroups);
         _listKey = GlobalKey<SliverAnimatedListState>();
         _isMorphing = false;
@@ -2319,7 +2895,6 @@ class _UnifiedTransactionEntryScreenState
 
     if (targetGroups.isEmpty) {
       setState(() {
-        _viewMode = targetMode;
         _currentGroups.clear();
         _isMorphing = false;
       });
@@ -2338,7 +2913,6 @@ class _UnifiedTransactionEntryScreenState
         targetGroups.indexWhere((group) => group.uniqueKey == anchorKey);
 
     setState(() {
-      _viewMode = targetMode;
       if (_currentGroups.isEmpty) {
         _currentGroups.add(anchorGroup);
         listState.insertItem(
@@ -3004,31 +3578,6 @@ class _UnifiedTransactionEntryScreenState
     }
   }
 
-  ViewMode _nextViewMode(ViewMode mode) =>
-      ViewMode.values[(mode.index + 1) % ViewMode.values.length];
-
-  IconData _viewModeIcon(ViewMode mode) {
-    switch (mode) {
-      case ViewMode.day:
-        return PhosphorIcons.rows();
-      case ViewMode.week:
-        return PhosphorIcons.calendar();
-      case ViewMode.month:
-        return PhosphorIcons.chartPie();
-    }
-  }
-
-  String _viewModeLabel(ViewMode mode) {
-    switch (mode) {
-      case ViewMode.day:
-        return '日';
-      case ViewMode.week:
-        return '周';
-      case ViewMode.month:
-        return '月';
-    }
-  }
-
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
@@ -3093,16 +3642,51 @@ class _UnifiedTransactionEntryScreenState
 
   @override
   Widget build(BuildContext context) {
+    print('[UnifiedTransactionEntryScreen.build] 🎨 开始构建UI');
+    print('[UnifiedTransactionEntryScreen.build] 📊 当前分组数量:');
+    print(
+      '[UnifiedTransactionEntryScreen.build] 📅 日分组: ${_currentGroups.length} 组',
+    );
+
+    return PerformanceMonitor.monitorBuild(
+      'UnifiedTransactionEntryScreen',
+      () => _buildUnifiedContent(context),
+    );
+  }
+
+  Widget _buildUnifiedContent(BuildContext context) {
     final transactionProvider = context.watch<TransactionProvider>();
     final accountsProvider = context.watch<AccountProvider>();
     final themeMode = context.watch<ThemeProvider>().themeMode;
     final themeStyleProvider = context.watch<ThemeStyleProvider>();
+    final fluxViewState = ref.watch(fluxViewStateProvider);
+    final flagEnabled = ref.watch(streamInsightsFlagStateProvider).isEnabled;
     final groupedTransactions = _currentGroups;
     _scheduleScrollToHighlightedCard();
     final viewInsets = MediaQuery.of(context).padding;
     final dockBottom = kBottomNavigationBarHeight + viewInsets.bottom + 8;
     final cardBottom = dockBottom + 150;
     final scrollBottomPadding = dockBottom + 260;
+
+    if (!flagEnabled) {
+      final legacyTimelineView = _buildTimelineView(
+        context,
+        viewInsets,
+        scrollBottomPadding,
+        transactionProvider.isLoading,
+        groupedTransactions,
+        headerOffset: 24,
+      );
+      return _buildLegacyStreamLayout(
+        context: context,
+        timelineView: legacyTimelineView,
+        viewInsets: viewInsets,
+        themeMode: themeMode,
+        themeStyleProvider: themeStyleProvider,
+        accountsProvider: accountsProvider,
+        cardBottom: cardBottom,
+      );
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -3115,35 +3699,39 @@ class _UnifiedTransactionEntryScreenState
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: Stack(
+            fit: StackFit.expand,
             clipBehavior: Clip.none,
             children: [
-              CustomScrollView(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      viewInsets.top + 60,
-                      16,
-                      scrollBottomPadding,
-                    ),
-                    sliver: _buildTimelineSliver(
-                      context,
-                      groupedTransactions,
-                      transactionProvider.isLoading,
-                    ),
-                  ),
-                ],
+              Positioned.fill(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  child: fluxViewState.isShowingInsights
+                      ? _buildInsightsView(
+                          context,
+                          viewInsets,
+                          scrollBottomPadding,
+                        )
+                      : _buildTimelineView(
+                          context,
+                          viewInsets,
+                          scrollBottomPadding,
+                          transactionProvider.isLoading,
+                          groupedTransactions,
+                        ),
+                ),
               ),
-              _buildViewToggleButton(context, viewInsets),
+              _buildHeader(context, viewInsets, fluxViewState),
+              _buildInsightsDrawerOverlay(context, viewInsets),
               _buildThemeSettingsButton(
                 context,
                 viewInsets,
                 themeMode,
                 themeStyleProvider,
               ),
-              _buildScrubber(groupedTransactions),
+              if (!fluxViewState.isShowingInsights)
+                _buildScrubber(groupedTransactions),
               Positioned(
                 left: 16,
                 right: 16,
@@ -3161,6 +3749,53 @@ class _UnifiedTransactionEntryScreenState
       ),
     );
   }
+
+  Widget _buildLegacyStreamLayout({
+    required BuildContext context,
+    required Widget timelineView,
+    required EdgeInsets viewInsets,
+    required ThemeMode themeMode,
+    required ThemeStyleProvider themeStyleProvider,
+    required AccountProvider accountsProvider,
+    required double cardBottom,
+  }) =>
+      AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark.copyWith(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Stack(
+              fit: StackFit.expand,
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(child: timelineView),
+                _buildThemeSettingsButton(
+                  context,
+                  viewInsets,
+                  themeMode,
+                  themeStyleProvider,
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: cardBottom,
+                  child: _buildDraftCard(
+                    context,
+                    accountsProvider.accounts,
+                  ),
+                ),
+                _buildInputDock(context),
+                _buildToastOverlay(context),
+              ],
+            ),
+          ),
+        ),
+      );
 
   void _showToast(String message, {bool isError = false}) {
     _toastTimer?.cancel();
@@ -3256,12 +3891,12 @@ abstract class _TimelineGroup {
   final DateTime endDate;
   final List<Transaction> transactions;
 
-  ViewMode get mode;
+  FluxTimeframe get timeframe;
 
   Iterable<DateTime> get representedDates;
 
   String get uniqueKey =>
-      '${mode.name}-${startDate.microsecondsSinceEpoch}-${endDate.microsecondsSinceEpoch}';
+      '${timeframe.name}-${startDate.microsecondsSinceEpoch}-${endDate.microsecondsSinceEpoch}';
 
   bool containsDate(DateTime date) =>
       !date.isBefore(startDate) && !date.isAfter(endDate);
@@ -3277,7 +3912,7 @@ class _TransactionDayGroup extends _TimelineGroup {
         );
 
   @override
-  ViewMode get mode => ViewMode.day;
+  FluxTimeframe get timeframe => FluxTimeframe.day;
 
   @override
   Iterable<DateTime> get representedDates => [startDate];
@@ -3291,7 +3926,7 @@ class _TransactionWeekGroup extends _TimelineGroup {
   });
 
   @override
-  ViewMode get mode => ViewMode.week;
+  FluxTimeframe get timeframe => FluxTimeframe.week;
 
   @override
   Iterable<DateTime> get representedDates {
@@ -3318,7 +3953,7 @@ class _TransactionMonthGroup extends _TimelineGroup {
   final List<_CategorySummary> categorySummaries;
 
   @override
-  ViewMode get mode => ViewMode.month;
+  FluxTimeframe get timeframe => FluxTimeframe.month;
 
   @override
   Iterable<DateTime> get representedDates => [startDate];
@@ -3354,9 +3989,175 @@ class _DailyTrendPoint {
   final bool isToday;
 }
 
-enum ViewMode { day, week, month }
-
 enum _DateMenuAction { today, yesterday, pick }
+
+class _InsightsDrawer extends StatelessWidget {
+  const _InsightsDrawer({
+    required this.state,
+    required this.onExpand,
+    required this.onMinimize,
+    required this.onClose,
+  });
+
+  final InsightsDrawerState state;
+  final VoidCallback onExpand;
+  final VoidCallback onMinimize;
+  final VoidCallback onClose;
+
+  bool get _isExpanded => state.isExpanded && state.hasMessage;
+
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 350),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        child: _isExpanded
+            ? _buildExpanded(context)
+            : Align(
+                alignment: Alignment.topRight,
+                child: _buildCollapsed(context),
+              ),
+      );
+
+  Widget _buildCollapsed(BuildContext context) {
+    final hasBadge = state.improvementCount > 0;
+    return GestureDetector(
+      key: const ValueKey('insights_drawer_collapsed'),
+      onTap: onExpand,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: context.fluxSurface,
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            AppDesignTokens.primaryShadow(context),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              PhosphorIcons.sparkle(),
+              color: context.fluxPrimaryAction,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '洞察准备就绪',
+              style: context.textTheme.labelLarge?.copyWith(
+                color: context.fluxPrimaryText,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (hasBadge) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color:
+                      context.fluxPrimaryAction.withAlpha((255 * 0.15).round()),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '+${state.improvementCount}',
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: context.fluxPrimaryAction,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpanded(BuildContext context) {
+    final subtitleStyle = context.textTheme.bodyMedium?.copyWith(
+      color: context.fluxSecondaryText,
+      height: 1.4,
+    );
+
+    return Container(
+      key: const ValueKey('insights_drawer_expanded'),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: context.fluxSurface,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: context.fluxPrimaryAction.withAlpha((255 * 0.12).round()),
+        ),
+        boxShadow: [
+          AppDesignTokens.primaryShadow(context),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color:
+                      context.fluxPrimaryAction.withAlpha((255 * 0.12).round()),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  PhosphorIcons.sparkle(),
+                  color: context.fluxPrimaryAction,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'AI 洞察',
+                  style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: '折叠',
+                icon: const Icon(Icons.expand_less),
+                onPressed: onMinimize,
+              ),
+              IconButton(
+                tooltip: '关闭',
+                icon: const Icon(Icons.close),
+                onPressed: onClose,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            state.message ?? '洞察已准备就绪',
+            style: context.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.fluxPrimaryText,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '共发现 ${state.improvementCount} 条可行动建议',
+            style: subtitleStyle,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: AppPrimaryButton(
+              label: '查看洞察',
+              onPressed: onExpand,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _RainbowSendButton extends StatelessWidget {
   const _RainbowSendButton({

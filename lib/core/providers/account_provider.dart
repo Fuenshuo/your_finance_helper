@@ -528,4 +528,9 @@ class AccountProvider with ChangeNotifier {
     final loanCalculationService = LoanCalculationService();
     return loanCalculationService.validateLoanSettings(account);
   }
+
+  @visibleForTesting
+  void seedAccountsForTesting(List<Account> accounts) {
+    _accounts = List<Account>.from(accounts);
+  }
 }

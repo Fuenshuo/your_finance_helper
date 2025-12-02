@@ -823,4 +823,17 @@ class BudgetProvider with ChangeNotifier {
   Future<void> refresh() async {
     await _loadBudgets();
   }
+
+  @visibleForTesting
+  void seedBudgetsForTesting({
+    List<EnvelopeBudget> envelopeBudgets = const [],
+    List<ZeroBasedBudget> zeroBasedBudgets = const [],
+    List<SalaryIncome> salaryIncomes = const [],
+  }) {
+    _envelopeBudgets = List<EnvelopeBudget>.from(envelopeBudgets);
+    _zeroBasedBudgets = List<ZeroBasedBudget>.from(zeroBasedBudgets);
+    _salaryIncomes = List<SalaryIncome>.from(salaryIncomes);
+    _isInitialized = true;
+    _isLoading = false;
+  }
 }

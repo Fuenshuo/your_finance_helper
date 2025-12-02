@@ -7,11 +7,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:your_finance_flutter/core/models/flux_models.dart';
 import 'package:your_finance_flutter/core/providers/flux_providers.dart';
 import 'package:your_finance_flutter/core/router/flux_router.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/theme/flux_theme.dart';
-import 'package:your_finance_flutter/screens/flux_ui_architecture.dart';
 
 /// 🌊 Flux 主导航屏幕
 class FluxNavigationScreen extends StatefulWidget {
@@ -164,7 +164,9 @@ class FluxBottomNavigationBar extends StatelessWidget {
         context.secondaryText.withOpacity(isDark ? 0.85 : 0.7);
     final navShadow = [
       BoxShadow(
-        color: isDark ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.06),
+        color: isDark
+            ? Colors.black.withOpacity(0.4)
+            : Colors.black.withOpacity(0.06),
         blurRadius: 12,
         offset: const Offset(0, -2),
       ),
@@ -208,14 +210,12 @@ class FluxBottomNavigationBar extends StatelessWidget {
           elevation: 0,
           selectedItemColor: selectedColor,
           unselectedItemColor: unselectedColor,
-          selectedLabelStyle:
-              navTheme.selectedLabelStyle ??
+          selectedLabelStyle: navTheme.selectedLabelStyle ??
               const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
-          unselectedLabelStyle:
-              navTheme.unselectedLabelStyle ??
+          unselectedLabelStyle: navTheme.unselectedLabelStyle ??
               const TextStyle(
                 fontSize: 12,
               ),
@@ -335,18 +335,18 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
 
   Color _getStatusColor(FlowHealthStatus status) {
     switch (status) {
+      case FlowHealthStatus.excellent:
+      case FlowHealthStatus.good:
       case FlowHealthStatus.healthy:
         return FluxTheme.incomeGreen;
       case FlowHealthStatus.warning:
         return const Color(0xFFFF9500);
       case FlowHealthStatus.danger:
+      case FlowHealthStatus.critical:
         return FluxTheme.expenseRed;
       case FlowHealthStatus.neutral:
         return FluxTheme.neutralGray;
-      case FlowHealthStatus.static:
-        return const Color(0xFF8E8E93);
     }
+    return FluxTheme.neutralGray;
   }
 }
-
-
