@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
@@ -9,9 +10,11 @@ import 'package:your_finance_flutter/core/models/currency.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/services/base_service.dart';
+import 'package:your_finance_flutter/core/services/shared_preferences_service.dart';
 
-class StorageService {
-  StorageService._();
+class StorageService extends StatefulService {
+  StorageService._(this._prefsService, this._prefs);
   static const String _assetsKey = 'assets_data';
   static const String _transactionsKey = 'transactions_data';
   static const String _draftTransactionsKey = 'draft_transactions_data';
@@ -26,26 +29,67 @@ class StorageService {
   static const String _periodClearanceSessionsKey = 'period_clearance_sessions_data';
 
   static StorageService? _instance;
-  static SharedPreferences? _prefs;
+  final SharedPreferencesService _prefsService;
+  final SharedPreferences _prefs;
+
+  // 统计信息
+  int _readOperations = 0;
+  int _writeOperations = 0;
+  final DateTime _createdAt = DateTime.now();
 
   static Future<StorageService> getInstance() async {
-    _instance ??= StorageService._();
-    _prefs ??= await SharedPreferences.getInstance();
+    if (_instance != null) return _instance!;
+
+    final prefsService = await SharedPreferencesService.getInstance();
+    _instance = StorageService._(prefsService, SharedPreferencesService.sharedPreferences!);
     return _instance!;
   }
 
+  @override
+  String get serviceName => 'StorageService';
+
+  @override
+  Future<void> initialize() async {
+    if (isInitialized) return;
+
+    await executeOperation('initialize', () async {
+      // SharedPreferencesService已在getInstance中初始化
+      setState(ServiceState.initialized);
+    });
+  }
+
+  @override
+  Map<String, dynamic> getStats() => {
+        'serviceName': serviceName,
+        'state': state.name,
+        'readOperations': _readOperations,
+        'writeOperations': _writeOperations,
+        'createdAt': _createdAt.toIso8601String(),
+        'prefsStats': _prefsService.getStats(),
+        'lastError': lastError,
+      };
+
+  // 私有方法来跟踪操作
+  void _incrementRead() => _readOperations++;
+  void _incrementWrite() => _writeOperations++;
+
+
   // 保存资产列表
   Future<void> saveAssets(List<AssetItem> assets) async {
-    final jsonList = assets.map((asset) => asset.toJson()).toList();
-    final jsonString = jsonEncode(jsonList);
-    await _prefs!.setString(_assetsKey, jsonString);
+    await executeOperation('saveAssets', () async {
+      final jsonList = assets.map((asset) => asset.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+      await _prefsService.setString(_assetsKey, jsonString);
+      _incrementWrite();
+    });
   }
 
   // 获取资产列表
   Future<List<AssetItem>> getAssets() async {
-    try {
-      final jsonString = _prefs!.getString(_assetsKey);
+    return executeOperation('getAssets', () async {
+      final jsonString = _prefsService.getString(_assetsKey);
       if (jsonString == null) {
+        _incrementRead();
         return [];
       }
 
@@ -53,13 +97,9 @@ class StorageService {
       final assets = jsonList
           .map((json) => AssetItem.fromJson(json as Map<String, dynamic>))
           .toList();
-
+      _incrementRead();
       return assets;
-    } catch (e) {
-      // 清除损坏的数据
-      await _prefs!.remove(_assetsKey);
-      return [];
-    }
+    }, defaultValue: []);
   }
 
   // 添加资产

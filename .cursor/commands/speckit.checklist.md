@@ -31,6 +31,10 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## First Principle
+
+**使用中文生成结果文件** - All generated result files, documentation, and output content MUST be written in Chinese (Simplified Chinese) unless explicitly specified otherwise by the user.
+
 ## Execution Steps
 
 1. **Setup**: Run `.specify/scripts/bash/check-prerequisites.sh --json` from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS list.
