@@ -92,9 +92,12 @@ B97EFD16*.png
 # Development documentation (keep locally, don't commit)
 .doc/
 
+# Legacy code archive (keep locally, don't commit)
+legacy/
+
 # Debug and development screens
 **/debug_*.dart
-**/debug_mode_manager.dart 
+**/debug_mode_manager.dart
 
 specs/
 .specify/
