@@ -18,6 +18,10 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## First Principle
+
+**使用中文生成结果文件** - All generated result files, documentation, and output content MUST be written in Chinese (Simplified Chinese) unless explicitly specified otherwise by the user.
+
 ## Outline
 
 The text the user typed after `/speckit.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.

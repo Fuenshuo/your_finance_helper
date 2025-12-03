@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:your_finance_flutter/core/router/app_router.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/financial_animations_example.dart';
-import 'package:your_finance_flutter/ios_animation_showcase.dart';
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
@@ -179,25 +177,6 @@ class _DebugScreenState extends State<DebugScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<IOSAnimationShowcase>(
-                                    builder: (context) =>
-                                        const IOSAnimationShowcase(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.play_circle_outline),
-                              label: const Text('快速演示'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: context.responsiveSpacing12),
-                          Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 Navigator.of(context).push(
@@ -254,76 +233,12 @@ class _DebugScreenState extends State<DebugScreen> {
                         '体验72款精心设计的iOS风格动画特效，包括手势反馈、状态过渡、数据可视化等完整动画库。',
                         style: context.textTheme.bodyMedium,
                       ),
-                      SizedBox(height: context.responsiveSpacing16),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<IOSAnimationShowcase>(
-                              builder: (context) =>
-                                  const IOSAnimationShowcase(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.smartphone),
-                        label: const Text('进入iOS动效展示'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
 
               SizedBox(height: context.responsiveSpacing24),
-
-              // 统一提示系统演示
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: EdgeInsets.all(context.responsiveSpacing16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.notifications_active,
-                            color: Colors.green,
-                            size: 24,
-                          ),
-                          SizedBox(width: context.responsiveSpacing8),
-                          Text(
-                            '🔔 统一提示系统演示',
-                            style: context.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: context.responsiveSpacing8),
-                      Text(
-                        '体验全新的统一提示系统，包括智能路由、毛玻璃效果、上下文感知等多种提示方式。',
-                        style: context.textTheme.bodyMedium,
-                      ),
-                      SizedBox(height: context.responsiveSpacing16),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          context.goNotificationDemo();
-                        },
-                        icon: const Icon(Icons.notifications),
-                        label: const Text('进入提示系统演示'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
 
               SizedBox(height: context.responsiveSpacing24),
 

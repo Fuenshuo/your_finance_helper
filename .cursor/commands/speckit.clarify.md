@@ -14,6 +14,10 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## First Principle
+
+**使用中文生成结果文件** - All generated result files, documentation, and output content MUST be written in Chinese (Simplified Chinese) unless explicitly specified otherwise by the user.
+
 ## Outline
 
 Goal: Detect and reduce ambiguity or missing decision points in the active feature specification and record the clarifications directly in the spec file.

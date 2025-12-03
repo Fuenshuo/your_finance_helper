@@ -24,8 +24,10 @@ class AmountInputDemo extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 公积金贷款输入框演示
-              const Text('公积金贷款额度：',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '公积金贷款额度：',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 8),
               const AmountInputField(
                 labelText: '公积金贷款额度',
@@ -37,8 +39,10 @@ class AmountInputDemo extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 商业贷款输入框演示
-              const Text('商业贷款额度：',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '商业贷款额度：',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 8),
               const AmountInputField(
                 labelText: '商业贷款额度',
@@ -49,8 +53,10 @@ class AmountInputDemo extends StatelessWidget {
               const SizedBox(height: 20),
 
               // 其他金额输入演示
-              const Text('其他金额输入：',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '其他金额输入：',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 8),
               const Row(
                 children: [
@@ -79,7 +85,7 @@ class AmountInputDemo extends StatelessWidget {
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(

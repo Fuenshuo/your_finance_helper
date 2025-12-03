@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:your_finance_flutter/features/insights/services/serverless_ai_data_source.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
-import 'package:your_finance_flutter/core/services/ai/prompt_loader.dart';
+import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
 import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/models/flux_view_state.dart';
