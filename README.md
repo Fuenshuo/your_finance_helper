@@ -19,6 +19,16 @@
 - **预算状态管理**：活跃、暂停、完成状态
 - **预算与交易集成**：自动关联交易到对应预算
 
+## Recent Changes
+
+### Flux Ledger Cleanup (2025-12-08)
+- Applied Elon Musk's First Principles methodology
+- Moved non-Flux components to legacy/ folder
+- Preserved unified_transaction_entry_screen and AI functionality
+- Removed 151+ files from active git tracking
+- Maintained core Flux navigation and theming
+
+
 ### 📊 交易记录系统
 - **交易管理界面**：总览、交易记录、草稿三个标签页
 - **添加交易功能**：支持收入、支出、转账三种类型
