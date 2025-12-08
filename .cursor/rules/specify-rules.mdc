@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-27
 - SharedPreferences + in-memory providers (no new persistence requirements) (004-stream-insights-merge)
 - Dart 3.x with Flutter 3.x + AiServiceFactory, AiService, PromptLoader, Dio HTTP client, Provider for state managemen (005-serverless-ai-analysis)
 - SharedPreferences for local data, existing transaction models (005-serverless-ai-analysis)
+- Provider (state management), Riverpod (state management), Flutter Animate, SharedPreferences, SQLite (001-flux-ledger-cleanup)
+- SharedPreferences (settings), SQLite (transactions), Local files (assets/history) (001-flux-ledger-cleanup)
 
 - Dart 3.x (Flutter framework) + Provider (state management), SharedPreferences (local storage), awesome-flutter libraries (charts, animations, AI integration) (001-financial-insights)
 
@@ -30,9 +32,9 @@ tests/
 Dart 3.x (Flutter framework): Follow standard conventions
 
 ## Recent Changes
+- 001-flux-ledger-cleanup: Added Provider (state management), Riverpod (state management), Flutter Animate, SharedPreferences, SQLite
 - 005-serverless-ai-analysis: Added Dart 3.x with Flutter 3.x + AiServiceFactory, AiService, PromptLoader, Dio HTTP client, Provider for state managemen
 - 004-stream-insights-merge: Added Dart 3.x / Flutter 3.x + Flutter framework, Riverpod + Provider (state), go_router, AppDesignTokens, AppAnimations, InsightsProvider services
-- 003-flux-insights-redesign: Added Dart 3.x with Flutter 3.24+ + fl_chart ^0.63.0, google_fonts ^6.1.0, shared_preferences ^2.2.0
 
 
 <!-- MANUAL ADDITIONS START -->

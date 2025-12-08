@@ -1,0 +1,210 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze lib/
+
+      - name: Check formatting
+        run: flutter format --set-exit-if-changed lib/
+
+      - name: Run linting
+        run: flutter pub run flutter_lints
+
+  # 单元测试
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests
+        run: flutter test --coverage test/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: unit-tests
+          name: codecov-umbrella
+
+  # 集成测试
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: flutter test integration_test/
+
+  # 安全审计
+  security-audit:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run security scan
+        uses: securecodewarrior/github-actions-gosec@master
+        with:
+          args: './...'
+
+      - name: Dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'your-finance-flutter'
+          path: '.'
+          format: 'ALL'
+
+  # 性能测试
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK for performance testing
+        run: flutter build apk --release
+
+      - name: Run performance benchmarks
+        run: flutter test --device-id=emulator-5554 test/performance/
+
+  # 部署到测试环境
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, security-audit]
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Build iOS (if needed)
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: staging-builds
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/ios/iphoneos/Runner.app
+
+  # 部署到生产环境
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, security-audit, performance-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Build iOS
+        run: flutter build ios --release
+
+      - name: Deploy to Google Play
+        run: |
+          # 使用Google Play发布API
+          echo "Deploying to Google Play..."
+
+      - name: Deploy to App Store
+        run: |
+          # 使用App Store Connect API
+          echo "Deploying to App Store..."
+
+  # 监控告警
+  monitoring:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: "CI/CD Pipeline completed with status: ${{ job.status }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # 文档更新
+  docs-update:
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update API documentation
+        run: |
+          # 更新API文档
+          echo "Updating API documentation..."
+
+      - name: Update changelog
+        run: |
+          # 更新变更日志
+          echo "Updating changelog..."
+
+      - name: Deploy documentation
+        run: |
+          # 部署文档到GitHub Pages
+          echo "Deploying documentation..."

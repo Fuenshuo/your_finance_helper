@@ -10,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider;
 
 import 'core/providers/flux_providers.dart';
-import 'core/providers/transaction_provider.dart';
 import 'core/router/flux_router.dart';
 import 'core/services/flux_services.dart';
 import 'core/theme/flux_theme.dart';

@@ -13,8 +13,8 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/app_empty_state.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/widgets/global_fab.dart';
+import 'package:your_finance_flutter/legacy/lib/features/transaction_flow/screens/transaction_detail_screen.dart';
+import 'package:your_finance_flutter/legacy/lib/features/transaction_flow/widgets/global_fab.dart';
 
 /// Dashboard首页 - 财务驾驶舱
 /// 显示核心指标、待办事项、最近交易
