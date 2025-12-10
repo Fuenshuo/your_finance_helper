@@ -17,13 +17,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: 'stable'
           cache: true
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: "3.5.0"
 
       - name: Cache pub dependencies
         uses: actions/cache@v3
@@ -59,10 +55,6 @@ jobs:
         with:
           flutter-version: '3.19.0'
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: "3.5.0"
 
       - name: Install dependencies
         run: flutter pub get
@@ -89,10 +81,6 @@ jobs:
         with:
           flutter-version: '3.19.0'
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: "3.5.0"
 
       - name: Install dependencies
         run: flutter pub get
@@ -133,10 +121,6 @@ jobs:
         with:
           flutter-version: '3.19.0'
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: "3.5.0"
 
       - name: Install dependencies
         run: flutter pub get
