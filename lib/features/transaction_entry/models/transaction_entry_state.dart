@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import 'draft_transaction.dart';
+import 'input_validation.dart';
+
 /// 性能指标模型
 class PerformanceMetrics extends Equatable {
   /// 解析响应时间 (毫秒)

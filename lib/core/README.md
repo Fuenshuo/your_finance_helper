@@ -4,25 +4,33 @@
 
 `core` 包是应用的核心功能层，提供基础设施和通用功能，被所有功能模块共享使用。它遵循"核心功能下沉"的原则，将可复用的代码集中管理。
 
+**文件统计**: 142个Dart文件，涵盖应用的核心基础设施
+
 ## 包结构
 
 ```
 core/
-├── animations/          # 动画系统
-├── constants/           # 常量定义
-├── database/            # 数据库层
-├── models/              # 数据模型
-├── providers/           # 状态管理
-├── router/              # 路由配置
-├── services/            # 业务服务
-├── theme/               # 主题样式
-├── utils/               # 工具类
-└── widgets/             # 通用组件
+├── animations/          # 动画系统 (5个文件)
+├── constants/           # 常量定义 (1个文件)
+├── database/            # 数据库层 (2个文件)
+├── domain/              # 领域逻辑 (1个文件)
+├── models/              # 数据模型 (20个文件)
+├── providers/           # 状态管理 (11个文件)
+├── router/              # 路由配置 (1个文件)
+├── services/            # 业务服务 (75个文件)
+│   ├── ai/              # AI服务 (22个文件)
+│   ├── legacy_import/   # 遗留数据导入 (3个文件)
+│   └── verifiers/       # 验证服务 (5个文件)
+├── theme/               # 主题样式 (4个文件)
+├── utils/               # 工具类 (10个文件)
+└── widgets/             # 通用组件 (39个文件)
+    ├── animations/      # 动画组件 (25个文件)
+    └── composite/       # 复合组件 (7个文件)
 ```
 
 ## 子包说明
 
-### 1. animations/ - 动画系统
+### 1. animations/ - 动画系统 (5个文件)
 
 **职责**: 提供统一的动画管理和iOS风格动画系统
 
@@ -30,6 +38,8 @@ core/
 - `ios_animation_system.dart` - iOS风格动画系统核心
 - `animation_engine.dart` - 动画引擎
 - `animation_config.dart` - 动画配置
+- `ios_animation_sequence_builder.dart` - iOS动画序列构建器
+- `ios_animation_system_test.dart` - 动画系统测试
 
 **关键特性**:
 - 企业级iOS动画系统
@@ -79,7 +89,7 @@ core/
 - ExpensePlans (支出计划)
 - IncomePlans (收入计划)
 
-### 4. models/ - 数据模型
+### 4. models/ - 数据模型 (20个文件)
 
 **职责**: 定义应用的核心数据模型
 
@@ -95,8 +105,15 @@ core/
 - `income_plan.dart` - 收入计划模型
 - `transaction.dart` - 交易模型
 - `ai_config.dart` - AI配置模型
-- `ai_nlp_tuning_config.dart` - LLM调参与Prompt模板配置（新增）
-- `parsed_transaction.dart` - AI解析交易模型（新增）
+- `ai_nlp_tuning_config.dart` - LLM调参与Prompt模板配置
+- `parsed_transaction.dart` - AI解析交易模型
+- `analysis_summary.dart` - AI分析摘要模型
+- `flux_models.dart` - Flux核心模型
+- `verification_result.dart` - 验证结果模型
+- `verification_session.dart` - 验证会话模型
+- `user_income_profile.dart` - 用户收入档案模型
+- `insights_drawer_state.dart` - 洞察抽屉状态模型
+- `flux_view_state.dart` - Flux视图状态模型
 
 **关键特性**:
 - 使用Equatable实现值比较
@@ -104,7 +121,7 @@ core/
 - 枚举类型定义
 - 业务逻辑验证
 
-### 5. providers/ - 状态管理
+### 5. providers/ - 状态管理 (11个文件)
 
 **职责**: 提供状态管理功能，连接UI和数据层
 
@@ -116,8 +133,10 @@ core/
 - `income_plan_provider.dart` - 收入计划状态管理
 - `transaction_provider.dart` - 交易状态管理
 - `riverpod_providers.dart` - Riverpod状态管理（新架构）
-- `flux_providers.dart` - Flux流体验Provider集合（新增 `streamInsightsFeatureFlag` 和默认false的getter，提供单页Stream+Insights合并的特性开关入口）
-- `stream_insights_flag_provider.dart` - SharedPreferences驱动的功能开关Provider，支持本地debug override/RemoteConfig写入与Riverpod绑定
+- `flux_providers.dart` - Flux流体验Provider集合
+- `stream_insights_flag_provider.dart` - Stream Insights功能开关Provider
+- `theme_provider.dart` - 主题状态管理
+- `theme_style_provider.dart` - 主题样式状态管理
 - **Testing Helpers**:
   - `TransactionProvider.seedTransactionsForTesting()` - 直接注入交易与草稿数据，避免依赖StorageService
   - `AccountProvider.seedAccountsForTesting()` - 为单元测试快速提供账户列表
@@ -153,11 +172,11 @@ core/
 - 财务计划路由（financial-planning/*）
 - 交易流水路由（transaction-flow/*）
 
-### 7. services/ - 业务服务
+### 7. services/ - 业务服务 (75个文件)
 
 **职责**: 提供业务逻辑处理和外部服务集成
 
-**主要服务**:
+**核心服务**:
 - `storage_service.dart` - 存储服务（SharedPreferences）
 - `drift_database_service.dart` - Drift数据库服务
 - `hybrid_storage_service.dart` - 混合存储服务
@@ -170,30 +189,40 @@ core/
 - `depreciation_service.dart` - 资产折旧服务
 - `asset_history_service.dart` - 资产历史服务
 - `total_assets_service.dart` - 总资产计算服务
-- `insight_service.dart` - Flux Insights AI CFO 分析服务（新）
-  - `InsightService` 抽象 + `MockInsightService` 模拟 LLM 调用
-  - 支持日/周/月洞察数据模型与 Flux Loop「Thinking → Smart Insight」状态
+- `insight_service.dart` - Flux Insights AI CFO 分析服务
 - `dio_http_service.dart` - HTTP请求服务
 - `logging_service.dart` - 日志服务
 - `persistent_storage_service.dart` - 持久化存储服务
-- `ai/` - AI服务目录
-  - `ai_config_service.dart` - AI配置服务
-  - `ai_tuning_config_service.dart` - LLM调参配置服务（新增）
-  - `ai_service_factory.dart` - AI服务工厂
-  - `ai_service.dart` - AI服务抽象接口
-  - `dashscope_ai_service.dart` - DashScope AI服务实现
-  - `siliconflow_ai_service.dart` - SiliconFlow AI服务实现
-  - `natural_language_transaction_service.dart` - 自然语言记账服务（支持 AiNlpTuningConfig 调参与 Prompt 路径校验）
-  - `image_processing_service.dart` - 图片处理服务（新增）
-  - `invoice_recognition_service.dart` - 发票/收据识别服务（新增）
+
+**AI服务系统 (22个文件)**:
+```
+ai/
+├── ai_config_service.dart          # AI配置管理
+├── natural_language_transaction_service.dart  # 自然语言解析
+├── prompts/                        # AI提示词模板 (7个文件)
+├── ai_service.dart                 # AI服务接口
+├── ai_service_factory.dart         # AI服务工厂
+├── dashscope_ai_service.dart       # DashScope AI服务
+├── siliconflow_ai_service.dart     # SiliconFlow AI服务
+├── image_processing_service.dart   # 图片处理服务
+└── invoice_recognition_service.dart # 发票识别服务
+```
+
+**验证服务系统 (5个文件)**:
+```
+verifiers/
+├── unified_transaction_entry_verifier.dart    # 交易录入验证
+├── navigation_verifier.dart                   # 导航验证
+├── provider_service_verifier.dart             # Provider验证
+├── build_compilation_verifier.dart            # 编译验证
+└── legacy_archive_verifier.dart               # 遗留归档验证
+```
 
 **关键特性**:
-- 单例模式
-- 异步操作支持
-- 错误处理
-- 服务间解耦
-- AI调参能力：`AiNlpTuningConfig` + `AiTuningConfigService` 支持运行时热切换模型、温度与Prompt模板
-- Prompt安全控制：所有模板路径在加载前会通过 `_resolvePromptTemplatePath` 校验，限制访问 `lib/core/services/ai/prompts` 目录，防止路径穿越
+- 单例模式和依赖注入
+- 异步操作和错误处理
+- AI调参和Prompt安全控制
+- 完整的验证和测试框架
 
 ### 8. theme/ - 主题样式
 
@@ -238,11 +267,11 @@ core/
 - 调试工具支持
 - 表单验证工具
 
-### 10. widgets/ - 通用组件
+### 10. widgets/ - 通用组件 (39个文件)
 
 **职责**: 提供可复用的UI组件
 
-**主要组件**:
+**核心组件**:
 - `app_card.dart` - 统一卡片组件
 - `app_animations.dart` - 动画工具
 - `amount_input_field.dart` - 金额输入组件
@@ -253,7 +282,24 @@ core/
 - `glass_notification.dart` - 玻璃态通知
 - `enhanced_floating_action_button.dart` - 增强型FAB
 - `data_refresh_animation.dart` - 数据刷新动画
-- `animations/` - 动画组件集合
+
+**复合组件系统 (7个文件)**:
+```
+composite/
+├── actionable_list_item.dart       # 可操作列表项
+├── navigable_list_item.dart        # 可导航列表项
+├── switch_control_list_item.dart   # 开关控制项
+├── standard_list_item.dart         # 标准列表项
+└── ... (更多复合组件)
+```
+
+**动画组件系统 (25个文件)**:
+```
+animations/
+├── components/                     # 基础动画组件
+├── financial/                      # 金融动画
+└── navigation/                     # 导航动画
+```
 
 **关键特性**:
 - 统一的设计语言

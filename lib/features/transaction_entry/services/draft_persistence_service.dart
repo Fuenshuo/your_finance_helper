@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/draft_transaction.dart';
@@ -96,7 +97,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
       return drafts;
     } catch (e) {
       // 如果解密或解析失败，返回空列表并记录错误
-      debugPrint('加载草稿失败: ${e.toString()}');
+      developer.debugPrint('加载草稿失败: ${e.toString()}');
       return [];
     }
   }

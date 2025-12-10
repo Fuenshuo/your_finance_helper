@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/models/flux_view_state.dart';
 import 'package:your_finance_flutter/core/providers/flux_providers.dart';
 import 'package:your_finance_flutter/core/providers/stream_insights_flag_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
 import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_bottom_navigation_bar.dart';
 import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
-import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
-import 'package:your_finance_flutter/screens/dialogs/flux_insights_dialog.dart';
-import 'package:your_finance_flutter/screens/settings_screen.dart';
 import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
 /// 主导航页面 - Flux Ledger 四 Tab 入口
@@ -26,10 +20,7 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
-  static const String _insightsDialogKey = 'has_seen_flux_insights_v1';
-
   int _selectedIndex = 0;
-  final DebugModeManager _debugManager = DebugModeManager();
   ProviderSubscription<StreamInsightsFlagProvider>? _flagSubscription;
   bool _hasLoggedFlagExposure = false;
 
@@ -58,8 +49,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     _mePlaceholder,
   ];
 
-  static const BottomNavigationBarItem _streamNavItem =
-      BottomNavigationBarItem(
+  static const BottomNavigationBarItem _streamNavItem = BottomNavigationBarItem(
     icon: Icon(Icons.timeline_outlined),
     activeIcon: Icon(Icons.timeline),
     label: 'Stream',
@@ -74,8 +64,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     tooltip: '图表洞察',
   );
 
-  static const BottomNavigationBarItem _assetsNavItem =
-      BottomNavigationBarItem(
+  static const BottomNavigationBarItem _assetsNavItem = BottomNavigationBarItem(
     icon: Icon(Icons.account_balance_wallet_outlined),
     activeIcon: Icon(Icons.account_balance_wallet),
     label: 'Assets',
@@ -105,48 +94,19 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   @override
   void initState() {
     super.initState();
-    _debugManager.addListener(_onDebugModeChanged);
     _flagSubscription = ref.listenManual<StreamInsightsFlagProvider>(
       streamInsightsFlagStateProvider,
       (previous, next) => _handleFlagChanged(next.isEnabled),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleFlagChanged(ref.read(streamInsightsFlagStateProvider).isEnabled);
-      _showFluxInsightsDialogIfNeeded();
     });
   }
 
   @override
   void dispose() {
-    _debugManager.removeListener(_onDebugModeChanged);
     _flagSubscription?.close();
     super.dispose();
-  }
-
-  void _onDebugModeChanged() => setState(() {});
-
-  Future<void> _showFluxInsightsDialogIfNeeded() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeen = prefs.getBool(_insightsDialogKey) ?? false;
-    final flagEnabled = ref.read(streamInsightsFlagStateProvider).isEnabled;
-
-    if (hasSeen || !mounted || flagEnabled) {
-      return;
-    }
-
-    await prefs.setBool(_insightsDialogKey, true);
-
-    if (!mounted) {
-      return;
-    }
-
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => FluxInsightsDialog(
-        onConfirm: () => _handleNavTap(1),
-      ),
-    );
   }
 
   void _handleFlagChanged(bool isEnabled) {
@@ -217,65 +177,9 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-          onTap: () {
-            final debugEnabled = _debugManager.handleClick();
-            if (debugEnabled) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🔧 Debug模式已开启'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            }
-          },
-          child: const Text('Flux Ledger'),
-        ),
+        title: const Text('Flux Ledger'),
         backgroundColor: context.surfaceWhite,
         elevation: 0,
-        actions: [
-          if (_debugManager.isDebugModeEnabled) ...[
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.orange,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'DEBUG',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.developer_mode, color: Colors.orange),
-              onPressed: () {
-                Navigator.of(context).push(
-                  AppAnimations.createRoute<void>(
-                    const DeveloperModeScreen(),
-                  ),
-                );
-              },
-              tooltip: '开发者模式',
-            ),
-          ],
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                AppAnimations.createRoute<void>(
-                  const SettingsScreen(),
-                ),
-              );
-            },
-            tooltip: '设置',
-          ),
-        ],
       ),
       backgroundColor: context.primaryBackground,
       body: IndexedStack(

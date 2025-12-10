@@ -2,13 +2,14 @@
 ///
 /// 基于GoRouter的流式导航架构
 /// 支持深度链接和状态保持
+library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../screens/flux_navigation_screen.dart';
-import '../../screens/dashboard_home_screen.dart';
-import '../../features/insights/screens/flux_insights_screen.dart';
+import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
+import 'package:your_finance_flutter/screens/dashboard_home_screen.dart';
+import 'package:your_finance_flutter/screens/settings_screen.dart';
+import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
 /// Flux Ledger 路由配置
 final fluxRouter = GoRouter(
@@ -17,9 +18,8 @@ final fluxRouter = GoRouter(
   routes: [
     // 主导航路由
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        return FluxNavigationScreen(navigationShell: navigationShell);
-      },
+      builder: (context, state, navigationShell) =>
+          FluxNavigationScreen(navigationShell: navigationShell),
       branches: [
         // 流仪表板分支
         StatefulShellBranch(
@@ -27,20 +27,6 @@ final fluxRouter = GoRouter(
             GoRoute(
               path: FluxRoutes.dashboard,
               builder: (context, state) => const DashboardHomeScreen(),
-              routes: [
-                // 仪表板相关子路由 - TODO: 待实现
-                // GoRoute(
-                //   path: 'flow-detail/:flowId',
-                //   builder: (context, state) {
-                //     final flowId = state.pathParameters['flowId']!;
-                //     return FlowDetailScreen(flowId: flowId);
-                //   },
-                // ),
-                // GoRoute(
-                //   path: 'analytics',
-                //   builder: (context, state) => const FlowAnalyticsScreen(),
-                // ),
-              ],
             ),
           ],
         ),
@@ -50,28 +36,8 @@ final fluxRouter = GoRouter(
           routes: [
             GoRoute(
               path: FluxRoutes.streams,
-              builder: (context, state) => const Placeholder(), // TODO: 实现流管道屏幕
-              routes: [
-                // 管道相关子路由 - TODO: 待实现
-                // GoRoute(
-                //   path: 'create',
-                //   builder: (context, state) => const FlowStreamCreateScreen(),
-                // ),
-                // GoRoute(
-                //   path: 'edit/:streamId',
-                //   builder: (context, state) {
-                //     final streamId = state.pathParameters['streamId']!;
-                //     return FlowStreamEditScreen(streamId: streamId);
-                //   },
-                // ),
-                // GoRoute(
-                //   path: 'detail/:streamId',
-                //   builder: (context, state) {
-                //     final streamId = state.pathParameters['streamId']!;
-                //     return FlowStreamDetailScreen(streamId: streamId);
-                //   },
-                // ),
-              ],
+              builder: (context, state) =>
+                  const UnifiedTransactionEntryScreen(), // 流管道 - 交易录入界面
             ),
           ],
         ),
@@ -110,27 +76,13 @@ final fluxRouter = GoRouter(
 
     GoRoute(
       path: FluxRoutes.settings,
-      builder: (context, state) => const Placeholder(), // TODO: 实现设置屏幕
-      routes: [
-        // 设置相关子路由 - TODO: 待实现
-        // GoRoute(
-        //   path: 'theme',
-        //   builder: (context, state) => const FluxThemeSettingsScreen(),
-        // ),
-        // GoRoute(
-        //   path: 'data',
-        //   builder: (context, state) => const FluxDataSettingsScreen(),
-        // ),
-        // GoRoute(
-        //   path: 'ai',
-        //   builder: (context, state) => const FluxAISettingsScreen(),
-        // ),
-      ],
+      builder: (context, state) => const SettingsScreen(),
     ),
 
     GoRoute(
       path: FluxRoutes.flowEntry,
-      builder: (context, state) => const Placeholder(), // TODO: 实现流程录入向导
+      builder: (context, state) =>
+          const UnifiedTransactionEntryScreen(), // 流程录入 - 交易录入界面
     ),
 
     GoRoute(
@@ -204,81 +156,101 @@ bool _checkNeedsMigration() {
 // ==================== 导航屏幕 ====================
 
 /// 🌊 Flux Ledger 主导航屏幕
-class FluxNavigationScreen extends StatelessWidget {
+class FluxNavigationScreen extends StatefulWidget {
+  const FluxNavigationScreen({
+    required this.navigationShell,
+    super.key,
+  });
   final StatefulNavigationShell navigationShell;
 
-  const FluxNavigationScreen({
-    super.key,
-    required this.navigationShell,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: FluxBottomNavigationBar(
-        navigationShell: navigationShell,
-      ),
-      floatingActionButton: const FluxFloatingActionButton(),
-    );
-  }
+  State<FluxNavigationScreen> createState() => _FluxNavigationScreenState();
+}
+
+class _FluxNavigationScreenState extends State<FluxNavigationScreen> {
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: _buildAppBar(),
+        body: widget.navigationShell,
+        bottomNavigationBar: FluxBottomNavigationBar(
+          navigationShell: widget.navigationShell,
+        ),
+        floatingActionButton: const FluxFloatingActionButton(),
+      );
+
+  PreferredSizeWidget _buildAppBar() => AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: 0,
+        title: const Text(
+          'Flux Ledger',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => context.go(FluxRoutes.settings),
+            tooltip: '设置',
+          ),
+        ],
+      );
 }
 
 /// 🌊 Flux底部导航栏
 class FluxBottomNavigationBar extends StatelessWidget {
+  const FluxBottomNavigationBar({
+    required this.navigationShell,
+    super.key,
+  });
   final StatefulNavigationShell navigationShell;
 
-  const FluxBottomNavigationBar({
-    super.key,
-    required this.navigationShell,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: '流仪表板',
-            tooltip: '实时资金流可视化',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.waterfall_chart_outlined),
-            activeIcon: Icon(Icons.waterfall_chart),
-            label: '流管道',
-            tooltip: '管理持续性资金流',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.insights_outlined),
-            activeIcon: Icon(Icons.insights),
-            label: '流洞察',
-            tooltip: 'AI智能分析与建议',
-          ),
-        ],
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard),
+              label: '流仪表板',
+              tooltip: '实时资金流可视化',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.waterfall_chart_outlined),
+              activeIcon: Icon(Icons.waterfall_chart),
+              label: '流管道',
+              tooltip: '管理持续性资金流',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.insights_outlined),
+              activeIcon: Icon(Icons.insights),
+              label: '流洞察',
+              tooltip: 'AI智能分析与建议',
+            ),
+          ],
+          currentIndex: navigationShell.currentIndex,
+          onTap: (index) {
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+      );
 }
 
 /// 🌊 Flux浮动操作按钮
@@ -286,21 +258,19 @@ class FluxFloatingActionButton extends StatelessWidget {
   const FluxFloatingActionButton({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: () {
-        // 导航到流录入页面
-        context.go(FluxRoutes.flowEntry);
-      },
-      backgroundColor: Theme.of(context).primaryColor,
-      foregroundColor: Colors.white,
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Icon(Icons.add, size: 28),
-    );
-  }
+  Widget build(BuildContext context) => FloatingActionButton(
+        onPressed: () {
+          // 导航到流录入页面
+          context.go(FluxRoutes.flowEntry);
+        },
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.add, size: 28),
+      );
 }
 
 // ==================== 路由守卫 ====================
@@ -364,56 +334,41 @@ extension FluxNavigationExtension on BuildContext {
 }
 
 /// 路由观察者 - 用于分析用户行为
-class FluxRouteObserver extends RouteObserver<PageRoute<dynamic>> {
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPush(route, previousRoute);
-    // TODO: 记录页面访问数据用于分析
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPop(route, previousRoute);
-    // TODO: 记录页面离开数据
-  }
-}
+class FluxRouteObserver extends RouteObserver<PageRoute<dynamic>> {}
 
 // ==================== 屏幕占位符 ====================
 
 /// 错误屏幕
 class FluxErrorScreen extends StatelessWidget {
-  final Exception? error;
-  final StackTrace? stackTrace;
-
   const FluxErrorScreen({
     super.key,
     this.error,
     this.stackTrace,
   });
+  final Exception? error;
+  final StackTrace? stackTrace;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('发生错误')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              error?.toString() ?? '未知错误',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.go(FluxRoutes.dashboard),
-              child: const Text('返回首页'),
-            ),
-          ],
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('发生错误')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                error?.toString() ?? '未知错误',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.go(FluxRoutes.dashboard),
+                child: const Text('返回首页'),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

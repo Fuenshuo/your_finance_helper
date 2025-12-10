@@ -2,8 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:your_finance_flutter/features/insights/services/serverless_ai_data_source.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
-import 'package:your_finance_flutter/core/services/ai/prompt_loader.dart';
-import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/models/flux_view_state.dart';
 
@@ -12,19 +11,16 @@ void main() {
 
   late ServerlessAiDataSource dataSource;
   late AiServiceFactory aiFactory;
-  late PromptLoader promptLoader;
-  late PerformanceMonitor performanceMonitor;
+  late AiConfigService aiConfigService;
 
   setUp(() async {
     // Initialize real dependencies for integration testing
     aiFactory = AiServiceFactory();
-    promptLoader = PromptLoader();
-    performanceMonitor = PerformanceMonitor();
+    aiConfigService = await AiConfigService.getInstance();
 
     dataSource = ServerlessAiDataSource(
       aiFactory,
-      promptLoader,
-      performanceMonitor,
+      aiConfigService,
     );
   });
 

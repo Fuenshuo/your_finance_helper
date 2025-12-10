@@ -3,14 +3,17 @@
 ## 概述
 `features/insights` 负责将账户、预算与 AI 能力整合成可视化洞察。模块输出每日/每周/每月的趋势、异常和建议，是 Stream Insights 体验的核心组成部分。
 
+**文件统计**: 33个Dart文件（models: 10个, providers: 2个, services: 10个, widgets: 7个, screens: 3个, utils: 1个）
+
 ## 目录结构
 ```
 insights/
-├── models/        # Daily/Weekly/Monthly 数据建模
-├── providers/     # Riverpod/Provider 状态
-├── services/      # AI & 分析服务
-├── widgets/       # 趋势卡片、图表组件
-└── screens/       # Flux Insights 页面容器
+├── models/        # Daily/Weekly/Monthly 数据建模 (10个文件)
+├── providers/     # Riverpod/Provider 状态 (2个文件)
+├── services/      # AI & 分析服务 (10个文件)
+├── utils/         # 工具函数 (1个文件)
+├── widgets/       # 趋势卡片、图表组件 (7个文件)
+└── screens/       # Flux Insights 页面容器 (3个文件)
 ```
 
 ## 核心服务

@@ -4,17 +4,19 @@
 
 交易录入功能是家庭资产记账应用的核心模块，提供了直观的自然语言交易录入体验。通过AI驱动的解析引擎，用户可以使用日常语言快速记录各类交易，支持实时验证、草稿管理和多层次的安全保护。
 
+**文件统计**: 35个Dart文件（models: 3个, providers: 3个, services: 8个, widgets: 19个, screens: 3个, utils: 1个）
+
 ## 架构设计
 
 ### 分层架构
 
 ```
 ┌─────────────────┐
-│   UI Layer      │  Widgets & Screens
+│   UI Layer      │  Widgets & Screens (22个文件)
 ├─────────────────┤
-│ Business Logic  │  Providers & Services
+│ Business Logic  │  Providers & Services (11个文件)
 ├─────────────────┤
-│   Data Layer    │  Models & Persistence
+│   Data Layer    │  Models & Persistence (3个文件)
 └─────────────────┘
 ```
 
@@ -79,31 +81,39 @@
 
 ```
 lib/features/transaction_entry/
-├── models/                    # 数据模型
+├── models/                    # 数据模型 (3个文件)
 │   ├── transaction_entry_state.dart
 │   ├── draft_transaction.dart
 │   └── input_validation.dart
-├── providers/                 # 状态管理
+├── providers/                 # 状态管理 (3个文件)
 │   ├── transaction_entry_provider.dart
 │   ├── draft_manager_provider.dart
 │   └── input_validation_provider.dart
-├── services/                  # 业务服务
+├── services/                  # 业务服务 (8个文件)
 │   ├── transaction_parser_service.dart
 │   ├── validation_service.dart
 │   ├── draft_persistence_service.dart
 │   ├── secure_storage_service.dart
 │   ├── performance_monitor_service.dart
 │   ├── cross_layer_communication_service.dart
-│   └── error_handling_service.dart
-├── widgets/                   # UI组件
+│   ├── error_handling_service.dart
+│   └── ... (更多服务)
+├── utils/                     # 工具函数 (1个文件)
+│   └── performance_monitor.dart
+├── widgets/                   # UI组件 (19个文件)
 │   ├── transaction_entry_screen.dart
-│   ├── input_dock/
-│   ├── draft_card/
-│   └── timeline/
-├── screens/                   # 页面组件
+│   ├── input_dock/            # 输入dock组件 (4个文件)
+│   ├── draft_card/            # 草稿卡片组件 (7个文件)
+│   ├── timeline/              # 时间线组件 (4个文件)
+│   └── insights/              # 洞察组件
+├── screens/                   # 页面组件 (3个文件)
 │   ├── transaction_entry_screen.dart
+│   ├── unified_transaction_entry_screen.dart
 │   └── transaction_detail_screen.dart
-└── README.md
+├── index.dart                 # 模块导出
+├── migration_guide.md         # 迁移指南
+├── migration_manager.dart     # 迁移管理
+└── security_audit.md          # 安全审计
 ```
 
 ## 使用指南

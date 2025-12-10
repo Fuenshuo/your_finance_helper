@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -88,8 +90,8 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
     }
   }
 
-  void _onSpeechError(String error) {
-    debugPrint('语音识别错误: $error');
+  void _onSpeechError(stt.SpeechRecognitionError error) {
+    developer.debugPrint('语音识别错误: ${error.errorMsg}');
     setState(() => _isListening = false);
     _animationController.stop();
     _animationController.value = 0.0;

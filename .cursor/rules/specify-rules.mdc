@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-27
 - SharedPreferences for local data, existing transaction models (005-serverless-ai-analysis)
 - Provider (state management), Riverpod (state management), Flutter Animate, SharedPreferences, SQLite (001-flux-ledger-cleanup)
 - SharedPreferences (settings), SQLite (transactions), Local files (assets/history) (001-flux-ledger-cleanup)
+- Dart 3.x / Flutter 3.x (confirmed current versions from project) + Flutter SDK 3.x, Provider (state management), Riverpod (state management), Drift (database), SharedPreferences (local storage), Speech-to-Text (voice input), Syncfusion Charts (data visualization), Flutter Animate (animations) (008-migration-verification)
+- SQLite via Drift ORM, SharedPreferences for settings, local files for assets/history (008-migration-verification)
 
 - Dart 3.x (Flutter framework) + Provider (state management), SharedPreferences (local storage), awesome-flutter libraries (charts, animations, AI integration) (001-financial-insights)
 
@@ -32,9 +34,9 @@ tests/
 Dart 3.x (Flutter framework): Follow standard conventions
 
 ## Recent Changes
+- 008-migration-verification: Added Dart 3.x / Flutter 3.x (confirmed current versions from project) + Flutter SDK 3.x, Provider (state management), Riverpod (state management), Drift (database), SharedPreferences (local storage), Speech-to-Text (voice input), Syncfusion Charts (data visualization), Flutter Animate (animations)
 - 001-flux-ledger-cleanup: Added Provider (state management), Riverpod (state management), Flutter Animate, SharedPreferences, SQLite
 - 005-serverless-ai-analysis: Added Dart 3.x with Flutter 3.x + AiServiceFactory, AiService, PromptLoader, Dio HTTP client, Provider for state managemen
-- 004-stream-insights-merge: Added Dart 3.x / Flutter 3.x + Flutter framework, Riverpod + Provider (state), go_router, AppDesignTokens, AppAnimations, InsightsProvider services
 
 
 <!-- MANUAL ADDITIONS START -->

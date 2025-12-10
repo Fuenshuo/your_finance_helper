@@ -1,20 +1,24 @@
 /// 🌊 Flux Ledger - 流式记账应用主入口
 ///
 /// 从传统记账到流式思维的革命性转变
-
-import 'dart:ui';
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider;
-
-import 'core/providers/flux_providers.dart';
-import 'core/providers/transaction_provider.dart';
-import 'core/router/flux_router.dart';
-import 'core/services/flux_services.dart';
-import 'core/theme/flux_theme.dart';
-import 'core/utils/flux_logger.dart';
+import 'package:your_finance_flutter/core/providers/account_provider.dart';
+import 'package:your_finance_flutter/core/providers/asset_provider.dart';
+import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
+import 'package:your_finance_flutter/core/providers/flux_providers.dart';
+import 'package:your_finance_flutter/core/providers/theme_provider.dart';
+import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';
+import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
+import 'package:your_finance_flutter/core/router/flux_router.dart';
+import 'package:your_finance_flutter/core/services/flux_services.dart';
+import 'package:your_finance_flutter/core/theme/flux_theme.dart';
+import 'package:your_finance_flutter/core/utils/flux_logger.dart';
 
 /// 应用生命周期观察者
 class FluxAppLifecycleObserver extends WidgetsBindingObserver {
@@ -78,12 +82,34 @@ void main() async {
             create: (_) => FlowAnalyticsProvider()..initialize(),
           ),
 
+          // Theme providers for UnifiedTransactionEntryScreen
+          provider.ChangeNotifierProvider(
+            create: (_) => ThemeProvider(),
+          ),
+          provider.ChangeNotifierProvider(
+            create: (_) => ThemeStyleProvider()..initialize(),
+          ),
+
           // 兼容性提供者 (逐步迁移)
           provider.ChangeNotifierProvider(
             create: (_) => LegacyDataProvider()..initialize(),
           ),
           provider.ChangeNotifierProvider(
             create: (_) => TransactionProvider()..initialize(),
+          ),
+
+          // Required providers for dashboard_home_screen
+          provider.ChangeNotifierProvider(
+            create: (_) => AccountProvider()..initialize(),
+          ),
+          provider.ChangeNotifierProvider(
+            create: (_) => AssetProvider()..initialize(),
+          ),
+          provider.ChangeNotifierProvider(
+            create: (_) => BudgetProvider()..initialize(),
+          ),
+          provider.ChangeNotifierProvider(
+            create: (_) => ExpensePlanProvider()..initialize(),
           ),
         ],
         child: const FluxLedgerApp(),
@@ -103,7 +129,11 @@ Future<void> _initializeFluxServices() async {
     FluxLogger.business('🌊 Flux', '✅ Flux Services Initialized Successfully');
   } catch (e, stackTrace) {
     FluxLogger.error(
-        '🌊 Flux', '❌ Flux Services Initialization Failed', e, stackTrace);
+      '🌊 Flux',
+      '❌ Flux Services Initialization Failed',
+      e,
+      stackTrace,
+    );
     rethrow;
   }
 }
@@ -221,21 +251,21 @@ class FluxLedgerApp extends StatelessWidget {
       ),
 
       // 文本主题
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         // 标题样式
-        headlineLarge: const TextStyle(
+        headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           height: 1.2,
           color: Color(0xFF1C1C1E),
         ),
-        headlineMedium: const TextStyle(
+        headlineMedium: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w600,
           height: 1.2,
           color: Color(0xFF1C1C1E),
         ),
-        titleLarge: const TextStyle(
+        titleLarge: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           height: 1.3,
@@ -243,13 +273,13 @@ class FluxLedgerApp extends StatelessWidget {
         ),
 
         // 正文样式
-        bodyLarge: const TextStyle(
+        bodyLarge: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w400,
           height: 1.4,
           color: Color(0xFF3C3C43),
         ),
-        bodyMedium: const TextStyle(
+        bodyMedium: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w400,
           height: 1.4,
@@ -257,13 +287,13 @@ class FluxLedgerApp extends StatelessWidget {
         ),
 
         // 标签样式
-        labelLarge: const TextStyle(
+        labelLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           height: 1.3,
           color: Color(0xFF1C1C1E),
         ),
-        labelMedium: const TextStyle(
+        labelMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           height: 1.3,
@@ -271,13 +301,13 @@ class FluxLedgerApp extends StatelessWidget {
         ),
 
         // 辅助样式
-        bodySmall: const TextStyle(
+        bodySmall: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w400,
           height: 1.3,
           color: Color(0xFF8E8E93),
         ),
-        labelSmall: const TextStyle(
+        labelSmall: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           height: 1.3,
@@ -326,28 +356,26 @@ class FluxLedgerApp extends StatelessWidget {
 
 /// 金额文本主题扩展
 class AmountTextTheme extends ThemeExtension<AmountTextTheme> {
-  final TextStyle positive;
-  final TextStyle negative;
-  final TextStyle neutral;
-
   const AmountTextTheme({
     required this.positive,
     required this.negative,
     required this.neutral,
   });
+  final TextStyle positive;
+  final TextStyle negative;
+  final TextStyle neutral;
 
   @override
   ThemeExtension<AmountTextTheme> copyWith({
     TextStyle? positive,
     TextStyle? negative,
     TextStyle? neutral,
-  }) {
-    return AmountTextTheme(
-      positive: positive ?? this.positive,
-      negative: negative ?? this.negative,
-      neutral: neutral ?? this.neutral,
-    );
-  }
+  }) =>
+      AmountTextTheme(
+        positive: positive ?? this.positive,
+        negative: negative ?? this.negative,
+        neutral: neutral ?? this.neutral,
+      );
 
   @override
   ThemeExtension<AmountTextTheme> lerp(
@@ -365,15 +393,18 @@ class AmountTextTheme extends ThemeExtension<AmountTextTheme> {
 
 /// 扩展方法：获取金额文本样式
 extension AmountTextThemeExtension on BuildContext {
-  AmountTextTheme get amountTheme {
-    return Theme.of(this).extension<AmountTextTheme>() ??
-        const AmountTextTheme(
-          positive: TextStyle(
-              color: FluxTheme.incomeGreen, fontWeight: FontWeight.w700),
-          negative: TextStyle(
-              color: FluxTheme.expenseRed, fontWeight: FontWeight.w700),
-          neutral:
-              TextStyle(color: Color(0xFF1C1C1E), fontWeight: FontWeight.w600),
-        );
-  }
+  AmountTextTheme get amountTheme =>
+      Theme.of(this).extension<AmountTextTheme>() ??
+      const AmountTextTheme(
+        positive: TextStyle(
+          color: FluxTheme.incomeGreen,
+          fontWeight: FontWeight.w700,
+        ),
+        negative: TextStyle(
+          color: FluxTheme.expenseRed,
+          fontWeight: FontWeight.w700,
+        ),
+        neutral:
+            TextStyle(color: Color(0xFF1C1C1E), fontWeight: FontWeight.w600),
+      );
 }
