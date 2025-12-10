@@ -60,3 +60,4 @@ class HealthFactor extends Equatable {
   List<Object?> get props => [name, impact, description];
 }
 
+

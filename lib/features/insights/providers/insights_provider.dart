@@ -208,3 +208,4 @@ class InsightsProvider with ChangeNotifier {
   }
 }
 
+

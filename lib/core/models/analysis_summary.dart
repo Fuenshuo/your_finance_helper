@@ -10,6 +10,7 @@ class AnalysisSummary extends Equatable {
     required this.improvementsFound,
     required this.topRecommendation,
     this.deepLink,
+    this.score = 0, // Analysis confidence score (0-100)
   });
 
   factory AnalysisSummary.fromJson(Map<String, dynamic> json) {
@@ -23,6 +24,7 @@ class AnalysisSummary extends Equatable {
       deepLink: json['deepLink'] != null
           ? Uri.tryParse(json['deepLink'] as String)
           : null,
+      score: json['score'] as int? ?? 0,
     );
   }
 
@@ -33,6 +35,7 @@ class AnalysisSummary extends Equatable {
       generatedAt: DateTime.now(),
       improvementsFound: 0,
       topRecommendation: '',
+      score: 0,
     );
   }
 
@@ -41,6 +44,7 @@ class AnalysisSummary extends Equatable {
   final int improvementsFound;
   final String topRecommendation;
   final Uri? deepLink;
+  final int score;
 
   AnalysisSummary copyWith({
     String? analysisId,
@@ -48,6 +52,7 @@ class AnalysisSummary extends Equatable {
     int? improvementsFound,
     String? topRecommendation,
     Uri? deepLink,
+    int? score,
   }) {
     return AnalysisSummary(
       analysisId: analysisId ?? this.analysisId,
@@ -55,6 +60,7 @@ class AnalysisSummary extends Equatable {
       improvementsFound: improvementsFound ?? this.improvementsFound,
       topRecommendation: topRecommendation ?? this.topRecommendation,
       deepLink: deepLink ?? this.deepLink,
+      score: score ?? this.score,
     );
   }
 

@@ -28,8 +28,12 @@ class ExpensePlanProvider with ChangeNotifier {
   /// 初始化
   Future<void> initialize() async {
     Logger.debug('🔄 ExpensePlanProvider 初始化开始');
-    _storageService = await StorageService.getInstance();
-    Logger.debug('✅ StorageService 初始化完成');
+    if (_storageService == null) {
+      _storageService = await StorageService.getInstance();
+      Logger.debug('✅ StorageService 初始化完成');
+    } else {
+      Logger.debug('✅ StorageService 已初始化，跳过');
+    }
     await _loadExpensePlans();
     Logger.debug('✅ ExpensePlanProvider 初始化完成，支出计划数量: ${_expensePlans.length}');
   }

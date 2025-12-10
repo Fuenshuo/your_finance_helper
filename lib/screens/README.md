@@ -4,6 +4,8 @@
 
 `screens` 包包含应用级别的通用页面，这些页面不属于特定的功能模块，而是为整个应用提供导航、设置、开发者工具等功能。`flux_screens.dart` 仅导出当前实现的 Flux 体验（`flux_navigation_screen.dart` + `flux_streams_screen.dart` + `unified_transaction_entry_screen.dart`），避免引用尚未落地的占位文件导致构建失败。
 
+**文件统计**: 10个Dart文件，涵盖应用的核心页面和导航功能
+
 ## 页面列表
 
 ### 1. main_navigation_screen.dart - 主导航页面

@@ -1,292 +1,190 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
-import 'package:your_finance_flutter/core/widgets/app_card.dart';
-import 'package:your_finance_flutter/screens/ai_config_screen.dart';
-import 'package:your_finance_flutter/screens/developer_mode_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../core/providers/theme_provider.dart';
+import '../core/providers/theme_style_provider.dart';
+import '../core/router/flux_router.dart';
+import '../core/services/ai/ai_config_service.dart';
+import '../core/theme/app_design_tokens.dart';
+import '../core/widgets/composite/navigable_list_item.dart';
+import '../core/widgets/composite/switch_control_list_item.dart';
+import 'ai_config_screen.dart';
 
 /// 设置页面
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  final DebugModeManager _debugManager = DebugModeManager();
-
-  @override
-  void initState() {
-    super.initState();
-    _debugManager.addListener(_onDebugModeChanged);
-  }
-
-  @override
-  void dispose() {
-    _debugManager.removeListener(_onDebugModeChanged);
-    super.dispose();
-  }
-
-  void _onDebugModeChanged() {
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('设置'),
-          backgroundColor: Colors.white,
-          elevation: 0,
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('设置'),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go(FluxRoutes.dashboard),
+          tooltip: '返回',
         ),
-        backgroundColor: context.primaryBackground,
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 应用信息
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '应用信息',
-                      style: context.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+      ),
+      body: Container(
+        color: AppDesignTokens.pageBackground(context),
+        child: ListView(
+          children: [
+            _buildSection(
+              context,
+              'AI 配置',
+              [
+                _buildNavigableItem(
+                  context,
+                  'AI 服务配置',
+                  '配置AI解析服务的API密钥',
+                  Icons.smart_toy,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AiConfigScreen(),
                     ),
-                    const SizedBox(height: 16),
-                    _buildInfoItem('版本号', 'V3.0'),
-                    _buildInfoItem('架构', '三层财务模型'),
-                    _buildInfoItem('状态', '开发中'),
-                  ],
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // AI配置
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'AI服务配置',
-                          style: context.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              AppAnimations.createRoute<void>(
-                                const AiConfigScreen(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.arrow_forward_ios),
-                          iconSize: 16,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '配置AI服务提供商和API Key，启用大语言分析和图文分析功能',
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: context.secondaryText,
-                      ),
-                    ),
-                  ],
+              ],
+            ),
+            _buildSection(
+              context,
+              '外观',
+              [
+                Consumer<ThemeProvider>(
+                  builder: (context, themeProvider, child) {
+                    return _buildSwitchItem(
+                      context,
+                      '深色模式',
+                      themeProvider.isDarkMode,
+                      (value) => themeProvider.toggleTheme(),
+                    );
+                  },
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // 开发者选项
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '开发者选项',
-                          style: context.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+                Consumer<ThemeStyleProvider>(
+                  builder: (context, themeStyleProvider, child) {
+                    return _buildNavigableItem(
+                      context,
+                      '主题风格',
+                      themeStyleProvider.getStyleDisplayName(themeStyleProvider.currentStyle),
+                      Icons.palette,
+                      () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('主题风格切换功能开发中'),
+                            backgroundColor: AppDesignTokens.warningColor,
                           ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+            _buildSection(
+              context,
+              '关于',
+              [
+                _buildNavigableItem(
+                  context,
+                  '版本信息',
+                  'Flux Ledger v1.0.0',
+                  Icons.info_outline,
+                  () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: AppDesignTokens.surface(context),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
                         ),
-                        if (_debugManager.isDebugModeEnabled)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.orange,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              '已开启',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Debug模式状态
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _debugManager.isDebugModeEnabled
-                            ? Colors.orange.withOpacity(0.1)
-                            : Colors.grey.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: _debugManager.isDebugModeEnabled
-                              ? Colors.orange
-                              : Colors.grey,
+                        title: Text(
+                          '关于 Flux Ledger',
+                          style: AppDesignTokens.headline(context),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            _debugManager.isDebugModeEnabled
-                                ? Icons.developer_mode
-                                : Icons.developer_mode_outlined,
-                            color: _debugManager.isDebugModeEnabled
-                                ? Colors.orange
-                                : Colors.grey,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Debug模式',
-                                  style:
-                                      context.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  _debugManager.isDebugModeEnabled
-                                      ? '开发者模式已开启，可以访问调试工具'
-                                      : '连续点击顶部标题5次开启开发者模式',
-                                  style: context.textTheme.bodySmall?.copyWith(
-                                    color: context.secondaryText,
-                                  ),
-                                ),
-                              ],
+                        content: Text(
+                          '🌊 流式记账应用\n\n'
+                          '让复杂的财务管理变得简单而愉悦\n\n'
+                          '📱 版本: 1.0.0\n'
+                          '🤖 基于 Flutter + AI 技术',
+                          style: AppDesignTokens.body(context),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(
+                              '确定',
+                              style: TextStyle(color: AppDesignTokens.primaryAction(context)),
                             ),
                           ),
-                          if (_debugManager.isDebugModeEnabled)
-                            IconButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  AppAnimations.createRoute<void>(
-                                    const DeveloperModeScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_forward_ios),
-                              color: Colors.orange,
-                              iconSize: 16,
-                            ),
                         ],
                       ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // 快速开启按钮
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _debugManager.forceEnableDebugMode();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('🔧 Debug模式已开启'),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.bug_report),
-                            label: const Text('开启Debug模式'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // 关于应用
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '关于应用',
-                      style: context.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '家庭资产记账应用是一个现代化的个人财务管理工具，采用三层财务模型架构：\n\n'
-                      '• 家庭信息维护：管理工资、资产、钱包等静态信息\n'
-                      '• 财务计划：制定收入和支出计划\n'
-                      '• 交易流水：记录和分析实际交易\n\n'
-                      '应用支持多种资产类型、预算管理、税务计算等功能。',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-
-  Widget _buildInfoItem(String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.secondaryText,
-              ),
-            ),
-            Text(
-              value,
-              style: context.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              ],
             ),
           ],
         ),
-      );
-}
+      ),
+    );
+  }
 
+  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section title
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDesignTokens.globalHorizontalPadding,
+            vertical: AppDesignTokens.spacing16,
+          ),
+          child: Text(
+            title,
+            style: AppDesignTokens.title1(context),
+          ),
+        ),
+        // Section items
+        Container(
+          color: AppDesignTokens.surface(context),
+          child: Column(
+            children: children,
+          ),
+        ),
+        SizedBox(height: AppDesignTokens.spacing16),
+      ],
+    );
+  }
+
+  Widget _buildNavigableItem(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return NavigableListItem(
+      title: title,
+      leading: Icon(icon, color: AppDesignTokens.primaryAction(context)),
+      onTap: onTap,
+      spacing: AppDesignTokens.spacing8,
+    );
+  }
+
+  Widget _buildSwitchItem(
+    BuildContext context,
+    String title,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return SwitchControlListItem(
+      title: title,
+      value: value,
+      onChanged: onChanged,
+      spacing: AppDesignTokens.spacing8,
+    );
+  }
+}

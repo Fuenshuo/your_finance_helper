@@ -13,8 +13,7 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/app_empty_state.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/widgets/global_fab.dart';
+// Removed legacy imports - Flux dashboard should not depend on legacy components
 
 /// Dashboard首页 - 财务驾驶舱
 /// 显示核心指标、待办事项、最近交易
@@ -53,7 +52,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
             ),
           ),
         ),
-        floatingActionButton: const GlobalFAB(),
+        // Removed GlobalFAB - Flux navigation shell provides the FAB
       );
 
   /// 构建财务健康胶囊
@@ -452,11 +451,11 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                             ),
                           ),
                           onTap: () {
-                            Navigator.of(context).push<void>(
-                              AppAnimations.createRoute<void>(
-                                TransactionDetailScreen(
-                                  transaction: transaction,
-                                ),
+                            // TODO: Implement Flux-compatible transaction detail view
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Transaction: ${transaction.description}'),
+                                duration: const Duration(seconds: 2),
                               ),
                             );
                           },
