@@ -124,7 +124,6 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
           });
         },
         localeId: 'zh_CN', // 中文识别
-        partialResults: false,
       );
     }
   }

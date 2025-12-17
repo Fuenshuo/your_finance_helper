@@ -1238,9 +1238,10 @@ class _BonusDialogState extends State<_BonusDialog> {
                   awardDate: _awardDate, // 授予日期
                   attributionDate: _attributionDate, // 归属日期
                   endDate: _type == BonusType.quarterlyBonus
-                      ? QuarterlyBonusCalculator.calculateEndDate(
+                      ? QuarterlyBonusCalculator.calculateEndDateWithMonths(
                           _quarterlyStartDate,
                           _quarterlyPaymentCount,
+                          [3, 6, 9, 12], // Default quarterly months
                         )
                       : _type == BonusType.thirteenthSalary ||
                               _type == BonusType.yearEndBonus

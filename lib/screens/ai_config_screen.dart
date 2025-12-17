@@ -176,24 +176,25 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
           margin: const EdgeInsets.symmetric(
             horizontal: AppDesignTokens.globalHorizontalPadding,
           ),
-          child: RadioListTile<String>(
-            title: Text(
-              provider['name']!,
-              style: AppDesignTokens.body(context).copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-            subtitle: Text(
-              '环境变量: ${provider['envKey']}',
-              style: AppDesignTokens.caption(context),
-            ),
+          child: RadioMenuButton<String>(
             value: provider['id']!,
             groupValue: _selectedProvider,
             onChanged: (value) => setState(() => _selectedProvider = value!),
-            activeColor: AppDesignTokens.primaryAction(context),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppDesignTokens.spacing16,
-              vertical: AppDesignTokens.spacing8,
+            child: ListTile(
+              title: Text(
+                provider['name']!,
+                style: AppDesignTokens.body(context).copyWith(
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+              subtitle: Text(
+                '环境变量: ${provider['envKey']}',
+                style: AppDesignTokens.caption(context),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppDesignTokens.spacing16,
+                vertical: AppDesignTokens.spacing8,
+              ),
             ),
           ),
         );

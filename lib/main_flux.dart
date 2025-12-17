@@ -323,7 +323,6 @@ class FluxLedgerApp extends StatelessWidget {
         secondary: FluxTheme.incomeGreen,
         error: FluxTheme.expenseRed,
         surface: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        background: isDark ? const Color(0xFF121212) : FluxTheme.flowBackground,
       ),
 
       // 扩展主题

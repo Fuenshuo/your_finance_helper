@@ -2963,7 +2963,7 @@ class _UnifiedTransactionEntryScreenState
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textScaleFactor: 0.9,
+                  textScaler: TextScaler.linear(0.9),
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: context.fluxSecondaryText,
                   ),

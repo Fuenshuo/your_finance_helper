@@ -176,7 +176,7 @@ class NotificationContext {
       isKeyboardVisible: mediaQuery.viewInsets.bottom > 0,
       screenSize: mediaQuery.size,
       isLandscape: mediaQuery.orientation == Orientation.landscape,
-      textScaleFactor: mediaQuery.textScaleFactor,
+      textScaleFactor: MediaQuery.textScalerOf(context).scale(1.0),
     );
   }
   final bool isInModal;

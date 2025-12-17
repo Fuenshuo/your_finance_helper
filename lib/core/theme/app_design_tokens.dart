@@ -542,7 +542,7 @@ extension AppColorExtension on BuildContext {
   Color get appPrimaryAction => AppDesignTokens.primaryAction(this);
   Color get appPrimaryText => AppDesignTokens.primaryText(this);
   Color get appSecondaryText => AppDesignTokens.secondaryText(this);
-  Color get appSuccessColor => AppDesignTokens.successColorLegacy;
+  Color get appSuccessColor => AppDesignTokens.successColor(this);
   Color get appErrorColor => AppDesignTokens.errorColor;
   Color get appWarningColor => AppDesignTokens.warningColor;
   Color get appInfoColor => AppDesignTokens.infoColor;

@@ -360,7 +360,7 @@ class IOSAnimationSystem {
       showGeneralDialog<T>(
         context: context,
         barrierDismissible: barrierDismissible,
-        barrierColor: barrierColor ?? Colors.black.withOpacity(0.5),
+        barrierColor: barrierColor ?? Colors.black.withValues(alpha: 0.5),
         barrierLabel: 'Dismiss',
         transitionDuration:
             _currentTheme.adjustDuration(IOSAnimationConfig.normal),
@@ -473,7 +473,7 @@ class IOSAnimationSystem {
             target: isHighlighted ? 1.0 : 0.0,
           )
           .tint(
-            color: highlightColor.withOpacity(0.3),
+            color: highlightColor.withValues(alpha: 0.3),
             curve: IOSAnimationSystem.getCustomCurve('search-highlight') ??
                 Curves.easeInOutCubic,
             duration: duration,
@@ -858,7 +858,7 @@ class _IOSListItem extends StatelessWidget {
           border: Border(
             bottom: isLast
                 ? BorderSide.none
-                : BorderSide(color: Colors.grey.withOpacity(0.2), width: 0.5),
+                : BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 0.5),
           ),
         ),
         child: ListTile(

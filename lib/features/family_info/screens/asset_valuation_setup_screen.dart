@@ -417,7 +417,7 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                   ],
                 ),
               ),
-              Radio<DepreciationMethod>(
+              RadioMenuButton<DepreciationMethod>(
                 value: method,
                 groupValue: _selectedMethod,
                 onChanged: (value) {
@@ -430,7 +430,7 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                     });
                   }
                 },
-                activeColor: color,
+                child: SizedBox.shrink(),
               ),
             ],
           ),
