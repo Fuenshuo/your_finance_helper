@@ -1,4 +1,5 @@
 import 'package:your_finance_flutter/core/database/app_database.dart';
+
 class PayrollRecognitionResult {
   const PayrollRecognitionResult({
     required this.salary,
