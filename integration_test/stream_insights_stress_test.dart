@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:vm_service/vm_service_io.dart';
 import 'package:your_finance_flutter/core/providers/stream_insights_flag_provider.dart';
-import 'package:your_finance_flutter/core/router/app_router.dart';
+import 'package:your_finance_flutter/core/router/flux_router.dart';
 import 'package:your_finance_flutter/main.dart' as app;
 
 const Key _insightsNavChipKey = Key('unified_insights_nav_chip');
@@ -20,7 +20,7 @@ Future<void> main() async {
 
   Future<void> ensureUnifiedScreenReady(WidgetTester tester) async {
     await tester.pumpAndSettle(const Duration(seconds: 2));
-    appRouter.go(AppRoutes.main);
+    fluxRouter.go(FluxRoutes.dashboard);
     await tester.pumpAndSettle(const Duration(seconds: 5));
     expect(find.byKey(_timelineViewKey), findsOneWidget);
     expect(find.byKey(_insightsNavChipKey), findsOneWidget);

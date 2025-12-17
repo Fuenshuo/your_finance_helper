@@ -4,7 +4,6 @@
 /// to help optimize verification processes and identify bottlenecks.
 
 import 'dart:async';
-import '../models/verification_result.dart';
 
 class VerificationPerformanceMonitor {
   final Map<String, ComponentPerformanceMetrics> _componentMetrics = {};
@@ -17,7 +16,8 @@ class VerificationPerformanceMonitor {
     _componentMetrics.clear();
 
     // Take snapshots every 100ms during verification
-    _monitoringTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _monitoringTimer =
+        Timer.periodic(const Duration(milliseconds: 100), (timer) {
       _takePerformanceSnapshot();
     });
   }
@@ -69,28 +69,40 @@ class VerificationPerformanceMonitor {
       );
     }
 
-    final totalDuration = _snapshots.last.timestamp.difference(_snapshots.first.timestamp);
-    final peakMemoryUsage = _snapshots.map((s) => s.memoryUsage).reduce((a, b) => a > b ? a : b);
-    final averageCpuUsage = _snapshots.map((s) => s.cpuUsage).reduce((a, b) => a + b) / _snapshots.length;
+    final totalDuration =
+        _snapshots.last.timestamp.difference(_snapshots.first.timestamp);
+    final peakMemoryUsage =
+        _snapshots.map((s) => s.memoryUsage).reduce((a, b) => a > b ? a : b);
+    final averageCpuUsage =
+        _snapshots.map((s) => s.cpuUsage).reduce((a, b) => a + b) /
+            _snapshots.length;
 
     // Calculate performance score (0-100, higher is better)
-    final memoryScore = peakMemoryUsage < 100 ? 100 : (100000000 / peakMemoryUsage).clamp(0, 100);
+    final memoryScore = peakMemoryUsage < 100
+        ? 100
+        : (100000000 / peakMemoryUsage).clamp(0, 100);
     final cpuScore = (100 - averageCpuUsage).clamp(0, 100);
-    final durationScore = totalDuration.inSeconds < 60 ? 100 : (3600 / totalDuration.inSeconds * 100).clamp(0, 100);
-    final performanceScore = ((memoryScore + cpuScore + durationScore) / 3).round();
+    final durationScore = totalDuration.inSeconds < 60
+        ? 100
+        : (3600 / totalDuration.inSeconds * 100).clamp(0, 100);
+    final performanceScore =
+        ((memoryScore + cpuScore + durationScore) / 3).round();
 
     final recommendations = <String>[];
 
     if (peakMemoryUsage > 150) {
-      recommendations.add('High memory usage detected (${peakMemoryUsage}MB). Consider optimizing memory-intensive components.');
+      recommendations.add(
+          'High memory usage detected (${peakMemoryUsage}MB). Consider optimizing memory-intensive components.');
     }
 
     if (averageCpuUsage > 70) {
-      recommendations.add('High CPU usage (${averageCpuUsage.toStringAsFixed(1)}%). Consider reducing computational load.');
+      recommendations.add(
+          'High CPU usage (${averageCpuUsage.toStringAsFixed(1)}%). Consider reducing computational load.');
     }
 
     if (totalDuration.inSeconds > 120) {
-      recommendations.add('Long verification duration (${totalDuration.inSeconds}s). Consider parallelizing or optimizing slow components.');
+      recommendations.add(
+          'Long verification duration (${totalDuration.inSeconds}s). Consider parallelizing or optimizing slow components.');
     }
 
     // Component-specific recommendations
@@ -100,7 +112,8 @@ class VerificationPerformanceMonitor {
         .toList();
 
     if (slowComponents.isNotEmpty) {
-      recommendations.add('Slow components detected: ${slowComponents.join(", ")}. Consider optimization.');
+      recommendations.add(
+          'Slow components detected: ${slowComponents.join(", ")}. Consider optimization.');
     }
 
     return PerformanceSummary(
@@ -131,7 +144,8 @@ class VerificationPerformanceMonitor {
     }
 
     if (metrics.errorCount > 0) {
-      suggestions.add('Review error handling - ${metrics.errorCount} errors occurred');
+      suggestions
+          .add('Review error handling - ${metrics.errorCount} errors occurred');
       suggestions.add('Add retry logic for transient failures');
     }
 
@@ -139,7 +153,8 @@ class VerificationPerformanceMonitor {
   }
 
   /// Get performance comparison between components
-  PerformanceComparison compareComponents(String componentA, String componentB) {
+  PerformanceComparison compareComponents(
+      String componentA, String componentB) {
     final metricsA = _componentMetrics[componentA];
     final metricsB = _componentMetrics[componentB];
 
@@ -159,9 +174,11 @@ class VerificationPerformanceMonitor {
     final errorDiff = metricsA.errorCount - metricsB.errorCount;
 
     String winner;
-    if (metricsA.duration < metricsB.duration && metricsA.memoryUsage < metricsB.memoryUsage) {
+    if (metricsA.duration < metricsB.duration &&
+        metricsA.memoryUsage < metricsB.memoryUsage) {
       winner = componentA;
-    } else if (metricsB.duration < metricsA.duration && metricsB.memoryUsage < metricsA.memoryUsage) {
+    } else if (metricsB.duration < metricsA.duration &&
+        metricsB.memoryUsage < metricsA.memoryUsage) {
       winner = componentB;
     } else {
       winner = 'tie';
@@ -311,3 +328,4 @@ class PerformanceComparison {
     required this.winner,
   });
 }
+

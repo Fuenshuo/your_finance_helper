@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
 import 'package:your_finance_flutter/core/models/expense_plan.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
@@ -9,7 +8,7 @@ class ExpensePlanProvider with ChangeNotifier {
   List<ExpensePlan> _expensePlans = [];
   bool _isLoading = false;
   String? _error;
-  late final StorageService _storageService;
+  StorageService? _storageService;
 
   // Getters
   List<ExpensePlan> get expensePlans => _expensePlans;
@@ -28,12 +27,14 @@ class ExpensePlanProvider with ChangeNotifier {
   /// 初始化
   Future<void> initialize() async {
     Logger.debug('🔄 ExpensePlanProvider 初始化开始');
-    if (_storageService == null) {
-      _storageService = await StorageService.getInstance();
-      Logger.debug('✅ StorageService 初始化完成');
-    } else {
-      Logger.debug('✅ StorageService 已初始化，跳过');
+
+    if (_storageService != null) {
+      Logger.debug('✅ ExpensePlanProvider 已初始化，跳过');
+      return;
     }
+
+    _storageService = await StorageService.getInstance();
+    Logger.debug('✅ StorageService 初始化完成');
     await _loadExpensePlans();
     Logger.debug('✅ ExpensePlanProvider 初始化完成，支出计划数量: ${_expensePlans.length}');
   }
@@ -46,7 +47,7 @@ class ExpensePlanProvider with ChangeNotifier {
       notifyListeners();
 
       Logger.debug('📊 开始加载支出计划数据');
-      final loadedPlans = await _storageService.loadExpensePlans();
+      final loadedPlans = await _storageService!.loadExpensePlans();
       _expensePlans = loadedPlans.map((plan) => plan as ExpensePlan).toList();
       Logger.debug('✅ 支出计划加载完成: ${_expensePlans.length} 个');
 
@@ -73,7 +74,7 @@ class ExpensePlanProvider with ChangeNotifier {
     try {
       Logger.debug('➕ 添加支出计划: ${plan.name}');
       _expensePlans.add(plan);
-      await _storageService.saveExpensePlans(_expensePlans);
+      await _storageService!.saveExpensePlans(_expensePlans);
       notifyListeners();
       Logger.debug('✅ 支出计划添加成功: ${plan.name}');
     } catch (e) {
@@ -91,7 +92,7 @@ class ExpensePlanProvider with ChangeNotifier {
           _expensePlans.indexWhere((plan) => plan.id == updatedPlan.id);
       if (index != -1) {
         _expensePlans[index] = updatedPlan.copyWith(updateDate: DateTime.now());
-        await _storageService.saveExpensePlans(_expensePlans);
+        await _storageService!.saveExpensePlans(_expensePlans);
         notifyListeners();
         Logger.debug('✅ 支出计划更新成功: ${updatedPlan.name}');
       } else {
@@ -112,7 +113,7 @@ class ExpensePlanProvider with ChangeNotifier {
       if (planIndex != -1) {
         final planName = _expensePlans[planIndex].name;
         _expensePlans.removeAt(planIndex);
-        await _storageService.saveExpensePlans(_expensePlans);
+        await _storageService!.saveExpensePlans(_expensePlans);
         notifyListeners();
         Logger.debug('✅ 支出计划删除成功: $planName');
       }
@@ -129,7 +130,7 @@ class ExpensePlanProvider with ChangeNotifier {
       final index = _expensePlans.indexWhere((plan) => plan.id == planId);
       if (index != -1) {
         _expensePlans[index] = _expensePlans[index].recordExecution();
-        await _storageService.saveExpensePlans(_expensePlans);
+        await _storageService!.saveExpensePlans(_expensePlans);
         notifyListeners();
         Logger.debug('✅ 支出计划执行记录成功: ${_expensePlans[index].name}');
       }
@@ -146,7 +147,7 @@ class ExpensePlanProvider with ChangeNotifier {
       final index = _expensePlans.indexWhere((plan) => plan.id == planId);
       if (index != -1) {
         _expensePlans[index] = _expensePlans[index].pause();
-        await _storageService.saveExpensePlans(_expensePlans);
+        await _storageService!.saveExpensePlans(_expensePlans);
         notifyListeners();
         Logger.debug('⏸️ 支出计划暂停成功: ${_expensePlans[index].name}');
       }
@@ -163,7 +164,7 @@ class ExpensePlanProvider with ChangeNotifier {
       final index = _expensePlans.indexWhere((plan) => plan.id == planId);
       if (index != -1) {
         _expensePlans[index] = _expensePlans[index].resume();
-        await _storageService.saveExpensePlans(_expensePlans);
+        await _storageService!.saveExpensePlans(_expensePlans);
         notifyListeners();
         Logger.debug('▶️ 支出计划恢复成功: ${_expensePlans[index].name}');
       }
@@ -273,16 +274,15 @@ class ExpensePlanProvider with ChangeNotifier {
       if (plan.loanAccountId == null) return false;
 
       // 检查是否在未来7天内到期
-      return plan.startDate.isAfter(today) &&
-             plan.startDate.isBefore(nextWeek);
+      return plan.startDate.isAfter(today) && plan.startDate.isBefore(nextWeek);
     }).toList();
   }
 
   /// 获取所有未完成的还款计划
   List<ExpensePlan> getPendingRepaymentPlans() {
-    return activeExpensePlans.where((plan) =>
-      plan.loanAccountId != null
-    ).toList();
+    return activeExpensePlans
+        .where((plan) => plan.loanAccountId != null)
+        .toList();
   }
 
   /// 刷新数据

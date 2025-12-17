@@ -278,7 +278,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     onAutoCalculationChanged: (value) {
                       setState(() => _useAutoCalculation = value);
                       if (value) {
-                        _calculateAutoCumulative().catchError((error) {
+                        _calculateAutoCumulative().catchError((Object error) {
                           print('自动累计计算失败: $error');
                         });
                       }
@@ -364,10 +364,10 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                                 Container(
                                   padding: EdgeInsets.all(context.spacing12),
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
+                                    color: Colors.blue.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: Colors.blue.withOpacity(0.3),
+                                      color: Colors.blue.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: Column(
@@ -438,7 +438,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                                 onChanged: (value) {
                                   setState(() {
                                     _cumulativeIncome =
-                                        double.tryParse(value ?? '0') ?? 0;
+                                        double.tryParse(value) ?? 0;
                                     _calculateTax();
                                   });
                                 },
@@ -461,7 +461,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                                 onChanged: (value) {
                                   setState(() {
                                     _cumulativeTax =
-                                        double.tryParse(value ?? '0') ?? 0;
+                                        double.tryParse(value) ?? 0;
                                     _calculateTax();
                                   });
                                 },
@@ -471,10 +471,10 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                               Container(
                                 padding: EdgeInsets.all(context.spacing12),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1),
+                                  color: Colors.orange.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.orange.withOpacity(0.3),
+                                    color: Colors.orange.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -610,7 +610,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     otherDeductionsController: _otherDeductionsController,
                     specialDeductionController: _specialDeductionController,
                     otherTaxFreeIncomeController: _otherTaxFreeIncomeController,
-                    otherTaxDeductionsController: _otherTaxDeductionsController, // 其他税收扣除
+                    otherTaxDeductionsController:
+                        _otherTaxDeductionsController, // 其他税收扣除
                     specialDeductionMonthly: _specialDeductionMonthly,
                     onSpecialDeductionChanged: _onSpecialDeductionChanged,
                     onCalculateTax: _calculateTax,
@@ -644,7 +645,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     otherDeductions:
                         double.tryParse(_otherDeductionsController.text) ?? 0,
                     otherTaxDeductions:
-                        double.tryParse(_otherTaxDeductionsController.text) ?? 0, // 其他税收扣除
+                        double.tryParse(_otherTaxDeductionsController.text) ??
+                            0, // 其他税收扣除
                     bonuses: _bonuses,
                     salaryDay: _salaryDay,
                   ),

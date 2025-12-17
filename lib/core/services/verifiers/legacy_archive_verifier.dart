@@ -2,20 +2,22 @@
 ///
 /// Tests that all moved code is properly archived, documentation is complete,
 /// and cleanup was performed correctly.
+library;
 
 import 'dart:io';
-import '../verification_result.dart';
-import '../component_verifier.dart';
 
-class LegacyArchiveVerifier implements ComponentVerifier {
+import 'package:your_finance_flutter/core/services/component_verifier.dart';
+import 'package:your_finance_flutter/core/models/verification_result.dart';
+
+class LegacyArchiveVerifier extends ComponentVerifier {
   @override
   String get componentName => 'legacy_archive';
 
   @override
   List<String> get dependencies => [
-    'File System',
-    'Git Repository',
-  ];
+        'File System',
+        'Git Repository',
+      ];
 
   @override
   int get priority => 3; // Medium priority - cleanup verification
@@ -36,8 +38,8 @@ class LegacyArchiveVerifier implements ComponentVerifier {
 
   @override
   Future<VerificationResult> verify() async {
-    final Map<String, bool> checkResults = {};
-    final List<String> issues = [];
+    final checkResults = <String, bool>{};
+    final issues = <String>[];
 
     try {
       // Test 1: Legacy folder structure
@@ -73,11 +75,13 @@ class LegacyArchiveVerifier implements ComponentVerifier {
       // Test 6: Archive completeness
       checkResults['archive_completeness'] = await _testArchiveCompleteness();
       if (!checkResults['archive_completeness']!) {
-        issues.add('Archive is missing some components that should have been moved');
+        issues.add(
+            'Archive is missing some components that should have been moved');
       }
 
       final allPassed = checkResults.values.every((passed) => passed);
-      final status = allPassed ? VerificationStatus.pass : VerificationStatus.fail;
+      final status =
+          allPassed ? VerificationStatus.pass : VerificationStatus.fail;
 
       final details = allPassed
           ? 'Legacy archive verification completed successfully'
@@ -90,7 +94,6 @@ class LegacyArchiveVerifier implements ComponentVerifier {
         checkResults: checkResults,
         remediationSteps: allPassed ? null : _generateRemediationSteps(issues),
       );
-
     } catch (e) {
       return VerificationResult.fail(
         componentName,
@@ -156,8 +159,9 @@ class LegacyArchiveVerifier implements ComponentVerifier {
         'moved',
       ];
 
-      return requiredContent.every((keyword) =>
-          content.toLowerCase().contains(keyword));
+      return requiredContent.every(
+        (keyword) => content.toLowerCase().contains(keyword),
+      );
     } catch (e) {
       return false;
     }
@@ -176,8 +180,8 @@ class LegacyArchiveVerifier implements ComponentVerifier {
 
       // Check if legacy folder is ignored
       return content.contains('legacy/') ||
-             content.contains('legacy') ||
-             content.contains('**/legacy/**');
+          content.contains('legacy') ||
+          content.contains('**/legacy/**');
     } catch (e) {
       return false;
     }
@@ -192,7 +196,8 @@ class LegacyArchiveVerifier implements ComponentVerifier {
       }
 
       // Check that legacy files are readable and not corrupted
-      final files = legacyDir.listSync(recursive: true)
+      final files = legacyDir
+          .listSync(recursive: true)
           .whereType<File>()
           .where((file) => file.path.endsWith('.dart'));
 
@@ -221,7 +226,8 @@ class LegacyArchiveVerifier implements ComponentVerifier {
       }
 
       // Check that remaining code doesn't import from legacy
-      final dartFiles = libDir.listSync(recursive: true)
+      final dartFiles = libDir
+          .listSync(recursive: true)
           .whereType<File>()
           .where((file) => file.path.endsWith('.dart'));
 
@@ -232,7 +238,7 @@ class LegacyArchiveVerifier implements ComponentVerifier {
           // Check for imports from legacy folder
           if (content.contains("import 'legacy/") ||
               content.contains('import "legacy/') ||
-              content.contains("package:your_finance_flutter/legacy/")) {
+              content.contains('package:your_finance_flutter/legacy/')) {
             return false; // Found legacy import in active code
           }
         } catch (e) {
@@ -258,7 +264,7 @@ class LegacyArchiveVerifier implements ComponentVerifier {
       }
 
       // Check that legacy folder is not empty (should contain moved code)
-      final contents = legacyDir.listSync(recursive: false);
+      final contents = legacyDir.listSync();
       return contents.isNotEmpty;
     } catch (e) {
       return false;
@@ -269,7 +275,8 @@ class LegacyArchiveVerifier implements ComponentVerifier {
     final steps = <String>[];
 
     if (issues.any((issue) => issue.contains('folder structure'))) {
-      steps.add('Review legacy folder structure and create missing directories');
+      steps
+          .add('Review legacy folder structure and create missing directories');
       steps.add('Ensure moved files are in appropriate subdirectories');
       steps.add('Check that file organization matches original structure');
     }

@@ -120,7 +120,7 @@ class _AssetDistributionCardState extends State<AssetDistributionCard> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -180,7 +180,7 @@ class _AssetDistributionCardState extends State<AssetDistributionCard> {
                       vertical: context.responsiveSpacing4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getCategoryColor(category).withOpacity(0.1),
+                      color: _getCategoryColor(category).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -349,7 +349,7 @@ class _AssetDistributionCardState extends State<AssetDistributionCard> {
                     ? _getCategoryIcon(category)
                     : Icons.account_balance_wallet_outlined,
                 size: 48,
-                color: context.secondaryText.withOpacity(0.5),
+                color: context.secondaryText.withValues(alpha: 0.5),
               ),
               SizedBox(height: context.responsiveSpacing16),
               Text(
@@ -381,18 +381,7 @@ class _AssetDistributionCardState extends State<AssetDistributionCard> {
   double _calculateCategoryTotal(List<AssetItem> assets) =>
       assets.fold(0.0, (sum, asset) => sum + asset.amount);
 
-  // 计算变化金额（模拟数据）
-  double _calculateChangeAmount(AssetItem asset) {
-    // 模拟变化数据，实际应该从历史数据计算
-    final random = asset.id.hashCode % 100;
-    return (random - 50) * asset.amount * 0.01;
-  }
 
-  // 计算变化百分比（模拟数据）
-  double _calculateChangePercentage(AssetItem asset) {
-    final changeAmount = _calculateChangeAmount(asset);
-    return asset.amount > 0 ? (changeAmount / asset.amount * 100) : 0;
-  }
 
   // 获取分类颜色
   Color _getCategoryColor(AssetCategory category) {
@@ -505,12 +494,12 @@ class _AnimatedAssetItemState extends State<_AnimatedAssetItem>
                 padding: EdgeInsets.all(context.responsiveSpacing12),
                 decoration: BoxDecoration(
                   color: _isHovered
-                      ? context.primaryAction.withOpacity(0.05)
+                      ? context.primaryAction.withValues(alpha: 0.05)
                       : context.primaryBackground,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: _isHovered
-                        ? context.primaryAction.withOpacity(0.3)
+                        ? context.primaryAction.withValues(alpha: 0.3)
                         : context.dividerColor,
                     width: _isHovered ? 1.5 : 1.0,
                   ),
@@ -523,9 +512,9 @@ class _AnimatedAssetItemState extends State<_AnimatedAssetItem>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: _getCategoryColor(widget.asset.category)
-                            .withOpacity(
-                          _isHovered ? 0.15 : 0.1,
+                        color:
+                            _getCategoryColor(widget.asset.category).withValues(
+                          alpha: _isHovered ? 0.15 : 0.1,
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -565,8 +554,8 @@ class _AnimatedAssetItemState extends State<_AnimatedAssetItem>
                             ),
                             decoration: BoxDecoration(
                               color: _getCategoryColor(widget.asset.category)
-                                  .withOpacity(
-                                _isHovered ? 0.2 : 0.1,
+                                  .withValues(
+                                alpha: _isHovered ? 0.2 : 0.1,
                               ),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -726,21 +715,21 @@ class _AnimatedCategoryTabState extends State<_AnimatedCategoryTab>
                 color: widget.isSelected
                     ? context.primaryAction
                     : (_isHovered
-                        ? context.primaryAction.withOpacity(0.1)
+                        ? context.primaryAction.withValues(alpha: 0.1)
                         : context.primaryBackground),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: widget.isSelected
                       ? context.primaryAction
                       : (_isHovered
-                          ? context.primaryAction.withOpacity(0.3)
+                          ? context.primaryAction.withValues(alpha: 0.3)
                           : context.dividerColor),
                   width: _isHovered ? 1.5 : 1.0,
                 ),
                 boxShadow: _isHovered
                     ? [
                         BoxShadow(
-                          color: context.primaryAction.withOpacity(0.2),
+                          color: context.primaryAction.withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -767,9 +756,9 @@ class _AnimatedCategoryTabState extends State<_AnimatedCategoryTab>
                     duration: const Duration(milliseconds: 200),
                     style: context.mobileCaption.copyWith(
                       color: widget.isSelected
-                          ? Colors.white.withOpacity(0.8)
+                          ? Colors.white.withValues(alpha: 0.8)
                           : (_isHovered
-                              ? context.primaryAction.withOpacity(0.7)
+                              ? context.primaryAction.withValues(alpha: 0.7)
                               : context.secondaryText),
                       fontSize: 10,
                     ),

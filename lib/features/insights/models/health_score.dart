@@ -5,8 +5,8 @@ import 'allocation_data.dart';
 enum HealthGrade { A, B, C, D, F }
 
 class HealthScore extends Equatable {
-  final double score;           // Calculated score (0-100)
-  final HealthGrade grade;      // Letter grade
+  final double score; // Calculated score (0-100)
+  final HealthGrade grade; // Letter grade
   final DateTime calculatedAt; // Calculation timestamp
 
   const HealthScore._({

@@ -44,7 +44,8 @@ class AiConfig extends Equatable {
     } else {
       // 兼容旧版本数据
       final providerName = json['provider'] as String? ?? 'dashscope';
-      if (json['customLlmModels'] != null || json['customVisionModels'] != null) {
+      if (json['customLlmModels'] != null ||
+          json['customVisionModels'] != null) {
         customModels[providerName] = [
           ...(json['customLlmModels'] != null
               ? List<String>.from(json['customLlmModels'] as List)

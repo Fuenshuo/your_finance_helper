@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../core/models/ai_config.dart';
 import '../core/router/flux_router.dart';
 import '../core/services/ai/ai_config_service.dart';
 import '../core/theme/app_design_tokens.dart';
-import '../core/widgets/composite/navigable_list_item.dart';
 import '../core/widgets/composite/switch_control_list_item.dart';
 
 /// AI配置页面
@@ -25,7 +23,11 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
 
   final List<Map<String, String>> _providers = [
     {'id': 'dashscope', 'name': '阿里云DashScope', 'envKey': 'DASHSCOPE_API_KEY'},
-    {'id': 'siliconFlow', 'name': 'SiliconFlow', 'envKey': 'SILICONFLOW_API_KEY'},
+    {
+      'id': 'siliconFlow',
+      'name': 'SiliconFlow',
+      'envKey': 'SILICONFLOW_API_KEY'
+    },
   ];
 
   @override
@@ -130,7 +132,7 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
                 SwitchControlListItem(
                   title: '启用 AI 服务',
                   value: _isEnabled,
-                  onChanged: (value) => setState(() => _isEnabled = value!),
+                  onChanged: (value) => setState(() => _isEnabled = value),
                 ),
               ]),
               _buildSection(context, 'AI 服务提供商', _buildProviderSelection()),
@@ -144,7 +146,8 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSection(
+      BuildContext context, String title, List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -171,7 +174,8 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
     return _providers.map((provider) {
       final isSelected = _selectedProvider == provider['id'];
       return Container(
-        margin: EdgeInsets.symmetric(horizontal: AppDesignTokens.globalHorizontalPadding),
+        margin: EdgeInsets.symmetric(
+            horizontal: AppDesignTokens.globalHorizontalPadding),
         child: RadioListTile<String>(
           title: Text(
             provider['name']!,
@@ -198,7 +202,8 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
 
   Widget _buildApiKeyField() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppDesignTokens.globalHorizontalPadding),
+      padding: EdgeInsets.symmetric(
+          horizontal: AppDesignTokens.globalHorizontalPadding),
       child: TextFormField(
         controller: _apiKeyController,
         style: AppDesignTokens.body(context),
@@ -206,9 +211,11 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
           labelText: 'API Key',
           hintText: '输入你的 API Key',
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+            borderRadius:
+                BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         obscureText: true,
         validator: (value) {

@@ -96,7 +96,8 @@ class PeriodClearanceService {
     );
 
     await _savePeriodClearanceSession(updatedSession);
-    Logger.debug('📊 已计算差额: 总差额 ¥${updatedSession.totalDifference.toStringAsFixed(2)}');
+    Logger.debug(
+        '📊 已计算差额: 总差额 ¥${updatedSession.totalDifference.toStringAsFixed(2)}');
     return updatedSession;
   }
 
@@ -114,12 +115,13 @@ class PeriodClearanceService {
     final updatedTransactions = [...session.manualTransactions, transaction];
 
     // 重新计算钱包差额中的已解释金额
-    final updatedWalletDifferences = session.walletDifferences.map((walletDiff) {
+    final updatedWalletDifferences =
+        session.walletDifferences.map((walletDiff) {
       // 计算该钱包相关的手动交易总额
       final walletTransactions = updatedTransactions.where(
         (t) => t.walletId == walletDiff.walletId,
       );
-      
+
       final explainedAmount = walletTransactions.fold<double>(
         0.0,
         (sum, t) => sum + (t.category.isIncome ? t.amount : -t.amount),
@@ -135,7 +137,8 @@ class PeriodClearanceService {
     );
 
     await _savePeriodClearanceSession(updatedSession);
-    Logger.debug('➕ 已添加手动交易: ${transaction.description} ¥${transaction.amount}');
+    Logger.debug(
+        '➕ 已添加手动交易: ${transaction.description} ¥${transaction.amount}');
     return updatedSession;
   }
 
@@ -150,16 +153,16 @@ class PeriodClearanceService {
     }
 
     // 从列表中移除交易
-    final updatedTransactions = session.manualTransactions
-        .where((t) => t.id != transactionId)
-        .toList();
+    final updatedTransactions =
+        session.manualTransactions.where((t) => t.id != transactionId).toList();
 
     // 重新计算钱包差额中的已解释金额
-    final updatedWalletDifferences = session.walletDifferences.map((walletDiff) {
+    final updatedWalletDifferences =
+        session.walletDifferences.map((walletDiff) {
       final walletTransactions = updatedTransactions.where(
         (t) => t.walletId == walletDiff.walletId,
       );
-      
+
       final explainedAmount = walletTransactions.fold<double>(
         0.0,
         (sum, t) => sum + (t.category.isIncome ? t.amount : -t.amount),
@@ -203,12 +206,12 @@ class PeriodClearanceService {
     // 创建"其他"交易记录
     final remainingAmount = walletDiff.remainingAmount;
     final isIncome = remainingAmount > 0;
-    
+
     final otherTransaction = ManualTransaction(
       description: categoryName,
       amount: remainingAmount.abs(),
-      category: isIncome 
-          ? TransactionCategory.otherIncome 
+      category: isIncome
+          ? TransactionCategory.otherIncome
           : TransactionCategory.otherExpense,
       walletId: walletId,
       walletName: walletDiff.walletName,
@@ -224,7 +227,8 @@ class PeriodClearanceService {
   }
 
   /// 完成清账会话
-  Future<PeriodClearanceSession> completeClearanceSession(String sessionId) async {
+  Future<PeriodClearanceSession> completeClearanceSession(
+      String sessionId) async {
     final session = await _loadPeriodClearanceSession(sessionId);
     if (session == null) {
       throw Exception('清账会话不存在: $sessionId');
@@ -250,10 +254,10 @@ class PeriodClearanceService {
   /// 处理历史清账数据：将已完成但未转换的清账会话中的交易转换为实际交易记录
   Future<int> processHistoricalClearanceData() async {
     Logger.debug('🔄 开始处理历史清账数据...');
-    
+
     final completedSessions = await getCompletedSessions();
     int convertedCount = 0;
-    
+
     for (final session in completedSessions) {
       if (session.manualTransactions.isNotEmpty) {
         try {
@@ -265,13 +269,14 @@ class PeriodClearanceService {
         }
       }
     }
-    
+
     Logger.debug('📊 历史清账数据处理完成，共处理 $convertedCount 个会话');
     return convertedCount;
   }
 
   /// 将清账中的手动交易转换为实际交易记录
-  Future<void> _convertManualTransactionsToTransactions(PeriodClearanceSession session) async {
+  Future<void> _convertManualTransactionsToTransactions(
+      PeriodClearanceSession session) async {
     if (session.manualTransactions.isEmpty) {
       Logger.debug('清账会话 ${session.name} 无手动交易需要转换');
       return;
@@ -279,7 +284,7 @@ class PeriodClearanceService {
 
     // 加载现有交易记录
     final existingTransactions = await _storageService.loadTransactions();
-    
+
     // 将 ManualTransaction 转换为 Transaction
     final newTransactions = <Transaction>[];
     for (final manualTx in session.manualTransactions) {
@@ -287,11 +292,14 @@ class PeriodClearanceService {
       bool transactionExists = false;
       try {
         existingTransactions.firstWhere(
-          (t) => t.description == manualTx.description &&
+          (t) =>
+              t.description == manualTx.description &&
               t.amount == manualTx.amount &&
               t.date == manualTx.date &&
-              ((manualTx.category.isIncome && t.toAccountId == manualTx.walletId) ||
-               (!manualTx.category.isIncome && t.fromAccountId == manualTx.walletId)),
+              ((manualTx.category.isIncome &&
+                      t.toAccountId == manualTx.walletId) ||
+                  (!manualTx.category.isIncome &&
+                      t.fromAccountId == manualTx.walletId)),
         );
         transactionExists = true;
       } catch (e) {
@@ -309,8 +317,8 @@ class PeriodClearanceService {
       final transaction = Transaction(
         description: manualTx.description,
         amount: manualTx.amount,
-        type: manualTx.category.isIncome 
-            ? TransactionType.income 
+        type: manualTx.category.isIncome
+            ? TransactionType.income
             : TransactionType.expense,
         category: manualTx.category,
         date: manualTx.date,
@@ -323,7 +331,8 @@ class PeriodClearanceService {
       );
 
       newTransactions.add(transaction);
-      Logger.debug('✅ 已创建交易记录: ${transaction.description} ¥${transaction.amount}');
+      Logger.debug(
+          '✅ 已创建交易记录: ${transaction.description} ¥${transaction.amount}');
     }
 
     // 保存新交易记录
@@ -357,7 +366,7 @@ class PeriodClearanceService {
 
       // 分类统计
       final categoryName = transaction.category.displayName;
-      categoryBreakdown[categoryName] = 
+      categoryBreakdown[categoryName] =
           (categoryBreakdown[categoryName] ?? 0.0) + transaction.amount;
     }
 
@@ -381,7 +390,8 @@ class PeriodClearanceService {
       generatedDate: DateTime.now(),
     );
 
-    Logger.debug('📊 已生成周期总结: 收入¥${totalIncome.toStringAsFixed(2)}, 支出¥${totalExpense.toStringAsFixed(2)}');
+    Logger.debug(
+        '📊 已生成周期总结: 收入¥${totalIncome.toStringAsFixed(2)}, 支出¥${totalExpense.toStringAsFixed(2)}');
     return summary;
   }
 
@@ -445,7 +455,8 @@ class PeriodClearanceService {
   }
 
   // 私有方法：保存周期清账会话
-  Future<void> _savePeriodClearanceSession(PeriodClearanceSession session) async {
+  Future<void> _savePeriodClearanceSession(
+      PeriodClearanceSession session) async {
     final sessions = await getPeriodClearanceSessions();
     final existingIndex = sessions.indexWhere((s) => s.id == session.id);
 
@@ -459,7 +470,8 @@ class PeriodClearanceService {
   }
 
   // 私有方法：加载周期清账会话
-  Future<PeriodClearanceSession?> _loadPeriodClearanceSession(String sessionId) async {
+  Future<PeriodClearanceSession?> _loadPeriodClearanceSession(
+      String sessionId) async {
     final sessions = await getPeriodClearanceSessions();
     try {
       return sessions.firstWhere((s) => s.id == sessionId);

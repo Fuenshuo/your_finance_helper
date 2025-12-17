@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// 图片处理服务
 /// 负责图片选择、上传、格式转换等操作
@@ -61,7 +59,8 @@ class ImageProcessingService {
       }
 
       final file = File(image.path);
-      print('[ImageProcessingService.pickImageFromGallery] ✅ 选择成功: ${file.path}');
+      print(
+          '[ImageProcessingService.pickImageFromGallery] ✅ 选择成功: ${file.path}');
       return file;
     } catch (e) {
       print('[ImageProcessingService.pickImageFromGallery] ❌ 选择失败: $e');
@@ -70,32 +69,34 @@ class ImageProcessingService {
   }
 
   /// 保存图片到应用目录
-  /// 
+  ///
   /// [imageFile] 原始图片文件
   /// [fileName] 保存的文件名（可选）
-  /// 
+  ///
   /// 返回保存后的文件路径
-  Future<String> saveImageToAppDirectory(File imageFile, {String? fileName}) async {
+  Future<String> saveImageToAppDirectory(File imageFile,
+      {String? fileName}) async {
     try {
       print('[ImageProcessingService.saveImageToAppDirectory] 💾 开始保存图片');
-      
+
       final appDir = await getApplicationDocumentsDirectory();
       final imagesDir = Directory(path.join(appDir.path, 'transaction_images'));
-      
+
       // 创建目录（如果不存在）
       if (!await imagesDir.exists()) {
         await imagesDir.create(recursive: true);
       }
 
       // 生成文件名
-      final name = fileName ?? 
+      final name = fileName ??
           '${DateTime.now().millisecondsSinceEpoch}${path.extension(imageFile.path)}';
       final savedPath = path.join(imagesDir.path, name);
-      
+
       // 复制文件
       await imageFile.copy(savedPath);
-      
-      print('[ImageProcessingService.saveImageToAppDirectory] ✅ 保存成功: $savedPath');
+
+      print(
+          '[ImageProcessingService.saveImageToAppDirectory] ✅ 保存成功: $savedPath');
       return savedPath;
     } catch (e) {
       print('[ImageProcessingService.saveImageToAppDirectory] ❌ 保存失败: $e');
@@ -104,17 +105,17 @@ class ImageProcessingService {
   }
 
   /// 将图片转换为Base64编码
-  /// 
+  ///
   /// [imageFile] 图片文件
-  /// 
+  ///
   /// 返回Base64编码的字符串（包含data URI前缀）
   Future<String> convertToBase64(File imageFile) async {
     try {
       print('[ImageProcessingService.convertToBase64] 🔄 开始转换Base64');
-      
+
       final bytes = await imageFile.readAsBytes();
       final base64String = base64Encode(bytes);
-      
+
       // 获取文件扩展名以确定MIME类型
       final extension = path.extension(imageFile.path).toLowerCase();
       String mimeType = 'image/jpeg';
@@ -127,8 +128,9 @@ class ImageProcessingService {
       }
 
       final dataUri = 'data:$mimeType;base64,$base64String';
-      
-      print('[ImageProcessingService.convertToBase64] ✅ 转换完成，大小: ${bytes.length} bytes');
+
+      print(
+          '[ImageProcessingService.convertToBase64] ✅ 转换完成，大小: ${bytes.length} bytes');
       return dataUri;
     } catch (e) {
       print('[ImageProcessingService.convertToBase64] ❌ 转换失败: $e');
@@ -137,12 +139,12 @@ class ImageProcessingService {
   }
 
   /// 删除图片文件
-  /// 
+  ///
   /// [imagePath] 图片路径
   Future<void> deleteImage(String imagePath) async {
     try {
       print('[ImageProcessingService.deleteImage] 🗑️ 开始删除图片: $imagePath');
-      
+
       final file = File(imagePath);
       if (await file.exists()) {
         await file.delete();
@@ -176,4 +178,3 @@ class ImageProcessingService {
     }
   }
 }
-

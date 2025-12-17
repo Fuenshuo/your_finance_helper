@@ -2,13 +2,13 @@
 ///
 /// Comprehensive integration test that verifies Flux Ledger navigation
 /// functionality works correctly after cleanup.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:provider/provider.dart' as provider;
-
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
@@ -28,29 +28,39 @@ void main() {
       // Setup test widget with all required providers
       testWidget = provider.MultiProvider(
         providers: [
-          provider.ChangeNotifierProvider(create: (_) => AccountProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => AssetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => BudgetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => ExpensePlanProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => TransactionProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FluxThemeProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowDashboardProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowStreamsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowInsightsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowAnalyticsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AccountProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AssetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => BudgetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ExpensePlanProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => TransactionProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FluxThemeProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowDashboardProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowStreamsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowInsightsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowAnalyticsProvider()..initialize()),
         ],
         child: ProviderScope(
           child: MaterialApp(
             home: const MainNavigationScreen(),
             theme: ThemeData.light(),
             darkTheme: ThemeData.dark(),
-            themeMode: ThemeMode.system,
           ),
         ),
       );
     });
 
-    testWidgets('Main navigation screen renders without errors', (WidgetTester tester) async {
+    testWidgets('Main navigation screen renders without errors',
+        (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -61,7 +71,7 @@ void main() {
       expect(find.byType(BottomNavigationBar), findsOneWidget);
     });
 
-    testWidgets('Bottom navigation bar has correct tabs', (WidgetTester tester) async {
+    testWidgets('Bottom navigation bar has correct tabs', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -73,7 +83,7 @@ void main() {
       expect(find.byIcon(Icons.settings), findsOneWidget);
     });
 
-    testWidgets('Dashboard tab displays correctly', (WidgetTester tester) async {
+    testWidgets('Dashboard tab displays correctly', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -85,7 +95,7 @@ void main() {
       expect(find.byType(DashboardHomeScreen), findsOneWidget);
     });
 
-    testWidgets('Navigation between tabs works', (WidgetTester tester) async {
+    testWidgets('Navigation between tabs works', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -106,7 +116,7 @@ void main() {
       expect(find.byType(DashboardHomeScreen), findsOneWidget);
     });
 
-    testWidgets('Insights tab loads correctly', (WidgetTester tester) async {
+    testWidgets('Insights tab loads correctly', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -119,7 +129,7 @@ void main() {
       expect(find.text('Insights'), findsWidgets); // Assuming there's a title
     });
 
-    testWidgets('Settings tab is accessible', (WidgetTester tester) async {
+    testWidgets('Settings tab is accessible', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -132,7 +142,7 @@ void main() {
       expect(find.text('Settings'), findsWidgets); // Assuming there's a title
     });
 
-    testWidgets('Back navigation works within tabs', (WidgetTester tester) async {
+    testWidgets('Back navigation works within tabs', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -149,10 +159,10 @@ void main() {
       // This test would need customization based on actual back navigation behavior
     });
 
-    testWidgets('Navigation handles provider dependencies', (WidgetTester tester) async {
+    testWidgets('Navigation handles provider dependencies', (tester) async {
       // Test without all required providers (should handle gracefully)
-      var incompleteWidget = MaterialApp(
-        home: const MainNavigationScreen(),
+      const incompleteWidget = MaterialApp(
+        home: MainNavigationScreen(),
       );
 
       await tester.pumpWidget(incompleteWidget);
@@ -162,7 +172,8 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Navigation state persists during tab switches', (WidgetTester tester) async {
+    testWidgets('Navigation state persists during tab switches',
+        (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 

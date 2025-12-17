@@ -125,7 +125,7 @@ class InsightsDrawerController extends StateNotifier<InsightsDrawerState> {
     );
 
     if (shouldDefer) {
-      _deferredExpansionTimer = Timer(deferExpansionBy!, () {
+      _deferredExpansionTimer = Timer(deferExpansionBy, () {
         state = state.copyWith(isExpanded: true);
         _logDrawerTelemetry(
           expanded: true,
@@ -210,8 +210,7 @@ class InsightsDrawerController extends StateNotifier<InsightsDrawerState> {
       return;
     }
     final viewState = ref.read(fluxViewStateProvider);
-    final flagEnabled =
-        ref.read(streamInsightsFlagStateProvider).isEnabled;
+    final flagEnabled = ref.read(streamInsightsFlagStateProvider).isEnabled;
     PerformanceMonitor.logDrawerTelemetry(
       expanded: expanded,
       pane: viewState.pane,

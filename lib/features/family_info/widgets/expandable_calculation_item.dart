@@ -97,7 +97,7 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
             child: Container(
               padding: EdgeInsets.all(context.spacing12),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -151,9 +151,9 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                 margin: EdgeInsets.only(top: context.spacing8),
                 padding: EdgeInsets.all(context.spacing16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.05),
+                  color: Colors.grey.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,9 +162,10 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                     Container(
                       padding: EdgeInsets.all(context.spacing8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        border: Border.all(
+                            color: Colors.blue.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,11 +211,11 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(6),
-                          border:
-                              Border.all(color: Colors.grey.withOpacity(0.2)),
+                          border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.2)),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.05),
+                              color: Colors.grey.withValues(alpha: 0.05),
                               blurRadius: 2,
                               offset: const Offset(0, 1),
                             ),
@@ -227,7 +228,7 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                             Container(
                               padding: EdgeInsets.all(context.spacing12),
                               decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.03),
+                                color: Colors.grey.withValues(alpha: 0.03),
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(6),
                                   topRight: Radius.circular(6),
@@ -286,14 +287,16 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                                             EdgeInsets.all(context.spacing8),
                                         decoration: BoxDecoration(
                                           color: component.color
-                                                  ?.withOpacity(0.05) ??
-                                              Colors.grey.withOpacity(0.02),
+                                                  ?.withValues(alpha: 0.05) ??
+                                              Colors.grey
+                                                  .withValues(alpha: 0.02),
                                           borderRadius:
                                               BorderRadius.circular(4),
                                           border: Border.all(
                                             color: component.color
-                                                    ?.withOpacity(0.2) ??
-                                                Colors.grey.withOpacity(0.1),
+                                                    ?.withValues(alpha: 0.2) ??
+                                                Colors.grey
+                                                    .withValues(alpha: 0.1),
                                           ),
                                         ),
                                         child: Row(
@@ -373,11 +376,13 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                                         padding:
                                             EdgeInsets.all(context.spacing8),
                                         decoration: BoxDecoration(
-                                          color: Colors.blue.withOpacity(0.05),
+                                          color: Colors.blue
+                                              .withValues(alpha: 0.05),
                                           borderRadius:
                                               BorderRadius.circular(4),
                                           border: Border.all(
-                                            color: Colors.blue.withOpacity(0.2),
+                                            color: Colors.blue
+                                                .withValues(alpha: 0.2),
                                           ),
                                         ),
                                         child: Row(

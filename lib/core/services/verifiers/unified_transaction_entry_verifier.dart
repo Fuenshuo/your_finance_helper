@@ -4,13 +4,10 @@
 /// functionality works correctly after the Flux Ledger cleanup.
 
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../models/verification_result.dart';
 import '../component_verifier.dart';
-import '../../utils/verification_exceptions.dart';
 
 class UnifiedTransactionEntryVerifier implements ComponentVerifier {
   @override
@@ -18,14 +15,56 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
 
   @override
   List<String> get dependencies => [
-    'TransactionProvider',
-    'AccountProvider',
-    'AssetProvider',
-    'BudgetProvider',
-    'ExpensePlanProvider',
-    'NaturalLanguageTransactionService',
-    'FluxThemeProvider',
-  ];
+        'TransactionProvider',
+        'AccountProvider',
+        'AssetProvider',
+        'BudgetProvider',
+        'ExpensePlanProvider',
+        'NaturalLanguageTransactionService',
+        'FluxThemeProvider',
+      ];
+
+  @override
+  VerificationResult createSuccessResult(
+    String details, {
+    Map<String, bool>? checkResults,
+  }) {
+    return VerificationResult.pass(
+      componentName,
+      details,
+      checkResults: checkResults,
+    );
+  }
+
+  @override
+  VerificationResult createFailureResult(
+    String details, {
+    String? errorMessage,
+    List<String>? remediationSteps,
+    Map<String, bool>? checkResults,
+  }) {
+    return VerificationResult.fail(
+      componentName,
+      details,
+      errorMessage: errorMessage,
+      remediationSteps: remediationSteps,
+      checkResults: checkResults,
+    );
+  }
+
+  @override
+  VerificationResult createWarningResult(
+    String details, {
+    List<String>? remediationSteps,
+    Map<String, bool>? checkResults,
+  }) {
+    return VerificationResult.warning(
+      componentName,
+      details,
+      remediationSteps: remediationSteps,
+      checkResults: checkResults,
+    );
+  }
 
   @override
   int get priority => 5; // Highest priority - this is the core feature
@@ -75,7 +114,8 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // Test 4: Animation controllers
       checkResults['animations'] = await _testAnimations();
       if (!checkResults['animations']!) {
-        issues.add('Animation controllers (draftMerge, inputCollapse, rainbowRotation, confirmGlow, dayCardHighlight, toast) not working');
+        issues.add(
+            'Animation controllers (draftMerge, inputCollapse, rainbowRotation, confirmGlow, dayCardHighlight, toast) not working');
       }
 
       // Test 5: Theme adaptation
@@ -104,7 +144,8 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
 
       // Determine overall status
       final allPassed = checkResults.values.every((passed) => passed);
-      final status = allPassed ? VerificationStatus.pass : VerificationStatus.fail;
+      final status =
+          allPassed ? VerificationStatus.pass : VerificationStatus.fail;
 
       final details = allPassed
           ? 'All unified_transaction_entry_screen functionality verified successfully'
@@ -117,7 +158,6 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
         checkResults: checkResults,
         remediationSteps: allPassed ? null : _generateRemediationSteps(issues),
       );
-
     } catch (e) {
       return VerificationResult.fail(
         componentName,
@@ -138,7 +178,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
     try {
       // Test that the unified_transaction_entry_screen can be instantiated
       // This verifies that all imports are correct and the widget tree is valid
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // In a real implementation, this would:
       // 1. Try to create an instance of UnifiedTransactionEntryScreen
@@ -161,7 +201,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Verify parsing returns expected transaction data
       // 4. Check error handling for invalid inputs
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       // Placeholder: Assume AI parsing works if service is accessible
       // Real implementation would test actual parsing results
@@ -180,7 +220,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Check that transaction grouping changes with time range
       // 4. Verify smooth animations during transitions
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       // Placeholder: Assume time controls work if FluxViewState is accessible
       return true;
@@ -205,7 +245,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Check animation triggers work correctly
       // 4. Verify flutter_animate package integration
 
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
       // Placeholder: Assume animations work if flutter_animate is available
       return true;
@@ -223,7 +263,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Check dark/light mode color scheme switching
       // 4. Verify contrast ratios meet accessibility requirements
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       // Placeholder: Assume theme adaptation works if Theme system is accessible
       return true;
@@ -241,7 +281,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Check draft confirmation animations
       // 4. Test draft merge visual effects
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       // Placeholder: Assume draft system works if TransactionProvider is accessible
       return true;
@@ -259,7 +299,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Check time-based filtering logic
       // 4. Validate transaction display formatting
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       // Placeholder: Assume timeline view works if transaction data is accessible
       return true;
@@ -277,7 +317,7 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
       // 3. Check visual effect animations
       // 4. Validate feedback timing and intensity
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       // Placeholder: Assume haptic feedback works if HapticFeedback is accessible
       return true;
@@ -295,12 +335,14 @@ class UnifiedTransactionEntryVerifier implements ComponentVerifier {
     }
 
     if (issues.any((issue) => issue.contains('AI parsing'))) {
-      steps.add('Verify NaturalLanguageTransactionService is properly initialized');
+      steps.add(
+          'Verify NaturalLanguageTransactionService is properly initialized');
       steps.add('Check AI service API configuration');
     }
 
     if (issues.any((issue) => issue.contains('time controls'))) {
-      steps.add('Ensure FluxTimeframe enum and FluxViewState are properly imported');
+      steps.add(
+          'Ensure FluxTimeframe enum and FluxViewState are properly imported');
       steps.add('Check time range switching logic in screen implementation');
     }
 

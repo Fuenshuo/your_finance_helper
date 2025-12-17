@@ -1,5 +1,4 @@
-import 'dart:developer' as developer;
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -20,7 +19,6 @@ class VoiceInputButton extends StatefulWidget {
 
 class _VoiceInputButtonState extends State<VoiceInputButton>
     with SingleTickerProviderStateMixin {
-
   late final stt.SpeechToText _speechToText;
   late final AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
@@ -72,10 +70,10 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
       );
 
       if (!available) {
-        debugPrint('语音识别不可用');
+        print('语音识别不可用');
       }
     } catch (e) {
-      debugPrint('语音识别初始化失败: $e');
+      print('语音识别初始化失败: $e');
     }
   }
 
@@ -90,8 +88,8 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
     }
   }
 
-  void _onSpeechError(stt.SpeechRecognitionError error) {
-    developer.debugPrint('语音识别错误: ${error.errorMsg}');
+  void _onSpeechError(dynamic error) {
+    print('语音识别错误: ${error.toString()}');
     setState(() => _isListening = false);
     _animationController.stop();
     _animationController.value = 0.0;
@@ -140,7 +138,8 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
     return AnimatedBuilder(
       animation: Listenable.merge([_scaleAnimation, _pulseAnimation]),
       builder: (context, child) {
-        final scale = _isListening ? _pulseAnimation.value : _scaleAnimation.value;
+        final scale =
+            _isListening ? _pulseAnimation.value : _scaleAnimation.value;
 
         return Transform.scale(
           scale: scale,
@@ -149,7 +148,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
             height: 48,
             decoration: BoxDecoration(
               color: _isListening
-                  ? Colors.red.withOpacity(0.8)
+                  ? Colors.red.withValues(alpha: 0.8)
                   : isEnabled
                       ? colorScheme.secondaryContainer
                       : colorScheme.surfaceContainerHighest,
@@ -163,7 +162,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
               boxShadow: _isListening
                   ? [
                       BoxShadow(
-                        color: Colors.red.withOpacity(0.4),
+                        color: Colors.red.withValues(alpha: 0.4),
                         blurRadius: 8,
                         spreadRadius: 2,
                       ),
@@ -178,7 +177,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
                     ? Colors.white
                     : isEnabled
                         ? colorScheme.onSecondaryContainer
-                        : colorScheme.onSurface.withOpacity(0.4),
+                        : colorScheme.onSurface.withValues(alpha: 0.4),
                 size: 20,
               ),
               tooltip: _isListening ? '停止录音' : '语音输入',
@@ -189,4 +188,3 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
     );
   }
 }
-

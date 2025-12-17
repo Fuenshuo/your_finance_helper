@@ -32,4 +32,3 @@ class CancelButton extends StatelessWidget {
     );
   }
 }
-

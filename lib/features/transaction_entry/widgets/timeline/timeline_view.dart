@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../models/draft_transaction.dart';
 import 'group_card.dart';
-import 'transaction_row.dart';
 
 /// 时间线视图组件
 class TimelineView extends StatefulWidget {
   final List<DraftTransaction> drafts;
-  final Function(DraftTransaction) onDraftSelected;
-  final Function(DraftTransaction) onDraftDeleted;
+  final void Function(DraftTransaction) onDraftSelected;
+  final void Function(DraftTransaction) onDraftDeleted;
 
   const TimelineView({
     super.key,
@@ -53,28 +52,36 @@ class _TimelineViewState extends State<TimelineView> {
           Icon(
             Icons.history,
             size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             '暂无交易记录',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             '输入交易信息开始记录',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.4),
+                ),
           ),
         ],
       ),
     );
   }
 
-  Map<DateTime, List<DraftTransaction>> _groupDraftsByDate(List<DraftTransaction> drafts) {
+  Map<DateTime, List<DraftTransaction>> _groupDraftsByDate(
+      List<DraftTransaction> drafts) {
     final grouped = <DateTime, List<DraftTransaction>>{};
 
     for (final draft in drafts) {
@@ -102,4 +109,3 @@ class _TimelineViewState extends State<TimelineView> {
     return sortedGrouped;
   }
 }
-

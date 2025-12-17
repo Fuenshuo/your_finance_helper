@@ -63,8 +63,7 @@ class UserIncomeProfile extends Equatable {
   Map<String, dynamic> toJson() => {
         'avgMonthlySalary': avgMonthlySalary,
         'bonusMonths': bonusMonths,
-        'commonIncomeTypes':
-            commonIncomeTypes.map((e) => e.name).toList(),
+        'commonIncomeTypes': commonIncomeTypes.map((e) => e.name).toList(),
         'salaryDayPattern': salaryDayPattern,
         'transactionCount': transactionCount,
         'transferDirectionPreference': transferDirectionPreference,
@@ -212,4 +211,3 @@ class UserIncomeProfile extends Equatable {
         transferDirectionPreference,
       ];
 }
-

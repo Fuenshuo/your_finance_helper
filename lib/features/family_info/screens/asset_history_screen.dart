@@ -32,9 +32,12 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
     _animationSystem = IOSAnimationSystem();
 
     // 注册资产历史专用动效曲线
-    IOSAnimationSystem.registerCustomCurve('history-list-item', Curves.easeOutCubic);
-    IOSAnimationSystem.registerCustomCurve('history-swipe-delete', Curves.elasticOut);
-    IOSAnimationSystem.registerCustomCurve('history-stats-highlight', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'history-list-item', Curves.easeOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'history-swipe-delete', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'history-stats-highlight', Curves.easeInOutCubic);
 
     _loadHistory();
   }
@@ -370,7 +373,8 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('删除历史记录'),
-        content: Text('确定要删除"${history.changeDescription ?? '资产变更'}"的历史记录吗？此操作不可撤销。'),
+        content: Text(
+            '确定要删除"${history.changeDescription ?? '资产变更'}"的历史记录吗？此操作不可撤销。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),

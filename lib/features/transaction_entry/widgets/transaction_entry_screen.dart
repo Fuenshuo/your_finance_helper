@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
-import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import '../providers/transaction_entry_provider.dart';
 import '../providers/draft_manager_provider.dart';
 import '../providers/input_validation_provider.dart';
@@ -29,12 +27,12 @@ class TransactionEntryScreen extends ConsumerStatefulWidget {
   const TransactionEntryScreen({super.key});
 
   @override
-  ConsumerState<TransactionEntryScreen> createState() => _TransactionEntryScreenState();
+  ConsumerState<TransactionEntryScreen> createState() =>
+      _TransactionEntryScreenState();
 }
 
 class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
     with WidgetsBindingObserver {
-
   @override
   void initState() {
     super.initState();
@@ -63,7 +61,9 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
   void _autoSaveDraft() {
     final entryState = ref.read(transactionEntryProvider);
     if (entryState.draftTransaction?.hasData == true) {
-      ref.read(draftManagerProvider.notifier).saveDraft(entryState.draftTransaction!);
+      ref
+          .read(draftManagerProvider.notifier)
+          .saveDraft(entryState.draftTransaction!);
     }
   }
 
@@ -83,7 +83,6 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
     final viewInsets = MediaQuery.of(context).padding;
     final dockBottom = kBottomNavigationBarHeight + viewInsets.bottom + 8;
     final cardBottom = dockBottom + 150;
-    final scrollBottomPadding = dockBottom + 260;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -108,12 +107,18 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
                       child: TimelineView(
                         drafts: draftState.savedDrafts,
                         onDraftSelected: (draft) {
-                          ref.read(transactionEntryProvider.notifier).updateDraft(draft);
+                          ref
+                              .read(transactionEntryProvider.notifier)
+                              .updateDraft(draft);
                           // 重新验证选中的草稿
-                          ref.read(inputValidationProvider.notifier).validateDraft(draft);
+                          ref
+                              .read(inputValidationProvider.notifier)
+                              .validateDraft(draft);
                         },
                         onDraftDeleted: (draft) {
-                          ref.read(draftManagerProvider.notifier).deleteDraft(draft);
+                          ref
+                              .read(draftManagerProvider.notifier)
+                              .deleteDraft(draft);
                         },
                       ),
                     ),
@@ -227,4 +232,3 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
     return const SizedBox.shrink();
   }
 }
-

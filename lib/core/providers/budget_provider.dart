@@ -14,7 +14,7 @@ class BudgetProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isInitialized = false; // 新增：初始化状态标记
   String? _error;
-  late final StorageService _storageService;
+  StorageService? _storageService;
 
   // Getters
   List<EnvelopeBudget> get envelopeBudgets => _envelopeBudgets;
@@ -68,13 +68,13 @@ class BudgetProvider with ChangeNotifier {
       notifyListeners();
 
       Logger.debug('[CHART] 开始加载预算数据');
-      _envelopeBudgets = await _storageService.loadEnvelopeBudgets();
+      _envelopeBudgets = await _storageService!.loadEnvelopeBudgets();
       Logger.debug('✅ 信封预算加载完成: ${_envelopeBudgets.length} 个');
 
-      _zeroBasedBudgets = await _storageService.loadZeroBasedBudgets();
+      _zeroBasedBudgets = await _storageService!.loadZeroBasedBudgets();
       Logger.debug('✅ 零基预算加载完成: ${_zeroBasedBudgets.length} 个');
 
-      _salaryIncomes = await _storageService.loadSalaryIncomes(); // 新增：加载工资收入
+      _salaryIncomes = await _storageService!.loadSalaryIncomes(); // 新增：加载工资收入
       Logger.debug('✅ 工资收入加载完成: ${_salaryIncomes.length} 个');
       if (_salaryIncomes.isNotEmpty) {
         Logger.debug('[SALARY] 工资收入详情:');
@@ -91,7 +91,7 @@ class BudgetProvider with ChangeNotifier {
       }
 
       _monthlyWallets =
-          await _storageService.loadMonthlyWallets(); // 新增：加载每月工资钱包
+          await _storageService!.loadMonthlyWallets(); // 新增：加载每月工资钱包
       Logger.debug('✅ 每月工资钱包加载完成: ${_monthlyWallets.length} 个');
 
       if (_salaryIncomes.isNotEmpty) {
@@ -118,7 +118,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> addEnvelopeBudget(EnvelopeBudget budget) async {
     try {
       _envelopeBudgets.add(budget);
-      await _storageService.saveEnvelopeBudgets(_envelopeBudgets);
+      await _storageService!.saveEnvelopeBudgets(_envelopeBudgets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -134,7 +134,7 @@ class BudgetProvider with ChangeNotifier {
       if (index != -1) {
         _envelopeBudgets[index] =
             updatedBudget.copyWith(updateDate: DateTime.now());
-        await _storageService.saveEnvelopeBudgets(_envelopeBudgets);
+        await _storageService!.saveEnvelopeBudgets(_envelopeBudgets);
         notifyListeners();
       }
     } catch (e) {
@@ -147,7 +147,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> deleteEnvelopeBudget(String budgetId) async {
     try {
       _envelopeBudgets.removeWhere((b) => b.id == budgetId);
-      await _storageService.saveEnvelopeBudgets(_envelopeBudgets);
+      await _storageService!.saveEnvelopeBudgets(_envelopeBudgets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -161,7 +161,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> addZeroBasedBudget(ZeroBasedBudget budget) async {
     try {
       _zeroBasedBudgets.add(budget);
-      await _storageService.saveZeroBasedBudgets(_zeroBasedBudgets);
+      await _storageService!.saveZeroBasedBudgets(_zeroBasedBudgets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -177,7 +177,7 @@ class BudgetProvider with ChangeNotifier {
       if (index != -1) {
         _zeroBasedBudgets[index] =
             updatedBudget.copyWith(updateDate: DateTime.now());
-        await _storageService.saveZeroBasedBudgets(_zeroBasedBudgets);
+        await _storageService!.saveZeroBasedBudgets(_zeroBasedBudgets);
         notifyListeners();
       }
     } catch (e) {
@@ -190,7 +190,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> deleteZeroBasedBudget(String budgetId) async {
     try {
       _zeroBasedBudgets.removeWhere((b) => b.id == budgetId);
-      await _storageService.saveZeroBasedBudgets(_zeroBasedBudgets);
+      await _storageService!.saveZeroBasedBudgets(_zeroBasedBudgets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -206,7 +206,7 @@ class BudgetProvider with ChangeNotifier {
       Logger.debug('[NOTE] 添加工资收入: ${income.name}, ID: ${income.id}');
       _salaryIncomes.add(income);
       Logger.debug('[NOTE] 工资收入列表长度: ${_salaryIncomes.length}');
-      await _storageService.saveSalaryIncomes(_salaryIncomes);
+      await _storageService!.saveSalaryIncomes(_salaryIncomes);
       Logger.info('✅ 工资收入保存成功');
       notifyListeners();
       Logger.debug('📢 通知监听器');
@@ -231,7 +231,8 @@ class BudgetProvider with ChangeNotifier {
     Logger.debug('[NOTE] 更新的奖金数量: ${updatedIncome.bonuses.length}');
     for (var i = 0; i < updatedIncome.bonuses.length; i++) {
       final bonus = updatedIncome.bonuses[i];
-      Logger.debug('  奖金${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
+      Logger.debug(
+          '  奖金${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
     }
 
     // 如果数据正在加载，等待加载完成
@@ -252,7 +253,7 @@ class BudgetProvider with ChangeNotifier {
         _salaryIncomes[index] =
             updatedIncome.copyWith(updateDate: DateTime.now());
         Logger.debug('[NOTE] 保存工资收入到存储...');
-        await _storageService.saveSalaryIncomes(_salaryIncomes);
+        await _storageService!.saveSalaryIncomes(_salaryIncomes);
         Logger.info('✅ 工资收入保存成功');
         Logger.debug('📢 通知监听器');
         notifyListeners();
@@ -270,7 +271,7 @@ class BudgetProvider with ChangeNotifier {
             _salaryIncomes[newIndex] =
                 updatedIncome.copyWith(updateDate: DateTime.now());
             Logger.debug('[NOTE] 保存工资收入到存储...');
-            await _storageService.saveSalaryIncomes(_salaryIncomes);
+            await _storageService!.saveSalaryIncomes(_salaryIncomes);
             Logger.info('✅ 工资收入保存成功');
             Logger.debug('📢 通知监听器');
             notifyListeners();
@@ -290,7 +291,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> deleteSalaryIncome(String incomeId) async {
     try {
       _salaryIncomes.removeWhere((i) => i.id == incomeId);
-      await _storageService.saveSalaryIncomes(_salaryIncomes);
+      await _storageService!.saveSalaryIncomes(_salaryIncomes);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -516,7 +517,7 @@ class BudgetProvider with ChangeNotifier {
 
       if (wallets.isNotEmpty) {
         _monthlyWallets.addAll(wallets);
-        await _storageService.saveMonthlyWallets(_monthlyWallets);
+        await _storageService!.saveMonthlyWallets(_monthlyWallets);
         notifyListeners();
       }
     } catch (e) {
@@ -528,7 +529,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> addMonthlyWallet(MonthlyWallet wallet) async {
     try {
       _monthlyWallets.add(wallet);
-      await _storageService.saveMonthlyWallets(_monthlyWallets);
+      await _storageService!.saveMonthlyWallets(_monthlyWallets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -543,7 +544,7 @@ class BudgetProvider with ChangeNotifier {
       if (index != -1) {
         _monthlyWallets[index] =
             updatedWallet.copyWith(updateDate: DateTime.now());
-        await _storageService.saveMonthlyWallets(_monthlyWallets);
+        await _storageService!.saveMonthlyWallets(_monthlyWallets);
         notifyListeners();
       }
     } catch (e) {
@@ -556,7 +557,7 @@ class BudgetProvider with ChangeNotifier {
   Future<void> removeMonthlyWallet(String walletId) async {
     try {
       _monthlyWallets.removeWhere((w) => w.id == walletId);
-      await _storageService.saveMonthlyWallets(_monthlyWallets);
+      await _storageService!.saveMonthlyWallets(_monthlyWallets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -612,7 +613,7 @@ class BudgetProvider with ChangeNotifier {
         updateDate: DateTime.now(),
       );
       _envelopeBudgets[index] = updatedBudget;
-      await _storageService.saveEnvelopeBudgets(_envelopeBudgets);
+      await _storageService!.saveEnvelopeBudgets(_envelopeBudgets);
       notifyListeners();
     }
   }
@@ -785,8 +786,8 @@ class BudgetProvider with ChangeNotifier {
         _envelopeBudgets[envelopeIndex] = updatedEnvelope;
       }
 
-      await _storageService.saveZeroBasedBudgets(_zeroBasedBudgets);
-      await _storageService.saveEnvelopeBudgets(_envelopeBudgets);
+      await _storageService!.saveZeroBasedBudgets(_zeroBasedBudgets);
+      await _storageService!.saveEnvelopeBudgets(_envelopeBudgets);
       notifyListeners();
     } catch (e) {
       _error = e.toString();

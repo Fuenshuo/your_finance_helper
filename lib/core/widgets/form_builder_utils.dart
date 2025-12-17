@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 
 /// Utility class for enhanced form handling with flutter_form_builder
 /// Provides consistent form field styling and validation across the app
@@ -55,41 +54,33 @@ class FormBuilderUtils {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .dividerColor,
+                color: Theme.of(context).dividerColor,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .primaryColor,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .colorScheme
-                    .error,
+                color: Theme.of(context).colorScheme.error,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .colorScheme
-                    .error,
+                color: Theme.of(context).colorScheme.error,
                 width: 2,
               ),
             ),
             filled: true,
             fillColor: enabled
                 ? Theme.of(context).cardColor
-                : Theme.of(context)
-                    .disabledColor
-                    .withOpacity(0.1),
+                : Theme.of(context).disabledColor.withValues(alpha: 0.1),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -181,24 +172,20 @@ class FormBuilderUtils {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .dividerColor,
+                color: Theme.of(context).dividerColor,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .primaryColor,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
             filled: true,
             fillColor: enabled
                 ? Theme.of(context).cardColor
-                : Theme.of(context)
-                    .disabledColor
-                    .withOpacity(0.1),
+                : Theme.of(context).disabledColor.withValues(alpha: 0.1),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -235,24 +222,20 @@ class FormBuilderUtils {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .dividerColor,
+                color: Theme.of(context).dividerColor,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context)
-                    .primaryColor,
+                color: Theme.of(context).primaryColor,
                 width: 2,
               ),
             ),
             filled: true,
             fillColor: enabled
                 ? Theme.of(context).cardColor
-                : Theme.of(context)
-                    .disabledColor
-                    .withOpacity(0.1),
+                : Theme.of(context).disabledColor.withValues(alpha: 0.1),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -283,11 +266,7 @@ class FormBuilderUtils {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color:
-                          Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
                 ],
@@ -485,8 +464,7 @@ class FormBuilderUtils {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context)
-                        .primaryColor,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ],
@@ -497,10 +475,7 @@ class FormBuilderUtils {
                 subtitle,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.color,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
             ],
@@ -551,7 +526,7 @@ extension FormBuilderExtensions on GlobalKey<FormBuilderState> {
   }
 
   /// Set field value
-  void setFieldValue(String fieldName, value) {
+  void setFieldValue(String fieldName, dynamic value) {
     final state = currentState;
     state?.fields[fieldName]?.didChange(value);
   }

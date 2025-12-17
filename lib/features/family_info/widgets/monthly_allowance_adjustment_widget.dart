@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/utils/salary_form_validators.dart';
 import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
@@ -16,7 +15,7 @@ class MonthlyAllowanceAdjustmentWidget extends StatefulWidget {
 
   final AllowanceRecord defaultAllowances;
   final Map<int, AllowanceRecord> monthlyAllowances;
-  final Function(Map<int, AllowanceRecord>) onAllowancesChanged;
+  final void Function(Map<int, AllowanceRecord>) onAllowancesChanged;
 
   @override
   State<MonthlyAllowanceAdjustmentWidget> createState() =>
@@ -107,7 +106,7 @@ class _MonthlyAllowanceAdjustmentWidgetState
             Container(
               padding: EdgeInsets.all(context.spacing12),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
@@ -254,10 +253,10 @@ class _MonthlyAllowanceAdjustmentWidgetState
     int month,
     String type,
     double value,
-    Function(double) onChanged,
+    void Function(double) onChanged,
   ) {
     final controller = TextEditingController(text: value.toString());
-    
+
     return AmountInputField(
       controller: controller,
       onChanged: (value) {
@@ -285,7 +284,8 @@ class _MonthlyAllowanceAdjustmentWidgetState
     );
 
     // 如果新记录与默认记录相同，则移除记录以节省空间
-    if (newRecord.housingAllowance == widget.defaultAllowances.housingAllowance &&
+    if (newRecord.housingAllowance ==
+            widget.defaultAllowances.housingAllowance &&
         newRecord.mealAllowance == widget.defaultAllowances.mealAllowance &&
         newRecord.transportationAllowance ==
             widget.defaultAllowances.transportationAllowance &&

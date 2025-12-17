@@ -16,15 +16,19 @@ class ServerlessAiDataSource implements AnalysisDataSource {
   final AiConfigService _aiConfigService;
   final String? _promptTemplate; // For testing
 
-  ServerlessAiDataSource(this._aiFactory, this._aiConfigService, [this._promptTemplate]);
+  ServerlessAiDataSource(this._aiFactory, this._aiConfigService,
+      [this._promptTemplate]);
 
   @override
-  Future<AnalysisSummary> analyze(Transaction transaction, FluxTimeframe timeframe) async {
+  Future<AnalysisSummary> analyze(
+      Transaction transaction, FluxTimeframe timeframe) async {
     try {
-      debugPrint('[ServerlessAiDataSource] Starting AI analysis for transaction: ${transaction.id}');
+      debugPrint(
+          '[ServerlessAiDataSource] Starting AI analysis for transaction: ${transaction.id}');
 
       // Load and populate prompt
-      final promptTemplate = _promptTemplate ?? await PromptLoader.loadTransactionAnalysisPrompt();
+      final promptTemplate =
+          _promptTemplate ?? await PromptLoader.loadTransactionAnalysisPrompt();
       final filledPrompt = _populatePrompt(promptTemplate, transaction);
 
       // Perform AI analysis - load saved config, fallback to default if needed
@@ -33,13 +37,16 @@ class ServerlessAiDataSource implements AnalysisDataSource {
         final loadedConfig = await _aiConfigService.loadConfig();
         if (loadedConfig != null) {
           aiConfig = loadedConfig;
-          debugPrint('[ServerlessAiDataSource] Using loaded AI config: ${aiConfig.provider}');
+          debugPrint(
+              '[ServerlessAiDataSource] Using loaded AI config: ${aiConfig.provider}');
         } else {
-          debugPrint('[ServerlessAiDataSource] No saved config found, using default');
+          debugPrint(
+              '[ServerlessAiDataSource] No saved config found, using default');
           aiConfig = _createDefaultConfig();
         }
       } catch (e) {
-        debugPrint('[ServerlessAiDataSource] Failed to load config: $e, using default');
+        debugPrint(
+            '[ServerlessAiDataSource] Failed to load config: $e, using default');
         aiConfig = _createDefaultConfig();
       }
 
@@ -54,10 +61,12 @@ class ServerlessAiDataSource implements AnalysisDataSource {
 
       final analysisSummary = AnalysisSummary.fromJson(analysisData);
 
-      debugPrint('[ServerlessAiDataSource] AI analysis completed successfully for transaction: ${transaction.id}');
+      debugPrint(
+          '[ServerlessAiDataSource] AI analysis completed successfully for transaction: ${transaction.id}');
       return analysisSummary;
     } catch (e) {
-      debugPrint('[ServerlessAiDataSource] AI analysis failed for transaction: ${transaction.id}, error: $e');
+      debugPrint(
+          '[ServerlessAiDataSource] AI analysis failed for transaction: ${transaction.id}, error: $e');
       return AnalysisSummary.empty();
     }
   }
@@ -89,7 +98,8 @@ class ServerlessAiDataSource implements AnalysisDataSource {
     final now = DateTime.now();
     return AiConfig(
       provider: AiProvider.dashscope,
-      apiKey: 'dummy-key-for-development', // This should be configured properly in production
+      apiKey:
+          'dummy-key-for-development', // This should be configured properly in production
       createdAt: now,
       updatedAt: now,
       llmModel: 'qwen-turbo',

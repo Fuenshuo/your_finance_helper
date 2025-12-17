@@ -220,7 +220,8 @@ class BankStatementRecognitionService {
             )
             .toList();
       }
-      final systemPrompt = await PromptLoader.loadBankStatementRecognitionPrompt(
+      final systemPrompt =
+          await PromptLoader.loadBankStatementRecognitionPrompt(
         accounts: accountsData,
       );
 
@@ -313,7 +314,8 @@ class BankStatementRecognitionService {
               if (timeParts.length >= 2) {
                 final hour = int.parse(timeParts[0]);
                 final minute = int.parse(timeParts[1]);
-                final second = timeParts.length >= 3 ? int.parse(timeParts[2]) : 0;
+                final second =
+                    timeParts.length >= 3 ? int.parse(timeParts[2]) : 0;
                 date = DateTime(
                   date.year,
                   date.month,
@@ -371,7 +373,8 @@ class BankStatementRecognitionService {
   }
 
   /// 匹配账户（复用发票识别的匹配逻辑）
-  static String? _matchAccount(BankAccountInfo accountInfo, List<Account> accounts) {
+  static String? _matchAccount(
+      BankAccountInfo accountInfo, List<Account> accounts) {
     // 优先级1: 卡号后4位精确匹配
     if (accountInfo.cardNumberLast4 != null &&
         accountInfo.cardNumberLast4!.isNotEmpty) {
@@ -475,4 +478,3 @@ class BankStatementRecognitionService {
     }
   }
 }
-

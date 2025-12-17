@@ -35,9 +35,12 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
     _animationSystem = IOSAnimationSystem();
 
     // 注册资产编辑表单专用动效曲线
-    IOSAnimationSystem.registerCustomCurve('asset-edit-focus', Curves.easeInOutCubic);
-    IOSAnimationSystem.registerCustomCurve('asset-edit-validation', Curves.elasticOut);
-    IOSAnimationSystem.registerCustomCurve('asset-edit-success', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-edit-focus', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-edit-validation', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-edit-success', Curves.elasticOut);
 
     _nameController = TextEditingController(text: widget.asset.name);
     _amountController =

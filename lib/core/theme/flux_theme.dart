@@ -78,7 +78,7 @@ class FluxTheme {
   /// 流卡片阴影
   static List<BoxShadow> flowCardShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.04),
+      color: Colors.black.withValues(alpha: 0.04),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
@@ -87,7 +87,7 @@ class FluxTheme {
   /// 流悬浮阴影
   static List<BoxShadow> flowElevatedShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
@@ -96,7 +96,7 @@ class FluxTheme {
   /// 流底部导航阴影
   static List<BoxShadow> flowBottomNavShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.06),
+      color: Colors.black.withValues(alpha: 0.06),
       blurRadius: 12,
       offset: const Offset(0, -2),
     ),
@@ -132,28 +132,28 @@ class FluxTheme {
   /// 流金额样式 - 正数（收入）
   static TextStyle flowAmountPositive(BuildContext context) {
     return Theme.of(context).textTheme.headlineMedium!.copyWith(
-          color: incomeGreen,
-          fontWeight: FontWeight.w700,
-          fontFeatures: [const FontFeature.tabularFigures()],
-        );
+      color: incomeGreen,
+      fontWeight: FontWeight.w700,
+      fontFeatures: [const FontFeature.tabularFigures()],
+    );
   }
 
   /// 流金额样式 - 负数（支出）
   static TextStyle flowAmountNegative(BuildContext context) {
     return Theme.of(context).textTheme.headlineMedium!.copyWith(
-          color: expenseRed,
-          fontWeight: FontWeight.w700,
-          fontFeatures: [const FontFeature.tabularFigures()],
-        );
+      color: expenseRed,
+      fontWeight: FontWeight.w700,
+      fontFeatures: [const FontFeature.tabularFigures()],
+    );
   }
 
   /// 流金额样式 - 中性
   static TextStyle flowAmountNeutral(BuildContext context) {
     return Theme.of(context).textTheme.headlineMedium!.copyWith(
-          color: const Color(0xFF1C1C1E),
-          fontWeight: FontWeight.w600,
-          fontFeatures: [const FontFeature.tabularFigures()],
-        );
+      color: const Color(0xFF1C1C1E),
+      fontWeight: FontWeight.w600,
+      fontFeatures: [const FontFeature.tabularFigures()],
+    );
   }
 
   // ==================== 流装饰 ====================
@@ -370,4 +370,3 @@ class FluxTextStyles {
   TextStyle get amountNegative => FluxTheme.flowAmountNegative(context);
   TextStyle get amountNeutral => FluxTheme.flowAmountNeutral(context);
 }
-

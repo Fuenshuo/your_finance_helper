@@ -68,7 +68,6 @@ class DraftCard extends StatefulWidget {
 
 class _DraftCardState extends State<DraftCard>
     with SingleTickerProviderStateMixin {
-
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
@@ -299,7 +298,10 @@ class _DraftCardState extends State<DraftCard>
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.3),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
@@ -332,4 +334,3 @@ class _DraftCardState extends State<DraftCard>
     );
   }
 }
-

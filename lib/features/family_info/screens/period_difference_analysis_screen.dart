@@ -281,9 +281,10 @@ class _PeriodDifferenceAnalysisScreenState
                       vertical: context.responsiveSpacing4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.3)),
                     ),
                     child: const Text(
                       '有剩余',
@@ -448,7 +449,8 @@ class _PeriodDifferenceAnalysisScreenState
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: _getCategoryColor(transaction.category).withOpacity(0.1),
+            color:
+                _getCategoryColor(transaction.category).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -529,9 +531,9 @@ class _PeriodDifferenceAnalysisScreenState
         vertical: context.responsiveSpacing4,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -559,7 +561,7 @@ class _PeriodDifferenceAnalysisScreenState
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -723,17 +725,17 @@ class _PeriodDifferenceAnalysisScreenState
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: remainingAmount > 0
-                              ? Colors.orange.withOpacity(0.1)
+                              ? Colors.orange.withValues(alpha: 0.1)
                               : remainingAmount < 0
-                                  ? Colors.red.withOpacity(0.1)
-                                  : Colors.green.withOpacity(0.1),
+                                  ? Colors.red.withValues(alpha: 0.1)
+                                  : Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: remainingAmount > 0
-                                ? Colors.orange.withOpacity(0.3)
+                                ? Colors.orange.withValues(alpha: 0.3)
                                 : remainingAmount < 0
-                                    ? Colors.red.withOpacity(0.3)
-                                    : Colors.green.withOpacity(0.3),
+                                    ? Colors.red.withValues(alpha: 0.3)
+                                    : Colors.green.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -977,17 +979,17 @@ class _PeriodDifferenceAnalysisScreenState
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: remainingAmount > 0
-                                ? Colors.orange.withOpacity(0.1)
+                                ? Colors.orange.withValues(alpha: 0.1)
                                 : remainingAmount < 0
-                                    ? Colors.red.withOpacity(0.1)
-                                    : Colors.green.withOpacity(0.1),
+                                    ? Colors.red.withValues(alpha: 0.1)
+                                    : Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: remainingAmount > 0
-                                  ? Colors.orange.withOpacity(0.3)
+                                  ? Colors.orange.withValues(alpha: 0.3)
                                   : remainingAmount < 0
-                                      ? Colors.red.withOpacity(0.3)
-                                      : Colors.green.withOpacity(0.3),
+                                      ? Colors.red.withValues(alpha: 0.3)
+                                      : Colors.green.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -1045,7 +1047,7 @@ class _PeriodDifferenceAnalysisScreenState
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -1123,7 +1125,7 @@ class _PeriodDifferenceAnalysisScreenState
                                 decoration: BoxDecoration(
                                   color:
                                       (isAddMode ? Colors.green : Colors.orange)
-                                          .withOpacity(0.1),
+                                          .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(

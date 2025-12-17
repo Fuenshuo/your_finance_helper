@@ -2,28 +2,29 @@
 ///
 /// Tests provider initialization, state management, and service functionality
 /// including AI services and data persistence.
+library;
 
-import '../verification_result.dart';
-import '../component_verifier.dart';
+import 'package:your_finance_flutter/core/services/component_verifier.dart';
+import 'package:your_finance_flutter/core/models/verification_result.dart';
 
-class ProviderServiceVerifier implements ComponentVerifier {
+class ProviderServiceVerifier extends ComponentVerifier {
   @override
   String get componentName => 'providers_services';
 
   @override
   List<String> get dependencies => [
-    'AccountProvider',
-    'AssetProvider',
-    'BudgetProvider',
-    'TransactionProvider',
-    'ExpensePlanProvider',
-    'NaturalLanguageTransactionService',
-    'FluxThemeProvider',
-    'FlowDashboardProvider',
-    'FlowStreamsProvider',
-    'FlowInsightsProvider',
-    'FlowAnalyticsProvider',
-  ];
+        'AccountProvider',
+        'AssetProvider',
+        'BudgetProvider',
+        'TransactionProvider',
+        'ExpensePlanProvider',
+        'NaturalLanguageTransactionService',
+        'FluxThemeProvider',
+        'FlowDashboardProvider',
+        'FlowStreamsProvider',
+        'FlowInsightsProvider',
+        'FlowAnalyticsProvider',
+      ];
 
   @override
   int get priority => 4; // High priority - providers are critical
@@ -39,7 +40,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
   Future<bool> isReady() async {
     // Check if provider classes are accessible
     try {
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
       return true;
     } catch (e) {
       return false;
@@ -48,12 +49,13 @@ class ProviderServiceVerifier implements ComponentVerifier {
 
   @override
   Future<VerificationResult> verify() async {
-    final Map<String, bool> checkResults = {};
-    final List<String> issues = [];
+    final checkResults = <String, bool>{};
+    final issues = <String>[];
 
     try {
       // Test 1: Provider initialization
-      checkResults['provider_initialization'] = await _testProviderInitialization();
+      checkResults['provider_initialization'] =
+          await _testProviderInitialization();
       if (!checkResults['provider_initialization']!) {
         issues.add('One or more providers fail to initialize');
       }
@@ -91,7 +93,8 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // Test 7: AI services
       checkResults['ai_services'] = await _testAIServices();
       if (!checkResults['ai_services']!) {
-        issues.add('AI services (NaturalLanguageTransactionService) not working');
+        issues
+            .add('AI services (NaturalLanguageTransactionService) not working');
       }
 
       // Test 8: Theme provider
@@ -103,7 +106,8 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // Test 9: Flow providers
       checkResults['flow_providers'] = await _testFlowProviders();
       if (!checkResults['flow_providers']!) {
-        issues.add('Flow providers (dashboard, streams, insights, analytics) not functional');
+        issues.add(
+            'Flow providers (dashboard, streams, insights, analytics) not functional');
       }
 
       // Test 10: Data persistence
@@ -113,7 +117,8 @@ class ProviderServiceVerifier implements ComponentVerifier {
       }
 
       final allPassed = checkResults.values.every((passed) => passed);
-      final status = allPassed ? VerificationStatus.pass : VerificationStatus.fail;
+      final status =
+          allPassed ? VerificationStatus.pass : VerificationStatus.fail;
 
       final details = allPassed
           ? 'All providers and services verified successfully'
@@ -126,7 +131,6 @@ class ProviderServiceVerifier implements ComponentVerifier {
         checkResults: checkResults,
         remediationSteps: allPassed ? null : _generateRemediationSteps(issues),
       );
-
     } catch (e) {
       return VerificationResult.fail(
         componentName,
@@ -151,7 +155,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 2. Verify no exceptions during initialization
       // 3. Check that providers are properly registered
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -167,7 +171,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check transaction calculations (totals, categories)
       // 4. Validate transaction filtering and sorting
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -183,7 +187,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check multi-currency support
       // 4. Validate account transaction relationships
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -199,7 +203,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check asset history recording
       // 4. Validate asset performance calculations
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -215,7 +219,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check budget vs actual spending tracking
       // 4. Validate envelope transfer functionality
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -231,7 +235,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check expense plan calculations
       // 4. Validate expense plan persistence
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -247,7 +251,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check API key configuration
       // 4. Validate error handling for AI service failures
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -263,7 +267,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check theme application across screens
       // 4. Validate theme customization
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -279,7 +283,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check FlowInsightsProvider AI insights
       // 4. Validate FlowAnalyticsProvider analytics
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -295,7 +299,7 @@ class ProviderServiceVerifier implements ComponentVerifier {
       // 3. Check data migration between versions
       // 4. Validate backup and restore functionality
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;

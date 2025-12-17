@@ -245,8 +245,6 @@ class _AnimatedListDelete extends StatefulWidget {
 class _AnimatedListDeleteState extends State<_AnimatedListDelete>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _opacityAnimation;
-  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -256,25 +254,6 @@ class _AnimatedListDeleteState extends State<_AnimatedListDelete>
       vsync: this,
     );
 
-    _opacityAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeIn,
-      ),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(-1.0, 0.0),
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeIn,
-      ),
-    );
   }
 
   @override
@@ -283,11 +262,6 @@ class _AnimatedListDeleteState extends State<_AnimatedListDelete>
     super.dispose();
   }
 
-  void _startDelete() {
-    _controller.forward().then((_) {
-      widget.onDelete();
-    });
-  }
 
   @override
   Widget build(BuildContext context) => Dismissible(

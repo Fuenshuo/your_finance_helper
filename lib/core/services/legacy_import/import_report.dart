@@ -31,6 +31,3 @@ class ImportReport {
         'errors': errors,
       };
 }
-
-
-

@@ -79,4 +79,3 @@ class AiConfigService {
     return prefs.containsKey(_configKey);
   }
 }
-

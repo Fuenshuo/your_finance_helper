@@ -74,14 +74,14 @@ class AssetCategoryTabBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(context.borderRadius),
             border: Border.all(
               color: isSelected
-                  ? context.primaryAction.withOpacity(0.3)
+                  ? context.primaryAction.withValues(alpha: 0.3)
                   : context.dividerColor,
               width: isSelected ? 2 : 1,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: context.primaryAction.withOpacity(0.2),
+                      color: context.primaryAction.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

@@ -37,7 +37,8 @@ class InputValidation extends Equatable {
       errorMessage: errorMessage ?? this.errorMessage,
       warnings: warnings ?? this.warnings,
       suggestions: suggestions ?? this.suggestions,
-      lastValidatedAt: lastValidatedAt ?? this.lastValidatedAt ?? DateTime.now(),
+      lastValidatedAt:
+          lastValidatedAt ?? this.lastValidatedAt ?? DateTime.now(),
     );
   }
 
@@ -92,4 +93,3 @@ enum ValidationRule {
   const ValidationRule(this.message);
   final String message;
 }
-

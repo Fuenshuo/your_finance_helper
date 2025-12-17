@@ -24,8 +24,12 @@ class PatternDetectionService {
 
     // Calculate baseline (average of non-peak days)
     final sortedSpending = List<double>.from(dailySpending)..sort();
-    final baseline = (sortedSpending[0] + sortedSpending[1] + sortedSpending[2] +
-                     sortedSpending[3] + sortedSpending[4]) / 5;
+    final baseline = (sortedSpending[0] +
+            sortedSpending[1] +
+            sortedSpending[2] +
+            sortedSpending[3] +
+            sortedSpending[4]) /
+        5;
 
     // Detect anomalies (both high and low spending)
     for (var i = 0; i < dailySpending.length; i++) {
@@ -33,7 +37,8 @@ class PatternDetectionService {
       final rawDeviation = (spending - baseline) / baseline;
       final absDeviation = rawDeviation.abs();
 
-      if (absDeviation >= 0.5) { // 50% deviation threshold (either direction)
+      if (absDeviation >= 0.5) {
+        // 50% deviation threshold (either direction)
         final severity = _calculateSeverity(absDeviation);
         final isHighSpending = spending > baseline;
         final reason = _generateAnomalyReason(
@@ -50,7 +55,8 @@ class PatternDetectionService {
           anomalyDate: weekStart.add(Duration(days: i)),
           expectedAmount: baseline,
           actualAmount: spending,
-          deviation: rawDeviation, // Keep the sign for proper deviation tracking
+          deviation:
+              rawDeviation, // Keep the sign for proper deviation tracking
           reason: reason,
           severity: severity,
           categories: _extractCategories(categoryBreakdown, i),
@@ -91,7 +97,8 @@ class PatternDetectionService {
   }
 
   /// Extract categories for the specific day
-  List<String> _extractCategories(List<String> categoryBreakdown, int dayIndex) {
+  List<String> _extractCategories(
+      List<String> categoryBreakdown, int dayIndex) {
     if (categoryBreakdown.isEmpty || dayIndex >= categoryBreakdown.length) {
       return ['未知分类'];
     }
@@ -116,7 +123,9 @@ class PatternDetectionService {
     final minValue = dailySpending.reduce((a, b) => a < b ? a : b);
 
     // Calculate variance
-    final variance = dailySpending.map((x) => pow(x - average, 2)).reduce((a, b) => a + b) / dailySpending.length;
+    final variance =
+        dailySpending.map((x) => pow(x - average, 2)).reduce((a, b) => a + b) /
+            dailySpending.length;
 
     return {
       'total': total,
@@ -135,8 +144,12 @@ class PatternDetectionService {
     if (dailySpending.length < 7) return patterns;
 
     // Weekend vs weekday comparison
-    final weekdayAvg = (dailySpending[0] + dailySpending[1] + dailySpending[2] +
-                       dailySpending[3] + dailySpending[4]) / 5;
+    final weekdayAvg = (dailySpending[0] +
+            dailySpending[1] +
+            dailySpending[2] +
+            dailySpending[3] +
+            dailySpending[4]) /
+        5;
     final weekendAvg = (dailySpending[5] + dailySpending[6]) / 2;
 
     patterns['weekendMultiplier'] = weekendAvg / weekdayAvg;
@@ -147,7 +160,8 @@ class PatternDetectionService {
 
     // Trend analysis (simple linear trend)
     final trend = _calculateTrend(dailySpending);
-    patterns['spendingTrend'] = trend; // positive = increasing, negative = decreasing
+    patterns['spendingTrend'] =
+        trend; // positive = increasing, negative = decreasing
 
     return patterns;
   }
@@ -159,8 +173,13 @@ class PatternDetectionService {
     final n = data.length;
     final sumX = (n * (n - 1)) / 2.0;
     final sumY = data.reduce((a, b) => a + b);
-    final sumXY = data.asMap().entries.map((e) => e.key * e.value).reduce((a, b) => a + b);
-    final sumXX = data.asMap().entries.map((e) => e.key * e.key).reduce((a, b) => a + b);
+    final sumXY = data
+        .asMap()
+        .entries
+        .map((e) => e.key * e.value)
+        .reduce((a, b) => a + b);
+    final sumXX =
+        data.asMap().entries.map((e) => e.key * e.key).reduce((a, b) => a + b);
 
     final slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     return slope;

@@ -7,8 +7,8 @@ import 'transaction_row.dart';
 class GroupCard extends StatelessWidget {
   final DateTime date;
   final List<DraftTransaction> drafts;
-  final Function(DraftTransaction) onDraftSelected;
-  final Function(DraftTransaction) onDraftDeleted;
+  final void Function(DraftTransaction) onDraftSelected;
+  final void Function(DraftTransaction) onDraftDeleted;
 
   const GroupCard({
     super.key,
@@ -69,13 +69,12 @@ class GroupCard extends StatelessWidget {
 
           // 交易列表
           ...drafts.map((draft) => TransactionRow(
-            draft: draft,
-            onTap: () => onDraftSelected(draft),
-            onDelete: () => onDraftDeleted(draft),
-          )),
+                draft: draft,
+                onTap: () => onDraftSelected(draft),
+                onDelete: () => onDraftDeleted(draft),
+              )),
         ],
       ),
     );
   }
 }
-

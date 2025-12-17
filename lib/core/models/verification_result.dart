@@ -44,7 +44,9 @@ class VerificationResult {
   }) : timestamp = timestamp ?? DateTime.now();
 
   /// Create a passing result
-  factory VerificationResult.pass(String componentName, String details, {
+  factory VerificationResult.pass(
+    String componentName,
+    String details, {
     Map<String, bool>? checkResults,
     int priority = 3,
     Duration? duration,
@@ -60,7 +62,9 @@ class VerificationResult {
   }
 
   /// Create a failing result
-  factory VerificationResult.fail(String componentName, String details, {
+  factory VerificationResult.fail(
+    String componentName,
+    String details, {
     String? errorMessage,
     List<String>? remediationSteps,
     Map<String, bool>? checkResults,
@@ -80,7 +84,9 @@ class VerificationResult {
   }
 
   /// Create a warning result
-  factory VerificationResult.warning(String componentName, String details, {
+  factory VerificationResult.warning(
+    String componentName,
+    String details, {
     List<String>? remediationSteps,
     Map<String, bool>? checkResults,
     int priority = 3,

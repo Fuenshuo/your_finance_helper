@@ -34,7 +34,10 @@ class _FluxNavigationScreenState extends State<FluxNavigationScreen> {
         bottomNavigationBar: FluxBottomNavigationBar(
           navigationShell: widget.navigationShell,
         ),
-        floatingActionButton: const FluxFloatingActionButton(),
+        floatingActionButton: Container(
+          margin: const EdgeInsets.only(bottom: 100), // 避免挡住底部输入区域
+          child: const FluxFloatingActionButton(),
+        ),
       );
 
   PreferredSizeWidget _buildAppBar() => AppBar(
@@ -65,7 +68,7 @@ class _FluxNavigationScreenState extends State<FluxNavigationScreen> {
                 margin: const EdgeInsets.only(left: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: FluxTheme.flowBlue.withOpacity(0.1),
+                  color: FluxTheme.flowBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
@@ -161,12 +164,12 @@ class FluxBottomNavigationBar extends StatelessWidget {
     final backgroundColor = navTheme.backgroundColor ?? context.surfaceWhite;
     final selectedColor = navTheme.selectedItemColor ?? context.primaryAction;
     final unselectedColor = navTheme.unselectedItemColor ??
-        context.secondaryText.withOpacity(isDark ? 0.85 : 0.7);
+        context.secondaryText.withValues(alpha: isDark ? 0.85 : 0.7);
     final navShadow = [
       BoxShadow(
         color: isDark
-            ? Colors.black.withOpacity(0.4)
-            : Colors.black.withOpacity(0.06),
+            ? Colors.black.withValues(alpha: 0.4)
+            : Colors.black.withValues(alpha: 0.06),
         blurRadius: 12,
         offset: const Offset(0, -2),
       ),
@@ -241,7 +244,7 @@ class FluxFloatingActionButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: FluxTheme.flowBlue.withOpacity(0.3),
+              color: FluxTheme.flowBlue.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -318,9 +321,9 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color.withOpacity(0.2 + _controller.value * 0.3),
+          color: color.withValues(alpha: 0.2 + _controller.value * 0.3),
           border: Border.all(
-            color: color.withOpacity(0.6),
+            color: color.withValues(alpha: 0.6),
             width: 1.5,
           ),
         ),
@@ -347,6 +350,5 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
       case FlowHealthStatus.neutral:
         return FluxTheme.neutralGray;
     }
-    return FluxTheme.neutralGray;
   }
 }

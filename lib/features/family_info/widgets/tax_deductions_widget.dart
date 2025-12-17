@@ -92,13 +92,13 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                 Container(
                   padding: const EdgeInsets.all(AppDesignTokens.spacing12),
                   decoration: BoxDecoration(
-                    color:
-                        AppDesignTokens.primaryAction(context).withOpacity(0.1),
+                    color: AppDesignTokens.primaryAction(context)
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(
                         AppDesignTokens.radiusMedium(context)),
                     border: Border.all(
                       color: AppDesignTokens.primaryAction(context)
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -196,13 +196,13 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                 Container(
                   padding: const EdgeInsets.all(AppDesignTokens.spacing12),
                   decoration: BoxDecoration(
-                    color:
-                        AppDesignTokens.primaryAction(context).withOpacity(0.1),
+                    color: AppDesignTokens.primaryAction(context)
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(
                         AppDesignTokens.radiusMedium(context)),
                     border: Border.all(
                       color: AppDesignTokens.primaryAction(context)
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -219,14 +219,14 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                         '• 子女教育、继续教育、大病医疗、住房贷款利息、住房租金、赡养老人等专项附加扣除',
                         style: AppDesignTokens.caption(context).copyWith(
                           color: AppDesignTokens.primaryAction(context)
-                              .withOpacity(0.8),
+                              .withValues(alpha: 0.8),
                         ),
                       ),
                       Text(
                         '• 每月最高5000元，全年最高6万元',
                         style: AppDesignTokens.caption(context).copyWith(
                           color: AppDesignTokens.primaryAction(context)
-                              .withOpacity(0.8),
+                              .withValues(alpha: 0.8),
                         ),
                       ),
                     ],

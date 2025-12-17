@@ -15,7 +15,8 @@ class AnalysisSummary extends Equatable {
 
   factory AnalysisSummary.fromJson(Map<String, dynamic> json) {
     return AnalysisSummary(
-      analysisId: json['analysisId'] as String? ?? 'local-analysis-${DateTime.now().millisecondsSinceEpoch}',
+      analysisId: json['analysisId'] as String? ??
+          'local-analysis-${DateTime.now().millisecondsSinceEpoch}',
       generatedAt: json['generatedAt'] != null
           ? DateTime.parse(json['generatedAt'] as String)
           : DateTime.now(),
@@ -243,8 +244,7 @@ class StreamInsightsTelemetryEvent extends Equatable {
       metadata: <String, Object?>{
         'legacySelections': legacySelections,
         'mergedSelections': mergedSelections,
-        'reductionRatio':
-            double.parse(reductionRatio.toStringAsFixed(4)),
+        'reductionRatio': double.parse(reductionRatio.toStringAsFixed(4)),
       },
       occurredAt: occurredAt ?? DateTime.now(),
     );

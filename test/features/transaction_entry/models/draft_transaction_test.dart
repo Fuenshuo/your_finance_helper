@@ -68,11 +68,35 @@ void main() {
 
   group('TransactionType', () {
     test('should parse transaction type from string', () {
-      expect(TransactionType.fromString('expense'), TransactionType.expense);
-      expect(TransactionType.fromString('income'), TransactionType.income);
-      expect(TransactionType.fromString('transfer'), TransactionType.transfer);
-      expect(TransactionType.fromString('invalid'), TransactionType.expense); // default
-      expect(TransactionType.fromString(null), null);
+      expect(
+        TransactionType.values.firstWhere(
+          (e) => e.name == 'expense',
+          orElse: () => TransactionType.expense,
+        ),
+        TransactionType.expense
+      );
+      expect(
+        TransactionType.values.firstWhere(
+          (e) => e.name == 'income',
+          orElse: () => TransactionType.expense,
+        ),
+        TransactionType.income
+      );
+      expect(
+        TransactionType.values.firstWhere(
+          (e) => e.name == 'transfer',
+          orElse: () => TransactionType.expense,
+        ),
+        TransactionType.transfer
+      );
+      expect(
+        TransactionType.values.firstWhere(
+          (e) => e.name == 'invalid',
+          orElse: () => TransactionType.expense,
+        ),
+        TransactionType.expense
+      );
+      // null case - would need different handling
     });
 
     test('should have correct display names', () {

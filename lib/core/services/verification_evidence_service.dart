@@ -52,7 +52,8 @@ class VerificationEvidence {
     String description, {
     Map<String, dynamic>? metadata,
   }) async {
-    final id = '${componentName}_${type.value}_${DateTime.now().millisecondsSinceEpoch}';
+    final id =
+        '${componentName}_${type.value}_${DateTime.now().millisecondsSinceEpoch}';
     return VerificationEvidence(
       id: id,
       componentName: componentName,
@@ -155,12 +156,12 @@ class VerificationEvidenceService {
     Map<String, dynamic>? metadata,
   }) async {
     final directory = await _getEvidenceDirectory();
-    final fileName = '${componentName}_${type.value}_${DateTime.now().millisecondsSinceEpoch}';
+    final fileName =
+        '${componentName}_${type.value}_${DateTime.now().millisecondsSinceEpoch}';
     final targetPath = '${directory.path}/$fileName';
 
     // Copy the file
     final sourceFile = File(sourceFilePath);
-    final targetFile = File(targetPath);
     await sourceFile.copy(targetPath);
 
     // Create evidence record
@@ -180,13 +181,15 @@ class VerificationEvidenceService {
   }
 
   /// Get all evidence for a component
-  Future<List<VerificationEvidence>> getEvidenceForComponent(String componentName) async {
+  Future<List<VerificationEvidence>> getEvidenceForComponent(
+      String componentName) async {
     final allEvidence = await _loadEvidenceIndex();
     return allEvidence.where((e) => e.componentName == componentName).toList();
   }
 
   /// Get evidence by type
-  Future<List<VerificationEvidence>> getEvidenceByType(EvidenceType type) async {
+  Future<List<VerificationEvidence>> getEvidenceByType(
+      EvidenceType type) async {
     final allEvidence = await _loadEvidenceIndex();
     return allEvidence.where((e) => e.type == type).toList();
   }
@@ -196,7 +199,8 @@ class VerificationEvidenceService {
     final cutoffDate = DateTime.now().subtract(Duration(days: keepDays));
     final allEvidence = await _loadEvidenceIndex();
 
-    final oldEvidence = allEvidence.where((e) => e.timestamp.isBefore(cutoffDate)).toList();
+    final oldEvidence =
+        allEvidence.where((e) => e.timestamp.isBefore(cutoffDate)).toList();
 
     for (final evidence in oldEvidence) {
       try {
@@ -211,7 +215,8 @@ class VerificationEvidenceService {
     }
 
     // Update index
-    final remainingEvidence = allEvidence.where((e) => e.timestamp.isAfter(cutoffDate)).toList();
+    final remainingEvidence =
+        allEvidence.where((e) => e.timestamp.isAfter(cutoffDate)).toList();
     await _saveEvidenceIndex(remainingEvidence);
   }
 
@@ -264,7 +269,8 @@ class VerificationEvidenceService {
       final content = await indexFile.readAsString();
       final jsonList = jsonDecode(content) as List<dynamic>;
       return jsonList
-          .map((json) => VerificationEvidence.fromJson(json as Map<String, dynamic>))
+          .map((json) =>
+              VerificationEvidence.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       // If index is corrupted, return empty list
@@ -287,3 +293,4 @@ class VerificationEvidenceService {
     await indexFile.writeAsString(content);
   }
 }
+

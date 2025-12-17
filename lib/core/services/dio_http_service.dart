@@ -85,7 +85,7 @@ class DioHttpService {
   /// POST request
   Future<Response<T>> post<T>(
     String path, {
-    data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -113,7 +113,7 @@ class DioHttpService {
   /// PUT request
   Future<Response<T>> put<T>(
     String path, {
-    data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -141,7 +141,7 @@ class DioHttpService {
   /// DELETE request
   Future<Response<T>> delete<T>(
     String path, {
-    data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
@@ -165,7 +165,7 @@ class DioHttpService {
   /// PATCH request
   Future<Response<T>> patch<T>(
     String path, {
-    data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -233,7 +233,7 @@ class DioHttpService {
   }
 
   /// Download file
-  Future<Response> downloadFile(
+  Future<Response<dynamic>> downloadFile(
     String url,
     String savePath, {
     ProgressCallback? onReceiveProgress,
@@ -241,7 +241,7 @@ class DioHttpService {
     CancelToken? cancelToken,
     bool deleteOnError = true,
     String lengthHeader = Headers.contentLengthHeader,
-    data,
+    dynamic data,
     Options? options,
   }) async {
     try {
@@ -314,7 +314,7 @@ class _LoggingInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
+  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
     if (kDebugMode) {
       Log.business('HTTP Response', response.statusCode.toString(), {
         'url': response.requestOptions.uri.toString(),
@@ -416,7 +416,7 @@ class _RetryInterceptor extends Interceptor {
         'url': requestOptions.uri.toString(),
       });
 
-      await Future.delayed(retryDelay);
+      await Future<void>.delayed(retryDelay);
       final retryDio = Dio(
         BaseOptions(
           baseUrl: requestOptions.baseUrl,
@@ -428,7 +428,7 @@ class _RetryInterceptor extends Interceptor {
       );
 
       try {
-        final response = await retryDio.request(
+        final response = await retryDio.request<dynamic>(
           requestOptions.path,
           options: Options(method: requestOptions.method),
           data: requestOptions.data,

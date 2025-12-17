@@ -16,7 +16,7 @@ class TransactionProvider with ChangeNotifier {
   List<Transaction> _draftTransactions = []; // 草稿交易
   bool _isLoading = false;
   String? _error;
-  late final StorageService _storageService;
+  StorageService? _storageService;
   bool _isInitialized = false;
 
   // Getters
@@ -34,10 +34,12 @@ class TransactionProvider with ChangeNotifier {
       _isInitialized = true;
       print('[TransactionProvider.initialize] [SUCCESS] StorageService 初始化完成');
     } else {
-      print('[TransactionProvider.initialize] [INFO] TransactionProvider 已经初始化过，跳过 StorageService 获取');
+      print(
+          '[TransactionProvider.initialize] [INFO] TransactionProvider 已经初始化过，跳过 StorageService 获取');
     }
     await _loadTransactions();
-    print('[TransactionProvider.initialize] [TARGET] TransactionProvider 初始化完成');
+    print(
+        '[TransactionProvider.initialize] [TARGET] TransactionProvider 初始化完成');
   }
 
   // 加载交易数据
@@ -49,23 +51,29 @@ class TransactionProvider with ChangeNotifier {
       notifyListeners();
       print('[TransactionProvider._loadTransactions] [LOADING] 状态已设置为加载中');
 
-      print('[TransactionProvider._loadTransactions] [STORAGE] 从 StorageService 加载正式交易');
-      _transactions = await _storageService.loadTransactions();
-      print('[TransactionProvider._loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${_transactions.length}');
+      print(
+          '[TransactionProvider._loadTransactions] [STORAGE] 从 StorageService 加载正式交易');
+      _transactions = await _storageService!.loadTransactions();
+      print(
+          '[TransactionProvider._loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${_transactions.length}');
 
-      print('[TransactionProvider._loadTransactions] [DRAFT] 从 StorageService 加载草稿交易');
-      _draftTransactions = await _storageService.loadDraftTransactions();
-      print('[TransactionProvider._loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${_draftTransactions.length}');
+      print(
+          '[TransactionProvider._loadTransactions] [DRAFT] 从 StorageService 加载草稿交易');
+      _draftTransactions = await _storageService!.loadDraftTransactions();
+      print(
+          '[TransactionProvider._loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${_draftTransactions.length}');
 
       print('[TransactionProvider._loadTransactions] [STATS] 数据加载完成统计:');
-      print('[TransactionProvider._loadTransactions] [CHART] 正式交易: ${_transactions.length} 笔');
-      print('[TransactionProvider._loadTransactions] [DRAFT] 草稿交易: ${_draftTransactions.length} 笔');
-      print('[TransactionProvider._loadTransactions] [TREND] 总计: ${_transactions.length + _draftTransactions.length} 笔');
+      print(
+          '[TransactionProvider._loadTransactions] [CHART] 正式交易: ${_transactions.length} 笔');
+      print(
+          '[TransactionProvider._loadTransactions] [DRAFT] 草稿交易: ${_draftTransactions.length} 笔');
+      print(
+          '[TransactionProvider._loadTransactions] [TREND] 总计: ${_transactions.length + _draftTransactions.length} 笔');
 
       if (_transactions.isEmpty && _draftTransactions.isEmpty) {
         print('[TransactionProvider._loadTransactions] [WARN] 警告：没有找到任何交易数据！');
       }
-
     } catch (e) {
       print('[TransactionProvider._loadTransactions] [ERROR] 数据加载失败: $e');
       _error = e.toString();
@@ -80,7 +88,7 @@ class TransactionProvider with ChangeNotifier {
   Future<void> addTransaction(Transaction transaction) async {
     try {
       _transactions.add(transaction);
-      await _storageService.saveTransactions(_transactions);
+      await _storageService!.saveTransactions(_transactions);
 
       // Trigger Flux Loop analysis for new transaction
       await _triggerInsightAnalysis(transaction.id, JobType.dailyAnalysis);
@@ -100,10 +108,11 @@ class TransactionProvider with ChangeNotifier {
       if (index != -1) {
         _transactions[index] =
             updatedTransaction.copyWith(updateDate: DateTime.now());
-        await _storageService.saveTransactions(_transactions);
+        await _storageService!.saveTransactions(_transactions);
 
         // Trigger Flux Loop analysis for updated transaction
-        await _triggerInsightAnalysis(updatedTransaction.id, JobType.dailyAnalysis);
+        await _triggerInsightAnalysis(
+            updatedTransaction.id, JobType.dailyAnalysis);
 
         notifyListeners();
       }
@@ -117,7 +126,7 @@ class TransactionProvider with ChangeNotifier {
   Future<void> deleteTransaction(String transactionId) async {
     try {
       _transactions.removeWhere((t) => t.id == transactionId);
-      await _storageService.saveTransactions(_transactions);
+      await _storageService!.saveTransactions(_transactions);
 
       // Trigger Flux Loop analysis for deleted transaction
       await _triggerInsightAnalysis(transactionId, JobType.dailyAnalysis);
@@ -130,11 +139,12 @@ class TransactionProvider with ChangeNotifier {
   }
 
   // Helper method to trigger insight analysis
-  Future<void> _triggerInsightAnalysis(String transactionId, JobType jobType) async {
+  Future<void> _triggerInsightAnalysis(
+      String transactionId, JobType jobType) async {
     try {
       // Only trigger if insights provider is available
       if (_insightsProvider != null) {
-        await _insightsProvider!.onTransactionChanged(
+        await _insightsProvider.onTransactionChanged(
           transactionId: transactionId,
           analysisType: jobType,
         );
@@ -150,7 +160,7 @@ class TransactionProvider with ChangeNotifier {
   Future<void> addDraftTransaction(Transaction transaction) async {
     try {
       _draftTransactions.add(transaction);
-      await _storageService.saveDraftTransactions(_draftTransactions);
+      await _storageService!.saveDraftTransactions(_draftTransactions);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -172,8 +182,8 @@ class TransactionProvider with ChangeNotifier {
         _transactions.add(confirmedTransaction);
         _draftTransactions.removeAt(draftIndex);
 
-        await _storageService.saveTransactions(_transactions);
-        await _storageService.saveDraftTransactions(_draftTransactions);
+        await _storageService!.saveTransactions(_transactions);
+        await _storageService!.saveDraftTransactions(_draftTransactions);
         notifyListeners();
       }
     } catch (e) {
@@ -186,7 +196,7 @@ class TransactionProvider with ChangeNotifier {
   Future<void> deleteDraftTransaction(String draftId) async {
     try {
       _draftTransactions.removeWhere((t) => t.id == draftId);
-      await _storageService.saveDraftTransactions(_draftTransactions);
+      await _storageService!.saveDraftTransactions(_draftTransactions);
       notifyListeners();
     } catch (e) {
       _error = e.toString();

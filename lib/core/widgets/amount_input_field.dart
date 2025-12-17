@@ -87,105 +87,105 @@ class _AmountInputFieldState extends State<AmountInputField> {
               _isFocused = hasFocus;
             });
           },
-      child: TextFormField(
-        controller: _controller,
-        enabled: widget.enabled,
-        readOnly: widget.readOnly,
-        maxLines: widget.maxLines,
-        keyboardType: widget.keyboardType ??
-            const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: widget.inputFormatters ??
-            [
-              // 只允许数字和一个小数点
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-            ],
-        style: theme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          labelText: widget.labelText,
-          hintText: widget.hintText,
-          labelStyle: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
-          ),
-          hintStyle: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
-            fontSize: 14,
-          ),
-          prefixIcon: widget.prefixIcon,
-              suffixIcon: _buildUnitSuffix(context, isSharpProfessional),
-          contentPadding: widget.contentPadding ??
-              const EdgeInsets.only(
-                left: 16,
-                top: 12,
-                bottom: 12,
-                right: 40, // 为36px宽度的单位块预留空间
+          child: TextFormField(
+            controller: _controller,
+            enabled: widget.enabled,
+            readOnly: widget.readOnly,
+            maxLines: widget.maxLines,
+            keyboardType: widget.keyboardType ??
+                const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: widget.inputFormatters ??
+                [
+                  // 只允许数字和一个小数点
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              labelText: widget.labelText,
+              hintText: widget.hintText,
+              labelStyle: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
-          filled: true,
-          fillColor:
-              widget.fillColor ?? Colors.grey.withOpacity(0.03), // 更浅的灰色背景
-          border: widget.showBorder
-              ? OutlineInputBorder(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ), // 右边无圆角，与单位块衔接
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.3),
+              hintStyle: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                fontSize: 14,
+              ),
+              prefixIcon: widget.prefixIcon,
+              suffixIcon: _buildUnitSuffix(context, isSharpProfessional),
+              contentPadding: widget.contentPadding ??
+                  const EdgeInsets.only(
+                    left: 16,
+                    top: 12,
+                    bottom: 12,
+                    right: 40, // 为36px宽度的单位块预留空间
                   ),
-                )
-              : InputBorder.none,
-          enabledBorder: widget.showBorder
-              ? OutlineInputBorder(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ), // 右边无圆角，与单位块衔接
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.3),
-                  ),
-                )
-              : InputBorder.none,
-          focusedBorder: widget.showBorder
-              ? OutlineInputBorder(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ), // 右边无圆角，与单位块衔接
-                  borderSide: BorderSide(
-                    color: theme.primaryColor,
-                    width: 2,
-                  ),
-                )
-              : InputBorder.none,
-          errorBorder: widget.showBorder
-              ? OutlineInputBorder(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ), // 右边无圆角，与单位块衔接
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.error,
-                  ),
-                )
-              : InputBorder.none,
-          focusedErrorBorder: widget.showBorder
-              ? OutlineInputBorder(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ), // 右边无圆角，与单位块衔接
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.error,
-                    width: 2,
-                  ),
-                )
-              : InputBorder.none,
-        ),
-        onChanged: widget.onChanged,
-        validator: widget.validator,
+              filled: true,
+              fillColor: widget.fillColor ??
+                  Colors.grey.withValues(alpha: 0.03), // 更浅的灰色背景
+              border: widget.showBorder
+                  ? OutlineInputBorder(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                      ), // 右边无圆角，与单位块衔接
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                      ),
+                    )
+                  : InputBorder.none,
+              enabledBorder: widget.showBorder
+                  ? OutlineInputBorder(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                      ), // 右边无圆角，与单位块衔接
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                      ),
+                    )
+                  : InputBorder.none,
+              focusedBorder: widget.showBorder
+                  ? OutlineInputBorder(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                      ), // 右边无圆角，与单位块衔接
+                      borderSide: BorderSide(
+                        color: theme.primaryColor,
+                        width: 2,
+                      ),
+                    )
+                  : InputBorder.none,
+              errorBorder: widget.showBorder
+                  ? OutlineInputBorder(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                      ), // 右边无圆角，与单位块衔接
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.error,
+                      ),
+                    )
+                  : InputBorder.none,
+              focusedErrorBorder: widget.showBorder
+                  ? OutlineInputBorder(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                      ), // 右边无圆角，与单位块衔接
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.error,
+                        width: 2,
+                      ),
+                    )
+                  : InputBorder.none,
+            ),
+            onChanged: widget.onChanged,
+            validator: widget.validator,
           ),
         ),
       ),
@@ -200,12 +200,14 @@ class _AmountInputFieldState extends State<AmountInputField> {
     final unitBackgroundColor = isSharpProfessional
         ? (_isFocused
             ? AppDesignTokens.successColor(context) // 聚焦时：鲜草绿 #8BC34A
-            : AppDesignTokens.primaryAction(context).withOpacity(0.05)) // 未聚焦：深森绿 5% 透明度
-        : Colors.grey.withOpacity(0.08); // iOS Fintech: 浅灰色背景
+            : AppDesignTokens.primaryAction(context)
+                .withValues(alpha: 0.05)) // 未聚焦：深森绿 5% 透明度
+        : Colors.grey.withValues(alpha: 0.08); // iOS Fintech: 浅灰色背景
 
     final unitTextColor = isSharpProfessional && _isFocused
         ? Colors.white // 聚焦时：白色文字（与鲜草绿背景对比）
-        : (widget.unitTextColor ?? AppDesignTokens.primaryAction(context)); // 未聚焦：主题色
+        : (widget.unitTextColor ??
+            AppDesignTokens.primaryAction(context)); // 未聚焦：主题色
 
     return Container(
       width: 36, // 适当宽度

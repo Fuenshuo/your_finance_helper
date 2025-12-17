@@ -2,6 +2,8 @@
 // Riverpod Providers for Asset Management (Working Demo Version)
 // ============================================================================
 
+// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/services/drift_database_service.dart';
@@ -137,10 +139,11 @@ class AssetCrudService {
   /// Get a specific asset by ID
   AssetItem? getAssetById(String assetId) {
     final assets = _assetsNotifier.state;
-    return assets.firstWhere(
-      (asset) => asset.id == assetId,
-      orElse: () => null as AssetItem,
-    );
+    try {
+      return assets.firstWhere((asset) => asset.id == assetId);
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Export all assets

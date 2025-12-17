@@ -13,10 +13,30 @@ class CategorySelector extends StatelessWidget {
 
   // 临时分类数据 - 在实际应用中应该从服务获取
   static const List<Map<String, dynamic>> _categories = [
-    {'id': 'food', 'name': '餐饮', 'icon': Icons.restaurant, 'color': Colors.orange},
-    {'id': 'transport', 'name': '交通', 'icon': Icons.directions_car, 'color': Colors.blue},
-    {'id': 'shopping', 'name': '购物', 'icon': Icons.shopping_bag, 'color': Colors.purple},
-    {'id': 'entertainment', 'name': '娱乐', 'icon': Icons.movie, 'color': Colors.pink},
+    {
+      'id': 'food',
+      'name': '餐饮',
+      'icon': Icons.restaurant,
+      'color': Colors.orange
+    },
+    {
+      'id': 'transport',
+      'name': '交通',
+      'icon': Icons.directions_car,
+      'color': Colors.blue
+    },
+    {
+      'id': 'shopping',
+      'name': '购物',
+      'icon': Icons.shopping_bag,
+      'color': Colors.purple
+    },
+    {
+      'id': 'entertainment',
+      'name': '娱乐',
+      'icon': Icons.movie,
+      'color': Colors.pink
+    },
     {'id': 'other', 'name': '其他', 'icon': Icons.category, 'color': Colors.grey},
   ];
 
@@ -77,7 +97,7 @@ class CategorySelector extends StatelessWidget {
   }
 
   void _showCategoryPicker(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -101,7 +121,8 @@ class CategorySelector extends StatelessWidget {
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? (category['color'] as Color).withValues(alpha: 0.2)
@@ -109,7 +130,10 @@ class CategorySelector extends StatelessWidget {
                       border: Border.all(
                         color: isSelected
                             ? category['color'] as Color
-                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                            : Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withValues(alpha: 0.3),
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -121,7 +145,10 @@ class CategorySelector extends StatelessWidget {
                           size: 16,
                           color: isSelected
                               ? category['color'] as Color
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -130,7 +157,9 @@ class CategorySelector extends StatelessWidget {
                             color: isSelected
                                 ? category['color'] as Color
                                 : Theme.of(context).colorScheme.onSurface,
-                            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.w500
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -145,4 +174,3 @@ class CategorySelector extends StatelessWidget {
     );
   }
 }
-

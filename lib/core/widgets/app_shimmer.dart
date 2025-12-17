@@ -21,7 +21,8 @@ class AppShimmer extends StatefulWidget {
   }
 
   // 预设：文本行骨架
-  factory AppShimmer.text({double width = double.infinity, double height = 16}) {
+  factory AppShimmer.text(
+      {double width = double.infinity, double height = 16}) {
     return AppShimmer(width: width, height: height, radius: 4);
   }
 
@@ -29,7 +30,8 @@ class AppShimmer extends StatefulWidget {
   State<AppShimmer> createState() => _AppShimmerState();
 }
 
-class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateMixin {
+class _AppShimmerState extends State<AppShimmer>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -51,8 +53,10 @@ class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // 调整深色模式下的骨架颜色，防止太刺眼
-    final baseColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
-    final highlightColor = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF2F2F7);
+    final baseColor =
+        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
+    final highlightColor =
+        isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF2F2F7);
 
     return AnimatedBuilder(
       animation: _controller,
@@ -83,7 +87,8 @@ class _SlidingGradientTransform extends GradientTransform {
 
   @override
   Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
-    return Matrix4.translationValues(bounds.width * slidePercent * 2 - bounds.width, 0.0, 0.0);
+    return Matrix4.translationValues(
+        bounds.width * slidePercent * 2 - bounds.width, 0.0, 0.0);
   }
 }
 

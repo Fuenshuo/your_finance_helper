@@ -55,6 +55,37 @@ class DailyCap extends Equatable {
         status,
         latestInsight,
       ];
+
+  /// 序列化为JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'date': date.toIso8601String(),
+      'referenceAmount': referenceAmount,
+      'currentSpending': currentSpending,
+      'percentage': percentage,
+      'status': status.name,
+      'latestInsight': latestInsight?.toJson(),
+    };
+  }
+
+  /// 从JSON反序列化
+  factory DailyCap.fromJson(Map<String, dynamic> json) {
+    return DailyCap(
+      id: json['id'] as String,
+      date: DateTime.parse(json['date'] as String),
+      referenceAmount: (json['referenceAmount'] as num).toDouble(),
+      currentSpending: (json['currentSpending'] as num).toDouble(),
+      percentage: (json['percentage'] as num).toDouble(),
+      status: CapStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => CapStatus.safe,
+      ),
+      latestInsight: json['latestInsight'] != null
+          ? MicroInsight.fromJson(json['latestInsight'] as Map<String, dynamic>)
+          : null,
+    );
+  }
 }
 
 /// Status of daily spending cap

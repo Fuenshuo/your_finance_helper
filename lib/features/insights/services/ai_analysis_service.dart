@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';

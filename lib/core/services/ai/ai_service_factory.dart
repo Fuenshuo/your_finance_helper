@@ -41,4 +41,3 @@ class AiServiceFactoryImpl implements AiServiceFactory {
 
 /// 全局AI服务工厂实例
 final aiServiceFactory = AiServiceFactoryImpl();
-

@@ -4,17 +4,17 @@ import 'standard_list_item.dart';
 
 /// 可操作列表项 (ActionableListItemStyle)
 /// 右侧有操作按钮（编辑、删除等），用于需要操作的列表项
-/// 
+///
 /// **应用场景：**
 /// - 奖金列表、福利列表等需要编辑/删除的列表项
 /// - 所有需要操作按钮的列表项
 class ActionableListItem extends StandardListItem {
   /// 右侧操作按钮列表
   final List<Widget> actions;
-  
+
   /// 副标题（显示在标题下方）
   final String? subtitle;
-  
+
   /// 副标题样式
   final TextStyle? subtitleStyle;
 
@@ -34,7 +34,7 @@ class ActionableListItem extends StandardListItem {
     if (subtitle == null) {
       return super.buildLeading(context);
     }
-    
+
     // 当有 subtitle 时，需要自定义布局
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,14 +81,16 @@ class ActionableListItem extends StandardListItem {
   Widget build(BuildContext context) {
     // 如果有副标题，使用更大的最小高度，但不固定高度
     final minHeight = subtitle != null ? 80.0 : 56.0;
-    
+
     return Container(
       constraints: BoxConstraints(
         minHeight: minHeight,
       ),
       padding: EdgeInsets.symmetric(
         horizontal: AppDesignTokens.globalHorizontalPadding,
-        vertical: subtitle != null ? AppDesignTokens.spacing12 : AppDesignTokens.spacingMedium,
+        vertical: subtitle != null
+            ? AppDesignTokens.spacing12
+            : AppDesignTokens.spacingMedium,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -99,7 +101,8 @@ class ActionableListItem extends StandardListItem {
           ),
           SizedBox(width: AppDesignTokens.spacing12),
           Padding(
-            padding: EdgeInsets.only(top: subtitle != null ? AppDesignTokens.spacing4 : 0),
+            padding: EdgeInsets.only(
+                top: subtitle != null ? AppDesignTokens.spacing4 : 0),
             child: buildTrailing(context),
           ),
         ],
@@ -107,4 +110,3 @@ class ActionableListItem extends StandardListItem {
     );
   }
 }
-

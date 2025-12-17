@@ -55,7 +55,7 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton>
       // SharpProfessional: 紧凑且略深的阴影，避免柔和的大面积扩散
       return [
         BoxShadow(
-          color: Colors.black.withOpacity(0.25), // 略深的阴影
+          color: Colors.black.withValues(alpha: 0.25), // 略深的阴影
           blurRadius: 8, // 紧凑的模糊半径
           offset: const Offset(0, 4), // 清晰的偏移
         ),
@@ -64,7 +64,7 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton>
       // iOS Fintech: 柔和的扩散阴影
       return [
         BoxShadow(
-          color: AppDesignTokens.primaryAction(context).withOpacity(0.2),
+          color: AppDesignTokens.primaryAction(context).withValues(alpha: 0.2),
           blurRadius: 16,
           offset: const Offset(0, 8),
           spreadRadius: -2,
@@ -97,7 +97,7 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton>
                 horizontal: 24,
               ), // 水平内边距，确保按钮有合适的宽度
               decoration: BoxDecoration(
-                color: isDisabled ? bgColor.withOpacity(0.5) : bgColor,
+                color: isDisabled ? bgColor.withValues(alpha: 0.5) : bgColor,
                 borderRadius: BorderRadius.circular(
                   AppDesignTokens.radiusMedium(context),
                 ), // 16pt 圆角（iOS Fintech）或 8pt（SharpProfessional）

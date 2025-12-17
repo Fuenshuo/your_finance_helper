@@ -20,7 +20,6 @@ class FamilyInfoHomeScreen extends StatefulWidget {
 
 class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
   List<SalaryIncome> _salaryIncomes = [];
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -35,12 +34,9 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
 
       setState(() {
         _salaryIncomes = salaries;
-        _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      // Handle error if needed
     }
   }
 
@@ -53,17 +49,12 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
 
     Navigator.of(context)
         .push(
-      AppAnimations.createRoute(
+      AppAnimations.createRoute<void>(
         SalaryIncomeSetupScreen(
           salaryIncomeToEdit: salaryIncomeToEdit,
         ),
       ),
-    )
-        .then((result) {
-      if (result == true) {
-        _loadSalaryIncomes(); // 返回后重新加载数据
-      }
-    });
+    );
   }
 
   @override
@@ -129,7 +120,7 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
                     color: const Color(0xFF4ECDC4),
                     onTap: () {
                       Navigator.of(context).push(
-                        AppAnimations.createRoute(
+                        AppAnimations.createRoute<void>(
                           const AssetManagementScreen(),
                         ),
                       );
@@ -145,7 +136,7 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
                     color: const Color(0xFF45B7D1),
                     onTap: () {
                       Navigator.of(context).push(
-                        AppAnimations.createRoute(
+                        AppAnimations.createRoute<void>(
                           const WalletManagementScreen(),
                         ),
                       );
@@ -161,7 +152,7 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
                     color: const Color(0xFF9B59B6),
                     onTap: () {
                       Navigator.of(context).push(
-                        AppAnimations.createRoute(
+                        AppAnimations.createRoute<void>(
                           ClearanceHomeScreen(),
                         ),
                       );
@@ -243,7 +234,7 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
               Container(
                 padding: EdgeInsets.all(context.responsiveSpacing12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/utils/salary_form_validators.dart';
-import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/composite/input_with_action_button.dart';
@@ -15,7 +14,7 @@ class SalaryHistoryWidget extends StatefulWidget {
   });
   final TextEditingController basicSalaryController;
   final Map<DateTime, double> salaryHistory;
-  final Function(Map<DateTime, double>) onHistoryChanged;
+  final void Function(Map<DateTime, double>) onHistoryChanged;
 
   @override
   State<SalaryHistoryWidget> createState() => _SalaryHistoryWidgetState();
@@ -57,7 +56,8 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                     ),
                     tooltip: '工资历史',
                     style: IconButton.styleFrom(
-                      backgroundColor: AppDesignTokens.primaryAction(context).withOpacity(0.1),
+                      backgroundColor: AppDesignTokens.primaryAction(context)
+                          .withValues(alpha: 0.1),
                       padding: const EdgeInsets.all(12),
                     ),
                   ),
@@ -67,10 +67,13 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   Container(
                     padding: EdgeInsets.all(AppDesignTokens.spacing8),
                     decoration: BoxDecoration(
-                      color: AppDesignTokens.primaryAction(context).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+                      color: AppDesignTokens.primaryAction(context)
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(
+                          AppDesignTokens.radiusMedium(context)),
                       border: Border.all(
-                        color: AppDesignTokens.primaryAction(context).withOpacity(0.3),
+                        color: AppDesignTokens.primaryAction(context)
+                            .withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -100,7 +103,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
       );
 
   void _showSalaryHistoryDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -139,7 +142,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   Container(
                     padding: EdgeInsets.all(AppDesignTokens.spacing16),
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Center(
@@ -189,9 +192,9 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
         margin: EdgeInsets.only(bottom: AppDesignTokens.spacing8),
         padding: EdgeInsets.all(AppDesignTokens.spacing12),
         decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
+          color: Colors.blue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue.withOpacity(0.3)),
+          border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -256,7 +259,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
       }
     }
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setInnerState) => AlertDialog(
@@ -329,7 +332,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
     var selectedDate = entry.key;
     var newSalary = entry.value;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setInnerState) => AlertDialog(

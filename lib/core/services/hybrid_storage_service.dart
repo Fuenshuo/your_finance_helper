@@ -6,17 +6,34 @@ import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/currency.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/services/base_service.dart';
 import 'package:your_finance_flutter/core/services/persistent_storage_service.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
 
 /// 混合存储服务 - 优先使用文件系统，回退到SharedPreferences
 /// 这样在开发过程中数据更持久，重新安装应用时也能保留数据
-class HybridStorageService {
+class HybridStorageService extends BaseService {
   HybridStorageService._();
 
   static HybridStorageService? _instance;
   static PersistentStorageService? _persistentStorage;
   static StorageService? _sharedPreferencesStorage;
+
+  bool _isInitialized = false;
+  bool _isLoading = false;
+  String? _lastError;
+
+  @override
+  bool get isInitialized => _isInitialized;
+
+  @override
+  bool get isLoading => _isLoading;
+
+  @override
+  String? get lastError => _lastError;
+
+  @override
+  String get serviceName => 'HybridStorageService';
 
   static Future<HybridStorageService> getInstance() async {
     _instance ??= HybridStorageService._();
@@ -31,6 +48,86 @@ class HybridStorageService {
 
     return _instance!;
   }
+
+  @override
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    _isLoading = true;
+    try {
+      // The initialization is already done in getInstance()
+      _isInitialized = true;
+      _lastError = null;
+    } catch (e) {
+      _lastError = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> reset() async {
+    _isLoading = true;
+    try {
+      // Reset storage services
+      if (_persistentStorage != null) {
+        await _persistentStorage!.reset();
+      }
+      if (_sharedPreferencesStorage != null) {
+        await _sharedPreferencesStorage!.reset();
+      }
+      _lastError = null;
+    } catch (e) {
+      _lastError = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    // Dispose of storage services
+    if (_persistentStorage != null) {
+      await _persistentStorage!.dispose();
+    }
+    if (_sharedPreferencesStorage != null) {
+      await _sharedPreferencesStorage!.dispose();
+    }
+    _isInitialized = false;
+  }
+
+  @override
+  Future<bool> healthCheck() async {
+    try {
+      // Check if both storage services are healthy
+      var persistentHealthy = true;
+      var sharedHealthy = true;
+
+      if (_persistentStorage != null) {
+        persistentHealthy = await _persistentStorage!.healthCheck();
+      }
+      if (_sharedPreferencesStorage != null) {
+        sharedHealthy = await _sharedPreferencesStorage!.healthCheck();
+      }
+
+      return persistentHealthy && sharedHealthy;
+    } catch (e) {
+      _lastError = e.toString();
+      return false;
+    }
+  }
+
+  @override
+  Map<String, dynamic> getStats() => {
+        'serviceName': serviceName,
+        'isInitialized': isInitialized,
+        'isLoading': isLoading,
+        'hasPersistentStorage': _persistentStorage != null,
+        'hasSharedPreferencesStorage': _sharedPreferencesStorage != null,
+        'lastError': lastError,
+      };
 
   // 资产相关方法
   Future<void> saveAssets(List<AssetItem> assets) async {
@@ -203,6 +300,64 @@ class HybridStorageService {
     }
 
     return sharedPrefsBudgets;
+  }
+
+  // 薪资收入相关方法
+  Future<void> saveSalaryIncomes(List<SalaryIncome> incomes) async {
+    if (kIsWeb) {
+      await _sharedPreferencesStorage!.saveSalaryIncomes(incomes);
+    } else {
+      await _persistentStorage!.saveSalaryIncomes(incomes);
+      await _sharedPreferencesStorage!.saveSalaryIncomes(incomes);
+    }
+  }
+
+  Future<List<SalaryIncome>> loadSalaryIncomes() async {
+    if (kIsWeb) {
+      return _sharedPreferencesStorage!.loadSalaryIncomes();
+    }
+
+    final persistentIncomes = await _persistentStorage!.loadSalaryIncomes();
+    if (persistentIncomes.isNotEmpty) {
+      return persistentIncomes;
+    }
+
+    final sharedPrefsIncomes =
+        await _sharedPreferencesStorage!.loadSalaryIncomes();
+    if (sharedPrefsIncomes.isNotEmpty) {
+      await _persistentStorage!.saveSalaryIncomes(sharedPrefsIncomes);
+    }
+
+    return sharedPrefsIncomes;
+  }
+
+  // 月度钱包相关方法
+  Future<void> saveMonthlyWallets(List<MonthlyWallet> wallets) async {
+    if (kIsWeb) {
+      await _sharedPreferencesStorage!.saveMonthlyWallets(wallets);
+    } else {
+      await _persistentStorage!.saveMonthlyWallets(wallets);
+      await _sharedPreferencesStorage!.saveMonthlyWallets(wallets);
+    }
+  }
+
+  Future<List<MonthlyWallet>> loadMonthlyWallets() async {
+    if (kIsWeb) {
+      return _sharedPreferencesStorage!.loadMonthlyWallets();
+    }
+
+    final persistentWallets = await _persistentStorage!.loadMonthlyWallets();
+    if (persistentWallets.isNotEmpty) {
+      return persistentWallets;
+    }
+
+    final sharedPrefsWallets =
+        await _sharedPreferencesStorage!.loadMonthlyWallets();
+    if (sharedPrefsWallets.isNotEmpty) {
+      await _persistentStorage!.saveMonthlyWallets(sharedPrefsWallets);
+    }
+
+    return sharedPrefsWallets;
   }
 
   // 币种相关方法

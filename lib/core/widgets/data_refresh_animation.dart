@@ -237,7 +237,8 @@ class _BlinkIndicatorState extends State<BlinkIndicator>
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: widget.blinkColor.withOpacity(_animation.value * 0.3),
+                color:
+                    widget.blinkColor.withValues(alpha: _animation.value * 0.3),
                 blurRadius: 8 * _animation.value,
                 spreadRadius: 2 * _animation.value,
               ),

@@ -337,7 +337,7 @@ class _UnifiedTransactionEntryScreenState
     if (!parsed.isValid) {
       final guidance = _guidanceFromNextStuff(
         parsed,
-        '请输入更完整的描述，例如 “星巴克 35”',
+        '请输入更完整的描述，例如 "星巴克 35"',
       );
       _showToast(guidance, isError: true);
       _inputCollapseController.reverse();
@@ -345,6 +345,7 @@ class _UnifiedTransactionEntryScreenState
       return;
     }
 
+    // 显示草稿确认界面，让用户确认AI解析的结果
     setState(() {
       _draftTransaction = parsed;
       _draftDate = parsed.date ?? DateTime.now();
@@ -631,7 +632,7 @@ class _UnifiedTransactionEntryScreenState
                 height: 1.3,
               );
           final hintColor =
-              context.fluxSecondaryText.withOpacity(isDark ? 0.75 : 0.6);
+              context.fluxSecondaryText.withValues(alpha: isDark ? 0.75 : 0.6);
           final inputFillColor = AppDesignTokens.inputFill(context);
 
           return Positioned(
@@ -649,8 +650,8 @@ class _UnifiedTransactionEntryScreenState
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        context.fluxPageBackground.withOpacity(0),
-                        context.fluxPageBackground.withOpacity(0.9),
+                        context.fluxPageBackground.withValues(alpha: 0),
+                        context.fluxPageBackground.withValues(alpha: 0.9),
                       ],
                       stops: const [0.0, 0.3],
                     ),
@@ -665,7 +666,7 @@ class _UnifiedTransactionEntryScreenState
                       borderRadius: BorderRadius.circular(32),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
@@ -756,11 +757,11 @@ class _UnifiedTransactionEntryScreenState
                       ),
                       margin: const EdgeInsets.symmetric(horizontal: 24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1C1C1E).withOpacity(0.96),
+                        color: const Color(0xFF1C1C1E).withValues(alpha: 0.96),
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -887,7 +888,7 @@ class _UnifiedTransactionEntryScreenState
         .fadeIn(duration: 240.ms)
         .shimmer(
           duration: 1.seconds,
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
         );
   }
 
@@ -925,11 +926,11 @@ class _UnifiedTransactionEntryScreenState
         color: context.fluxSurface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: context.fluxPrimaryAction.withOpacity(0.1),
+          color: context.fluxPrimaryAction.withValues(alpha: 0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: context.fluxPrimaryAction.withOpacity(0.15),
+            color: context.fluxPrimaryAction.withValues(alpha: 0.15),
             blurRadius: 40,
             offset: const Offset(0, 10),
           ),
@@ -1034,7 +1035,7 @@ class _UnifiedTransactionEntryScreenState
             color: context.fluxSurface,
             shape: BoxShape.circle,
             border: Border.all(
-              color: context.fluxSecondaryText.withOpacity(0.2),
+              color: context.fluxSecondaryText.withValues(alpha: 0.2),
             ),
           ),
           child: IconButton(
@@ -1070,7 +1071,7 @@ class _UnifiedTransactionEntryScreenState
                   ? [
                       BoxShadow(
                         color: context.fluxPrimaryAction
-                            .withOpacity(0.4 * (1 - glow)),
+                            .withValues(alpha: 0.4 * (1 - glow)),
                         blurRadius: 30,
                         spreadRadius: 6,
                       ),
@@ -1585,9 +1586,10 @@ class _UnifiedTransactionEntryScreenState
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDark ? Colors.white.withOpacity(0.08) : Colors.white;
-    final borderColor =
-        isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5);
+        isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.white.withValues(alpha: 0.5);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
@@ -1629,10 +1631,10 @@ class _UnifiedTransactionEntryScreenState
     final isActive = viewState.isShowingInsights;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDark ? Colors.white.withOpacity(0.08) : Colors.white;
+        isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white;
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.12)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.05);
     final label = isActive ? 'Timeline' : 'Insights';
     final icon = isActive ? PhosphorIcons.arrowLeft() : PhosphorIcons.sparkle();
 
@@ -1692,14 +1694,14 @@ class _UnifiedTransactionEntryScreenState
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final capsuleColor = isDark
-        ? Colors.white.withOpacity(0.12)
-        : context.fluxSurface.withOpacity(0.65);
+        ? Colors.white.withValues(alpha: 0.12)
+        : context.fluxSurface.withValues(alpha: 0.65);
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.2)
-        : context.fluxSecondaryText.withOpacity(0.25);
+        ? Colors.white.withValues(alpha: 0.2)
+        : context.fluxSecondaryText.withValues(alpha: 0.25);
     final shadowColor = isDark
-        ? Colors.black.withOpacity(0.45)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.black.withValues(alpha: 0.45)
+        : Colors.black.withValues(alpha: 0.05);
     final iconColor = isDark ? Colors.white : context.fluxPrimaryAction;
 
     return Positioned(
@@ -1751,7 +1753,7 @@ class _UnifiedTransactionEntryScreenState
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -1761,7 +1763,7 @@ class _UnifiedTransactionEntryScreenState
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 30,
                   offset: const Offset(0, 20),
                 ),
@@ -1793,7 +1795,8 @@ class _UnifiedTransactionEntryScreenState
                             width: 36,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: context.fluxSecondaryText.withOpacity(0.2),
+                              color: context.fluxSecondaryText
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(999),
                             ),
                           ),
@@ -1811,7 +1814,8 @@ class _UnifiedTransactionEntryScreenState
                         child: Text(
                           '金额主题',
                           style: context.textTheme.labelMedium?.copyWith(
-                            color: context.fluxSecondaryText.withOpacity(0.6),
+                            color: context.fluxSecondaryText
+                                .withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -1837,7 +1841,8 @@ class _UnifiedTransactionEntryScreenState
                         subtitle: Text(
                           _moneyThemeDescription(moneyTheme),
                           style: context.textTheme.bodySmall?.copyWith(
-                            color: context.fluxSecondaryText.withOpacity(0.6),
+                            color: context.fluxSecondaryText
+                                .withValues(alpha: 0.6),
                           ),
                         ),
                         trailing: isSelected
@@ -1863,7 +1868,8 @@ class _UnifiedTransactionEntryScreenState
                         child: Text(
                           '显示模式',
                           style: context.textTheme.labelMedium?.copyWith(
-                            color: context.fluxSecondaryText.withOpacity(0.6),
+                            color: context.fluxSecondaryText
+                                .withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -1886,7 +1892,8 @@ class _UnifiedTransactionEntryScreenState
                         subtitle: Text(
                           _themeModeDescription(mode),
                           style: context.textTheme.bodySmall?.copyWith(
-                            color: context.fluxSecondaryText.withOpacity(0.6),
+                            color: context.fluxSecondaryText
+                                .withValues(alpha: 0.6),
                           ),
                         ),
                         trailing: isSelected
@@ -1954,7 +1961,7 @@ class _UnifiedTransactionEntryScreenState
                   width: 6,
                   decoration: BoxDecoration(
                     color: _isScrubbing
-                        ? Colors.black.withOpacity(0.18)
+                        ? Colors.black.withValues(alpha: 0.18)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(999),
                   ),
@@ -2110,7 +2117,7 @@ class _UnifiedTransactionEntryScreenState
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 30,
               offset: const Offset(0, 20),
             ),
@@ -2137,7 +2144,7 @@ class _UnifiedTransactionEntryScreenState
                     Text(
                       '${group.transactions.length} 笔记录',
                       style: context.textTheme.bodySmall?.copyWith(
-                        color: context.fluxSecondaryText.withOpacity(0.6),
+                        color: context.fluxSecondaryText.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -2149,7 +2156,7 @@ class _UnifiedTransactionEntryScreenState
                     Text(
                       '净现金流',
                       style: context.textTheme.bodySmall?.copyWith(
-                        color: context.fluxSecondaryText.withOpacity(0.6),
+                        color: context.fluxSecondaryText.withValues(alpha: 0.6),
                       ),
                     ),
                     const Gap(4),
@@ -2193,7 +2200,7 @@ class _UnifiedTransactionEntryScreenState
                     Container(
                       height: 8,
                       decoration: BoxDecoration(
-                        color: context.fluxSurface.withOpacity(0.6),
+                        color: context.fluxSurface.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -2202,7 +2209,8 @@ class _UnifiedTransactionEntryScreenState
                       height: 8,
                       width: width * incomeRatio,
                       decoration: BoxDecoration(
-                        color: context.fluxPositiveAmount.withOpacity(0.8),
+                        color:
+                            context.fluxPositiveAmount.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -2264,7 +2272,7 @@ class _UnifiedTransactionEntryScreenState
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 30,
               offset: const Offset(0, 20),
             ),
@@ -2290,7 +2298,7 @@ class _UnifiedTransactionEntryScreenState
                     Text(
                       '7天收入 / 支出趋势',
                       style: context.textTheme.bodySmall?.copyWith(
-                        color: context.fluxSecondaryText.withOpacity(0.6),
+                        color: context.fluxSecondaryText.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -2302,7 +2310,7 @@ class _UnifiedTransactionEntryScreenState
                     Text(
                       '净现金流',
                       style: context.textTheme.bodySmall?.copyWith(
-                        color: context.fluxSecondaryText.withOpacity(0.6),
+                        color: context.fluxSecondaryText.withValues(alpha: 0.6),
                       ),
                     ),
                     const Gap(4),
@@ -2345,7 +2353,8 @@ class _UnifiedTransactionEntryScreenState
                             width: 16,
                             margin: const EdgeInsets.symmetric(vertical: 6),
                             decoration: BoxDecoration(
-                              color: context.fluxSecondaryText.withOpacity(0.2),
+                              color: context.fluxSecondaryText
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(999),
                             ),
                           ),
@@ -2433,7 +2442,7 @@ class _UnifiedTransactionEntryScreenState
         width: 6,
         height: 6,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           shape: BoxShape.circle,
         ),
       );
@@ -2470,7 +2479,7 @@ class _UnifiedTransactionEntryScreenState
         incomeCategories.isEmpty ? 1.0 : incomeCategories.first.amount;
     final maxExpenseAmount =
         expenseCategories.isEmpty ? 1.0 : expenseCategories.first.amount;
-    final mutedTextColor = context.fluxSecondaryText.withOpacity(0.6);
+    final mutedTextColor = context.fluxSecondaryText.withValues(alpha: 0.6);
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 320),
@@ -2484,7 +2493,7 @@ class _UnifiedTransactionEntryScreenState
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 30,
               offset: const Offset(0, 20),
             ),
@@ -2603,8 +2612,9 @@ class _UnifiedTransactionEntryScreenState
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: color.withOpacity(
-              Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.08,
+            color: color.withValues(
+              alpha:
+                  Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.08,
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -2614,8 +2624,10 @@ class _UnifiedTransactionEntryScreenState
               Text(
                 label,
                 style: context.textTheme.bodySmall?.copyWith(
-                  color: color.withOpacity(
-                    Theme.of(context).brightness == Brightness.dark ? 0.9 : 0.7,
+                  color: color.withValues(
+                    alpha: Theme.of(context).brightness == Brightness.dark
+                        ? 0.9
+                        : 0.7,
                   ),
                 ),
               ),
@@ -2641,7 +2653,7 @@ class _UnifiedTransactionEntryScreenState
     required String emptyPlaceholder,
   }) {
     final labelStyle = context.textTheme.bodySmall?.copyWith(
-      color: context.fluxSecondaryText.withOpacity(0.7),
+      color: context.fluxSecondaryText.withValues(alpha: 0.7),
       fontWeight: FontWeight.w600,
     );
     return Column(
@@ -2653,7 +2665,7 @@ class _UnifiedTransactionEntryScreenState
           Text(
             emptyPlaceholder,
             style: context.textTheme.bodySmall?.copyWith(
-              color: context.fluxSecondaryText.withOpacity(0.5),
+              color: context.fluxSecondaryText.withValues(alpha: 0.5),
             ),
           )
         else
@@ -2678,7 +2690,7 @@ class _UnifiedTransactionEntryScreenState
     final progress =
         maxAmount == 0 ? 0.0 : (summary.amount / maxAmount).clamp(0.0, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bubbleColor = barColor.withOpacity(isDark ? 0.25 : 0.12);
+    final bubbleColor = barColor.withValues(alpha: isDark ? 0.25 : 0.12);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -2736,8 +2748,8 @@ class _UnifiedTransactionEntryScreenState
               value: progress,
               minHeight: 6,
               backgroundColor: isDark
-                  ? Colors.white.withOpacity(0.15)
-                  : context.fluxSurface.withOpacity(0.3),
+                  ? Colors.white.withValues(alpha: 0.15)
+                  : context.fluxSurface.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(barColor),
             ),
           ),
@@ -2891,8 +2903,8 @@ class _UnifiedTransactionEntryScreenState
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconBackground = isDark
-        ? Colors.white.withOpacity(0.1)
-        : context.fluxPrimaryAction.withOpacity(0.1);
+        ? Colors.white.withValues(alpha: 0.1)
+        : context.fluxPrimaryAction.withValues(alpha: 0.1);
     final iconColor = isDark ? Colors.white : context.fluxPrimaryAction;
     final isExpense = _isExpense(transaction);
     final isIncome = _isIncome(transaction);
@@ -3019,7 +3031,7 @@ class _UnifiedTransactionEntryScreenState
       curve: Curves.easeOutCubic,
       builder: (context, value, child) {
         final overlayColor = Color.lerp(
-          context.fluxPrimaryAction.withOpacity(0.18),
+          context.fluxPrimaryAction.withValues(alpha: 0.18),
           Colors.transparent,
           value,
         )!;
@@ -3098,7 +3110,7 @@ class _UnifiedTransactionEntryScreenState
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.25),
+              color: color.withValues(alpha: 0.25),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),
@@ -3120,7 +3132,7 @@ class _UnifiedTransactionEntryScreenState
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 24,
               offset: const Offset(0, 16),
             ),
@@ -3752,7 +3764,7 @@ class _ScrubBubble extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.85),
+          color: Colors.black.withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -4164,7 +4176,7 @@ class _RainbowBorderPainter extends CustomPainter {
         const Color(0xFFF562A7),
         const Color(0xFFFFA751),
         const Color(0xFF2F80ED),
-      ].map((color) => color.withOpacity(activeIntensity)).toList(),
+      ].map((color) => color.withValues(alpha: activeIntensity)).toList(),
       stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
       transform: GradientRotation(rotation),
     );

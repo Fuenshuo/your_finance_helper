@@ -10,7 +10,6 @@ import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/total_assets_service.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/app_empty_state.dart';
 // Removed legacy imports - Flux dashboard should not depend on legacy components
@@ -101,7 +100,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
           final totalBudget = budgetProvider.calculateTotalBudgetAllocated();
           final totalSpent = budgetProvider.calculateTotalBudgetSpent();
           final remainingBudget = totalBudget - totalSpent;
-          final budgetProgress = totalBudget > 0 ? totalSpent / totalBudget : 0.0;
+          final budgetProgress =
+              totalBudget > 0 ? totalSpent / totalBudget : 0.0;
 
           return AppCard(
             child: Column(
@@ -122,10 +122,11 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                           children: [
                             Text(
                               context.formatAmount(totalAssets),
-                              style: AppTextStyles.headlineMedium(context).copyWith(
+                              style: AppTextStyles.headlineMedium(context)
+                                  .copyWith(
                                 fontWeight: AppDesignTokens.fontWeightBold,
                                 color: totalAssets >= 0
-                                        ? AppDesignTokens.successColor(context)
+                                    ? AppDesignTokens.successColor(context)
                                     : AppDesignTokens.errorColor,
                               ),
                             ),
@@ -154,7 +155,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                             fontSize: AppDesignTokens.fontSize24,
                             fontWeight: AppDesignTokens.fontWeightBold,
                             color: monthlyBalance >= 0
-                                        ? AppDesignTokens.successColor(context)
+                                ? AppDesignTokens.successColor(context)
                                 : AppDesignTokens.errorColor,
                           ),
                         ),
@@ -178,7 +179,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                         '剩余 ${context.formatAmount(remainingBudget)}',
                         style: AppTextStyles.bodySmall(context).copyWith(
                           color: remainingBudget > 0
-                                        ? AppDesignTokens.successColor(context)
+                              ? AppDesignTokens.successColor(context)
                               : AppDesignTokens.errorColor,
                           fontWeight: AppDesignTokens.fontWeightMedium,
                         ),
@@ -187,14 +188,15 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                   ),
                   SizedBox(height: AppDesignTokens.spacing8),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(AppDesignTokens.borderRadius4),
+                    borderRadius:
+                        BorderRadius.circular(AppDesignTokens.borderRadius4),
                     child: LinearProgressIndicator(
                       value: budgetProgress.clamp(0.0, 1.0),
                       minHeight: 8,
                       backgroundColor: AppDesignTokens.dividerColor(context),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         budgetProgress < 0.7
-                                        ? AppDesignTokens.successColor(context)
+                            ? AppDesignTokens.successColor(context)
                             : budgetProgress < 0.9
                                 ? AppDesignTokens.warningColor
                                 : AppDesignTokens.errorColor,
@@ -327,8 +329,9 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
               Container(
                 padding: EdgeInsets.all(AppDesignTokens.spacing8),
                 decoration: BoxDecoration(
-                  color: item.color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppDesignTokens.borderRadius8),
+                  color: item.color.withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(AppDesignTokens.borderRadius8),
                 ),
                 child: Icon(
                   item.icon,
@@ -400,9 +403,10 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                   )
                 else
                   ...displayTransactions.map((transaction) {
-                    final isIncome = transaction.type == TransactionType.income ||
-                        (transaction.type == null &&
-                            transaction.category.isIncome);
+                    final isIncome =
+                        transaction.type == TransactionType.income ||
+                            (transaction.type == null &&
+                                transaction.category.isIncome);
                     final accountName = _getAccountName(
                       transaction.fromAccountId ?? '',
                     );
@@ -416,15 +420,18 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                             height: 40,
                             decoration: BoxDecoration(
                               color: (isIncome
-                                        ? AppDesignTokens.successColor(context)
+                                      ? AppDesignTokens.successColor(context)
                                       : AppDesignTokens.errorColor)
-                                  .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(AppDesignTokens.borderRadius8),
+                                  .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(
+                                  AppDesignTokens.borderRadius8),
                             ),
                             child: Icon(
-                              isIncome ? Icons.trending_up : Icons.trending_down,
+                              isIncome
+                                  ? Icons.trending_up
+                                  : Icons.trending_down,
                               color: isIncome
-                                        ? AppDesignTokens.successColor(context)
+                                  ? AppDesignTokens.successColor(context)
                                   : AppDesignTokens.errorColor,
                               size: AppDesignTokens.iconSizeMedium,
                             ),
@@ -441,11 +448,13 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                           ),
                           trailing: Text(
                             context.formatAmount(
-                              isIncome ? transaction.amount : -transaction.amount,
+                              isIncome
+                                  ? transaction.amount
+                                  : -transaction.amount,
                             ),
                             style: AppTextStyles.bodyMedium(context).copyWith(
                               color: isIncome
-                                        ? AppDesignTokens.successColor(context)
+                                  ? AppDesignTokens.successColor(context)
                                   : AppDesignTokens.errorColor,
                               fontWeight: AppDesignTokens.fontWeightSemiBold,
                             ),
@@ -454,7 +463,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                             // TODO: Implement Flux-compatible transaction detail view
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Transaction: ${transaction.description}'),
+                                content: Text(
+                                    'Transaction: ${transaction.description}'),
                                 duration: const Duration(seconds: 2),
                               ),
                             );
@@ -507,4 +517,3 @@ class ActionableItem {
   final Color color;
   final VoidCallback onTap;
 }
-

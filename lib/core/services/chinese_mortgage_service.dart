@@ -240,7 +240,6 @@ class ChineseMortgageService {
 
     // 确定还款周期（取较长的年限）
     final maxYears = max(commercialYears, gongjijinYears);
-    final maxMonths = maxYears * 12;
 
     // 计算月供总和（在还款期间内）
     final totalMonthlyPayment =

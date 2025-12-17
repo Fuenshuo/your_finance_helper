@@ -34,7 +34,6 @@ class InputDock extends ConsumerStatefulWidget {
 
 class _InputDockState extends ConsumerState<InputDock>
     with SingleTickerProviderStateMixin {
-
   late final TextEditingController _textController;
   late final AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
@@ -138,7 +137,9 @@ class _InputDockState extends ConsumerState<InputDock>
                   return Transform.scale(
                     scale: _scaleAnimation.value,
                     child: SendButton(
-                      onPressed: _textController.text.trim().isNotEmpty ? _onSendPressed : null,
+                      onPressed: _textController.text.trim().isNotEmpty
+                          ? _onSendPressed
+                          : null,
                       isLoading: entryState.isParsing,
                     ),
                   );
@@ -158,7 +159,7 @@ class _InputDockState extends ConsumerState<InputDock>
     );
   }
 
-  Widget _buildStatusIndicator(entryState) {
+  Widget _buildStatusIndicator(dynamic entryState) {
     if (entryState.parseError != null) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -223,4 +224,3 @@ class _InputDockState extends ConsumerState<InputDock>
     );
   }
 }
-

@@ -31,7 +31,6 @@ void main() async {
 
       // 尝试解析
       try {
-        final jsonData = transactionsData as String;
         print('  ✅ 数据格式正确');
       } catch (e) {
         print('  ❌ 数据格式错误: $e');

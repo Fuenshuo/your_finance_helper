@@ -17,7 +17,6 @@ class SendButton extends StatefulWidget {
 
 class _SendButtonState extends State<SendButton>
     with SingleTickerProviderStateMixin {
-
   late final AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
 
@@ -119,4 +118,3 @@ class _SendButtonState extends State<SendButton>
     );
   }
 }
-

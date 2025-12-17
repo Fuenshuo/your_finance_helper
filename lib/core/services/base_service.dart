@@ -38,7 +38,8 @@ class ServiceInitializationException implements Exception {
   final dynamic cause;
 
   @override
-  String toString() => 'ServiceInitializationException: $message${cause != null ? ' (cause: $cause)' : ''}';
+  String toString() =>
+      'ServiceInitializationException: $message${cause != null ? ' (cause: $cause)' : ''}';
 }
 
 /// 服务操作异常
@@ -50,7 +51,8 @@ class ServiceOperationException implements Exception {
   final dynamic cause;
 
   @override
-  String toString() => 'ServiceOperationException: $message${operation != null ? ' (operation: $operation)' : ''}${cause != null ? ' (cause: $cause)' : ''}';
+  String toString() =>
+      'ServiceOperationException: $message${operation != null ? ' (operation: $operation)' : ''}${cause != null ? ' (cause: $cause)' : ''}';
 }
 
 /// 服务状态枚举
@@ -204,7 +206,7 @@ class ServiceManager {
   Future<void> initializeAllServices() async {
     debugPrint('🔄 开始初始化所有服务...');
 
-    final initFutures = <Future>[];
+    final initFutures = <Future<void>>[];
     for (final entry in _services.entries) {
       initFutures.add(_initializeService(entry.key, entry.value));
     }
@@ -227,7 +229,8 @@ class ServiceManager {
   }
 
   /// 获取所有服务状态
-  Map<String, ServiceState> getAllServiceStates() => Map.unmodifiable(_serviceStates);
+  Map<String, ServiceState> getAllServiceStates() =>
+      Map.unmodifiable(_serviceStates);
 
   /// 获取服务统计信息
   Map<String, dynamic> getServiceStats() {
@@ -256,7 +259,7 @@ class ServiceManager {
   Future<void> disposeAllServices() async {
     debugPrint('🧹 开始清理所有服务...');
 
-    final disposeFutures = <Future>[];
+    final disposeFutures = <Future<void>>[];
     for (final service in _services.values) {
       disposeFutures.add(service.dispose());
     }
@@ -315,7 +318,8 @@ class ServiceRegistry {
   }
 
   /// 获取服务工厂
-  ServiceFactory<T, C>? getFactory<T extends BaseService, C extends ServiceConfig>() {
+  ServiceFactory<T, C>?
+      getFactory<T extends BaseService, C extends ServiceConfig>() {
     return _factories[T] as ServiceFactory<T, C>?;
   }
 

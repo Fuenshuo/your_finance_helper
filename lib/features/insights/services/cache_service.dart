@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
@@ -48,7 +47,7 @@ class CacheService {
 
   CacheService._();
 
-  final Map<String, CacheEntry> _memoryCache = {};
+  final Map<String, CacheEntry<dynamic>> _memoryCache = {};
   SharedPreferences? _prefs;
 
   Future<void> initialize() async {
@@ -73,8 +72,8 @@ class CacheService {
             await _prefs!.remove(key);
           }
         }
-      } on Exception catch (e) {
-        // debugPrint('Error loading cache entry $key: $e');
+      } catch (e) {
+        // Remove corrupted cache entry
         await _prefs!.remove(key);
       }
     }
@@ -99,7 +98,8 @@ class CacheService {
   }
 
   /// Cache weekly insights
-  Future<void> cacheWeeklyInsights(String userId, List<WeeklyAnomaly> anomalies) async {
+  Future<void> cacheWeeklyInsights(
+      String userId, List<WeeklyAnomaly> anomalies) async {
     await _cacheData(
       'weekly_insights_$userId',
       anomalies,
@@ -117,7 +117,8 @@ class CacheService {
   }
 
   /// Cache monthly health score
-  Future<void> cacheMonthlyHealth(String userId, MonthlyHealthScore health) async {
+  Future<void> cacheMonthlyHealth(
+      String userId, MonthlyHealthScore health) async {
     await _cacheData(
       'monthly_health_$userId',
       health,
@@ -135,7 +136,8 @@ class CacheService {
   }
 
   /// Cache micro insights
-  Future<void> cacheMicroInsights(String userId, List<MicroInsight> insights) async {
+  Future<void> cacheMicroInsights(
+      String userId, List<MicroInsight> insights) async {
     await _cacheData(
       'micro_insights_$userId',
       insights,
@@ -208,8 +210,6 @@ class CacheService {
 
   /// Clean up expired and old entries
   Future<void> _cleanupIfNeeded() async {
-    final now = DateTime.now();
-
     // Remove expired entries
     final expiredKeys = _memoryCache.entries
         .where((entry) => entry.value.isExpired)
@@ -228,7 +228,8 @@ class CacheService {
       final sortedEntries = _memoryCache.entries.toList()
         ..sort((a, b) => a.value.timestamp.compareTo(b.value.timestamp));
 
-      final toRemove = sortedEntries.take(_memoryCache.length - _maxCacheSize + 10);
+      final toRemove =
+          sortedEntries.take(_memoryCache.length - _maxCacheSize + 10);
       for (final entry in toRemove) {
         _memoryCache.remove(entry.key);
         if (_prefs != null) {
@@ -242,7 +243,8 @@ class CacheService {
   Future<void> clearAllCache() async {
     _memoryCache.clear();
     if (_prefs != null) {
-      final keys = _prefs!.getKeys().where((key) => key.startsWith(_cachePrefix));
+      final keys =
+          _prefs!.getKeys().where((key) => key.startsWith(_cachePrefix));
       for (final key in keys) {
         await _prefs!.remove(key);
       }
@@ -251,9 +253,8 @@ class CacheService {
 
   /// Clear cache for specific user
   Future<void> clearUserCache(String userId) async {
-    final userKeys = _memoryCache.keys
-        .where((key) => key.contains('_${userId}_'))
-        .toList();
+    final userKeys =
+        _memoryCache.keys.where((key) => key.contains('_${userId}_')).toList();
 
     for (final key in userKeys) {
       _memoryCache.remove(key);
@@ -267,14 +268,20 @@ class CacheService {
   Map<String, dynamic> getCacheStats() {
     final now = DateTime.now();
     final totalEntries = _memoryCache.length;
-    final expiredEntries = _memoryCache.values.where((entry) => entry.isExpired).length;
+    final expiredEntries =
+        _memoryCache.values.where((entry) => entry.isExpired).length;
     final validEntries = totalEntries - expiredEntries;
 
     // Calculate average age of valid entries
-    final validEntriesList = _memoryCache.values.where((entry) => !entry.isExpired).toList();
+    final validEntriesList =
+        _memoryCache.values.where((entry) => !entry.isExpired).toList();
     final averageAge = validEntriesList.isEmpty
         ? 0.0
-        : validEntriesList.fold<double>(0, (sum, entry) => sum + now.difference(entry.timestamp).inMinutes) / validEntriesList.length;
+        : validEntriesList.fold<double>(
+                0,
+                (sum, entry) =>
+                    sum + now.difference(entry.timestamp).inMinutes) /
+            validEntriesList.length;
 
     return {
       'totalEntries': totalEntries,
@@ -287,23 +294,25 @@ class CacheService {
 
   // Serialization methods
   String _serializeDailyCap(DailyCap cap) => jsonEncode(cap.toJson());
-  DailyCap _deserializeDailyCap(String json) => DailyCap.fromJson(jsonDecode(json));
+  DailyCap _deserializeDailyCap(String json) =>
+      DailyCap.fromJson(jsonDecode(json) as Map<String, dynamic>);
 
   String _serializeWeeklyAnomalies(List<WeeklyAnomaly> anomalies) =>
       jsonEncode(anomalies.map((a) => a.toJson()).toList());
   List<WeeklyAnomaly> _deserializeWeeklyAnomalies(String json) =>
-      (jsonDecode(json) as List).map((a) => WeeklyAnomaly.fromJson(a)).toList();
+      (jsonDecode(json) as List).map((a) => WeeklyAnomaly.fromJson(a as Map<String, dynamic>)).toList();
 
-  String _serializeMonthlyHealth(MonthlyHealthScore health) => jsonEncode(health.toJson());
+  String _serializeMonthlyHealth(MonthlyHealthScore health) =>
+      jsonEncode(health.toJson());
   MonthlyHealthScore _deserializeMonthlyHealth(String json) =>
-      MonthlyHealthScore.fromJson(jsonDecode(json));
+      MonthlyHealthScore.fromJson(jsonDecode(json) as Map<String, dynamic>);
 
   String _serializeMicroInsights(List<MicroInsight> insights) =>
       jsonEncode(insights.map((i) => i.toJson()).toList());
   List<MicroInsight> _deserializeMicroInsights(String json) =>
-      (jsonDecode(json) as List).map((i) => MicroInsight.fromJson(i)).toList();
+      (jsonDecode(json) as List).map((i) => MicroInsight.fromJson(i as Map<String, dynamic>)).toList();
 
-  CacheEntry? _deserializeCacheEntry(String key, String jsonString) {
+  CacheEntry<dynamic>? _deserializeCacheEntry(String key, String jsonString) {
     try {
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
       final timestamp = DateTime.parse(data['timestamp'] as String);
@@ -317,7 +326,8 @@ class CacheService {
           deserializedData = _deserializeDailyCap(data['data'] as String);
           break;
         case 'List<WeeklyAnomaly>':
-          deserializedData = _deserializeWeeklyAnomalies(data['data'] as String);
+          deserializedData =
+              _deserializeWeeklyAnomalies(data['data'] as String);
           break;
         case 'MonthlyHealthScore':
           deserializedData = _deserializeMonthlyHealth(data['data'] as String);
@@ -335,8 +345,8 @@ class CacheService {
         expiry: expiry,
         key: key,
       );
-    } on Exception catch (e) {
-      // debugPrint('Error deserializing cache entry: $e');
+    } catch (e) {
+      // Return null for corrupted cache entries
       return null;
     }
   }

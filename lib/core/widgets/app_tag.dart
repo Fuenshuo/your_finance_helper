@@ -25,13 +25,11 @@ class AppTag extends StatelessWidget {
 
     // 选中状态：实心背景 + 白色文字
     // 未选中状态：10%透明度背景 + 彩色文字
-    final bgColor = isSelected 
-        ? themeColor 
-        : themeColor.withOpacity(isDark ? 0.2 : 0.1);
-    
-    final textColor = isSelected 
-        ? Colors.white 
-        : themeColor;
+    final bgColor = isSelected
+        ? themeColor
+        : themeColor.withValues(alpha: isDark ? 0.2 : 0.1);
+
+    final textColor = isSelected ? Colors.white : themeColor;
 
     return GestureDetector(
       onTap: onTap,
@@ -40,10 +38,12 @@ class AppTag extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(8),
-          border: isSelected ? null : Border.all(
-            color: themeColor.withOpacity(0.2),
-            width: 0.5,
-          ),
+          border: isSelected
+              ? null
+              : Border.all(
+                  color: themeColor.withValues(alpha: 0.2),
+                  width: 0.5,
+                ),
         ),
         child: Text(
           label,
@@ -58,4 +58,3 @@ class AppTag extends StatelessWidget {
     );
   }
 }
-

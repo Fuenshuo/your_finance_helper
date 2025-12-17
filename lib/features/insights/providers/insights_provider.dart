@@ -45,7 +45,6 @@ class InsightsProvider with ChangeNotifier {
 
       // Initialize monthly insights
       await _initializeMonthlyInsights();
-
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -142,7 +141,6 @@ class InsightsProvider with ChangeNotifier {
         }
         notifyListeners();
       });
-
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -189,7 +187,6 @@ class InsightsProvider with ChangeNotifier {
       // Update daily cap with new insight
       _dailyCap = _dailyCap!.copyWith(latestInsight: insight);
       notifyListeners();
-
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -207,5 +204,4 @@ class InsightsProvider with ChangeNotifier {
     await initialize();
   }
 }
-
 

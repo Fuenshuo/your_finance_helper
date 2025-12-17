@@ -1,21 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
 import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
-import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
-import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart' as ai_factory;
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart'
+    as ai_factory;
 
 /// Flux Loop Insight Service - orchestrates AI-powered financial insights
 class InsightService {
   InsightService({
     AiService? aiService,
-  }) : _aiService = aiService ?? ai_factory.aiServiceFactory.createService(_createDefaultConfig());
+  }) : _aiService = aiService ??
+            ai_factory.aiServiceFactory.createService(_createDefaultConfig());
 
   final AiService _aiService;
 
@@ -122,7 +120,6 @@ class InsightService {
 
       _activeJobs[job.id] = completedJob;
       _jobControllers[job.id]?.add(completedJob);
-
     } catch (e) {
       // Fail job
       final failedJob = job.copyWith(
@@ -135,7 +132,7 @@ class InsightService {
       _jobControllers[job.id]?.add(failedJob);
     } finally {
       // Clean up
-      await Future.delayed(const Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       _jobControllers[job.id]?.close();
       _jobControllers.remove(job.id);
       _activeJobs.remove(job.id);
@@ -170,9 +167,9 @@ class InsightService {
   Future<Map<String, dynamic>> _performWeeklyAnalysis(FluxLoopJob job) async {
     // Simplified implementation - would detect anomalies in weekly spending
     return {
-      'anomalies': [],
+      'anomalies': <String>[],
       'trend': 'stable',
-      'insights': ['本周消费较为平稳'],
+      'insights': <String>['本周消费较为平稳'],
     };
   }
 
@@ -187,7 +184,8 @@ class InsightService {
   }
 
   /// Micro-insight analysis
-  Future<Map<String, dynamic>> _performMicroInsightAnalysis(FluxLoopJob job) async {
+  Future<Map<String, dynamic>> _performMicroInsightAnalysis(
+      FluxLoopJob job) async {
     // Generate targeted micro-insight
     return {
       'sentiment': 'neutral',

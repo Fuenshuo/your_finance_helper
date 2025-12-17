@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockito/mockito.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/transaction_parser_service.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/validation_service.dart';
 

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/animations/animation_config.dart';
 
@@ -68,16 +66,6 @@ class IOSAnimationEngine {
   }) async {
     final controller = _getOrCreateController(animationId, vsync);
 
-    final animation = Tween<double>(
-      begin: currentValue,
-      end: targetValue,
-    ).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: IOSAnimationConfig.spring,
-      ),
-    );
-
     controller.duration = duration;
     controller.forward(from: 0.0).then((_) {
       onComplete?.call();
@@ -94,40 +82,6 @@ class IOSAnimationEngine {
     VoidCallback? onComplete,
   }) async {
     final controller = _getOrCreateController(animationId, vsync);
-
-    final shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: IOSAnimationConfig.shakeAmplitude),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween(
-            begin: IOSAnimationConfig.shakeAmplitude,
-            end: -IOSAnimationConfig.shakeAmplitude),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween(
-            begin: -IOSAnimationConfig.shakeAmplitude,
-            end: IOSAnimationConfig.shakeAmplitude),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween(
-            begin: IOSAnimationConfig.shakeAmplitude,
-            end: -IOSAnimationConfig.shakeAmplitude),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: -IOSAnimationConfig.shakeAmplitude, end: 0.0),
-        weight: 1,
-      ),
-    ]).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: IOSAnimationConfig.standard,
-      ),
-    );
 
     controller.duration = IOSAnimationConfig.shakeDuration;
     controller.forward(from: 0.0).then((_) {
@@ -146,12 +100,6 @@ class IOSAnimationEngine {
     VoidCallback? onComplete,
   }) async {
     final controller = _getOrCreateController(animationId, vsync);
-
-    // 创建粒子动画
-    final particleAnimations = List.generate(
-      IOSAnimationConfig.particleCount,
-      (index) => _createParticleAnimation(index, origin),
-    );
 
     controller.duration = IOSAnimationConfig.particleLifetime;
     controller.forward(from: 0.0).then((_) {
@@ -174,7 +122,9 @@ class IOSAnimationEngine {
   }
 
   void _configureController(
-      AnimationController controller, AnimationSpec spec) {
+    AnimationController controller,
+    AnimationSpec spec,
+  ) {
     controller.duration = spec.duration;
     controller.reset();
   }
@@ -193,25 +143,6 @@ class IOSAnimationEngine {
 
   // ===== 辅助方法 =====
 
-  Animation<Offset> _createParticleAnimation(int index, Offset origin) {
-    final angle = (index / IOSAnimationConfig.particleCount) * 2 * math.pi;
-    const distance = IOSAnimationConfig.particleSpread;
-
-    final endOffset = Offset(
-      origin.dx + math.cos(angle) * distance,
-      origin.dy + math.sin(angle) * distance,
-    );
-
-    return Tween<Offset>(
-      begin: origin,
-      end: endOffset,
-    ).animate(
-      CurvedAnimation(
-        parent: _controllers['particle']!,
-        curve: IOSAnimationConfig.bounce,
-      ),
-    );
-  }
 }
 
 /// 动效协调器

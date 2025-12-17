@@ -78,7 +78,6 @@ class DependencyGraph {
   /// 计算依赖深度
   int getDependencyDepth(String node) {
     final visited = <String>{};
-    const maxDepth = 0;
 
     int dfs(String current, int depth) {
       if (visited.contains(current)) {
@@ -147,7 +146,6 @@ class DependencyAnalyzer {
     Map<String, CodeAnalysisResult> analysisResults,
   ) {
     for (final entry in analysisResults.entries) {
-      final filePath = entry.key;
       final result = entry.value;
 
       for (final dependency in result.dependencies) {

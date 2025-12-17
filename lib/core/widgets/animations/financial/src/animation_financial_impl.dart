@@ -940,7 +940,6 @@ class _AnimatedInvestmentWaveState extends State<_AnimatedInvestmentWave>
 
     _heightAnimations = List.generate(widget.values.length, (index) {
       final value = widget.values[index];
-      final isPositive = value >= 0;
       final maxValue = widget.values.map((v) => v.abs()).reduce(math.max);
 
       return Tween<double>(

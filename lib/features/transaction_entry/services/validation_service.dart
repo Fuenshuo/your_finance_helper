@@ -1,6 +1,6 @@
 import '../models/input_validation.dart';
 import '../models/draft_transaction.dart';
-import '../models/input_validation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 验证服务接口
 abstract class ValidationService {
@@ -11,15 +11,16 @@ abstract class ValidationService {
   Future<InputValidation> validateField(String fieldName, dynamic value);
 
   /// 批量验证字段
-  Future<Map<String, InputValidation>> validateFields(Map<String, dynamic> fields);
+  Future<Map<String, InputValidation>> validateFields(
+      Map<String, dynamic> fields);
 }
 
 /// 默认验证服务实现
 class DefaultValidationService implements ValidationService {
   static const double _maxAmount = 10000000.0; // 最大金额限制
-  static const double _minAmount = 0.01;       // 最小金额限制
+  static const double _minAmount = 0.01; // 最小金额限制
   static const int _maxDescriptionLength = 200; // 最大描述长度
-  static const int _minDescriptionLength = 1;   // 最小描述长度
+  static const int _minDescriptionLength = 1; // 最小描述长度
 
   @override
   Future<InputValidation> validateDraft(DraftTransaction draft) async {
@@ -37,8 +38,10 @@ class DefaultValidationService implements ValidationService {
       suggestions.addAll(amountValidation.suggestions);
 
       // 验证描述
-      final descriptionValidation = await validateField('description', draft.description);
-      if (!descriptionValidation.isValid && descriptionValidation.errorMessage != null) {
+      final descriptionValidation =
+          await validateField('description', draft.description);
+      if (!descriptionValidation.isValid &&
+          descriptionValidation.errorMessage != null) {
         errors.add(descriptionValidation.errorMessage!);
       }
       warnings.addAll(descriptionValidation.warnings);
@@ -54,7 +57,8 @@ class DefaultValidationService implements ValidationService {
 
       // 验证日期
       if (draft.transactionDate != null) {
-        final dateValidation = await validateField('transactionDate', draft.transactionDate);
+        final dateValidation =
+            await validateField('transactionDate', draft.transactionDate);
         if (!dateValidation.isValid && dateValidation.errorMessage != null) {
           errors.add(dateValidation.errorMessage!);
         }
@@ -63,11 +67,15 @@ class DefaultValidationService implements ValidationService {
       }
 
       // 业务规则验证
-      if (draft.amount != null && draft.amount! > 10000 && draft.type == TransactionType.expense) {
+      if (draft.amount != null &&
+          draft.amount! > 10000 &&
+          draft.type == TransactionType.expense) {
         warnings.add('大额支出建议添加详细说明');
       }
 
-      if (draft.amount != null && draft.amount! > 50000 && draft.type == TransactionType.expense) {
+      if (draft.amount != null &&
+          draft.amount! > 50000 &&
+          draft.type == TransactionType.expense) {
         errors.add('单笔支出金额过大，请确认是否正确');
       }
 
@@ -78,7 +86,8 @@ class DefaultValidationService implements ValidationService {
       }
 
       // 逻辑一致性检查
-      if (draft.type == TransactionType.transfer && (draft.accountId == null || draft.categoryId == null)) {
+      if (draft.type == TransactionType.transfer &&
+          (draft.accountId == null || draft.categoryId == null)) {
         warnings.add('转账交易建议指定转出和转入账户');
       }
 
@@ -119,7 +128,8 @@ class DefaultValidationService implements ValidationService {
   }
 
   @override
-  Future<Map<String, InputValidation>> validateFields(Map<String, dynamic> fields) async {
+  Future<Map<String, InputValidation>> validateFields(
+      Map<String, dynamic> fields) async {
     final results = <String, InputValidation>{};
 
     for (final entry in fields.entries) {
@@ -247,7 +257,7 @@ class DefaultValidationService implements ValidationService {
       );
     }
 
-    final date = value as DateTime;
+    final date = value;
     final now = DateTime.now();
 
     // 不允许未来日期
@@ -308,3 +318,7 @@ class DefaultValidationService implements ValidationService {
   }
 }
 
+/// ValidationService Provider
+final validationServiceProvider = Provider<ValidationService>((ref) {
+  return DefaultValidationService();
+});

@@ -63,7 +63,8 @@ class BonusDialogManager {
 
       if (salaryIncomes.isNotEmpty) {
         final basicSalary = salaryIncomes.first.basicSalary;
-        Logger.debug('[BonusDialogManager._getBasicSalary] 💰 找到基本工资: ¥$basicSalary');
+        Logger.debug(
+            '[BonusDialogManager._getBasicSalary] 💰 找到基本工资: ¥$basicSalary');
         Logger.debug(
             '[BonusDialogManager._getBasicSalary] 📝 工资收入详情: ${salaryIncomes.first.name}');
 
@@ -790,7 +791,7 @@ class _BonusDialogState extends State<_BonusDialog> {
                       Container(
                         padding: EdgeInsets.all(context.spacing8),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: Colors.blue.withValues(alpha: 0.3),

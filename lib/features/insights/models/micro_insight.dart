@@ -54,6 +54,38 @@ class MicroInsight extends Equatable {
         actions,
         trigger,
       ];
+
+  /// 序列化为JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'dailyCapId': dailyCapId,
+      'generatedAt': generatedAt.toIso8601String(),
+      'sentiment': sentiment.name,
+      'message': message,
+      'actions': actions,
+      'trigger': trigger.name,
+    };
+  }
+
+  /// 从JSON反序列化
+  factory MicroInsight.fromJson(Map<String, dynamic> json) {
+    return MicroInsight(
+      id: json['id'] as String,
+      dailyCapId: json['dailyCapId'] as String,
+      generatedAt: DateTime.parse(json['generatedAt'] as String),
+      sentiment: Sentiment.values.firstWhere(
+        (e) => e.name == json['sentiment'],
+        orElse: () => Sentiment.neutral,
+      ),
+      message: json['message'] as String,
+      actions: (json['actions'] as List).cast<String>(),
+      trigger: InsightTrigger.values.firstWhere(
+        (e) => e.name == json['trigger'],
+        orElse: () => InsightTrigger.transactionAdded,
+      ),
+    );
+  }
 }
 
 /// Sentiment type for AI insights

@@ -72,7 +72,8 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: _getMaxValue(chartData),
-                    color: AppDesignTokens.inputFill(context).withOpacity(0.3),
+                    color: AppDesignTokens.inputFill(context)
+                        .withValues(alpha: 0.3),
                   ),
                 ),
               ],
@@ -165,22 +166,26 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
 
   double _getMaxValue(List<TrendData> data) {
     final maxValue = data.map((d) => d.amount).reduce((a, b) => a > b ? a : b);
-    return maxValue > 0 ? maxValue * 1.2 : 100.0; // Add 20% padding, or 100 if all zeros
+    return maxValue > 0
+        ? maxValue * 1.2
+        : 100.0; // Add 20% padding, or 100 if all zeros
   }
 
   Color _getBarColor(double value, bool isTouched, BuildContext context) {
     if (isTouched) {
-      return AppDesignTokens.amountNegativeColor(context); // Red for touched state
+      return AppDesignTokens.amountNegativeColor(
+          context); // Red for touched state
     }
 
     if (value == 0) {
-      return Colors.grey.withOpacity(0.5); // Grey for zero values
+      return Colors.grey.withValues(alpha: 0.5); // Grey for zero values
     }
 
     // Gradient-like color based on value
     final baseColor = AppDesignTokens.amountPositiveColor(context);
-    final intensity = (value / _getMaxValue(widget.trendData ?? [])).clamp(0.3, 1.0);
-    return baseColor.withOpacity(intensity.toDouble());
+    final intensity =
+        (value / _getMaxValue(widget.trendData ?? [])).clamp(0.3, 1.0);
+    return baseColor.withValues(alpha: intensity.toDouble());
   }
 
   Widget _buildEmptyState(BuildContext context) {

@@ -11,18 +11,6 @@ import 'package:uuid/uuid.dart';
 /// 资金流 (Flow) - Flux Ledger的核心实体
 /// 代表一次完整的资金流动事件
 class Flow extends Equatable {
-  final String id;
-  final String userId;
-  final FlowType type;
-  final FlowAmount amount;
-  final FlowSource source;
-  final FlowDestination destination;
-  final FlowCategory category;
-  final List<FlowTag> tags;
-  final FlowMetadata metadata;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
   const Flow({
     required this.id,
     required this.userId,
@@ -37,6 +25,7 @@ class Flow extends Equatable {
     required this.updatedAt,
   });
 
+  /// 创建新的资金流
   factory Flow.create({
     required String userId,
     required FlowType type,
@@ -64,6 +53,40 @@ class Flow extends Equatable {
     );
   }
 
+  /// 流ID
+  final String id;
+
+  /// 用户ID
+  final String userId;
+
+  /// 流类型
+  final FlowType type;
+
+  /// 流金额
+  final FlowAmount amount;
+
+  /// 流来源
+  final FlowSource source;
+
+  /// 流去向
+  final FlowDestination destination;
+
+  /// 流分类
+  final FlowCategory category;
+
+  /// 流标签
+  final List<FlowTag> tags;
+
+  /// 流元数据
+  final FlowMetadata metadata;
+
+  /// 创建时间
+  final DateTime createdAt;
+
+  /// 更新时间
+  final DateTime updatedAt;
+
+  /// 复制并修改资金流对象
   Flow copyWith({
     String? id,
     String? userId,
@@ -76,21 +99,20 @@ class Flow extends Equatable {
     FlowMetadata? metadata,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) {
-    return Flow(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      type: type ?? this.type,
-      amount: amount ?? this.amount,
-      source: source ?? this.source,
-      destination: destination ?? this.destination,
-      category: category ?? this.category,
-      tags: tags ?? this.tags,
-      metadata: metadata ?? this.metadata,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
+  }) =>
+      Flow(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        type: type ?? this.type,
+        amount: amount ?? this.amount,
+        source: source ?? this.source,
+        destination: destination ?? this.destination,
+        category: category ?? this.category,
+        tags: tags ?? this.tags,
+        metadata: metadata ?? this.metadata,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
 
   @override
   List<Object?> get props => [
@@ -131,12 +153,6 @@ enum FlowType {
 
 /// 流金额 - 支持多币种和金额范围
 class FlowAmount extends Equatable {
-  final double value;
-  final String currency;
-  final double? minValue; // 用于范围金额，如"100-200元"
-  final double? maxValue;
-  final bool isApproximate; // 是否为估算金额
-
   const FlowAmount({
     required this.value,
     required this.currency,
@@ -150,30 +166,39 @@ class FlowAmount extends Equatable {
     required double maxValue,
     required String currency,
     bool isApproximate = false,
-  }) {
-    return FlowAmount(
-      value: (minValue + maxValue) / 2, // 取中间值作为主值
-      currency: currency,
-      minValue: minValue,
-      maxValue: maxValue,
-      isApproximate: isApproximate,
-    );
-  }
+  }) =>
+      FlowAmount(
+        value: (minValue + maxValue) / 2, // 取中间值作为主值
+        currency: currency,
+        minValue: minValue,
+        maxValue: maxValue,
+        isApproximate: isApproximate,
+      );
+
+  /// 金额数值
+  final double value;
+
+  /// 货币代码
+  final String currency;
+
+  /// 最小金额（用于范围金额）
+  final double? minValue;
+
+  /// 最大金额（用于范围金额）
+  final double? maxValue;
+
+  /// 是否为估算金额
+  final bool isApproximate;
 
   bool get isRange => minValue != null && maxValue != null;
 
   @override
-  List<Object?> get props => [value, currency, minValue, maxValue, isApproximate];
+  List<Object?> get props =>
+      [value, currency, minValue, maxValue, isApproximate];
 }
 
 /// 流来源 - 资金的来源定义
 class FlowSource extends Equatable {
-  final String id;
-  final FlowSourceType type;
-  final String name;
-  final String? description;
-  final Map<String, dynamic> properties;
-
   const FlowSource({
     required this.id,
     required this.type,
@@ -182,23 +207,32 @@ class FlowSource extends Equatable {
     this.properties = const {},
   });
 
-  factory FlowSource.account({required String accountId, required String accountName}) {
-    return FlowSource(
-      id: accountId,
-      type: FlowSourceType.account,
-      name: accountName,
-      properties: {'accountId': accountId},
-    );
-  }
+  factory FlowSource.account({
+    required String accountId,
+    required String accountName,
+  }) =>
+      FlowSource(
+        id: accountId,
+        type: FlowSourceType.account,
+        name: accountName,
+        properties: {'accountId': accountId},
+      );
 
-  factory FlowSource.income({required String sourceId, required String sourceName}) {
-    return FlowSource(
-      id: sourceId,
-      type: FlowSourceType.income,
-      name: sourceName,
-      properties: {'sourceId': sourceId},
-    );
-  }
+  factory FlowSource.income({
+    required String sourceId,
+    required String sourceName,
+  }) =>
+      FlowSource(
+        id: sourceId,
+        type: FlowSourceType.income,
+        name: sourceName,
+        properties: {'sourceId': sourceId},
+      );
+  final String id;
+  final FlowSourceType type;
+  final String name;
+  final String? description;
+  final Map<String, dynamic> properties;
 
   @override
   List<Object?> get props => [id, type, name, description, properties];
@@ -224,12 +258,6 @@ enum FlowSourceType {
 
 /// 流去向 - 资金的去向定义
 class FlowDestination extends Equatable {
-  final String id;
-  final FlowDestinationType type;
-  final String name;
-  final String? description;
-  final Map<String, dynamic> properties;
-
   const FlowDestination({
     required this.id,
     required this.type,
@@ -238,23 +266,32 @@ class FlowDestination extends Equatable {
     this.properties = const {},
   });
 
-  factory FlowDestination.account({required String accountId, required String accountName}) {
-    return FlowDestination(
-      id: accountId,
-      type: FlowDestinationType.account,
-      name: accountName,
-      properties: {'accountId': accountId},
-    );
-  }
+  factory FlowDestination.account({
+    required String accountId,
+    required String accountName,
+  }) =>
+      FlowDestination(
+        id: accountId,
+        type: FlowDestinationType.account,
+        name: accountName,
+        properties: {'accountId': accountId},
+      );
 
-  factory FlowDestination.expense({required String categoryId, required String categoryName}) {
-    return FlowDestination(
-      id: categoryId,
-      type: FlowDestinationType.expense,
-      name: categoryName,
-      properties: {'categoryId': categoryId},
-    );
-  }
+  factory FlowDestination.expense({
+    required String categoryId,
+    required String categoryName,
+  }) =>
+      FlowDestination(
+        id: categoryId,
+        type: FlowDestinationType.expense,
+        name: categoryName,
+        properties: {'categoryId': categoryId},
+      );
+  final String id;
+  final FlowDestinationType type;
+  final String name;
+  final String? description;
+  final Map<String, dynamic> properties;
 
   @override
   List<Object?> get props => [id, type, name, description, properties];
@@ -280,6 +317,15 @@ enum FlowDestinationType {
 
 /// 流类别 - 更细粒度的分类系统
 class FlowCategory extends Equatable {
+  const FlowCategory({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.icon,
+    required this.color,
+    this.parentId,
+    this.description,
+  });
   final String id;
   final String name;
   final String? parentId;
@@ -288,20 +334,11 @@ class FlowCategory extends Equatable {
   final String color;
   final String? description;
 
-  const FlowCategory({
-    required this.id,
-    required this.name,
-    this.parentId,
-    required this.type,
-    required this.icon,
-    required this.color,
-    this.description,
-  });
-
   bool get isSubcategory => parentId != null;
 
   @override
-  List<Object?> get props => [id, name, parentId, type, icon, color, description];
+  List<Object?> get props =>
+      [id, name, parentId, type, icon, color, description];
 }
 
 /// 流类别类型
@@ -321,19 +358,18 @@ enum FlowCategoryType {
 
 /// 流标签 - 灵活的标记系统
 class FlowTag extends Equatable {
+  const FlowTag({
+    required this.id,
+    required this.name,
+    required this.color,
+    required this.type,
+    this.description,
+  });
   final String id;
   final String name;
   final String color;
   final String? description;
   final FlowTagType type;
-
-  const FlowTag({
-    required this.id,
-    required this.name,
-    required this.color,
-    this.description,
-    required this.type,
-  });
 
   @override
   List<Object?> get props => [id, name, color, description, type];
@@ -359,13 +395,6 @@ enum FlowTagType {
 
 /// 流元数据 - 扩展信息存储
 class FlowMetadata extends Equatable {
-  final String? notes;
-  final List<String> attachments;
-  final Map<String, dynamic> customFields;
-  final FlowRecurrence? recurrence;
-  final String? location;
-  final List<String> relatedFlowIds;
-
   const FlowMetadata({
     this.notes,
     this.attachments = const [],
@@ -375,9 +404,13 @@ class FlowMetadata extends Equatable {
     this.relatedFlowIds = const [],
   });
 
-  factory FlowMetadata.empty() {
-    return const FlowMetadata();
-  }
+  factory FlowMetadata.empty() => const FlowMetadata();
+  final String? notes;
+  final List<String> attachments;
+  final Map<String, dynamic> customFields;
+  final FlowRecurrence? recurrence;
+  final String? location;
+  final List<String> relatedFlowIds;
 
   @override
   List<Object?> get props => [
@@ -392,12 +425,6 @@ class FlowMetadata extends Equatable {
 
 /// 流重复规则
 class FlowRecurrence extends Equatable {
-  final RecurrenceType type;
-  final int interval;
-  final List<int>? daysOfWeek; // 1-7 (周一到周日)
-  final List<int>? daysOfMonth; // 1-31
-  final DateTime? endDate;
-
   const FlowRecurrence({
     required this.type,
     required this.interval,
@@ -405,6 +432,11 @@ class FlowRecurrence extends Equatable {
     this.daysOfMonth,
     this.endDate,
   });
+  final RecurrenceType type;
+  final int interval;
+  final List<int>? daysOfWeek; // 1-7 (周一到周日)
+  final List<int>? daysOfMonth; // 1-31
+  final DateTime? endDate;
 
   @override
   List<Object?> get props => [type, interval, daysOfWeek, daysOfMonth, endDate];
@@ -457,18 +489,6 @@ enum FlowHealthStatus {
 /// 流管道 (FlowStream) - 持续的资金流动渠道
 /// 代表长期的收入来源、支出项目或转账规则
 class FlowStream extends Equatable {
-  final String id;
-  final String userId;
-  final String name;
-  final String description;
-  final FlowStreamType type;
-  final FlowStreamStatus status;
-  final FlowAmount amount;
-  final FlowStreamConfig config;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final DateTime? lastExecutionAt;
-
   const FlowStream({
     required this.id,
     required this.userId,
@@ -505,6 +525,17 @@ class FlowStream extends Equatable {
       updatedAt: now,
     );
   }
+  final String id;
+  final String userId;
+  final String name;
+  final String description;
+  final FlowStreamType type;
+  final FlowStreamStatus status;
+  final FlowAmount amount;
+  final FlowStreamConfig config;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? lastExecutionAt;
 
   @override
   List<Object?> get props => [
@@ -554,6 +585,18 @@ enum FlowStreamStatus {
 
 /// 流管道配置
 class FlowStreamConfig extends Equatable {
+  // 执行金额容差
+
+  const FlowStreamConfig({
+    required this.recurrence,
+    required this.source,
+    required this.destination,
+    required this.category,
+    required this.trigger,
+    this.tags = const [],
+    this.autoExecute = false,
+    this.tolerance,
+  });
   final FlowRecurrence recurrence;
   final FlowSource source;
   final FlowDestination destination;
@@ -561,18 +604,7 @@ class FlowStreamConfig extends Equatable {
   final List<FlowTag> tags;
   final StreamTrigger trigger;
   final bool autoExecute;
-  final double? tolerance; // 执行金额容差
-
-  const FlowStreamConfig({
-    required this.recurrence,
-    required this.source,
-    required this.destination,
-    required this.category,
-    this.tags = const [],
-    required this.trigger,
-    this.autoExecute = false,
-    this.tolerance,
-  });
+  final double? tolerance;
 
   @override
   List<Object?> get props => [
@@ -589,13 +621,12 @@ class FlowStreamConfig extends Equatable {
 
 /// 流触发器
 class StreamTrigger extends Equatable {
-  final TriggerType type;
-  final Map<String, dynamic> conditions;
-
   const StreamTrigger({
     required this.type,
     required this.conditions,
   });
+  final TriggerType type;
+  final Map<String, dynamic> conditions;
 
   @override
   List<Object?> get props => [type, conditions];
@@ -620,16 +651,6 @@ enum TriggerType {
 
 /// 流模式 (FlowPattern) - AI识别的资金流动模式
 class FlowPattern extends Equatable {
-  final String id;
-  final String userId;
-  final String name;
-  final PatternType type;
-  final FlowPatternData data;
-  final PatternConfidence confidence;
-  final DateTime firstDetected;
-  final DateTime lastUpdated;
-  final bool isActive;
-
   const FlowPattern({
     required this.id,
     required this.userId,
@@ -641,6 +662,15 @@ class FlowPattern extends Equatable {
     required this.lastUpdated,
     required this.isActive,
   });
+  final String id;
+  final String userId;
+  final String name;
+  final PatternType type;
+  final FlowPatternData data;
+  final PatternConfidence confidence;
+  final DateTime firstDetected;
+  final DateTime lastUpdated;
+  final bool isActive;
 
   @override
   List<Object?> get props => [
@@ -676,15 +706,14 @@ enum PatternType {
 
 /// 模式数据
 class FlowPatternData extends Equatable {
-  final List<FlowDataPoint> dataPoints;
-  final PatternMetrics metrics;
-  final Map<String, dynamic> attributes;
-
   const FlowPatternData({
     required this.dataPoints,
     required this.metrics,
     required this.attributes,
   });
+  final List<FlowDataPoint> dataPoints;
+  final PatternMetrics metrics;
+  final Map<String, dynamic> attributes;
 
   @override
   List<Object?> get props => [dataPoints, metrics, attributes];
@@ -692,15 +721,14 @@ class FlowPatternData extends Equatable {
 
 /// 模式数据点
 class FlowDataPoint extends Equatable {
-  final DateTime timestamp;
-  final double value;
-  final Map<String, dynamic> metadata;
-
   const FlowDataPoint({
     required this.timestamp,
     required this.value,
     required this.metadata,
   });
+  final DateTime timestamp;
+  final double value;
+  final Map<String, dynamic> metadata;
 
   @override
   List<Object?> get props => [timestamp, value, metadata];
@@ -708,10 +736,7 @@ class FlowDataPoint extends Equatable {
 
 /// 模式指标
 class PatternMetrics extends Equatable {
-  final double frequency; // 发生频率
-  final double regularity; // 规律性 (0-1)
-  final double predictability; // 可预测性 (0-1)
-  final double impact; // 对财务的影响程度
+  // 对财务的影响程度
 
   const PatternMetrics({
     required this.frequency,
@@ -719,6 +744,10 @@ class PatternMetrics extends Equatable {
     required this.predictability,
     required this.impact,
   });
+  final double frequency; // 发生频率
+  final double regularity; // 规律性 (0-1)
+  final double predictability; // 可预测性 (0-1)
+  final double impact;
 
   @override
   List<Object?> get props => [frequency, regularity, predictability, impact];
@@ -726,13 +755,14 @@ class PatternMetrics extends Equatable {
 
 /// 模式置信度
 class PatternConfidence extends Equatable {
-  final double overall; // 总体置信度 (0-1)
-  final Map<String, double> factors; // 各影响因素的置信度
+  // 各影响因素的置信度
 
   const PatternConfidence({
     required this.overall,
     required this.factors,
   });
+  final double overall; // 总体置信度 (0-1)
+  final Map<String, double> factors;
 
   @override
   List<Object?> get props => [overall, factors];
@@ -742,19 +772,6 @@ class PatternConfidence extends Equatable {
 
 /// 流洞察 (FlowInsight) - AI生成的财务洞察
 class FlowInsight extends Equatable {
-  final String id;
-  final String userId;
-  final InsightType type;
-  final String title;
-  final String description;
-  final InsightSeverity severity;
-  final InsightData data;
-  final List<String> relatedFlowIds;
-  final DateTime generatedAt;
-  final DateTime? expiresAt;
-  final bool isRead;
-  final bool isActioned;
-
   const FlowInsight({
     required this.id,
     required this.userId,
@@ -769,6 +786,18 @@ class FlowInsight extends Equatable {
     this.isRead = false,
     this.isActioned = false,
   });
+  final String id;
+  final String userId;
+  final InsightType type;
+  final String title;
+  final String description;
+  final InsightSeverity severity;
+  final InsightData data;
+  final List<String> relatedFlowIds;
+  final DateTime generatedAt;
+  final DateTime? expiresAt;
+  final bool isRead;
+  final bool isActioned;
 
   @override
   List<Object?> get props => [
@@ -822,15 +851,14 @@ enum InsightSeverity {
 
 /// 洞察数据
 class InsightData extends Equatable {
-  final Map<String, dynamic> metrics;
-  final List<InsightRecommendation> recommendations;
-  final Map<String, dynamic> visualizationData;
-
   const InsightData({
     required this.metrics,
     required this.recommendations,
     required this.visualizationData,
   });
+  final Map<String, dynamic> metrics;
+  final List<InsightRecommendation> recommendations;
+  final Map<String, dynamic> visualizationData;
 
   @override
   List<Object?> get props => [metrics, recommendations, visualizationData];
@@ -838,13 +866,6 @@ class InsightData extends Equatable {
 
 /// 洞察建议
 class InsightRecommendation extends Equatable {
-  final String id;
-  final String title;
-  final String description;
-  final RecommendationAction action;
-  final Map<String, dynamic> parameters;
-  final double expectedImpact;
-
   const InsightRecommendation({
     required this.id,
     required this.title,
@@ -853,6 +874,12 @@ class InsightRecommendation extends Equatable {
     required this.parameters,
     required this.expectedImpact,
   });
+  final String id;
+  final String title;
+  final String description;
+  final RecommendationAction action;
+  final Map<String, dynamic> parameters;
+  final double expectedImpact;
 
   @override
   List<Object?> get props => [
@@ -885,5 +912,3 @@ enum RecommendationAction {
   /// 查看详情
   viewDetails,
 }
-
-

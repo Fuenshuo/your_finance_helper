@@ -62,8 +62,12 @@ class _ScrubberState extends State<Scrubber> {
                       fontSize: 10,
                       color: isSelected
                           ? Theme.of(context).colorScheme.onPrimary
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -87,7 +91,8 @@ class _ScrubberState extends State<Scrubber> {
     final groupTop = index * estimatedGroupHeight;
     final groupBottom = (index + 1) * estimatedGroupHeight;
 
-    return scrollOffset < groupBottom && (scrollOffset + viewportHeight) > groupTop;
+    return scrollOffset < groupBottom &&
+        (scrollOffset + viewportHeight) > groupTop;
   }
 
   void _scrollToDate(int index) {
@@ -104,4 +109,3 @@ class _ScrubberState extends State<Scrubber> {
     );
   }
 }
-

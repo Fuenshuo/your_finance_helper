@@ -30,10 +30,13 @@ class AppBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentStyle = AppDesignTokens.getCurrentStyle();
     final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
-    
-    final defaultSelectedColor = selectedItemColor ?? AppDesignTokens.primaryAction(context);
-    final defaultUnselectedColor = unselectedItemColor ?? AppDesignTokens.secondaryText(context);
-    final defaultBackgroundColor = backgroundColor ?? AppDesignTokens.surface(context);
+
+    final defaultSelectedColor =
+        selectedItemColor ?? AppDesignTokens.primaryAction(context);
+    final defaultUnselectedColor =
+        unselectedItemColor ?? AppDesignTokens.secondaryText(context);
+    final defaultBackgroundColor =
+        backgroundColor ?? AppDesignTokens.surface(context);
 
     // 如果使用 SharpProfessional 风格，需要自定义实现以支持底部指示线
     if (isSharpProfessional) {
@@ -42,7 +45,7 @@ class AppBottomNavigationBar extends StatelessWidget {
           color: defaultBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -57,10 +60,10 @@ class AppBottomNavigationBar extends StatelessWidget {
               children: List.generate(items.length, (index) {
                 final item = items[index];
                 final isSelected = index == currentIndex;
-                
+
                 // 获取图标 Widget（优先使用 activeIcon）
                 final iconWidget = isSelected ? item.activeIcon : item.icon;
-                
+
                 return Expanded(
                   child: GestureDetector(
                     onTap: () => onTap(index),
@@ -71,7 +74,9 @@ class AppBottomNavigationBar extends StatelessWidget {
                         // 图标（使用 IconTheme 来设置颜色）
                         IconTheme(
                           data: IconThemeData(
-                            color: isSelected ? defaultSelectedColor : defaultUnselectedColor,
+                            color: isSelected
+                                ? defaultSelectedColor
+                                : defaultUnselectedColor,
                             size: 24,
                           ),
                           child: iconWidget,
@@ -82,8 +87,12 @@ class AppBottomNavigationBar extends StatelessWidget {
                           item.label ?? '',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isSelected ? defaultSelectedColor : defaultUnselectedColor,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            color: isSelected
+                                ? defaultSelectedColor
+                                : defaultUnselectedColor,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -123,4 +132,3 @@ class AppBottomNavigationBar extends StatelessWidget {
     );
   }
 }
-

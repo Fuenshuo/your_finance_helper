@@ -23,7 +23,8 @@ class MonthlyStructureCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDesignTokens.spacing16),
         decoration: BoxDecoration(
           color: AppDesignTokens.surface(context),
-          borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+          borderRadius:
+              BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +46,9 @@ class MonthlyStructureCard extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth > 400;
-                return isWide ? _buildWideLayout(context) : _buildNarrowLayout(context);
+                return isWide
+                    ? _buildWideLayout(context)
+                    : _buildNarrowLayout(context);
               },
             ),
 
@@ -115,15 +118,16 @@ class MonthlyStructureCard extends StatelessWidget {
   }
 
   Widget _buildDonutChart(BuildContext context) {
-    final survivalPercent = monthlyHealth.metrics['survivalPercentage'] as double? ?? 0.0;
-    final lifestylePercent = monthlyHealth.metrics['lifestylePercentage'] as double? ?? 0.0;
+    final survivalPercent = monthlyHealth.metrics['survivalPercentage'] ?? 0.0;
+    final lifestylePercent = monthlyHealth.metrics['lifestylePercentage'] ?? 0.0;
 
     return Container(
       height: 200,
       padding: const EdgeInsets.all(AppDesignTokens.spacing16),
       decoration: BoxDecoration(
         color: AppDesignTokens.surface(context),
-        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+        borderRadius:
+            BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
       ),
       child: Column(
         children: [
@@ -163,9 +167,11 @@ class MonthlyStructureCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem(context, '生存', AppDesignTokens.amountPositiveColor(context)),
+              _buildLegendItem(
+                  context, '生存', AppDesignTokens.amountPositiveColor(context)),
               const SizedBox(width: AppDesignTokens.spacing16),
-              _buildLegendItem(context, '生活', AppDesignTokens.amountNegativeColor(context)),
+              _buildLegendItem(
+                  context, '生活', AppDesignTokens.amountNegativeColor(context)),
             ],
           ),
         ],
@@ -186,7 +192,8 @@ class MonthlyStructureCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppDesignTokens.spacing16),
       decoration: BoxDecoration(
         color: AppDesignTokens.surface(context),
-        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+        borderRadius:
+            BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,23 +204,24 @@ class MonthlyStructureCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDesignTokens.spacing12),
           ...mockCategories.map((category) => Padding(
-            padding: const EdgeInsets.only(bottom: AppDesignTokens.spacing8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  category['category'] as String,
-                  style: AppDesignTokens.body(context),
+                padding:
+                    const EdgeInsets.only(bottom: AppDesignTokens.spacing8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      category['category'] as String,
+                      style: AppDesignTokens.body(context),
+                    ),
+                    Text(
+                      '¥${(category['amount'] as double).toStringAsFixed(0)}',
+                      style: AppDesignTokens.body(context).copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '¥${(category['amount'] as double).toStringAsFixed(0)}',
-                  style: AppDesignTokens.body(context).copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          )),
+              )),
         ],
       ),
     );
@@ -224,7 +232,8 @@ class MonthlyStructureCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppDesignTokens.spacing16),
       decoration: BoxDecoration(
         color: _getGradeColor(context).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+        borderRadius:
+            BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,21 +268,24 @@ class MonthlyStructureCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDesignTokens.spacing8),
-            ...monthlyHealth.recommendations.take(2).map((recommendation) => Padding(
-              padding: const EdgeInsets.only(bottom: AppDesignTokens.spacing4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('• ', style: AppDesignTokens.body(context)),
-                  Expanded(
-                    child: Text(
-                      recommendation,
-                      style: AppDesignTokens.body(context),
-                    ),
-                  ),
-                ],
-              ),
-            )),
+            ...monthlyHealth.recommendations
+                .take(2)
+                .map((recommendation) => Padding(
+                      padding: const EdgeInsets.only(
+                          bottom: AppDesignTokens.spacing4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• ', style: AppDesignTokens.body(context)),
+                          Expanded(
+                            child: Text(
+                              recommendation,
+                              style: AppDesignTokens.body(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
           ],
         ],
       ),
@@ -291,7 +303,7 @@ class MonthlyStructureCard extends StatelessWidget {
             shape: BoxShape.circle,
           ),
         ),
-          const SizedBox(width: AppDesignTokens.spacing4),
+        const SizedBox(width: AppDesignTokens.spacing4),
         Text(
           label,
           style: AppDesignTokens.caption(context),
@@ -387,8 +399,8 @@ class _DonutChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(_DonutChartPainter oldDelegate) {
     return oldDelegate.survivalPercent != survivalPercent ||
-           oldDelegate.lifestylePercent != lifestylePercent ||
-           oldDelegate.survivalColor != survivalColor ||
-           oldDelegate.lifestyleColor != lifestyleColor;
+        oldDelegate.lifestylePercent != lifestylePercent ||
+        oldDelegate.survivalColor != survivalColor ||
+        oldDelegate.lifestyleColor != lifestyleColor;
   }
 }

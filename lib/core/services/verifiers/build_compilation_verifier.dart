@@ -2,28 +2,29 @@
 ///
 /// Tests flutter build, flutter run, platform-specific builds (iOS/Android/Web),
 /// and dependency resolution.
+library;
 
 import 'dart:io';
-import '../verification_result.dart';
-import '../component_verifier.dart';
+import 'package:your_finance_flutter/core/models/verification_result.dart';
+import 'package:your_finance_flutter/core/services/component_verifier.dart';
 
 // Simple logging functions for build verification
 void log_info(String message) => print('[INFO] $message');
-void log_error(String message) => print('[ERROR] $message');
+void logError(String message) => print('[ERROR] $message');
 
-class BuildCompilationVerifier implements ComponentVerifier {
+class BuildCompilationVerifier extends ComponentVerifier {
   @override
   String get componentName => 'build_compilation';
 
   @override
   List<String> get dependencies => [
-    'Flutter SDK',
-    'Dart SDK',
-    'iOS SDK (if iOS build)',
-    'Android SDK (if Android build)',
-    'Xcode (if iOS build)',
-    'Android Studio (if Android build)',
-  ];
+        'Flutter SDK',
+        'Dart SDK',
+        'iOS SDK (if iOS build)',
+        'Android SDK (if Android build)',
+        'Xcode (if iOS build)',
+        'Android Studio (if Android build)',
+      ];
 
   @override
   int get priority => 5; // Highest priority - app must build and run
@@ -33,7 +34,8 @@ class BuildCompilationVerifier implements ComponentVerifier {
       'Verifies flutter build, flutter run, and platform-specific compilation';
 
   @override
-  Duration get estimatedDuration => const Duration(seconds: 10); // Builds take time
+  Duration get estimatedDuration =>
+      const Duration(seconds: 10); // Builds take time
 
   @override
   Future<bool> isReady() async {
@@ -48,8 +50,8 @@ class BuildCompilationVerifier implements ComponentVerifier {
 
   @override
   Future<VerificationResult> verify() async {
-    final Map<String, bool> checkResults = {};
-    final List<String> issues = [];
+    final checkResults = <String, bool>{};
+    final issues = <String>[];
 
     try {
       // Test 1: Flutter doctor
@@ -85,7 +87,8 @@ class BuildCompilationVerifier implements ComponentVerifier {
       // Test 6: iOS build (if on macOS)
       checkResults['ios_build'] = await _testIOSBuild();
       if (!checkResults['ios_build']!) {
-        issues.add('iOS build failed (may be due to codesigning or Xcode issues)');
+        issues.add(
+            'iOS build failed (may be due to codesigning or Xcode issues)');
       }
 
       // Test 7: Android build
@@ -95,13 +98,15 @@ class BuildCompilationVerifier implements ComponentVerifier {
       }
 
       // Test 8: Platform compatibility
-      checkResults['platform_compatibility'] = await _testPlatformCompatibility();
+      checkResults['platform_compatibility'] =
+          await _testPlatformCompatibility();
       if (!checkResults['platform_compatibility']!) {
         issues.add('Platform compatibility testing failed');
       }
 
       final allPassed = checkResults.values.every((passed) => passed);
-      final status = allPassed ? VerificationStatus.pass : VerificationStatus.fail;
+      final status =
+          allPassed ? VerificationStatus.pass : VerificationStatus.fail;
 
       final details = allPassed
           ? 'All build and compilation checks passed successfully'
@@ -114,7 +119,6 @@ class BuildCompilationVerifier implements ComponentVerifier {
         checkResults: checkResults,
         remediationSteps: allPassed ? null : _generateRemediationSteps(issues),
       );
-
     } catch (e) {
       return VerificationResult.fail(
         componentName,
@@ -145,8 +149,11 @@ class BuildCompilationVerifier implements ComponentVerifier {
 
   Future<bool> _testPubDependencies() async {
     try {
-      final result = await Process.run('flutter', ['pub', 'get'],
-          workingDirectory: Directory.current.path);
+      final result = await Process.run(
+        'flutter',
+        ['pub', 'get'],
+        workingDirectory: Directory.current.path,
+      );
       return result.exitCode == 0;
     } catch (e) {
       return false;
@@ -155,8 +162,11 @@ class BuildCompilationVerifier implements ComponentVerifier {
 
   Future<bool> _testFlutterAnalyze() async {
     try {
-      final result = await Process.run('flutter', ['analyze'],
-          workingDirectory: Directory.current.path);
+      final result = await Process.run(
+        'flutter',
+        ['analyze'],
+        workingDirectory: Directory.current.path,
+      );
       return result.exitCode == 0;
     } catch (e) {
       return false;
@@ -166,8 +176,11 @@ class BuildCompilationVerifier implements ComponentVerifier {
   Future<bool> _testFlutterBuildDebug() async {
     try {
       // Test debug build (faster than release)
-      final result = await Process.run('flutter', ['build', 'apk', '--debug'],
-          workingDirectory: Directory.current.path);
+      final result = await Process.run(
+        'flutter',
+        ['build', 'apk', '--debug'],
+        workingDirectory: Directory.current.path,
+      );
       return result.exitCode == 0;
     } catch (e) {
       return false;
@@ -177,8 +190,11 @@ class BuildCompilationVerifier implements ComponentVerifier {
   Future<bool> _testFlutterRunDry() async {
     try {
       // Dry run checks for compilation issues without actually running
-      final result = await Process.run('flutter', ['run', '--dry-run'],
-          workingDirectory: Directory.current.path);
+      final result = await Process.run(
+        'flutter',
+        ['run', '--dry-run'],
+        workingDirectory: Directory.current.path,
+      );
       return result.exitCode == 0;
     } catch (e) {
       return false;
@@ -192,8 +208,11 @@ class BuildCompilationVerifier implements ComponentVerifier {
         return true; // Skip on non-macOS platforms
       }
 
-      final result = await Process.run('flutter', ['build', 'ios', '--debug', '--no-codesign'],
-          workingDirectory: Directory.current.path);
+      final result = await Process.run(
+        'flutter',
+        ['build', 'ios', '--debug', '--no-codesign'],
+        workingDirectory: Directory.current.path,
+      );
       return result.exitCode == 0;
     } catch (e) {
       return false;
@@ -202,51 +221,49 @@ class BuildCompilationVerifier implements ComponentVerifier {
 
   Future<bool> _testAndroidBuild() async {
     try {
-      final result = await Process.run('flutter', ['build', 'apk', '--debug'],
-          workingDirectory: Directory.current.path);
+      final result = await Process.run(
+        'flutter',
+        ['build', 'apk', '--debug'],
+        workingDirectory: Directory.current.path,
+      );
       return result.exitCode == 0;
     } catch (e) {
       return false;
     }
   }
 
-  Future<bool> _testWebBuild() async {
-    try {
-      // Test web build (Chrome)
-      final result = await Process.run('flutter', ['build', 'web', '--release'],
-          workingDirectory: Directory.current.path);
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
-  }
 
   Future<bool> _testPlatformCompatibility() async {
     try {
       // Test platform compatibility across different targets
-      final platforms = <String, List<String>>{
+      final platforms = <String, List<String>?>{
         'android': ['flutter', 'build', 'apk', '--debug'],
-        'ios': Platform.isMacOS ? ['flutter', 'build', 'ios', '--debug', '--no-codesign'] : null,
+        'ios': Platform.isMacOS
+            ? ['flutter', 'build', 'ios', '--debug', '--no-codesign']
+            : null,
         'web': ['flutter', 'build', 'web', '--release'],
       };
 
-      bool allCompatible = true;
+      var allCompatible = true;
 
       for (final entry in platforms.entries) {
         final platform = entry.key;
         final command = entry.value;
 
         if (command == null) {
-          log_info('Skipping $platform build (not supported on this platform)');
+          log_info('Skipping $platform compatibility test (not supported on this platform)');
           continue;
         }
 
         log_info('Testing $platform compatibility...');
-        final result = await Process.run(command[0], command.sublist(1),
-            workingDirectory: Directory.current.path);
+        final result = await Process.run(
+          command[0],
+          command.sublist(1),
+          workingDirectory: Directory.current.path,
+        );
 
         if (result.exitCode != 0) {
-          log_error('$platform build failed: ${result.stderr}');
+          logError('$platform build failed: ${result.stderr}');
           allCompatible = false;
         } else {
           log_info('$platform build succeeded');
@@ -255,7 +272,7 @@ class BuildCompilationVerifier implements ComponentVerifier {
 
       return allCompatible;
     } catch (e) {
-      log_error('Platform compatibility testing failed: $e');
+      logError('Platform compatibility testing failed: $e');
       return false;
     }
   }
@@ -295,15 +312,19 @@ class BuildCompilationVerifier implements ComponentVerifier {
 
     if (issues.any((issue) => issue.contains('iOS build'))) {
       steps.add('Install Xcode and iOS SDK if not present');
-      steps.add('Configure iOS codesigning certificates and provisioning profiles');
-      steps.add('Run flutter build ios --debug --no-codesign to bypass codesigning');
+      steps.add(
+          'Configure iOS codesigning certificates and provisioning profiles');
+      steps.add(
+          'Run flutter build ios --debug --no-codesign to bypass codesigning');
       steps.add('Check iOS-specific dependencies and configurations');
     }
 
     if (issues.any((issue) => issue.contains('Android build'))) {
       steps.add('Install Android SDK and required build tools');
-      steps.add('Configure ANDROID_HOME and ANDROID_SDK_ROOT environment variables');
-      steps.add('Accept Android SDK licenses with flutter doctor --android-licenses');
+      steps.add(
+          'Configure ANDROID_HOME and ANDROID_SDK_ROOT environment variables');
+      steps.add(
+          'Accept Android SDK licenses with flutter doctor --android-licenses');
       steps.add('Check Android manifest and build configurations');
     }
 

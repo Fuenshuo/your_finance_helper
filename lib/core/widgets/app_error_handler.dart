@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_design_tokens.dart';
-import 'app_empty_state.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/app_empty_state.dart';
 
 /// 全局错误处理器
 /// 统一处理各种错误场景，提供友好的用户提示
@@ -10,7 +10,7 @@ class AppErrorHandler {
   /// 处理错误并显示友好的提示
   static void handleError(
     BuildContext context,
-    dynamic error, {
+    Object error, {
     VoidCallback? onRetry,
     String? customMessage,
   }) {
@@ -44,8 +44,12 @@ class AppErrorHandler {
       SnackBar(
         content: Row(
           children: [
-            Icon(icon, color: Colors.white, size: AppDesignTokens.iconSizeMedium),
-            SizedBox(width: AppDesignTokens.spacing12),
+            Icon(
+              icon,
+              color: Colors.white,
+              size: AppDesignTokens.iconSizeMedium,
+            ),
+            const SizedBox(width: AppDesignTokens.spacing12),
             Expanded(
               child: Text(
                 message,
@@ -71,15 +75,13 @@ class AppErrorHandler {
           ],
         ),
         backgroundColor: AppDesignTokens.errorColor,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
       ),
     );
   }
 
   /// 显示错误页面（全屏）
   static Widget buildErrorPage({
-    required dynamic error,
+    required Object error,
     VoidCallback? onRetry,
     String? customMessage,
   }) {
@@ -130,4 +132,3 @@ class StorageException implements Exception {
   @override
   String toString() => message;
 }
-

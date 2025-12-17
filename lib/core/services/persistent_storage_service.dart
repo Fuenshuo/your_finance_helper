@@ -6,13 +6,30 @@ import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/services/base_service.dart';
 
 /// 持久化存储服务 - 使用文件系统存储，在应用重新安装时也能保留数据
-class PersistentStorageService {
+class PersistentStorageService extends BaseService {
   PersistentStorageService._();
 
   static PersistentStorageService? _instance;
   static Directory? _documentsDirectory;
+
+  bool _isInitialized = false;
+  bool _isLoading = false;
+  String? _lastError;
+
+  @override
+  bool get isInitialized => _isInitialized;
+
+  @override
+  bool get isLoading => _isLoading;
+
+  @override
+  String? get lastError => _lastError;
+
+  @override
+  String get serviceName => 'PersistentStorageService';
 
   static Future<PersistentStorageService> getInstance() async {
     _instance ??= PersistentStorageService._();
@@ -161,6 +178,42 @@ class PersistentStorageService {
         .toList();
   }
 
+  // ============================================================================
+  // 薪资收入相关方法
+  // ============================================================================
+
+  Future<void> saveSalaryIncomes(List<SalaryIncome> incomes) async {
+    final data = {'incomes': incomes.map((income) => income.toJson()).toList()};
+    await _writeJsonFile('salary_incomes', data);
+  }
+
+  Future<List<SalaryIncome>> loadSalaryIncomes() async {
+    final data = await _readJsonFile('salary_incomes');
+    if (data == null || data['incomes'] == null) return [];
+
+    return (data['incomes'] as List)
+        .map((json) => SalaryIncome.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  // ============================================================================
+  // 月度钱包相关方法
+  // ============================================================================
+
+  Future<void> saveMonthlyWallets(List<MonthlyWallet> wallets) async {
+    final data = {'wallets': wallets.map((wallet) => wallet.toJson()).toList()};
+    await _writeJsonFile('monthly_wallets', data);
+  }
+
+  Future<List<MonthlyWallet>> loadMonthlyWallets() async {
+    final data = await _readJsonFile('monthly_wallets');
+    if (data == null || data['wallets'] == null) return [];
+
+    return (data['wallets'] as List)
+        .map((json) => MonthlyWallet.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
   // 导出所有数据到文件
   Future<String> exportAllData() async {
     final assets = await getAssets();
@@ -287,4 +340,81 @@ class PersistentStorageService {
 
     return info;
   }
+
+  @override
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    _isLoading = true;
+    try {
+      // Directory initialization is already done in getInstance()
+      _isInitialized = true;
+      _lastError = null;
+    } catch (e) {
+      _lastError = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> reset() async {
+    _isLoading = true;
+    try {
+      // Clear all stored files
+      final files = [
+        'assets',
+        'transactions',
+        'accounts',
+        'envelope_budgets',
+        'zero_based_budgets',
+        'currencies',
+        'exchange_rates',
+        'salary_incomes',
+        'monthly_wallets',
+      ];
+
+      for (final fileName in files) {
+        final file = File(_getFilePath(fileName));
+        if (await file.exists()) {
+          await file.delete();
+        }
+      }
+      _lastError = null;
+    } catch (e) {
+      _lastError = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    // Clear references
+    _documentsDirectory = null;
+    _isInitialized = false;
+  }
+
+  @override
+  Future<bool> healthCheck() async {
+    try {
+      // Try to access the directory
+      if (_documentsDirectory == null) return false;
+      return await _documentsDirectory!.exists();
+    } catch (e) {
+      _lastError = e.toString();
+      return false;
+    }
+  }
+
+  @override
+  Map<String, dynamic> getStats() => {
+        'serviceName': serviceName,
+        'isInitialized': isInitialized,
+        'isLoading': isLoading,
+        'documentsDirectory': _documentsDirectory?.path,
+        'lastError': lastError,
+      };
 }

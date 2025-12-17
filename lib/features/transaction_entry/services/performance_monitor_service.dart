@@ -1,5 +1,4 @@
-import 'dart:async';
-import '../models/input_validation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 性能监控服务接口
 abstract class PerformanceMonitorService {
@@ -37,7 +36,8 @@ class DefaultPerformanceMonitorService implements PerformanceMonitorService {
       _operationTimes.putIfAbsent(operationName, () => []).add(duration);
 
       // 记录操作次数
-      _operationCounts[operationName] = (_operationCounts[operationName] ?? 0) + 1;
+      _operationCounts[operationName] =
+          (_operationCounts[operationName] ?? 0) + 1;
 
       // 检查性能阈值
       _checkPerformanceThreshold(operationName, duration);
@@ -79,9 +79,9 @@ class DefaultPerformanceMonitorService implements PerformanceMonitorService {
   void _checkPerformanceThreshold(String operationName, int durationMs) {
     const performanceThresholds = {
       'parse_transaction': 50, // 解析交易50ms阈值
-      'validate_draft': 20,    // 验证草稿20ms阈值
-      'save_draft': 100,       // 保存草稿100ms阈值
-      'load_drafts': 200,      // 加载草稿200ms阈值
+      'validate_draft': 20, // 验证草稿20ms阈值
+      'save_draft': 100, // 保存草稿100ms阈值
+      'load_drafts': 200, // 加载草稿200ms阈值
     };
 
     final threshold = performanceThresholds[operationName];
@@ -92,13 +92,14 @@ class DefaultPerformanceMonitorService implements PerformanceMonitorService {
   }
 
   /// 记录性能警告
-  void _logPerformanceWarning(String operationName, int actualMs, int thresholdMs) {
+  void _logPerformanceWarning(
+      String operationName, int actualMs, int thresholdMs) {
     // debugPrint('性能警告: $operationName 耗时 ${actualMs}ms (阈值: ${thresholdMs}ms)');
   }
 }
 
 /// PerformanceMonitorService Provider
-final performanceMonitorServiceProvider = Provider<PerformanceMonitorService>((ref) {
+final performanceMonitorServiceProvider =
+    Provider<PerformanceMonitorService>((ref) {
   return DefaultPerformanceMonitorService();
 });
-

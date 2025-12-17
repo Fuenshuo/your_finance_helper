@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'package:flutter/foundation.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
 
 /// Service for managing background job queues
@@ -17,9 +16,7 @@ class JobQueueService {
   final Map<String, Timer?> _processingTimers = {};
   final Map<JobType, bool> _isProcessing = {};
 
-  static const int _maxConcurrentJobs = 3;
   static const Duration _jobTimeout = Duration(seconds: 30);
-  static const Duration _retryDelay = Duration(seconds: 5);
 
   void _initializeQueues() {
     for (final type in JobType.values) {
@@ -96,7 +93,6 @@ class JobQueueService {
           result: result,
         );
         _jobControllers[job.id]?.add(completedJob);
-
       } on Exception catch (e) {
         // Handle job failure
         final failedJob = job.copyWith(
@@ -110,13 +106,13 @@ class JobQueueService {
         // debugPrint('Job ${job.id} failed: $e');
       } finally {
         // Clean up job controller
-        await Future.delayed(const Duration(seconds: 1));
+        await Future<void>.delayed(const Duration(seconds: 1));
         await _jobControllers[job.id]?.close();
         _jobControllers.remove(job.id);
       }
 
       // Small delay between jobs to prevent overwhelming the system
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
     }
 
     _isProcessing[type] = false;
@@ -158,25 +154,25 @@ class JobQueueService {
 
   Future<String> _processDailyAnalysis(FluxLoopJob job) async {
     // Simulate daily analysis processing
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
     return '{"analysisType": "daily", "insights": ["消费控制良好"], "score": 85}';
   }
 
   Future<String> _processWeeklyAnalysis(FluxLoopJob job) async {
     // Simulate weekly analysis processing
-    await Future.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     return '{"analysisType": "weekly", "anomalies": [], "trend": "stable"}';
   }
 
   Future<String> _processMonthlyAnalysis(FluxLoopJob job) async {
     // Simulate monthly analysis processing
-    await Future.delayed(const Duration(seconds: 3));
+    await Future<void>.delayed(const Duration(seconds: 3));
     return '{"analysisType": "monthly", "healthScore": 82, "grade": "B"}';
   }
 
   Future<String> _processMicroInsight(FluxLoopJob job) async {
     // Simulate micro-insight processing
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
     return '{"analysisType": "micro", "insight": "预算使用合理"}';
   }
 
@@ -197,7 +193,9 @@ class JobQueueService {
 
   int _getTotalJobsForType(JobType type) {
     return _jobQueues[type]!.length +
-           _jobControllers.values.where((controller) => !controller.isClosed).length;
+        _jobControllers.values
+            .where((controller) => !controller.isClosed)
+            .length;
   }
 
   /// Clean up completed jobs

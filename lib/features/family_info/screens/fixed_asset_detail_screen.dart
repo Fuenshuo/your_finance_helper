@@ -40,9 +40,12 @@ class _FixedAssetDetailScreenState extends State<FixedAssetDetailScreen> {
 
     // ===== v1.1.0 初始化企业级动效系统 =====
     // 注册固定资产详情专用动效曲线
-    IOSAnimationSystem.registerCustomCurve('fixed-asset-card-expand', Curves.elasticOut);
-    IOSAnimationSystem.registerCustomCurve('depreciation-chart', Curves.easeInOutCubic);
-    IOSAnimationSystem.registerCustomCurve('asset-maintenance-slide', Curves.fastOutSlowIn);
+    IOSAnimationSystem.registerCustomCurve(
+        'fixed-asset-card-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'depreciation-chart', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-maintenance-slide', Curves.fastOutSlowIn);
 
     _asset = widget.asset;
     _initializeControllers();
@@ -123,7 +126,7 @@ class _FixedAssetDetailScreenState extends State<FixedAssetDetailScreen> {
                   color: Theme.of(context).scaffoldBackgroundColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, -2),
                     ),

@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/draft_transaction.dart';
 
 /// 交易解析服务接口
@@ -25,17 +24,56 @@ class DefaultTransactionParserService implements TransactionParserService {
   static const String _amountPattern = r'(\d+(?:\.\d{1,2})?)';
   static const String _currencyPattern = r'[¥$€£]';
   static const List<String> _expenseKeywords = [
-    '买', '购买', '消费', '支出', '花', '付', '支付', '花费',
-    '超市', '商场', '餐厅', '吃饭', '餐饮', '购物', '淘宝', '京东',
-    '地铁', '公交', '打车', '加油', '停车', '医药', '医疗', '药店',
-    '水费', '电费', '煤气费', '网费', '话费', '宽带', '物业费', '房租'
+    '买',
+    '购买',
+    '消费',
+    '支出',
+    '花',
+    '付',
+    '支付',
+    '花费',
+    '超市',
+    '商场',
+    '餐厅',
+    '吃饭',
+    '餐饮',
+    '购物',
+    '淘宝',
+    '京东',
+    '地铁',
+    '公交',
+    '打车',
+    '加油',
+    '停车',
+    '医药',
+    '医疗',
+    '药店',
+    '水费',
+    '电费',
+    '煤气费',
+    '网费',
+    '话费',
+    '宽带',
+    '物业费',
+    '房租'
   ];
   static const List<String> _incomeKeywords = [
-    '收入', '工资', '薪水', '奖金', '报酬', '收益', '利息', '分红',
-    '退款', '返现', '补贴', '津贴', '奖金', '分红', '投资收益', '租金'
-  ];
-  static const List<String> _transferKeywords = [
-    '转账', '转给', '收到', '汇款', '打款', '还款', '借给', '借入'
+    '收入',
+    '工资',
+    '薪水',
+    '奖金',
+    '报酬',
+    '收益',
+    '利息',
+    '分红',
+    '退款',
+    '返现',
+    '补贴',
+    '津贴',
+    '奖金',
+    '分红',
+    '投资收益',
+    '租金'
   ];
 
   @override
@@ -103,7 +141,8 @@ class DefaultTransactionParserService implements TransactionParserService {
     description = description.replaceAll(RegExp(r'[,\.\-\s]+'), ' ').trim();
 
     // 如果描述太短或只包含无意义字符，返回null
-    if (description.length < 2 || RegExp(r'^[^\w\u4e00-\u9fff]+$').hasMatch(description)) {
+    if (description.length < 2 ||
+        RegExp(r'^[^\w\u4e00-\u9fff]+$').hasMatch(description)) {
       return null;
     }
 
@@ -115,12 +154,12 @@ class DefaultTransactionParserService implements TransactionParserService {
     final lowerInput = input.toLowerCase();
 
     // 检查收入关键词
-    final hasIncomeKeywords = _incomeKeywords.any((keyword) =>
-      lowerInput.contains(keyword.toLowerCase()));
+    final hasIncomeKeywords = _incomeKeywords
+        .any((keyword) => lowerInput.contains(keyword.toLowerCase()));
 
     // 检查支出关键词
-    final hasExpenseKeywords = _expenseKeywords.any((keyword) =>
-      lowerInput.contains(keyword.toLowerCase()));
+    final hasExpenseKeywords = _expenseKeywords
+        .any((keyword) => lowerInput.contains(keyword.toLowerCase()));
 
     if (hasIncomeKeywords && !hasExpenseKeywords) {
       return TransactionType.income;
@@ -152,9 +191,8 @@ class DefaultTransactionParserService implements TransactionParserService {
     }
 
     // 金额合理性 (15%) - 金额在合理范围内
-    if (draft.amount != null &&
-        draft.amount! > 0 &&
-        draft.amount! < 1000000) { // 假设单笔交易不超过100万
+    if (draft.amount != null && draft.amount! > 0 && draft.amount! < 1000000) {
+      // 假设单笔交易不超过100万
       confidence += 0.15;
     }
 
@@ -170,6 +208,7 @@ class DefaultTransactionParserService implements TransactionParserService {
 }
 
 /// TransactionParserService Provider
-final transactionParserServiceProvider = Provider<TransactionParserService>((ref) {
+final transactionParserServiceProvider =
+    Provider<TransactionParserService>((ref) {
   return DefaultTransactionParserService();
 });

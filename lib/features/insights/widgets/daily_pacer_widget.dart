@@ -126,19 +126,23 @@ class DailyPacerWidget extends StatelessWidget {
         Text(
           '已消费 ¥${spent.toStringAsFixed(0)}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-          ),
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.color
+                    ?.withValues(alpha: 0.7),
+              ),
         ),
         Text(
           remaining > 0
               ? '剩余 ¥${remaining.toStringAsFixed(0)}'
               : '超支 ¥${remaining.abs().toStringAsFixed(0)}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: remaining > 0
-                ? AppDesignTokens.successColor(context)
-                : AppDesignTokens.accentColor,
-            fontWeight: FontWeight.w500,
-          ),
+                color: remaining > 0
+                    ? AppDesignTokens.successColor(context)
+                    : AppDesignTokens.accentColor,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       ],
     );
@@ -200,9 +204,9 @@ class DailyPacerWidget extends StatelessWidget {
                   child: Text(
                     action,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.w500,
-                    ),
+                          color: color,
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
                 );
               }).toList(),
@@ -251,7 +255,12 @@ class DailyPacerWidget extends StatelessWidget {
       case Sentiment.positive:
         return AppDesignTokens.successColor(context);
       case Sentiment.neutral:
-        return Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ?? Colors.grey;
+        return Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.color
+                ?.withValues(alpha: 0.7) ??
+            Colors.grey;
       case Sentiment.negative:
         return AppDesignTokens.accentColor;
     }

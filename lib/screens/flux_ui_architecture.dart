@@ -339,7 +339,7 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
           height: widget.size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withOpacity(0.3 + _controller.value * 0.7),
+            color: color.withValues(alpha: 0.3 + _controller.value * 0.7),
           ),
           child: Icon(
             Icons.circle,
@@ -642,7 +642,4 @@ abstract class FlowPageStructure extends StatelessWidget {
     );
   }
 }
-
-
-
 

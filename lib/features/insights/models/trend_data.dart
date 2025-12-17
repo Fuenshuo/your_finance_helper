@@ -2,9 +2,9 @@ import 'package:equatable/equatable.dart';
 
 /// Represents weekly spending trend data points for chart visualization.
 class TrendData extends Equatable {
-  final DateTime date;           // Data point date
-  final double amount;          // Spending amount for this day
-  final String dayLabel;        // Display label (e.g., "Mon", "Tue")
+  final DateTime date; // Data point date
+  final double amount; // Spending amount for this day
+  final String dayLabel; // Display label (e.g., "Mon", "Tue")
 
   const TrendData({
     required this.date,

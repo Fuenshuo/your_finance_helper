@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 class AssetOverviewCard extends StatelessWidget {

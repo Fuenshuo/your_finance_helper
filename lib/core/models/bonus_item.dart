@@ -219,19 +219,22 @@ class BonusItem extends Equatable {
   /// 计算指定年月的奖金金额
   double calculateMonthlyBonus(int year, int month) {
     final date = DateTime(year, month);
-    Logger.debug('🎁 计算奖金月份: ${name}, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency');
+    Logger.debug(
+        '🎁 计算奖金月份: ${name}, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency');
 
     // 检查奖金是否在指定日期有效
     // 对于十三薪和年终奖，我们特殊处理日期检查
-    if (type == BonusType.thirteenthSalary || type == BonusType.doublePayBonus) {
+    if (type == BonusType.thirteenthSalary ||
+        type == BonusType.doublePayBonus) {
       // 特殊处理十三薪和双薪
-    } else if (type == BonusType.yearEndBonus && frequency == BonusFrequency.oneTime) {
+    } else if (type == BonusType.yearEndBonus &&
+        frequency == BonusFrequency.oneTime) {
       // 特殊处理一次性年终奖 - 只需检查年份
       if (startDate.year > year) {
         Logger.debug('  奖金开始年份在目标年份之后，返回0');
         return 0;
       }
-      
+
       if (endDate != null && endDate!.year < year) {
         Logger.debug('  奖金结束年份在目标年份之前，返回0');
         return 0;
@@ -259,19 +262,25 @@ class BonusItem extends Equatable {
                   thirteenthSalaryMonth != null
               ? thirteenthSalaryMonth!
               : (attributionDate ?? startDate).month; // 如果没有归属日期，则使用开始日期的月份
-              
-          final result = (attributionDate ?? startDate).year <= year && bonusMonth == month ? amount : 0.0;
+
+          final result =
+              (attributionDate ?? startDate).year <= year && bonusMonth == month
+                  ? amount
+                  : 0.0;
           Logger.debug('  一次性奖金(十三薪/回奖金): 月份=$bonusMonth, 结果=$result');
           return result;
         } else if (type == BonusType.yearEndBonus) {
           // 一次性年终奖：在归属日期指定的月份发放
           // attributionDate表示奖金归属的日期，例如2025-04-15表示2025年4月获得的奖金
           final targetDate = attributionDate ?? startDate; // 如果没有归属日期，则使用开始日期
-          final result = targetDate.year == year && targetDate.month == month ? amount : 0.0;
+          final result = targetDate.year == year && targetDate.month == month
+              ? amount
+              : 0.0;
           Logger.debug('  一次性年终奖: 结果=$result');
           return result;
         }
-        final result = startDate.year == year && startDate.month == month ? amount : 0.0;
+        final result =
+            startDate.year == year && startDate.month == month ? amount : 0.0;
         Logger.debug('  一次性奖金: 结果=$result');
         return result;
       case BonusFrequency.monthly:
@@ -302,7 +311,7 @@ class BonusItem extends Equatable {
             expectedPayments++;
           }
         }
-        
+
         // 如果已经超过了发放次数，返回0
         if (expectedPayments > paymentCount) {
           Logger.debug('  已超过发放次数($expectedPayments > $paymentCount)，返回0');
@@ -330,10 +339,6 @@ class BonusItem extends Equatable {
 
   /// 计算指定年份的奖金金额
   double calculateAnnualBonus(int year) {
-    final now = DateTime.now();
-    final yearStart = DateTime(year);
-    final yearEnd = DateTime(year, 12, 31);
-
     // 检查奖金是否在指定年份有效
     if (startDate.year > year) {
       return 0; // 奖金开始日期在目标年份之后
@@ -346,9 +351,10 @@ class BonusItem extends Equatable {
     switch (frequency) {
       case BonusFrequency.oneTime:
         // 一次性奖金：检查是否在有效年度内
-        if (startDate.year <= year && (endDate == null || endDate!.year >= year)) {
+        if (startDate.year <= year &&
+            (endDate == null || endDate!.year >= year)) {
           // 检查是否已发放或在年度内
-          if (startDate.isBefore(DateTime(year + 1, 1, 1)) && 
+          if (startDate.isBefore(DateTime(year + 1, 1, 1)) &&
               (endDate == null || endDate!.isAfter(DateTime(year, 1, 1)))) {
             return amount; // 在年度内，返回全额
           }
@@ -357,6 +363,7 @@ class BonusItem extends Equatable {
 
       case BonusFrequency.annual:
         // 年度奖金：检查是否已经发放
+        final now = DateTime.now();
         if (startDate.isBefore(now) || startDate.isAtSameMomentAs(now)) {
           return amount; // 已发放，返回全额
         }
@@ -364,15 +371,15 @@ class BonusItem extends Equatable {
 
       case BonusFrequency.quarterly:
         // 季度奖金：计算已经发放的季度数
-        return _calculateQuarterlyBonus(year, now);
+        return _calculateQuarterlyBonus(year, DateTime.now());
 
       case BonusFrequency.monthly:
         // 月度奖金：计算已经发放的月份数
-        return _calculateMonthlyBonus(year, now);
+        return _calculateMonthlyBonus(year, DateTime.now());
 
       case BonusFrequency.semiAnnual:
         // 半年奖金：计算已经发放的半年数
-        return _calculateSemiAnnualBonus(year, now);
+        return _calculateSemiAnnualBonus(year, DateTime.now());
     }
   }
 
@@ -389,15 +396,16 @@ class BonusItem extends Equatable {
 
     // 计算已发放的季度奖金次数
     var paidCount = 0;
-    
+
     // 遍历年内的每个季度发放月份
     for (final month in quarterlyMonths) {
       final paymentDate = DateTime(year, month, salaryDay);
-      
+
       // 检查这个发放日期是否已过且在奖金有效期内
-      if (paymentDate.isBefore(currentDate) || paymentDate.isAtSameMomentAs(currentDate)) {
+      if (paymentDate.isBefore(currentDate) ||
+          paymentDate.isAtSameMomentAs(currentDate)) {
         // 检查这个发放日期是否在奖金的有效期内
-        if (!paymentDate.isBefore(startDate) && 
+        if (!paymentDate.isBefore(startDate) &&
             (endDate == null || !paymentDate.isAfter(endDate!))) {
           paidCount++;
         }
@@ -466,55 +474,6 @@ class BonusItem extends Equatable {
     return bonusPerHalf * paidHalfs;
   }
 
-  /// 计算生效月份数
-  int _calculateEffectiveMonths(DateTime start, DateTime end) {
-    var months = 0;
-    var current = DateTime(start.year, start.month);
-
-    while (current.isBefore(end) ||
-        current.isAtSameMomentAs(DateTime(end.year, end.month))) {
-      months++;
-      current = DateTime(current.year, current.month + 1);
-    }
-
-    return months;
-  }
-
-  /// 计算生效季度数
-  int _calculateEffectiveQuarters(DateTime start, DateTime end) {
-    var quarters = 0;
-    var current = DateTime(start.year, ((start.month - 1) ~/ 3) * 3 + 1);
-
-    while (current.isBefore(end) ||
-        current.isAtSameMomentAs(
-          DateTime(end.year, ((end.month - 1) ~/ 3) * 3 + 1),
-        )) {
-      quarters++;
-      final nextQuarter = current.month + 3;
-      current = DateTime(
-        current.year + (nextQuarter > 12 ? 1 : 0),
-        (nextQuarter - 1) % 12 + 1,
-      );
-    }
-
-    return quarters;
-  }
-
-  /// 计算生效半年数
-  int _calculateEffectiveSemiYears(DateTime start, DateTime end) {
-    var semiYears = 0;
-    var current = DateTime(start.year, start.month <= 6 ? 1 : 7);
-
-    while (current.isBefore(end) ||
-        current.isAtSameMomentAs(DateTime(end.year, end.month <= 6 ? 1 : 7))) {
-      semiYears++;
-      final nextHalf = current.month <= 6 ? 7 : 1;
-      final nextYear = current.month <= 6 ? current.year : current.year + 1;
-      current = DateTime(nextYear, nextHalf);
-    }
-
-    return semiYears;
-  }
 
   /// 创建副本
   BonusItem copyWith({

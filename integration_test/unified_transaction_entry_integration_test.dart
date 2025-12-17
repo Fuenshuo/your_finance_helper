@@ -5,7 +5,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
-import 'package:your_finance_flutter/core/providers/flux_providers.dart';
 import 'package:your_finance_flutter/core/providers/stream_insights_flag_provider.dart';
 import 'package:your_finance_flutter/core/providers/theme_provider.dart';
 import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';

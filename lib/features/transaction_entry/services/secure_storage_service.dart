@@ -64,7 +64,7 @@ class SecureStorageService {
         aOptions: _androidOptions,
       );
       return value != null;
-    } on Exception catch (e) {
+    } catch (e) {
       return false;
     }
   }
@@ -95,7 +95,8 @@ class SecureStorageService {
   }
 
   /// 安全存储金融数据的便捷方法
-  static Future<void> saveFinancialData(String dataId, String encryptedData) async {
+  static Future<void> saveFinancialData(
+      String dataId, String encryptedData) async {
     await writeSecureData('financial_$dataId', encryptedData);
   }
 
@@ -109,4 +110,3 @@ class SecureStorageService {
     await deleteSecureData('financial_$dataId');
   }
 }
-

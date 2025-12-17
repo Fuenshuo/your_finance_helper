@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../core/providers/theme_provider.dart';
 import '../core/providers/theme_style_provider.dart';
 import '../core/router/flux_router.dart';
-import '../core/services/ai/ai_config_service.dart';
 import '../core/theme/app_design_tokens.dart';
 import '../core/widgets/composite/navigable_list_item.dart';
 import '../core/widgets/composite/switch_control_list_item.dart';
@@ -42,7 +41,7 @@ class SettingsScreen extends StatelessWidget {
                   Icons.smart_toy,
                   () => Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (context) => const AiConfigScreen(),
                     ),
                   ),
@@ -68,7 +67,8 @@ class SettingsScreen extends StatelessWidget {
                     return _buildNavigableItem(
                       context,
                       '主题风格',
-                      themeStyleProvider.getStyleDisplayName(themeStyleProvider.currentStyle),
+                      themeStyleProvider
+                          .getStyleDisplayName(themeStyleProvider.currentStyle),
                       Icons.palette,
                       () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -93,12 +93,13 @@ class SettingsScreen extends StatelessWidget {
                   'Flux Ledger v1.0.0',
                   Icons.info_outline,
                   () {
-                    showDialog(
+                    showDialog<void>(
                       context: context,
                       builder: (context) => AlertDialog(
                         backgroundColor: AppDesignTokens.surface(context),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+                          borderRadius: BorderRadius.circular(
+                              AppDesignTokens.radiusMedium(context)),
                         ),
                         title: Text(
                           '关于 Flux Ledger',
@@ -116,7 +117,9 @@ class SettingsScreen extends StatelessWidget {
                             onPressed: () => Navigator.of(context).pop(),
                             child: Text(
                               '确定',
-                              style: TextStyle(color: AppDesignTokens.primaryAction(context)),
+                              style: TextStyle(
+                                  color:
+                                      AppDesignTokens.primaryAction(context)),
                             ),
                           ),
                         ],
@@ -132,7 +135,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSection(
+      BuildContext context, String title, List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -28,13 +28,16 @@ class VerificationSession {
   int get totalChecks => _results.length;
 
   /// Get number of passed checks
-  int get passedChecks => _results.where((r) => r.status == VerificationStatus.pass).length;
+  int get passedChecks =>
+      _results.where((r) => r.status == VerificationStatus.pass).length;
 
   /// Get number of failed checks
-  int get failedChecks => _results.where((r) => r.status == VerificationStatus.fail).length;
+  int get failedChecks =>
+      _results.where((r) => r.status == VerificationStatus.fail).length;
 
   /// Get number of warning checks
-  int get warningChecks => _results.where((r) => r.status == VerificationStatus.warning).length;
+  int get warningChecks =>
+      _results.where((r) => r.status == VerificationStatus.warning).length;
 
   /// Get overall session status
   VerificationStatus get overallStatus {
@@ -56,18 +59,18 @@ class VerificationSession {
   /// Get results for a specific component
   VerificationResult? getResultForComponent(String componentName) {
     return _results.cast<VerificationResult?>().firstWhere(
-      (result) => result?.componentName == componentName,
-      orElse: () => null,
-    );
+          (result) => result?.componentName == componentName,
+          orElse: () => null,
+        );
   }
 
   /// Get all failed results
   List<VerificationResult> get failedResults =>
-    _results.where((r) => r.status == VerificationStatus.fail).toList();
+      _results.where((r) => r.status == VerificationStatus.fail).toList();
 
   /// Get all warning results
   List<VerificationResult> get warningResults =>
-    _results.where((r) => r.status == VerificationStatus.warning).toList();
+      _results.where((r) => r.status == VerificationStatus.warning).toList();
 
   /// Get success rate as percentage
   double get successRate {
@@ -107,8 +110,8 @@ class VerificationSession {
   @override
   String toString() {
     return 'VerificationSession(id: $sessionId, checks: $totalChecks, '
-           'passed: $passedChecks, failed: $failedChecks, '
-           'status: ${overallStatus.value})';
+        'passed: $passedChecks, failed: $failedChecks, '
+        'status: ${overallStatus.value})';
   }
 
   /// Convert to JSON for serialization
@@ -134,9 +137,11 @@ class VerificationSession {
 
     final resultsJson = json['results'] as List<dynamic>;
     for (final resultJson in resultsJson) {
-      session.addResult(VerificationResult.fromJson(resultJson as Map<String, dynamic>));
+      session.addResult(
+          VerificationResult.fromJson(resultJson as Map<String, dynamic>));
     }
 
     return session;
   }
 }
+

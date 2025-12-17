@@ -110,4 +110,3 @@ class ConfidenceThresholds {
   /// 快速确认阈值（≥此值显示快速确认）
   final double quickConfirm;
 }
-

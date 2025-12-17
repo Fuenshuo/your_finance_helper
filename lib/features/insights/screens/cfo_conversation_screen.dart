@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
-import 'package:your_finance_flutter/core/widgets/app_card.dart';
-import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
-import 'package:your_finance_flutter/features/insights/services/ai_analysis_service.dart';
-import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
 
 /// Message in the CFO conversation
 class CFOMessage {
@@ -31,16 +27,15 @@ class CFOMessage {
     DateTime? timestamp,
     bool? isTyping,
     List<String>? suggestions,
-  }) {
-    return CFOMessage(
-      id: id ?? this.id,
-      sender: sender ?? this.sender,
-      content: content ?? this.content,
-      timestamp: timestamp ?? this.timestamp,
-      isTyping: isTyping ?? this.isTyping,
-      suggestions: suggestions ?? this.suggestions,
-    );
-  }
+  }) =>
+      CFOMessage(
+        id: id ?? this.id,
+        sender: sender ?? this.sender,
+        content: content ?? this.content,
+        timestamp: timestamp ?? this.timestamp,
+        isTyping: isTyping ?? this.isTyping,
+        suggestions: suggestions ?? this.suggestions,
+      );
 }
 
 enum MessageSender {
@@ -57,7 +52,8 @@ class CFOConversationScreen extends ConsumerStatefulWidget {
   const CFOConversationScreen({super.key});
 
   @override
-  ConsumerState<CFOConversationScreen> createState() => _CFOConversationScreenState();
+  ConsumerState<CFOConversationScreen> createState() =>
+      _CFOConversationScreenState();
 }
 
 class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
@@ -66,8 +62,6 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
   final ScrollController _scrollController = ScrollController();
   final List<CFOMessage> _messages = [];
   bool _isTyping = false;
-  late AiAnalysisService _aiService;
-
   // Quick suggestion buttons
   final List<String> _quickSuggestions = [
     '分析我的消费习惯',
@@ -80,19 +74,15 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
   @override
   void initState() {
     super.initState();
-    _initializeAIService();
     _addWelcomeMessage();
-  }
-
-  Future<void> _initializeAIService() async {
-    _aiService = await AiAnalysisService.getInstance();
   }
 
   void _addWelcomeMessage() {
     final welcomeMessage = CFOMessage(
       id: 'welcome',
       sender: MessageSender.cfo,
-      content: '您好！我是您的专属AI财务顾问。我可以帮您分析财务状况、优化预算分配、预测财务趋势，并提供个性化的财务建议。请问有什么我可以帮您的吗？',
+      content:
+          '您好！我是您的专属AI财务顾问。我可以帮您分析财务状况、优化预算分配、预测财务趋势，并提供个性化的财务建议。请问有什么我可以帮您的吗？',
       timestamp: DateTime.now(),
       suggestions: _quickSuggestions,
     );
@@ -110,81 +100,81 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppDesignTokens.pageBackground(context),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: AppDesignTokens.primaryAction(context),
-              child: Icon(
-                Icons.account_balance_wallet,
-                color: AppDesignTokens.onPrimaryAction(context),
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: AppDesignTokens.pageBackground(context),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: AppDesignTokens.primaryAction(context),
+                child: Icon(
+                  Icons.account_balance_wallet,
+                  color: AppDesignTokens.primaryAction(context),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'AI CFO 顾问',
-                  style: AppDesignTokens.headline(context).copyWith(
-                    color: AppDesignTokens.primaryText(context),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI CFO 顾问',
+                    style: AppDesignTokens.headline(context).copyWith(
+                      color: AppDesignTokens.primaryText(context),
+                    ),
                   ),
-                ),
-                Text(
-                  '在线为您服务',
-                  style: AppDesignTokens.caption(context).copyWith(
-                    color: AppDesignTokens.secondaryText(context),
+                  Text(
+                    '在线为您服务',
+                    style: AppDesignTokens.caption(context).copyWith(
+                      color: AppDesignTokens.secondaryText(context),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.more_vert,
+                color: AppDesignTokens.primaryText(context),
+              ),
+              onPressed: _showOptionsMenu,
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.more_vert,
-              color: AppDesignTokens.primaryText(context),
+        body: Column(
+          children: [
+            // Messages list
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16.0),
+                itemCount: _messages.length + (_isTyping ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index < _messages.length) {
+                    return _buildMessageItem(_messages[index]);
+                  } else {
+                    return _buildTypingIndicator();
+                  }
+                },
+              ),
             ),
-            onPressed: () => _showOptionsMenu(),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Messages list
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index < _messages.length) {
-                  return _buildMessageItem(_messages[index]);
-                } else {
-                  return _buildTypingIndicator();
-                }
-              },
-            ),
-          ),
 
-          // Quick suggestions (only show if no user message sent)
-          if (_messages.where((m) => m.sender == MessageSender.user).isEmpty &&
-              _messages.isNotEmpty &&
-              _messages.last.suggestions != null)
-            _buildQuickSuggestions(),
+            // Quick suggestions (only show if no user message sent)
+            if (_messages
+                    .where((m) => m.sender == MessageSender.user)
+                    .isEmpty &&
+                _messages.isNotEmpty &&
+                _messages.last.suggestions != null)
+              _buildQuickSuggestions(),
 
-          // Message input
-          _buildMessageInput(),
-        ],
-      ),
-    );
-  }
+            // Message input
+            _buildMessageInput(),
+          ],
+        ),
+      );
 
   Widget _buildMessageItem(CFOMessage message) {
     final isUser = message.sender == MessageSender.user;
@@ -193,7 +183,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -210,7 +201,6 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
             ),
             const SizedBox(width: 8),
           ],
-
           Flexible(
             child: Container(
               padding: const EdgeInsets.all(12.0),
@@ -239,39 +229,42 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
                     message.content,
                     style: AppDesignTokens.body(context).copyWith(
                       color: isUser
-                          ? AppDesignTokens.onPrimaryAction(context)
+                          ? AppDesignTokens.primaryAction(context)
                           : AppDesignTokens.primaryText(context),
                     ),
                   ),
-                  if (message.suggestions != null && message.suggestions!.isNotEmpty)
+                  if (message.suggestions != null &&
+                      message.suggestions!.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Wrap(
                         spacing: 8.0,
                         runSpacing: 8.0,
-                        children: message.suggestions!.map((suggestion) =>
-                          ActionChip(
-                            label: Text(
-                              suggestion,
-                              style: AppDesignTokens.caption(context),
-                            ),
-                            onPressed: () => _sendMessage(suggestion),
-                            backgroundColor: AppDesignTokens.inputFill(context),
-                          ),
-                        ).toList(),
+                        children: message.suggestions!
+                            .map(
+                              (suggestion) => ActionChip(
+                                label: Text(
+                                  suggestion,
+                                  style: AppDesignTokens.caption(context),
+                                ),
+                                onPressed: () => _sendMessage(suggestion),
+                                backgroundColor:
+                                    AppDesignTokens.inputFill(context),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                 ],
               ),
             ),
           ),
-
           if (isUser) ...[
             const SizedBox(width: 8),
             CircleAvatar(
               backgroundColor: AppDesignTokens.secondaryText(context),
               radius: 16,
-              child: Icon(
+              child: const Icon(
                 Icons.person,
                 color: Colors.white,
                 size: 16,
@@ -283,141 +276,136 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
     );
   }
 
-  Widget _buildTypingIndicator() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            backgroundColor: AppDesignTokens.primaryAction(context),
-            radius: 16,
-            child: Icon(
-              Icons.account_balance,
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: AppDesignTokens.surface(context),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.zero,
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
+  Widget _buildTypingIndicator() => Padding(
+        padding: const EdgeInsets.only(bottom: 16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: AppDesignTokens.primaryAction(context),
+              radius: 16,
+              child: const Icon(
+                Icons.account_balance,
+                color: Colors.white,
+                size: 16,
               ),
             ),
-            child: Row(
-              children: [
-                Text(
-                  'AI CFO正在思考',
-                  style: AppDesignTokens.body(context),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: AppDesignTokens.surface(context),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
                 ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppDesignTokens.primaryAction(context),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'AI CFO正在思考',
+                    style: AppDesignTokens.body(context),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppDesignTokens.primaryAction(context),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickSuggestions() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '快速提问',
-            style: AppDesignTokens.caption(context).copyWith(
-              color: AppDesignTokens.secondaryText(context),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: _quickSuggestions.map((suggestion) =>
-              ActionChip(
-                label: Text(
-                  suggestion,
-                  style: AppDesignTokens.caption(context),
-                ),
-                onPressed: () => _sendMessage(suggestion),
-                backgroundColor: AppDesignTokens.inputFill(context),
+                ],
               ),
-            ).toList(),
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      );
 
-  Widget _buildMessageInput() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: AppDesignTokens.surface(context),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: '输入您的问题...',
-                hintStyle: AppDesignTokens.body(context).copyWith(
-                  color: AppDesignTokens.secondaryText(context),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: AppDesignTokens.inputFill(context),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 12.0,
-                ),
+  Widget _buildQuickSuggestions() => Container(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '快速提问',
+              style: AppDesignTokens.caption(context).copyWith(
+                color: AppDesignTokens.secondaryText(context),
               ),
-              maxLines: 3,
-              minLines: 1,
-              onSubmitted: (_) => _sendCurrentMessage(),
             ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(
-              Icons.send,
-              color: AppDesignTokens.primaryAction(context),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: _quickSuggestions
+                  .map(
+                    (suggestion) => ActionChip(
+                      label: Text(
+                        suggestion,
+                        style: AppDesignTokens.caption(context),
+                      ),
+                      onPressed: () => _sendMessage(suggestion),
+                      backgroundColor: AppDesignTokens.inputFill(context),
+                    ),
+                  )
+                  .toList(),
             ),
-            onPressed: _isTyping ? null : _sendCurrentMessage,
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+
+  Widget _buildMessageInput() => Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: AppDesignTokens.surface(context),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _messageController,
+                decoration: InputDecoration(
+                  hintText: '输入您的问题...',
+                  hintStyle: AppDesignTokens.body(context).copyWith(
+                    color: AppDesignTokens.secondaryText(context),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: AppDesignTokens.inputFill(context),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 12.0,
+                  ),
+                ),
+                maxLines: 3,
+                minLines: 1,
+                onSubmitted: (_) => _sendCurrentMessage(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: Icon(
+                Icons.send,
+                color: AppDesignTokens.primaryAction(context),
+              ),
+              onPressed: _isTyping ? null : _sendCurrentMessage,
+            ),
+          ],
+        ),
+      );
 
   void _sendCurrentMessage() {
     final text = _messageController.text.trim();
@@ -444,7 +432,7 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
     _scrollToBottom();
 
     // Simulate AI processing delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
 
     // Generate CFO response based on the query
     final cfoResponse = await _generateCFOResponse(content);
@@ -477,7 +465,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
 • 定期检查并取消不需要的订阅服务
 
 您希望我深入分析某个特定方面的消费吗？
-      '''.trim();
+      '''
+          .trim();
       suggestions = ['详细分析餐饮支出', '查看周末消费模式', '优化订阅服务'];
     } else if (userQuery.contains('储蓄') || userQuery.contains('存款')) {
       response = '''
@@ -494,7 +483,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
 • 建立3-6个月的生活费应急基金
 
 您想了解具体的储蓄计划吗？
-      '''.trim();
+      '''
+          .trim();
       suggestions = ['制定储蓄计划', '推荐储蓄产品', '建立应急基金'];
     } else if (userQuery.contains('预算') || userQuery.contains('分配')) {
       response = '''
@@ -511,7 +501,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
 • 储蓄投资：当前10% → 建议20%（📈提升空间）
 
 需要我帮您制定详细的预算计划吗？
-      '''.trim();
+      '''
+          .trim();
       suggestions = ['制定月度预算', '调整支出比例', '设置预算提醒'];
     } else {
       response = '''
@@ -533,7 +524,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
 • 消费异常检测和预警
 
 请问您想了解哪个方面的财务问题呢？
-      '''.trim();
+      '''
+          .trim();
       suggestions = _quickSuggestions;
     }
 
@@ -559,7 +551,7 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
   }
 
   void _showOptionsMenu() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16.0),
@@ -567,7 +559,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.history, color: AppDesignTokens.primaryAction(context)),
+              leading: Icon(Icons.history,
+                  color: AppDesignTokens.primaryAction(context)),
               title: Text('对话历史', style: AppDesignTokens.body(context)),
               onTap: () {
                 Navigator.of(context).pop();
@@ -575,7 +568,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings, color: AppDesignTokens.primaryAction(context)),
+              leading: Icon(Icons.settings,
+                  color: AppDesignTokens.primaryAction(context)),
               title: Text('顾问设置', style: AppDesignTokens.body(context)),
               onTap: () {
                 Navigator.of(context).pop();
@@ -583,7 +577,8 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
               },
             ),
             ListTile(
-              leading: Icon(Icons.help_outline, color: AppDesignTokens.primaryAction(context)),
+              leading: Icon(Icons.help_outline,
+                  color: AppDesignTokens.primaryAction(context)),
               title: Text('帮助说明', style: AppDesignTokens.body(context)),
               onTap: () {
                 Navigator.of(context).pop();

@@ -29,7 +29,6 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
   AccountType _selectedType = AccountType.bank;
   AccountStatus _selectedStatus = AccountStatus.active;
   String _selectedCurrency = 'CNY';
-  DateTime? _selectedOpenDate;
 
   bool _isDefault = false;
   bool _isHidden = false;

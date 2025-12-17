@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/features/transaction_entry/screens/transaction_entry_screen.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
-import 'package:your_finance_flutter/features/transaction_entry/providers/input_validation_provider.dart';
 
 /// 端到端测试 - 完整用户交互流程
 ///
@@ -74,7 +73,6 @@ void main() {
       final draftManager = newContainer.read(draftManagerProvider.notifier);
       await draftManager.loadSavedDrafts();
 
-      final loadedState = newContainer.read(draftManagerProvider);
       // 注意：实际实现中需要确保数据持久化逻辑
 
       newContainer.dispose();
@@ -113,15 +111,13 @@ void main() {
       expect(errorState.parseError, isNull); // 空输入不应该产生错误
 
       // 2. 测试验证错误
-      final validationNotifier = container.read(inputValidationProvider.notifier);
-
       // TODO: 测试验证错误的处理流程
       // - 显示错误消息
       // - 提供修正建议
       // - 允许用户重试
     });
 
-    test('accessibility compliance', () async {
+    testWidgets('accessibility compliance', (WidgetTester tester) async {
       // 测试无障碍功能合规性
 
       await tester.pumpWidget(
@@ -146,7 +142,7 @@ void main() {
       // - 颜色对比度检查
     });
 
-    test('cross-platform compatibility', () async {
+    testWidgets('cross-platform compatibility', (WidgetTester tester) async {
       // 测试跨平台兼容性
 
       // 注意：Flutter的集成测试可以在不同平台上运行

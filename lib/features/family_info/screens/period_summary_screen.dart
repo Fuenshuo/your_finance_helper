@@ -23,14 +23,16 @@ class PeriodSummaryScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PeriodSummaryScreen> createState() => _PeriodSummaryScreenState();
+  ConsumerState<PeriodSummaryScreen> createState() =>
+      _PeriodSummaryScreenState();
 }
 
 class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
   final PeriodClearanceService _clearanceService = PeriodClearanceService();
-  final WidgetsToImageController _widgetsToImageController = WidgetsToImageController();
+  final WidgetsToImageController _widgetsToImageController =
+      WidgetsToImageController();
   final GlobalKey _contentKey = GlobalKey();
-  
+
   PeriodSummary? _summary;
   bool _isLoading = false;
 
@@ -47,9 +49,10 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
 
   Future<void> _loadSummary() async {
     setState(() => _isLoading = true);
-    
+
     try {
-      final summary = await _clearanceService.generatePeriodSummary(widget.session.id);
+      final summary =
+          await _clearanceService.generatePeriodSummary(widget.session.id);
       setState(() {
         _summary = summary;
       });
@@ -86,7 +89,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
               : LayoutBuilder(
                   builder: (context, constraints) {
                     final screenWidth = constraints.maxWidth;
-                    final contentWidth = screenWidth - context.responsiveSpacing16 * 2;
+                    final contentWidth =
+                        screenWidth - context.responsiveSpacing16 * 2;
                     return Stack(
                       children: [
                         // 用户看到的可滚动内容
@@ -153,14 +157,16 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                   vertical: context.responsiveSpacing4,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  border:
+                      Border.all(color: Colors.green.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green, size: 14),
+                    const Icon(Icons.check_circle,
+                        color: Colors.green, size: 14),
                     SizedBox(width: context.responsiveSpacing4),
                     const Text(
                       '已完成',
@@ -205,7 +211,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
             style: context.responsiveHeadlineMedium,
           ),
           SizedBox(height: context.responsiveSpacing16),
-          
+
           Row(
             children: [
               Expanded(
@@ -229,29 +235,35 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                   '净变化',
                   context.formatAmount(_summary!.netChange),
                   _summary!.netChange >= 0 ? Colors.green : Colors.red,
-                  _summary!.netChange >= 0 ? Icons.add_circle : Icons.remove_circle,
+                  _summary!.netChange >= 0
+                      ? Icons.add_circle
+                      : Icons.remove_circle,
                 ),
               ),
             ],
           ),
-          
+
           SizedBox(height: context.responsiveSpacing16),
-          
+
           // 净变化百分比
           if (_summary!.totalIncome > 0) ...[
             Container(
               padding: EdgeInsets.all(context.responsiveSpacing12),
               decoration: BoxDecoration(
-                color: (_summary!.netChange >= 0 ? Colors.green : Colors.red).withOpacity(0.1),
+                color: (_summary!.netChange >= 0 ? Colors.green : Colors.red)
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: (_summary!.netChange >= 0 ? Colors.green : Colors.red).withOpacity(0.3),
+                  color: (_summary!.netChange >= 0 ? Colors.green : Colors.red)
+                      .withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
-                    _summary!.netChange >= 0 ? Icons.trending_up : Icons.trending_down,
+                    _summary!.netChange >= 0
+                        ? Icons.trending_up
+                        : Icons.trending_down,
                     color: _summary!.netChange >= 0 ? Colors.green : Colors.red,
                     size: 20,
                   ),
@@ -260,7 +272,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                     _summary!.netChange >= 0 ? '本期盈余' : '本期亏损',
                     style: context.responsiveBodyMedium.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: _summary!.netChange >= 0 ? Colors.green : Colors.red,
+                      color:
+                          _summary!.netChange >= 0 ? Colors.green : Colors.red,
                     ),
                   ),
                   const Spacer(),
@@ -268,7 +281,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                     '${((_summary!.netChange / _summary!.totalIncome) * 100).toStringAsFixed(1)}%',
                     style: context.responsiveBodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: _summary!.netChange >= 0 ? Colors.green : Colors.red,
+                      color:
+                          _summary!.netChange >= 0 ? Colors.green : Colors.red,
                     ),
                   ),
                 ],
@@ -291,7 +305,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
             style: context.responsiveHeadlineMedium,
           ),
           SizedBox(height: context.responsiveSpacing16),
-          
+
           // 收支对比图表（简化版）
           Container(
             height: 120,
@@ -322,9 +336,9 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
               ],
             ),
           ),
-          
+
           SizedBox(height: context.responsiveSpacing16),
-          
+
           // 收支比例
           Row(
             children: [
@@ -332,7 +346,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                 child: _buildRatioInfo(
                   '收入占比',
                   _summary!.totalIncome + _summary!.totalExpense > 0
-                      ? (_summary!.totalIncome / (_summary!.totalIncome + _summary!.totalExpense))
+                      ? (_summary!.totalIncome /
+                          (_summary!.totalIncome + _summary!.totalExpense))
                       : 0.0,
                   Colors.green,
                 ),
@@ -341,7 +356,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                 child: _buildRatioInfo(
                   '支出占比',
                   _summary!.totalIncome + _summary!.totalExpense > 0
-                      ? (_summary!.totalExpense / (_summary!.totalIncome + _summary!.totalExpense))
+                      ? (_summary!.totalExpense /
+                          (_summary!.totalIncome + _summary!.totalExpense))
                       : 0.0,
                   Colors.red,
                 ),
@@ -372,18 +388,18 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
             style: context.responsiveHeadlineMedium,
           ),
           SizedBox(height: context.responsiveSpacing16),
-          
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: sortedCategories.length,
-            separatorBuilder: (context, index) => SizedBox(height: context.responsiveSpacing8),
+            separatorBuilder: (context, index) =>
+                SizedBox(height: context.responsiveSpacing8),
             itemBuilder: (context, index) {
               final entry = sortedCategories[index];
               final percentage = _summary!.totalExpense > 0
                   ? (entry.value / _summary!.totalExpense)
                   : 0.0;
-              
+
               return _buildCategoryItem(
                 entry.key,
                 entry.value,
@@ -419,7 +435,6 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
             ],
           ),
           SizedBox(height: context.responsiveSpacing16),
-          
           if (_summary!.topTransactions.isEmpty)
             Center(
               child: Padding(
@@ -517,14 +532,15 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
   }
 
   // 辅助UI组件
-  Widget _buildOverviewItem(String label, String value, Color color, IconData icon) {
+  Widget _buildOverviewItem(
+      String label, String value, Color color, IconData icon) {
     return Column(
       children: [
         Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 24),
@@ -548,7 +564,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
     );
   }
 
-  Widget _buildBarChart(String label, double amount, Color color, double ratio) {
+  Widget _buildBarChart(
+      String label, double amount, Color color, double ratio) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
@@ -576,7 +593,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
                   height: barHeight,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(4)),
                   ),
                 ),
               );
@@ -627,7 +645,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
     );
   }
 
-  Widget _buildCategoryItem(String categoryName, double amount, double percentage, Color color) {
+  Widget _buildCategoryItem(
+      String categoryName, double amount, double percentage, Color color) {
     return Row(
       children: [
         Container(
@@ -669,7 +688,8 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: _getCategoryColor(transaction.category.displayName).withOpacity(0.1),
+          color: _getCategoryColor(transaction.category.displayName)
+              .withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -690,7 +710,9 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       ),
       trailing: Text(
         context.formatAmount(
-          transaction.category.isIncome ? transaction.amount : -transaction.amount,
+          transaction.category.isIncome
+              ? transaction.amount
+              : -transaction.amount,
         ),
         style: context.amountStyle(
           isPositive: transaction.category.isIncome,
@@ -714,7 +736,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       Colors.cyan,
       Colors.lime,
     ];
-    
+
     final index = categoryName.hashCode % colors.length;
     return colors[index.abs()];
   }
@@ -756,7 +778,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         context,
         message: '请等待总结生成完成',
         icon: Icons.info_outline,
-        backgroundColor: Colors.orange.withOpacity(0.2),
+        backgroundColor: Colors.orange.withValues(alpha: 0.2),
         textColor: Colors.orange,
         duration: const Duration(seconds: 2),
       );
@@ -813,7 +835,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         context,
         message: '正在生成图片...',
         icon: Icons.image,
-        backgroundColor: Colors.blue.withOpacity(0.2),
+        backgroundColor: Colors.blue.withValues(alpha: 0.2),
         textColor: Colors.blue,
         duration: const Duration(seconds: 1),
       );
@@ -829,17 +851,19 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       final imageBytes = await _widgetsToImageController.capture(
         pixelRatio: devicePixelRatio,
       );
-      
+
       // 打印调试信息
-      print('[PeriodSummaryScreen._shareAsImage] 📐 屏幕宽度: $screenWidth, 像素密度: $devicePixelRatio');
-      
+      print(
+          '[PeriodSummaryScreen._shareAsImage] 📐 屏幕宽度: $screenWidth, 像素密度: $devicePixelRatio');
+
       if (imageBytes == null) {
         throw Exception('截图失败，请重试');
       }
 
       // 保存到临时文件
       final tempDir = await getTemporaryDirectory();
-      final fileName = '财务总结_${widget.session.name}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.png';
+      final fileName =
+          '财务总结_${widget.session.name}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.png';
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(imageBytes);
 
@@ -857,7 +881,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         context,
         message: '图片分享成功',
         icon: Icons.check_circle,
-        backgroundColor: Colors.green.withOpacity(0.2),
+        backgroundColor: Colors.green.withValues(alpha: 0.2),
         textColor: Colors.green,
         duration: const Duration(seconds: 2),
       );
@@ -867,7 +891,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         context,
         message: '分享失败: $e',
         icon: Icons.error_outline,
-        backgroundColor: Colors.red.withOpacity(0.2),
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
         textColor: Colors.red,
         duration: const Duration(seconds: 3),
       );
@@ -880,17 +904,18 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
 
     try {
       final buffer = StringBuffer();
-      
+
       // 标题
       buffer.writeln('${widget.session.name}');
       buffer.writeln('=' * 40);
       buffer.writeln();
-      
+
       // 周期信息
       buffer.writeln('周期: ${widget.session.periodDescription}');
-      buffer.writeln('生成时间: ${DateFormat('yyyy-MM-dd HH:mm').format(_summary!.generatedDate)}');
+      buffer.writeln(
+          '生成时间: ${DateFormat('yyyy-MM-dd HH:mm').format(_summary!.generatedDate)}');
       buffer.writeln();
-      
+
       // 财务概览
       buffer.writeln('财务概览');
       buffer.writeln('-' * 40);
@@ -898,50 +923,61 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
       buffer.writeln('总支出: ${context.formatAmount(_summary!.totalExpense)}');
       buffer.writeln('净变化: ${context.formatAmount(_summary!.netChange)}');
       if (_summary!.totalIncome > 0) {
-        final percentage = ((_summary!.netChange / _summary!.totalIncome) * 100).toStringAsFixed(1);
-        buffer.writeln('${_summary!.netChange >= 0 ? "盈余" : "亏损"}率: $percentage%');
+        final percentage = ((_summary!.netChange / _summary!.totalIncome) * 100)
+            .toStringAsFixed(1);
+        buffer.writeln(
+            '${_summary!.netChange >= 0 ? "盈余" : "亏损"}率: $percentage%');
       }
       buffer.writeln();
-      
+
       // 收支分析
       if (_summary!.totalIncome + _summary!.totalExpense > 0) {
-        final incomeRatio = (_summary!.totalIncome / (_summary!.totalIncome + _summary!.totalExpense) * 100).toStringAsFixed(1);
-        final expenseRatio = (_summary!.totalExpense / (_summary!.totalIncome + _summary!.totalExpense) * 100).toStringAsFixed(1);
+        final incomeRatio = (_summary!.totalIncome /
+                (_summary!.totalIncome + _summary!.totalExpense) *
+                100)
+            .toStringAsFixed(1);
+        final expenseRatio = (_summary!.totalExpense /
+                (_summary!.totalIncome + _summary!.totalExpense) *
+                100)
+            .toStringAsFixed(1);
         buffer.writeln('收支分析');
         buffer.writeln('-' * 40);
         buffer.writeln('收入占比: $incomeRatio%');
         buffer.writeln('支出占比: $expenseRatio%');
         buffer.writeln();
       }
-      
+
       // 分类分析
       if (_summary!.categoryBreakdown.isNotEmpty) {
         buffer.writeln('分类分析');
         buffer.writeln('-' * 40);
         final sortedCategories = _summary!.categoryBreakdown.entries.toList()
           ..sort((a, b) => b.value.compareTo(a.value));
-        
+
         for (final entry in sortedCategories) {
           final percentage = _summary!.totalExpense > 0
               ? (entry.value / _summary!.totalExpense * 100).toStringAsFixed(1)
               : '0.0';
-          buffer.writeln('${entry.key}: ${context.formatAmount(entry.value)} ($percentage%)');
+          buffer.writeln(
+              '${entry.key}: ${context.formatAmount(entry.value)} ($percentage%)');
         }
         buffer.writeln();
       }
-      
+
       // 主要交易
       if (_summary!.topTransactions.isNotEmpty) {
         buffer.writeln('主要交易');
         buffer.writeln('-' * 40);
         for (final transaction in _summary!.topTransactions) {
           final sign = transaction.category.isIncome ? '+' : '-';
-          buffer.writeln('${sign}${context.formatAmount(transaction.amount)} - ${transaction.description}');
-          buffer.writeln('  ${transaction.category.displayName} • ${DateFormat('MM-dd').format(transaction.date)}');
+          buffer.writeln(
+              '${sign}${context.formatAmount(transaction.amount)} - ${transaction.description}');
+          buffer.writeln(
+              '  ${transaction.category.displayName} • ${DateFormat('MM-dd').format(transaction.date)}');
         }
         buffer.writeln();
       }
-      
+
       buffer.writeln('=' * 40);
       buffer.writeln('来自：家庭资产记账应用');
 
@@ -955,7 +991,7 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         context,
         message: '文本分享成功',
         icon: Icons.check_circle,
-        backgroundColor: Colors.green.withOpacity(0.2),
+        backgroundColor: Colors.green.withValues(alpha: 0.2),
         textColor: Colors.green,
         duration: const Duration(seconds: 2),
       );
@@ -965,11 +1001,10 @@ class _PeriodSummaryScreenState extends ConsumerState<PeriodSummaryScreen> {
         context,
         message: '分享失败: $e',
         icon: Icons.error_outline,
-        backgroundColor: Colors.red.withOpacity(0.2),
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
         textColor: Colors.red,
         duration: const Duration(seconds: 3),
       );
     }
   }
-
 }

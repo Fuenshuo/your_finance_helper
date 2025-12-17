@@ -13,8 +13,8 @@ import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/account_edit_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/add_transaction_screen.dart';
-import 'package:your_finance_flutter/features/transaction_flow/screens/transaction_detail_screen.dart';
+import 'package:your_finance_flutter/features/transaction_entry/screens/unified_transaction_entry_screen.dart';
+import 'package:your_finance_flutter/features/transaction_entry/screens/transaction_detail_screen.dart';
 
 /// 账户详情页面
 class AccountDetailScreen extends StatefulWidget {
@@ -237,8 +237,6 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
           )
           .toList()
         ..sort((a, b) => b.date.compareTo(a.date));
-
-      String? targetTransactionId;
 
       if (accountTransactions.isNotEmpty) {
         final latestTransaction = accountTransactions.first;
@@ -476,7 +474,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               color: (widget.account.type.isAsset
                       ? const Color(0xFF4CAF50)
                       : const Color(0xFFF44336))
-                  .withOpacity(0.3),
+                  .withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -489,7 +487,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                 Container(
                   padding: EdgeInsets.all(context.responsiveSpacing8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -513,7 +511,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                       Text(
                         widget.account.type.displayName,
                         style: context.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
@@ -598,21 +596,23 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: changeColor.withOpacity(
-                                  (clampedProgress * 0.95).clamp(0.0, 1.0),
+                                color: changeColor.withValues(
+                                  alpha:
+                                      (clampedProgress * 0.95).clamp(0.0, 1.0),
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: changeColor.withOpacity(
-                                      (clampedProgress * 0.4).clamp(0.0, 1.0),
+                                    color: changeColor.withValues(
+                                      alpha: (clampedProgress * 0.4)
+                                          .clamp(0.0, 1.0),
                                     ),
                                     blurRadius: 12,
                                     spreadRadius: 1,
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Text(
@@ -624,7 +624,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                                   fontWeight: FontWeight.w600,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.black.withOpacity(0.3),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.3),
                                       blurRadius: 2,
                                       offset: const Offset(0, 1),
                                     ),
@@ -643,7 +644,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             Text(
               '当前余额',
               style: context.textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -694,7 +695,6 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                 ],
               ),
             ),
-
           ],
         ),
       );
@@ -924,8 +924,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
               // 计算高亮效果
               final highlightColor = highlightProgress > 0.0
-                  ? Colors.yellow.shade400
-                      .withOpacity((highlightProgress * 0.3).clamp(0.0, 1.0))
+                  ? Colors.yellow.shade400.withValues(
+                      alpha: (highlightProgress * 0.3).clamp(0.0, 1.0))
                   : Colors.transparent;
 
               return Container(
@@ -940,7 +940,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: _getCategoryColor(transaction.category).withOpacity(0.1),
+                          color: _getCategoryColor(transaction.category)
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -964,12 +965,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                         children: [
                           Text(
                             context.formatAmount(
-                              transaction.type == TransactionType.income 
-                                  ? transaction.amount 
+                              transaction.type == TransactionType.income
+                                  ? transaction.amount
                                   : -transaction.amount,
                             ),
                             style: context.amountStyle(
-                              isPositive: transaction.type == TransactionType.income,
+                              isPositive:
+                                  transaction.type == TransactionType.income,
                             ),
                           ),
                           SizedBox(width: context.responsiveSpacing8),
@@ -977,7 +979,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                             onTap: () => _deleteTransaction(transaction),
                             behavior: HitTestBehavior.opaque,
                             child: Padding(
-                              padding: EdgeInsets.all(context.responsiveSpacing4),
+                              padding:
+                                  EdgeInsets.all(context.responsiveSpacing4),
                               child: Icon(
                                 Icons.delete_outline,
                                 color: Colors.red,
@@ -1001,7 +1004,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _getCategoryColor(transaction.category).withOpacity(0.1),
+                color: _getCategoryColor(transaction.category)
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -1025,8 +1029,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               children: [
                 Text(
                   context.formatAmount(
-                    transaction.type == TransactionType.income 
-                        ? transaction.amount 
+                    transaction.type == TransactionType.income
+                        ? transaction.amount
                         : -transaction.amount,
                   ),
                   style: context.amountStyle(
@@ -1105,7 +1109,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   }
 
   void _showAddTransactionMenu() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1151,24 +1155,22 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   }
 
   void _addTransaction(TransactionType type) {
-    // 根据交易类型设置初始账户
-    String? initialAccountId;
+    // 根据交易类型设置初始账户 (暂时未使用)
     switch (type) {
       case TransactionType.income:
-        initialAccountId = widget.account.id; // 收入到这个账户
+        // 收入到这个账户
+        break;
       case TransactionType.expense:
-        initialAccountId = widget.account.id; // 支出从这个账户
+        // 支出从这个账户
+        break;
       case TransactionType.transfer:
         // 转账时这个账户作为来源账户
         break;
     }
 
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AddTransactionScreen(
-          initialType: type,
-          initialAccountId: initialAccountId,
-        ),
+      MaterialPageRoute<void>(
+        builder: (context) => const UnifiedTransactionEntryScreen(),
       ),
     );
   }
@@ -1176,7 +1178,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
   void _editAccount() {
     // 导航到账户编辑页面
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (context) => AccountEditScreen(account: widget.account),
       ),
     );
@@ -1236,8 +1238,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
   void _showTransactionDetail(Transaction transaction) {
     Navigator.of(context).push(
-      AppAnimations.createRoute(
-        TransactionDetailScreen(transaction: transaction),
+      AppAnimations.createRoute<void>(
+        TransactionDetailScreen(transactionId: transaction.id),
       ),
     );
   }

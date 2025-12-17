@@ -2,8 +2,8 @@
 // 提供便捷的导入路径，优化代码组织
 
 // 屏幕页面导出
-export 'screens/transaction_entry_screen.dart';
 export 'screens/transaction_detail_screen.dart';
+export 'screens/unified_transaction_entry_screen.dart';
 
 // 主要组件导出
 export 'widgets/transaction_entry_screen.dart';

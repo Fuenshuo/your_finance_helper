@@ -123,7 +123,7 @@ class IOSAnimationStep {
     if (condition != null && !condition!()) return;
 
     if (delay > Duration.zero) {
-      await Future.delayed(delay);
+      await Future<void>.delayed(delay);
       return;
     }
 

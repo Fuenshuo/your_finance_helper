@@ -2,13 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
-import 'package:your_finance_flutter/features/insights/services/insight_service.dart';
 
 /// Provider for daily spending cap and micro-insights management
 class DailyCapProvider with ChangeNotifier {
-  DailyCapProvider(this._insightService);
-
-  final InsightService _insightService;
 
   DailyCap? _dailyCap;
   MicroInsight? _latestInsight;
@@ -33,7 +29,8 @@ class DailyCapProvider with ChangeNotifier {
 
           // Calculate daily budget reference (monthly budget - fixed expenses) / 30
           // This would be implemented based on user's monthly budget
-          const double dailyReference = 200.0; // Placeholder - implement real calculation
+          const double dailyReference =
+              200.0; // Placeholder - implement real calculation
 
           _dailyCap = DailyCap(
             id: 'daily_cap_${DateTime.now().toIso8601String().split('T').first}',
@@ -45,7 +42,6 @@ class DailyCapProvider with ChangeNotifier {
           );
 
           await _generateInitialInsight();
-
         } catch (e) {
           _error = e.toString();
         } finally {
@@ -73,7 +69,6 @@ class DailyCapProvider with ChangeNotifier {
           _dailyCap = updatedCap;
           await _generateMicroInsight();
           notifyListeners();
-
         } catch (e) {
           _error = e.toString();
           notifyListeners();
@@ -126,11 +121,13 @@ class DailyCapProvider with ChangeNotifier {
 
       if (percentage < 0.5) {
         sentiment = Sentiment.positive;
-        message = '今日非常克制，比平时少花 ¥${((reference - spending) * 0.3).toStringAsFixed(0)}，攒了一杯咖啡钱。';
+        message =
+            '今日非常克制，比平时少花 ¥${((reference - spending) * 0.3).toStringAsFixed(0)}，攒了一杯咖啡钱。';
         actions = ['保持良好的消费习惯'];
       } else if (percentage < 0.8) {
         sentiment = Sentiment.neutral;
-        message = '今日消费适中，还有 ¥${(reference - spending).toStringAsFixed(0)} 的预算空间。';
+        message =
+            '今日消费适中，还有 ¥${(reference - spending).toStringAsFixed(0)} 的预算空间。';
         actions = ['合理安排剩余预算'];
       } else if (percentage < 1.0) {
         sentiment = Sentiment.negative;
@@ -138,7 +135,8 @@ class DailyCapProvider with ChangeNotifier {
         actions = ['注意控制后续消费', '查看大额消费明细'];
       } else {
         sentiment = Sentiment.negative;
-        message = '今日预算超支 ¥${(spending - reference).toStringAsFixed(0)}，建议未来 3 天吃土平衡一下。';
+        message =
+            '今日预算超支 ¥${(spending - reference).toStringAsFixed(0)}，建议未来 3 天吃土平衡一下。';
         actions = ['分析超支原因', '调整明日消费计划', '查看节省建议'];
       }
 
@@ -151,7 +149,6 @@ class DailyCapProvider with ChangeNotifier {
         actions: actions,
         trigger: InsightTrigger.transactionAdded,
       );
-
     } catch (e) {
       _error = e.toString();
     }

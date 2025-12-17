@@ -5,16 +5,31 @@ import 'package:your_finance_flutter/core/models/transaction.dart';
 
 // 收入类型枚举
 enum IncomeType {
+  /// 工资收入
   salary('工资收入'),
+
+  /// 奖金收入
   bonus('奖金'),
+
+  /// 补贴收入
   subsidy('补贴'),
+
+  /// 投资收益
   investment('投资收益'),
+
+  /// 兼职收入
   freelance('兼职收入'),
+
+  /// 其他收入
   other('其他收入');
 
+  /// 构造函数
   const IncomeType(this.displayName);
+
+  /// 显示名称
   final String displayName;
 
+  /// 根据显示名称创建收入类型枚举
   static IncomeType fromDisplayName(String displayName) =>
       IncomeType.values.firstWhere(
         (e) => e.displayName == displayName,
@@ -24,8 +39,13 @@ enum IncomeType {
 
 // 预算类型枚举
 enum BudgetType {
+  /// 信封预算 - 预先分配固定金额到不同类别
   envelope('信封预算'),
+
+  /// 零基预算 - 每次预算周期重新分配
   zeroBased('零基预算'),
+
+  /// 分类预算 - 按交易分类设置预算限额
   category('分类预算');
 
   const BudgetType(this.displayName);
@@ -98,7 +118,7 @@ class EnvelopeBudget extends Equatable {
         creationDate = creationDate ?? DateTime.now(),
         updateDate = updateDate ?? DateTime.now();
 
-  // 反序列化
+  /// 从JSON格式反序列化
   factory EnvelopeBudget.fromJson(Map<String, dynamic> json) => EnvelopeBudget(
         id: json['id'] as String,
         name: json['name'] as String,
@@ -126,30 +146,69 @@ class EnvelopeBudget extends Equatable {
         color: json['color'] as String?,
         iconName: json['iconName'] as String?,
         isEssential: json['isEssential'] as bool? ?? false,
-        warningThreshold: json['warningThreshold'] as double?,
-        limitThreshold: json['limitThreshold'] as double?,
+        warningThreshold:
+            (json['warningThreshold'] as num?)?.toDouble() ?? 80.0,
+        limitThreshold: (json['limitThreshold'] as num?)?.toDouble() ?? 100.0,
         tags: List<String>.from((json['tags'] as List<dynamic>?) ?? []),
         creationDate: DateTime.parse(json['creationDate'] as String),
         updateDate: DateTime.parse(json['updateDate'] as String),
       );
+
+  /// 预算ID
   final String id;
+
+  /// 预算名称
   final String name;
-  final String? description;
+
+  /// 预算分类
   final TransactionCategory category;
-  final double allocatedAmount; // 分配的金额
-  final double spentAmount; // 已花费金额
-  final double availableAmount; // 可用金额
+
+  /// 分配金额
+  final double allocatedAmount;
+
+  /// 预算周期
   final BudgetPeriod period;
+
+  /// 开始日期
   final DateTime startDate;
+
+  /// 结束日期
   final DateTime endDate;
+
+  /// 预算描述
+  final String? description;
+
+  /// 已支出金额
+  final double spentAmount;
+
+  /// 可用金额（计算属性）
+  final double availableAmount;
+
+  /// 预算状态
   final BudgetStatus status;
-  final String? color; // 信封颜色
-  final String? iconName; // 图标名称
-  final bool isEssential; // 是否为必需支出
-  final double? warningThreshold; // 警告阈值（百分比）
-  final double? limitThreshold; // 限制阈值（百分比）
+
+  /// 预算颜色
+  final String? color;
+
+  /// 图标名称
+  final String? iconName;
+
+  /// 是否为必需支出
+  final bool isEssential;
+
+  /// 警告阈值百分比
+  final double warningThreshold;
+
+  /// 限制阈值百分比
+  final double limitThreshold;
+
+  /// 预算标签
   final List<String> tags;
+
+  /// 创建日期
   final DateTime creationDate;
+
+  /// 更新日期
   final DateTime updateDate;
 
   // 复制并修改
@@ -201,12 +260,10 @@ class EnvelopeBudget extends Equatable {
   }
 
   // 是否达到警告阈值
-  bool get isWarningThresholdReached =>
-      usagePercentage >= (warningThreshold ?? 80.0);
+  bool get isWarningThresholdReached => usagePercentage >= warningThreshold;
 
   // 是否达到限制阈值
-  bool get isLimitThresholdReached =>
-      usagePercentage >= (limitThreshold ?? 100.0);
+  bool get isLimitThresholdReached => usagePercentage >= limitThreshold;
 
   // 是否超支
   bool get isOverBudget => spentAmount > allocatedAmount;
@@ -404,10 +461,6 @@ class ZeroBasedBudget extends Equatable {
         updateDate,
       ];
 }
-
-// 计算总奖金金额的辅助函数
-double _calculateTotalBonuses(List<BonusItem> bonuses, int year) =>
-    bonuses.fold(0.0, (sum, bonus) => sum + bonus.calculateAnnualBonus(year));
 
 // 津贴记录模型
 class AllowanceRecord extends Equatable {

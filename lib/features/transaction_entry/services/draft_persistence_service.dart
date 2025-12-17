@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/draft_transaction.dart';
 
@@ -30,14 +31,11 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
   static const String _draftsKey = 'transaction_drafts';
   static const int _maxDrafts = 50; // 最大保存草稿数量
 
-  final FlutterSecureStorage _secureStorage;
   final Future<SharedPreferences> _prefsFuture;
 
   DefaultDraftPersistenceService({
-    FlutterSecureStorage? secureStorage,
     Future<SharedPreferences>? prefsFuture,
-  }) : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
-       _prefsFuture = prefsFuture ?? SharedPreferences.getInstance();
+  })  : _prefsFuture = prefsFuture ?? SharedPreferences.getInstance();
 
   @override
   Future<DraftTransaction> saveDraft(DraftTransaction draft) async {
@@ -46,7 +44,8 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
       final drafts = await loadAllDrafts();
 
       // 更新或添加草稿
-      final existingIndex = drafts.indexWhere((d) => d.createdAt == draft.createdAt);
+      final existingIndex =
+          drafts.indexWhere((d) => d.createdAt == draft.createdAt);
       if (existingIndex >= 0) {
         drafts[existingIndex] = draft.copyWith(updatedAt: DateTime.now());
       } else {
@@ -97,7 +96,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
       return drafts;
     } catch (e) {
       // 如果解密或解析失败，返回空列表并记录错误
-      developer.debugPrint('加载草稿失败: ${e.toString()}');
+      debugPrint('加载草稿失败: ${e.toString()}');
       return [];
     }
   }
@@ -106,9 +105,9 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
   Future<DraftTransaction?> loadDraft(String id) async {
     final drafts = await loadAllDrafts();
     return drafts.cast<DraftTransaction?>().firstWhere(
-      (draft) => draft?.createdAt.toIso8601String() == id,
-      orElse: () => null,
-    );
+          (draft) => draft?.createdAt.toIso8601String() == id,
+          orElse: () => null,
+        );
   }
 
   @override
@@ -176,7 +175,10 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
     return DraftTransaction(
       amount: json['amount'] as double?,
       description: json['description'] as String?,
-      type: TransactionType.fromString(json['type'] as String?),
+      type: json['type'] != null ? TransactionType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => TransactionType.expense,
+      ) : null,
       accountId: json['accountId'] as String?,
       categoryId: json['categoryId'] as String?,
       transactionDate: json['transactionDate'] != null
@@ -192,6 +194,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
 }
 
 /// DraftPersistenceService Provider
-final draftPersistenceServiceProvider = Provider<DraftPersistenceService>((ref) {
+final draftPersistenceServiceProvider =
+    Provider<DraftPersistenceService>((ref) {
   return DefaultDraftPersistenceService();
 });

@@ -27,9 +27,12 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
     // ===== v1.1.0 初始化企业级动效系统 =====
     // 注册通用资产详情专用动效曲线
-    IOSAnimationSystem.registerCustomCurve('asset-detail-expand', Curves.elasticOut);
-    IOSAnimationSystem.registerCustomCurve('asset-history-chart', Curves.easeInOutCubic);
-    IOSAnimationSystem.registerCustomCurve('asset-info-slide', Curves.fastOutSlowIn);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-detail-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-history-chart', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-info-slide', Curves.fastOutSlowIn);
   }
 
   @override
@@ -60,7 +63,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           padding: EdgeInsets.all(context.responsiveSpacing12),
                           decoration: BoxDecoration(
                             color: _getCategoryColor(widget.asset.category)
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
                               context.responsiveSpacing12,
                             ),
@@ -94,7 +97,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                         ),
                       ],
                     ),
-                    if (widget.asset.notes != null && widget.asset.notes!.isNotEmpty) ...[
+                    if (widget.asset.notes != null &&
+                        widget.asset.notes!.isNotEmpty) ...[
                       SizedBox(height: context.spacing16),
                       Text(
                         widget.asset.notes!,
@@ -142,7 +146,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                         context,
                         '当前估值',
                         '¥${widget.asset.currentValue!.toStringAsFixed(2)}',
-                        _getValueColor(widget.asset.currentValue!, widget.asset.amount),
+                        _getValueColor(
+                            widget.asset.currentValue!, widget.asset.amount),
                         subtitle: _getValueChangeText(),
                       ),
                     ],
@@ -242,16 +247,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       onPressed: () {
                         Navigator.of(context)
                             .push(
-                              AppAnimations.createRoute(
-                                AssetEditScreen(asset: widget.asset),
-                              ),
-                            )
-                            .then((result) {
-                              // 如果编辑成功，返回上一页
-                              if (result == true) {
-                                Navigator.of(context).pop(true);
-                              }
-                            });
+                          AppAnimations.createRoute<void>(
+                            AssetEditScreen(asset: widget.asset),
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.edit),
                       label: const Text('编辑资产'),
@@ -334,7 +333,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
             Text(
               subtitle,
               style: context.textTheme.bodySmall?.copyWith(
-                color: context.secondaryText.withOpacity(0.7),
+                color: context.secondaryText.withValues(alpha: 0.7),
               ),
             ),
           ],

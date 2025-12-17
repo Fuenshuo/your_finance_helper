@@ -2,32 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
-import 'package:your_finance_flutter/features/insights/models/allocation_data.dart';
-import 'package:your_finance_flutter/features/insights/models/budget_data.dart';
-import 'package:your_finance_flutter/features/insights/models/trend_data.dart';
 import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
-import 'package:your_finance_flutter/main.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Flux Insights Integration Tests', () {
-    testWidgets('Theme switching updates all component colors', (WidgetTester tester) async {
-      // Setup sample data
-      final sampleTrendData = [
-        TrendData(date: DateTime.now().subtract(const Duration(days: 6)), amount: 1200.0, dayLabel: 'Mon'),
-        TrendData(date: DateTime.now().subtract(const Duration(days: 5)), amount: 800.0, dayLabel: 'Tue'),
-      ];
-
-      final sampleAllocation = AllocationData(
-        fixedAmount: 750.0,
-        flexibleAmount: 250.0,
-        period: DateTime.now(),
-      );
-
+    testWidgets('Theme switching updates all component colors', (tester) async {
       // Pump the app with sample data
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: FluxInsightsScreen(),
         ),
       );
@@ -36,21 +20,25 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify initial theme (light theme by default)
-      final initialBackgroundColor = AppDesignTokens.pageBackground(tester.element(find.byType(Container)));
+      final initialBackgroundColor = AppDesignTokens.pageBackground(
+        tester.element(find.byType(Container)),
+      );
       expect(initialBackgroundColor, isNotNull);
 
       // Test theme switching by changing system brightness
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
-          home: FluxInsightsScreen(),
+          home: const FluxInsightsScreen(),
         ),
       );
 
       await tester.pumpAndSettle();
 
       // Verify dark theme colors are applied
-      final darkBackgroundColor = AppDesignTokens.pageBackground(tester.element(find.byType(Container)));
+      final darkBackgroundColor = AppDesignTokens.pageBackground(
+        tester.element(find.byType(Container)),
+      );
       expect(darkBackgroundColor, isNotNull);
 
       // Verify header text is visible in both themes
@@ -70,9 +58,10 @@ void main() {
       expect(find.text('Structural Health'), findsOneWidget);
     });
 
-    testWidgets('Chart components render and respond to interactions', (WidgetTester tester) async {
+    testWidgets('Chart components render and respond to interactions',
+        (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: FluxInsightsScreen(),
         ),
       );
@@ -90,9 +79,9 @@ void main() {
       expect(find.text('Structural Health'), findsOneWidget);
     });
 
-    testWidgets('Error handling displays fallback content', (WidgetTester tester) async {
+    testWidgets('Error handling displays fallback content', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: FluxInsightsScreen(),
         ),
       );
@@ -106,9 +95,10 @@ void main() {
       expect(find.textContaining('Grade'), findsOneWidget);
     });
 
-    testWidgets('Performance monitoring does not break rendering', (WidgetTester tester) async {
+    testWidgets('Performance monitoring does not break rendering',
+        (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: FluxInsightsScreen(),
         ),
       );

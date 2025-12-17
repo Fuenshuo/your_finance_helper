@@ -84,7 +84,8 @@ class ProviderNotFoundException extends VerificationException {
 
 /// Animation verification exception
 class AnimationVerificationException extends VerificationException {
-  AnimationVerificationException(String componentName, String animationName, [String? details])
+  AnimationVerificationException(String componentName, String animationName,
+      [String? details])
       : super(
           componentName: componentName,
           message: 'Animation verification failed: $animationName',
@@ -164,7 +165,8 @@ class ConfigurationVerificationException extends VerificationException {
 
 /// Evidence collection exception
 class EvidenceCollectionException extends VerificationException {
-  EvidenceCollectionException(String componentName, String evidenceType, [String? details])
+  EvidenceCollectionException(String componentName, String evidenceType,
+      [String? details])
       : super(
           componentName: componentName,
           message: 'Evidence collection failed for: $evidenceType',
@@ -177,3 +179,4 @@ class EvidenceCollectionException extends VerificationException {
           ],
         );
 }
+

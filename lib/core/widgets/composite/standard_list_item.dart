@@ -3,7 +3,7 @@ import '../../theme/app_design_tokens.dart';
 
 /// 基础列表行样式 (StandardListItemStyle)
 /// 所有列表行的基类，定义了左右对齐、固定高度和间距
-/// 
+///
 /// **样式特征：**
 /// - 固定高度：56pt（标准列表行高度）
 /// - 水平内边距：使用 globalHorizontalPadding (20pt)
@@ -12,13 +12,13 @@ import '../../theme/app_design_tokens.dart';
 abstract class StandardListItem extends StatelessWidget {
   /// 左侧标题/标签
   final String title;
-  
+
   /// 左侧图标（可选）
   final Widget? leading;
-  
+
   /// 自定义标题样式
   final TextStyle? titleStyle;
-  
+
   /// 行间距（用于列表中的多个项）
   final double? spacing;
 
@@ -77,4 +77,3 @@ abstract class StandardListItem extends StatelessWidget {
     );
   }
 }
-

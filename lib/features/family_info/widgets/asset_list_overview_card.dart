@@ -45,12 +45,12 @@ class AssetListOverviewCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(context.borderRadius),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFEAEAFB).withOpacity(0.3),
+                        color: const Color(0xFFEAEAFB).withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
                       BoxShadow(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         blurRadius: 1,
                         offset: const Offset(0, 1),
                       ),
@@ -82,14 +82,15 @@ class AssetListOverviewCard extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: assetProvider.excludeFixedAssets
-                                      ? context.primaryAction.withOpacity(0.1)
+                                      ? context.primaryAction
+                                          .withValues(alpha: 0.1)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: assetProvider.excludeFixedAssets
                                         ? context.primaryAction
                                         : context.secondaryText
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -140,10 +141,10 @@ class AssetListOverviewCard extends StatelessWidget {
                             vertical: context.responsiveSpacing8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                           ),
                           child: Text(
@@ -164,13 +165,13 @@ class AssetListOverviewCard extends StatelessWidget {
                             color: (changeAmount >= 0
                                     ? context.successColor
                                     : context.errorColor)
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: (changeAmount >= 0
                                       ? context.successColor
                                       : context.errorColor)
-                                  .withOpacity(0.2),
+                                  .withValues(alpha: 0.2),
                             ),
                           ),
                           child: Row(
@@ -182,7 +183,7 @@ class AssetListOverviewCard extends StatelessWidget {
                                   color: (changeAmount >= 0
                                           ? context.successColor
                                           : context.errorColor)
-                                      .withOpacity(0.2),
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Icon(
@@ -240,12 +241,12 @@ class AssetListOverviewCard extends StatelessWidget {
                                 padding:
                                     EdgeInsets.all(context.responsiveSpacing12),
                                 decoration: BoxDecoration(
-                                  color:
-                                      context.primaryAction.withOpacity(0.05),
+                                  color: context.primaryAction
+                                      .withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color:
-                                        context.primaryAction.withOpacity(0.1),
+                                    color: context.primaryAction
+                                        .withValues(alpha: 0.1),
                                   ),
                                 ),
                                 child: Column(
@@ -278,10 +279,12 @@ class AssetListOverviewCard extends StatelessWidget {
                                 padding:
                                     EdgeInsets.all(context.responsiveSpacing12),
                                 decoration: BoxDecoration(
-                                  color: context.errorColor.withOpacity(0.05),
+                                  color: context.errorColor
+                                      .withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: context.errorColor.withOpacity(0.1),
+                                    color: context.errorColor
+                                        .withValues(alpha: 0.1),
                                   ),
                                 ),
                                 child: Column(

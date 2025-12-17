@@ -11,7 +11,7 @@ class IncomePlanProvider with ChangeNotifier {
   List<IncomePlan> _incomePlans = [];
   bool _isLoading = false;
   String? _error;
-  late final StorageService _storageService;
+  StorageService? _storageService;
 
   // Getters
   List<IncomePlan> get incomePlans => _incomePlans;
@@ -22,6 +22,8 @@ class IncomePlanProvider with ChangeNotifier {
 
   // 初始化
   Future<void> initialize() async {
+    if (_storageService != null) return;
+
     _storageService = await StorageService.getInstance();
     await _loadIncomePlans();
   }
@@ -34,7 +36,7 @@ class IncomePlanProvider with ChangeNotifier {
       notifyListeners();
 
       Logger.debug('📊 开始加载收入计划数据');
-      final loadedPlans = await _storageService.loadIncomePlans();
+      final loadedPlans = await _storageService!.loadIncomePlans();
       _incomePlans = loadedPlans.map((plan) => plan as IncomePlan).toList();
       Logger.debug('✅ 收入计划加载完成: ${_incomePlans.length} 个');
     } catch (e) {
@@ -51,7 +53,7 @@ class IncomePlanProvider with ChangeNotifier {
     try {
       Logger.debug('➕ 添加收入计划: ${plan.name}');
       _incomePlans.add(plan);
-      await _storageService.saveIncomePlans(_incomePlans);
+      await _storageService!.saveIncomePlans(_incomePlans);
       notifyListeners();
       Logger.debug('✅ 收入计划添加成功: ${plan.name}');
     } catch (e) {
@@ -242,7 +244,8 @@ class IncomePlanProvider with ChangeNotifier {
       .fold(0.0, (sum, plan) => sum + plan.amount);
 
   /// 自动执行收入计划，生成相应的收入交易
-  Future<void> autoExecuteIncomePlans(TransactionProvider transactionProvider) async {
+  Future<void> autoExecuteIncomePlans(
+      TransactionProvider transactionProvider) async {
     final now = DateTime.now();
     final executedPlans = <IncomePlan>[];
 
@@ -283,7 +286,7 @@ class IncomePlanProvider with ChangeNotifier {
         return now.difference(lastExecution).inDays >= 7;
       case IncomeFrequency.monthly:
         return now.month > lastExecution.month ||
-               (now.month == lastExecution.month && now.year > lastExecution.year);
+            (now.month == lastExecution.month && now.year > lastExecution.year);
       case IncomeFrequency.quarterly:
         final currentQuarter = ((now.month - 1) ~/ 3) + 1;
         final lastQuarter = ((lastExecution.month - 1) ~/ 3) + 1;
@@ -297,7 +300,8 @@ class IncomePlanProvider with ChangeNotifier {
   }
 
   /// 执行单个收入计划，创建收入交易
-  Future<void> _executeIncomePlan(IncomePlan plan, TransactionProvider transactionProvider) async {
+  Future<void> _executeIncomePlan(
+      IncomePlan plan, TransactionProvider transactionProvider) async {
     // 创建收入交易
     final transaction = Transaction(
       description: '${plan.name} - 自动收入',
@@ -312,7 +316,8 @@ class IncomePlanProvider with ChangeNotifier {
     );
 
     await transactionProvider.addTransaction(transaction);
-    Logger.debug('✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}');
+    Logger.debug(
+        '✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}');
   }
 
   // 刷新数据

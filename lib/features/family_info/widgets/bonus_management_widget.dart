@@ -62,7 +62,8 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
                 // 最大高度设置为屏幕的60%，确保有足够的空间显示内容
                 ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6, // 最大高度为屏幕的60%
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.6, // 最大高度为屏幕的60%
                   ),
                   child: _buildBonusList(context),
                 ),
@@ -102,7 +103,8 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
       // 当内容超过最大高度时，ListView 会在内部滚动（外层 ConstrainedBox 限制高度）
       return ListView.separated(
         shrinkWrap: true,
-        physics: const ClampingScrollPhysics(), // 允许内部滚动，但使用 ClampingScrollPhysics 避免过度滚动
+        physics:
+            const ClampingScrollPhysics(), // 允许内部滚动，但使用 ClampingScrollPhysics 避免过度滚动
         itemCount: _tempBonuses.length,
         separatorBuilder: (context, index) => Divider(
           height: 1,
@@ -129,10 +131,12 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
   Widget _buildTaxInfo(BuildContext context) => Container(
         padding: EdgeInsets.all(AppDesignTokens.spacing12),
         decoration: BoxDecoration(
-          color: AppDesignTokens.primaryAction(context).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+          color: AppDesignTokens.primaryAction(context).withValues(alpha: 0.1),
+          borderRadius:
+              BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
           border: Border.all(
-            color: AppDesignTokens.primaryAction(context).withOpacity(0.3),
+            color:
+                AppDesignTokens.primaryAction(context).withValues(alpha: 0.3),
           ),
         ),
         child: Row(
@@ -170,11 +174,13 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
   }
 
   Future<void> _handleEditBonus(BonusItem bonus) async {
-    print('📝 Editing bonus: ${bonus.name} with quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}');
+    print(
+        '📝 Editing bonus: ${bonus.name} with quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}');
     final updatedBonus =
         await BonusDialogManager.showEditDialog(context, bonus);
     if (updatedBonus != null) {
-      print('✅ Updated bonus: ${updatedBonus.name} with quarterlyPaymentMonths: ${updatedBonus.quarterlyPaymentMonths}');
+      print(
+          '✅ Updated bonus: ${updatedBonus.name} with quarterlyPaymentMonths: ${updatedBonus.quarterlyPaymentMonths}');
       setState(() {
         final index = _tempBonuses.indexWhere((b) => b.id == bonus.id);
         if (index != -1) {

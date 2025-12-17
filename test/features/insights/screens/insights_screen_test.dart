@@ -5,21 +5,16 @@ import 'package:your_finance_flutter/features/insights/widgets/insight_bubble.da
 import 'package:your_finance_flutter/features/insights/widgets/monthly_structure_card.dart';
 import 'package:your_finance_flutter/features/insights/widgets/weekly_trend_chart.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
-import 'package:your_finance_flutter/screens/insights_screen.dart';
+import 'package:your_finance_flutter/features/insights/screens/flux_insights_screen.dart';
 import 'package:your_finance_flutter/core/services/insight_service.dart';
 
 void main() {
-  late MockInsightService mockService;
 
-  setUp(() {
-    mockService = MockInsightService();
-  });
-
-  group('FlowInsightsScreen Tests', () {
+  group('FluxInsightsScreen Tests', () {
     testWidgets('should display app bar with title and refresh button', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -33,7 +28,7 @@ void main() {
     testWidgets('should display segmented control with three options', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -46,7 +41,7 @@ void main() {
     testWidgets('should start with day view selected', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -57,7 +52,7 @@ void main() {
     testWidgets('should switch to week view when tapped', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -72,7 +67,7 @@ void main() {
     testWidgets('should switch to month view when tapped', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -87,7 +82,7 @@ void main() {
     testWidgets('should refresh data when refresh button tapped', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -102,7 +97,7 @@ void main() {
     testWidgets('should display day view with daily cap widget', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -114,7 +109,7 @@ void main() {
     testWidgets('should display week view with trend chart', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -130,7 +125,7 @@ void main() {
     testWidgets('should display month view with structure card', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -144,12 +139,9 @@ void main() {
     });
 
     testWidgets('should show thinking banner for day view when loading', (WidgetTester tester) async {
-      // Create a service that returns loading state
-      final loadingService = MockInsightService(loadingState: true);
-
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: loadingService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -158,11 +150,9 @@ void main() {
     });
 
     testWidgets('should show thinking banner for week view when loading', (WidgetTester tester) async {
-      final loadingService = MockInsightService(loadingState: true);
-
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: loadingService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -175,11 +165,9 @@ void main() {
     });
 
     testWidgets('should show thinking banner for month view when loading', (WidgetTester tester) async {
-      final loadingService = MockInsightService(loadingState: true);
-
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: loadingService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -194,7 +182,7 @@ void main() {
     testWidgets('should display micro insight in day view', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -203,11 +191,9 @@ void main() {
     });
 
     testWidgets('should display insight bubbles in week view for anomalies', (WidgetTester tester) async {
-      final anomalyService = MockInsightService(withAnomalies: true);
-
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: anomalyService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -222,7 +208,7 @@ void main() {
     testWidgets('should display last updated timestamp', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: mockService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -231,11 +217,9 @@ void main() {
     });
 
     testWidgets('should handle empty data gracefully', (WidgetTester tester) async {
-      final emptyService = MockInsightService(emptyData: true);
-
       await tester.pumpWidget(
         MaterialApp(
-          home: FlowInsightsScreen(service: emptyService),
+          home: FluxInsightsScreen(),
         ),
       );
 
@@ -247,7 +231,7 @@ void main() {
       testWidgets('should support pull to refresh gesture', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            home: FlowInsightsScreen(service: mockService),
+            home: FluxInsightsScreen(),
           ),
         );
 
@@ -264,7 +248,7 @@ void main() {
       testWidgets('should dispose service when widget is disposed', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            home: FlowInsightsScreen(service: mockService),
+            home: FluxInsightsScreen(),
           ),
         );
 
@@ -279,7 +263,7 @@ void main() {
       testWidgets('should maintain view mode across rebuilds', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            home: FlowInsightsScreen(service: mockService),
+            home: FluxInsightsScreen(),
           ),
         );
 
@@ -290,7 +274,7 @@ void main() {
         // Rebuild widget
         await tester.pumpWidget(
           MaterialApp(
-            home: FlowInsightsScreen(service: mockService),
+            home: FluxInsightsScreen(),
           ),
         );
 

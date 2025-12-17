@@ -93,3 +93,4 @@ class VerificationLogger {
     debug(componentName, 'Captured $evidenceType evidence: $filePath');
   }
 }
+

@@ -36,7 +36,8 @@ class DailyBudgetVelocity extends StatelessWidget {
     }
 
     final data = budgetData!;
-    final progressRatio = data.progressRatio.clamp(0.0, 1.0); // Clamp to valid range
+    final progressRatio =
+        data.progressRatio.clamp(0.0, 1.0); // Clamp to valid range
     final isOverspent = data.isOverspent;
 
     return Column(
@@ -55,8 +56,10 @@ class DailyBudgetVelocity extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: isOverspent
-                    ? AppDesignTokens.amountNegativeColor(context) // Red for overspend
-                    : AppDesignTokens.amountPositiveColor(context), // Green for normal
+                    ? AppDesignTokens.amountNegativeColor(
+                        context) // Red for overspend
+                    : AppDesignTokens.amountPositiveColor(
+                        context), // Green for normal
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

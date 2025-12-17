@@ -20,8 +20,6 @@ import 'package:your_finance_flutter/features/family_info/screens/account_detail
 import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_detail_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_edit_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/edit_asset_sheet.dart';
-import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/wallet_management_screen.dart';
 
 class AssetManagementScreen extends StatefulWidget {
@@ -44,9 +42,12 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     _animationSystem = IOSAnimationSystem();
 
     // 注册资产管理专用动效曲线
-    IOSAnimationSystem.registerCustomCurve('asset-card-hover', Curves.easeInOutCubic);
-    IOSAnimationSystem.registerCustomCurve('category-expand', Curves.elasticOut);
-    IOSAnimationSystem.registerCustomCurve('asset-transition', Curves.fastOutSlowIn);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-card-hover', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'category-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'asset-transition', Curves.fastOutSlowIn);
   }
 
   @override
@@ -469,7 +470,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
               icon: const Icon(Icons.add),
               onPressed: () {
                 Navigator.of(context).push(
-                  AppAnimations.createRoute(const AddAssetFlowScreen()),
+                  AppAnimations.createRoute<void>(const AddAssetFlowScreen()),
                 );
               },
             ),
@@ -581,7 +582,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2196F3).withOpacity(0.1),
+                            color:
+                                const Color(0xFF2196F3).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Icon(
@@ -614,7 +616,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                         onPressed: () {
                           // 导航到钱包管理页面
                           Navigator.of(context).push(
-                            AppAnimations.createRoute(const WalletManagementScreen()),
+                            AppAnimations.createRoute<void>(
+                                const WalletManagementScreen()),
                           );
                         },
                         icon: const Icon(Icons.add),
@@ -662,7 +665,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2196F3).withOpacity(0.1),
+                          color: const Color(0xFF2196F3).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Icon(
@@ -741,7 +744,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                       onPressed: () {
                         // 导航到钱包管理页面
                         Navigator.of(context).push(
-                          AppAnimations.createRoute(const WalletManagementScreen()),
+                          AppAnimations.createRoute<void>(
+                              const WalletManagementScreen()),
                         );
                       },
                       icon: const Icon(Icons.manage_accounts),
@@ -769,7 +773,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       InkWell(
         onTap: () {
           Navigator.of(context).push(
-            AppAnimations.createRoute(AccountDetailScreen(account: account)),
+            AppAnimations.createRoute<void>(AccountDetailScreen(account: account)),
           );
         },
         child: Padding(
@@ -779,7 +783,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: _getAccountIconColor(account.type).withOpacity(0.1),
+                  color:
+                      _getAccountIconColor(account.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Icon(
@@ -863,7 +868,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       InkWell(
         onTap: () {
           Navigator.of(context).push(
-            AppAnimations.createRoute(AssetDetailScreen(asset: asset)),
+            AppAnimations.createRoute<void>(AssetDetailScreen(asset: asset)),
           );
         },
         child: Card(
@@ -879,8 +884,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color:
-                            _getAssetIconColor(asset.category).withOpacity(0.1),
+                        color: _getAssetIconColor(asset.category)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
@@ -954,10 +959,10 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.08),
+                    color: Colors.red.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: Colors.red.withOpacity(0.15),
+                      color: Colors.red.withValues(alpha: 0.15),
                     ),
                   ),
                   child: Row(
@@ -966,7 +971,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                       Icon(
                         Icons.access_time,
                         size: 14,
-                        color: Colors.red.withOpacity(0.7),
+                        color: Colors.red.withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -991,174 +996,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         ),
       );
 
-  void _showEditAssetSheet(BuildContext context, AssetItem asset) {
-    // 对于简单的资产，使用原有的编辑表单
-    if (asset.category != AssetCategory.realEstate) {
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => EditAssetSheet(asset: asset),
-      );
-      return;
-    }
 
-    // 对于固定资产，提供详细录入选项
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _buildFixedAssetEditOptions(context, asset),
-    );
-  }
 
-  Widget _buildFixedAssetEditOptions(BuildContext context, AssetItem asset) =>
-      Container(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '选择编辑方式',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '您可以选择快速编辑或详细编辑来修改您的固定资产',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-            ),
-            const SizedBox(height: 24),
-
-            // 快速编辑选项
-            _buildEditOption(
-              context,
-              icon: Icons.edit,
-              title: '快速编辑',
-              subtitle: '修改基本信息（名称、金额等）',
-              onTap: () {
-                Navigator.of(context).pop();
-                showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) => EditAssetSheet(asset: asset),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-
-            // 详细编辑选项
-            if (_isPropertyAsset(asset))
-              _buildEditOption(
-                context,
-                icon: Icons.home,
-                title: '房产详细编辑',
-                subtitle: '完整的房产信息编辑，包括地址、面积等',
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    AppAnimations.createRoute(PropertyDetailScreen(
-                      asset: asset,
-                      onPropertySaved: (savedAsset) {
-                        final assetProvider = Provider.of<AssetProvider>(
-                          context,
-                          listen: false,
-                        );
-                        assetProvider.updateAsset(savedAsset);
-                        Navigator.of(context).pop(); // 返回到资产管理页面
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('房产信息更新成功'),
-                            backgroundColor: Colors.green,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),),
-                  );
-                },
-              ),
-
-            const SizedBox(height: 24),
-
-            // 取消按钮
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('取消'),
-              ),
-            ),
-          ],
-        ),
-      );
-
-  Widget _buildEditOption(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) =>
-      InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.blue,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.grey,
-              ),
-            ],
-          ),
-        ),
-      );
 
   bool _isPropertyAsset(AssetItem asset) {
     // 判断是否为房产类资产
@@ -1212,10 +1051,10 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
             vertical: 4,
           ),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withValues(alpha: 0.3),
             ),
           ),
           child: Row(

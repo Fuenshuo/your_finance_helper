@@ -3,14 +3,13 @@ import 'package:intl/intl.dart';
 
 /// 金额显示组件
 class AmountDisplay extends StatelessWidget {
-  final double? amount;
-  final String currency;
-
   const AmountDisplay({
-    super.key,
     required this.amount,
+    super.key,
     this.currency = 'CNY',
   });
+  final double? amount;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,7 @@ class AmountDisplay extends StatelessWidget {
       return Text(
         '未解析金额',
         style: theme.textTheme.headlineSmall?.copyWith(
-          color: colorScheme.onSurface.withOpacity(0.6),
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
           fontStyle: FontStyle.italic,
         ),
       );
@@ -37,7 +36,7 @@ class AmountDisplay extends StatelessWidget {
         Text(
           _getCurrencySymbol(currency),
           style: theme.textTheme.titleMedium?.copyWith(
-            color: colorScheme.onSurface.withOpacity(0.8),
+            color: colorScheme.onSurface.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -72,7 +71,7 @@ class AmountDisplay extends StatelessWidget {
       case 'CNY':
         return '¥';
       case 'USD':
-        return '$';
+        return r'$';
       case 'EUR':
         return '€';
       case 'GBP':
@@ -84,4 +83,3 @@ class AmountDisplay extends StatelessWidget {
     }
   }
 }
-

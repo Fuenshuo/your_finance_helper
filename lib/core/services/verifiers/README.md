@@ -298,3 +298,4 @@ if (result.status == VerificationStatus.passed) {
 - [Core Services总文档](../README.md)
 - [VerificationResult模型](../../models/verification_result.dart)
 - [VerificationRunner服务](../verification_runner.dart)
+

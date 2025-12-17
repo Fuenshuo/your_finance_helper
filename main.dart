@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 
 // ============================================================================
 // MOCK DESIGN SYSTEM - AppDesignTokens
 // ============================================================================
 
-enum AppTheme { ModernForestGreen, EleganceDeepBlue, PremiumGraphite, ClassicBurgundy }
+enum AppTheme {
+  ModernForestGreen,
+  EleganceDeepBlue,
+  PremiumGraphite,
+  ClassicBurgundy
+}
 
 enum MoneyTheme { FluxBlue, RevenueGreen, ExpenseRed }
 
@@ -133,110 +138,114 @@ class _AppleHealthChartScreenState extends State<AppleHealthChartScreen> {
   final List<double> weeklyData = [45.0, 62.0, 38.0, 71.0, 55.0, 89.0, 43.0];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppDesignTokens.pageBackground(context),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDesignTokens.spacing16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              Text(
-                'Weekly Activity',
-                style: AppDesignTokens.largeTitle(context),
-              ),
-              const SizedBox(height: AppDesignTokens.spacing8),
-              Text(
-                'Your spending trends this week',
-                style: AppDesignTokens.caption(context),
-              ),
-              const SizedBox(height: AppDesignTokens.spacing32),
-
-              // Chart Card
-              Container(
-                padding: const EdgeInsets.all(AppDesignTokens.spacing24),
-                decoration: BoxDecoration(
-                  color: AppDesignTokens.surfaceColor(context),
-                  borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: AppDesignTokens.pageBackground(context),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppDesignTokens.spacing16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Section
+                Text(
+                  'Weekly Activity',
+                  style: AppDesignTokens.largeTitle(context),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Chart Title
-                    Text(
-                      'Daily Spending',
-                      style: AppDesignTokens.headline(context),
-                    ),
-                    const SizedBox(height: AppDesignTokens.spacing12),
+                const SizedBox(height: AppDesignTokens.spacing8),
+                Text(
+                  'Your spending trends this week',
+                  style: AppDesignTokens.caption(context),
+                ),
+                const SizedBox(height: AppDesignTokens.spacing32),
 
-                    // Chart
-                    SizedBox(
-                      height: 250,
-                      child: BarChart(
-                        _buildBarChartData(),
-                        swapAnimationDuration: const Duration(milliseconds: 800),
-                        swapAnimationCurve: Curves.easeInOutCubic,
+                // Chart Card
+                Container(
+                  padding: const EdgeInsets.all(AppDesignTokens.spacing24),
+                  decoration: BoxDecoration(
+                    color: AppDesignTokens.surfaceColor(context),
+                    borderRadius:
+                        BorderRadius.circular(AppDesignTokens.radiusMedium),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Chart Title
+                      Text(
+                        'Daily Spending',
+                        style: AppDesignTokens.headline(context),
                       ),
-                    ),
+                      const SizedBox(height: AppDesignTokens.spacing12),
 
-                    const SizedBox(height: AppDesignTokens.spacing16),
+                      // Chart
+                      SizedBox(
+                        height: 250,
+                        child: BarChart(
+                          _buildBarChartData(),
+                          swapAnimationDuration:
+                              const Duration(milliseconds: 800),
+                          swapAnimationCurve: Curves.easeInOutCubic,
+                        ),
+                      ),
 
-                    // Legend
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildLegendItem('Mon', 0),
-                        const SizedBox(width: AppDesignTokens.spacing12),
-                        _buildLegendItem('Tue', 1),
-                        const SizedBox(width: AppDesignTokens.spacing12),
-                        _buildLegendItem('Wed', 2),
-                        const SizedBox(width: AppDesignTokens.spacing12),
-                        _buildLegendItem('Thu', 3),
-                        const SizedBox(width: AppDesignTokens.spacing12),
-                        _buildLegendItem('Fri', 4),
-                        const SizedBox(width: AppDesignTokens.spacing12),
-                        _buildLegendItem('Sat', 5),
-                        const SizedBox(width: AppDesignTokens.spacing12),
-                        _buildLegendItem('Sun', 6),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: AppDesignTokens.spacing16),
+
+                      // Legend
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildLegendItem('Mon', 0),
+                          const SizedBox(width: AppDesignTokens.spacing12),
+                          _buildLegendItem('Tue', 1),
+                          const SizedBox(width: AppDesignTokens.spacing12),
+                          _buildLegendItem('Wed', 2),
+                          const SizedBox(width: AppDesignTokens.spacing12),
+                          _buildLegendItem('Thu', 3),
+                          const SizedBox(width: AppDesignTokens.spacing12),
+                          _buildLegendItem('Fri', 4),
+                          const SizedBox(width: AppDesignTokens.spacing12),
+                          _buildLegendItem('Sat', 5),
+                          const SizedBox(width: AppDesignTokens.spacing12),
+                          _buildLegendItem('Sun', 6),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: AppDesignTokens.spacing24),
+                const SizedBox(height: AppDesignTokens.spacing24),
 
-              // Summary Card
-              Container(
-                padding: const EdgeInsets.all(AppDesignTokens.spacing24),
-                decoration: BoxDecoration(
-                  color: AppDesignTokens.surfaceColor(context),
-                  borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium),
+                // Summary Card
+                Container(
+                  padding: const EdgeInsets.all(AppDesignTokens.spacing24),
+                  decoration: BoxDecoration(
+                    color: AppDesignTokens.surfaceColor(context),
+                    borderRadius:
+                        BorderRadius.circular(AppDesignTokens.radiusMedium),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Weekly Summary',
+                        style: AppDesignTokens.headline(context),
+                      ),
+                      const SizedBox(height: AppDesignTokens.spacing16),
+                      _buildSummaryRow('Total Spent',
+                          '\$${weeklyData.reduce((a, b) => a + b).toStringAsFixed(0)}'),
+                      const SizedBox(height: AppDesignTokens.spacing8),
+                      _buildSummaryRow('Daily Average',
+                          '\$${(weeklyData.reduce((a, b) => a + b) / weeklyData.length).toStringAsFixed(1)}'),
+                      const SizedBox(height: AppDesignTokens.spacing8),
+                      _buildSummaryRow('Highest Day',
+                          '\$${weeklyData.reduce((a, b) => a > b ? a : b).toStringAsFixed(0)}'),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Weekly Summary',
-                      style: AppDesignTokens.headline(context),
-                    ),
-                    const SizedBox(height: AppDesignTokens.spacing16),
-                    _buildSummaryRow('Total Spent', '\$${weeklyData.reduce((a, b) => a + b).toStringAsFixed(0)}'),
-                    const SizedBox(height: AppDesignTokens.spacing8),
-                    _buildSummaryRow('Daily Average', '\$${(weeklyData.reduce((a, b) => a + b) / weeklyData.length).toStringAsFixed(1)}'),
-                    const SizedBox(height: AppDesignTokens.spacing8),
-                    _buildSummaryRow('Highest Day', '\$${weeklyData.reduce((a, b) => a > b ? a : b).toStringAsFixed(0)}'),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
 
   BarChartData _buildBarChartData() {
     final maxValue = weeklyData.reduce((a, b) => a > b ? a : b);
@@ -246,10 +255,10 @@ class _AppleHealthChartScreenState extends State<AppleHealthChartScreen> {
       borderData: FlBorderData(show: false),
 
       // No grid lines
-      gridData: FlGridData(show: false),
+      gridData: const FlGridData(show: false),
 
       // Remove titles
-      titlesData: FlTitlesData(show: false),
+      titlesData: const FlTitlesData(show: false),
 
       // Bar groups
       barGroups: List.generate(weeklyData.length, (index) {
@@ -263,11 +272,13 @@ class _AppleHealthChartScreenState extends State<AppleHealthChartScreen> {
               toY: normalizedHeight,
               color: AppDesignTokens.amountPositiveColor(context),
               width: 24,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(6)),
               gradient: LinearGradient(
                 colors: [
                   AppDesignTokens.amountPositiveColor(context),
-                  AppDesignTokens.amountPositiveColor(context).withOpacity(0.5),
+                  AppDesignTokens.amountPositiveColor(context)
+                      .withValues(alpha: 0.5),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -280,18 +291,17 @@ class _AppleHealthChartScreenState extends State<AppleHealthChartScreen> {
       // Custom tooltip
       barTouchData: BarTouchData(
         touchTooltipData: BarTouchTooltipData(
-          tooltipBgColor: AppDesignTokens.surfaceColor(context).withOpacity(0.95),
+          tooltipBgColor:
+              AppDesignTokens.surfaceColor(context).withValues(alpha: 0.95),
           tooltipPadding: const EdgeInsets.all(AppDesignTokens.spacing8),
           tooltipMargin: 8,
-          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-            return BarTooltipItem(
-              '\$${weeklyData[group.x].toDouble().toStringAsFixed(0)}',
-              AppDesignTokens.body(context).copyWith(
-                color: AppDesignTokens.amountPositiveColor(context),
-                fontWeight: FontWeight.w600,
-              ),
-            );
-          },
+          getTooltipItem: (group, groupIndex, rod, rodIndex) => BarTooltipItem(
+            '\$${weeklyData[group.x].toStringAsFixed(0)}',
+            AppDesignTokens.body(context).copyWith(
+              color: AppDesignTokens.amountPositiveColor(context),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
 
@@ -301,43 +311,39 @@ class _AppleHealthChartScreenState extends State<AppleHealthChartScreen> {
     );
   }
 
-  Widget _buildLegendItem(String label, int index) {
-    return Column(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: AppDesignTokens.amountPositiveColor(context),
-            borderRadius: BorderRadius.circular(4),
+  Widget _buildLegendItem(String label, int index) => Column(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: AppDesignTokens.amountPositiveColor(context),
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: AppDesignTokens.microCaption(context),
-        ),
-      ],
-    );
-  }
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppDesignTokens.microCaption(context),
+          ),
+        ],
+      );
 
-  Widget _buildSummaryRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppDesignTokens.body(context),
-        ),
-        Text(
-          value,
-          style: AppDesignTokens.headline(context).copyWith(
-            color: AppDesignTokens.amountPositiveColor(context),
+  Widget _buildSummaryRow(String label, String value) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppDesignTokens.body(context),
           ),
-        ),
-      ],
-    );
-  }
+          Text(
+            value,
+            style: AppDesignTokens.headline(context).copyWith(
+              color: AppDesignTokens.amountPositiveColor(context),
+            ),
+          ),
+        ],
+      );
 }
 
 // ============================================================================
@@ -352,18 +358,14 @@ class AppleHealthStyleApp extends StatelessWidget {
   const AppleHealthStyleApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Apple Health Style Chart',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: AppDesignTokens.pageBackground(context),
-        cardTheme: const CardThemeData(
-          color: null, // Will be overridden by our surface color
-          elevation: 0.0,
-          shape: null, // Will be overridden
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'Apple Health Style Chart',
+        theme: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: AppDesignTokens.pageBackground(context),
+          cardTheme: const CardThemeData(
+            elevation: 0.0,
+          ),
         ),
-      ),
-      home: const AppleHealthChartScreen(),
-    );
-  }
+        home: const AppleHealthChartScreen(),
+      );
 }

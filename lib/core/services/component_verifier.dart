@@ -28,7 +28,8 @@ abstract class ComponentVerifier {
   Duration get estimatedDuration => const Duration(seconds: 1);
 
   /// Create a successful verification result
-  VerificationResult createSuccessResult(String details, {
+  VerificationResult createSuccessResult(
+    String details, {
     Map<String, bool>? checkResults,
   }) {
     return VerificationResult.pass(
@@ -39,7 +40,8 @@ abstract class ComponentVerifier {
   }
 
   /// Create a failed verification result
-  VerificationResult createFailureResult(String details, {
+  VerificationResult createFailureResult(
+    String details, {
     String? errorMessage,
     List<String>? remediationSteps,
     Map<String, bool>? checkResults,
@@ -54,7 +56,8 @@ abstract class ComponentVerifier {
   }
 
   /// Create a warning verification result
-  VerificationResult createWarningResult(String details, {
+  VerificationResult createWarningResult(
+    String details, {
     List<String>? remediationSteps,
     Map<String, bool>? checkResults,
   }) {
@@ -119,3 +122,4 @@ void registerVerifier(ComponentVerifier verifier) {
 ComponentVerifier? getVerifier(String componentName) {
   return componentVerifierRegistry.getVerifier(componentName);
 }
+

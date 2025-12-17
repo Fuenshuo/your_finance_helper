@@ -8,6 +8,7 @@ import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
 
 // Mock classes
+// ignore: must_be_immutable
 class MockTransaction extends Mock implements Transaction {}
 
 void main() {
@@ -27,42 +28,27 @@ void main() {
     test('should trigger and complete daily cap analysis for new transaction', () async {
       // Arrange: Create a mock transaction
       const transactionId = 'tx_123';
-      final transaction = Transaction(
-        id: transactionId,
-        type: TransactionType.expense,
-        amount: 150.0,
-        category: TransactionCategory.foodExpense,
-        description: '午餐',
-        date: DateTime.now(),
-        accountId: 'acc_1',
-        status: TransactionStatus.confirmed,
-        creationDate: DateTime.now(),
-        updateDate: DateTime.now(),
-      );
 
       // Mock AI service response for daily cap analysis
       final mockInsight = MicroInsight(
         id: 'insight_123',
-        type: InsightType.behavioral,
-        content: '今日午餐支出 ¥150，预算控制良好',
-        sentiment: InsightSentiment.positive,
-        confidence: 0.85,
-        createdAt: DateTime.now(),
-        metadata: {
-          'trigger': 'daily_cap_analysis',
-          'transactionId': transactionId,
-        },
+        dailyCapId: 'daily_cap_123',
+        generatedAt: DateTime.now(),
+        sentiment: Sentiment.positive,
+        message: '今日午餐支出 ¥150，预算控制良好',
+        actions: ['继续保持良好的消费习惯'],
+        trigger: InsightTrigger.transactionAdded,
       );
 
-      when(mockAiService.analyzeDailyCap(any))
+      when(mockAiService.analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
           .thenAnswer((_) async => DailyCap(
+            id: 'daily_cap_123',
             date: DateTime.now(),
-            budgetAmount: 500.0,
-            spentAmount: 150.0,
-            remainingAmount: 350.0,
-            percentageUsed: 30.0,
-            status: CapStatus.healthy,
-            insights: [mockInsight],
+            referenceAmount: 500.0,
+            currentSpending: 150.0,
+            percentage: 0.3,
+            status: CapStatus.safe,
+            latestInsight: mockInsight,
           ));
 
       // Act: Trigger daily analysis
@@ -83,7 +69,7 @@ void main() {
       expect(job.metadata['transactionId'], transactionId);
 
       // Wait for job completion
-      final jobStream = insightService.watchJob(job.id);
+      final jobStream = insightService.jobStatusStream(job.id);
       final completedJob = await jobStream.firstWhere(
         (job) => job.isCompleted || job.isFailed,
       );
@@ -110,7 +96,7 @@ void main() {
       );
 
       // Wait for job completion
-      final jobStream = insightService.watchJob(job.id);
+      final jobStream = insightService.jobStatusStream(job.id);
       final failedJob = await jobStream.firstWhere(
         (job) => job.isCompleted || job.isFailed,
       );
@@ -134,61 +120,55 @@ void main() {
       // Mock progressive daily cap states
       final mockCaps = [
         DailyCap(
+          id: 'daily_cap_1',
           date: DateTime.now(),
-          budgetAmount: 500.0,
-          spentAmount: 50.0,
-          remainingAmount: 450.0,
-          percentageUsed: 10.0,
-          status: CapStatus.healthy,
-          insights: [
-            MicroInsight(
-              id: 'insight_1',
-              type: InsightType.behavioral,
-              content: '早餐支出合理，预算剩余充足',
-              sentiment: InsightSentiment.positive,
-              confidence: 0.9,
-              createdAt: DateTime.now(),
-              metadata: {'transactionId': 'tx_1'},
-            ),
-          ],
+          referenceAmount: 500.0,
+          currentSpending: 50.0,
+          percentage: 0.1,
+          status: CapStatus.safe,
+          latestInsight: MicroInsight(
+            id: 'insight_1',
+            dailyCapId: 'daily_cap_1',
+            generatedAt: DateTime.now(),
+            sentiment: Sentiment.positive,
+            message: '早餐支出合理，预算剩余充足',
+            actions: ['继续保持良好的消费习惯'],
+            trigger: InsightTrigger.transactionAdded,
+          ),
         ),
         DailyCap(
+          id: 'daily_cap_2',
           date: DateTime.now(),
-          budgetAmount: 500.0,
-          spentAmount: 150.0,
-          remainingAmount: 350.0,
-          percentageUsed: 30.0,
-          status: CapStatus.healthy,
-          insights: [
-            MicroInsight(
-              id: 'insight_2',
-              type: InsightType.behavioral,
-              content: '午餐后预算剩余 ¥350，控制良好',
-              sentiment: InsightSentiment.positive,
-              confidence: 0.85,
-              createdAt: DateTime.now(),
-              metadata: {'transactionId': 'tx_2'},
-            ),
-          ],
+          referenceAmount: 500.0,
+          currentSpending: 150.0,
+          percentage: 0.3,
+          status: CapStatus.safe,
+          latestInsight: MicroInsight(
+            id: 'insight_2',
+            dailyCapId: 'daily_cap_2',
+            generatedAt: DateTime.now(),
+            sentiment: Sentiment.positive,
+            message: '午餐后预算剩余 ¥350，控制良好',
+            actions: ['继续保持良好的消费习惯'],
+            trigger: InsightTrigger.transactionAdded,
+          ),
         ),
         DailyCap(
+          id: 'daily_cap_1',
           date: DateTime.now(),
-          budgetAmount: 500.0,
-          spentAmount: 350.0,
-          remainingAmount: 150.0,
-          percentageUsed: 70.0,
+          referenceAmount: 500.0,
+          currentSpending: 350.0,
+          percentage: 0.7,
           status: CapStatus.warning,
-          insights: [
-            MicroInsight(
-              id: 'insight_3',
-              type: InsightType.behavioral,
-              content: '购物后支出已达70%，建议控制剩余预算',
-              sentiment: InsightSentiment.neutral,
-              confidence: 0.8,
-              createdAt: DateTime.now(),
-              metadata: {'transactionId': 'tx_3'},
-            ),
-          ],
+          latestInsight: MicroInsight(
+            id: 'insight_3',
+            dailyCapId: 'daily_cap_2',
+            generatedAt: DateTime.now(),
+            sentiment: Sentiment.neutral,
+            message: '购物后支出已达70%，建议控制剩余预算',
+            actions: ['查看剩余预算', '考虑推迟非必需消费'],
+            trigger: InsightTrigger.budgetExceeded,
+          ),
         ),
       ];
 
@@ -214,9 +194,9 @@ void main() {
 
       // Assert: All jobs should complete successfully
       for (final job in jobs) {
-        final jobStream = insightService.watchJob(job.id);
+        final jobStream = insightService.jobStatusStream(job.id);
         final completedJob = await jobStream.firstWhere(
-          (job) => job.isCompleted || job.isFailed,
+          (jobUpdate) => jobUpdate.isCompleted || jobUpdate.isFailed,
         );
         expect(completedJob.isCompleted, true);
         expect(completedJob.result, isNotNull);
@@ -230,25 +210,23 @@ void main() {
       // Test that urgent warnings (like exceeding 80% budget) are processed immediately
 
       // Mock an urgent situation
-      when(mockAiService.analyzeDailyCap(any))
+      when(mockAiService.analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
           .thenAnswer((_) async => DailyCap(
+            id: 'urgent_cap',
             date: DateTime.now(),
-            budgetAmount: 500.0,
-            spentAmount: 450.0, // 90% used
-            remainingAmount: 50.0,
-            percentageUsed: 90.0,
+            referenceAmount: 500.0,
+            currentSpending: 450.0, // 90% used
+            percentage: 0.9,
             status: CapStatus.danger,
-            insights: [
-              MicroInsight(
-                id: 'urgent_insight',
-                type: InsightType.warning,
-                content: '⚠️ 今日支出已达90%，仅剩 ¥50 预算！',
-                sentiment: InsightSentiment.negative,
-                confidence: 0.95,
-                createdAt: DateTime.now(),
-                metadata: {'urgent': true},
-              ),
-            ],
+            latestInsight: MicroInsight(
+              id: 'urgent_insight',
+              dailyCapId: 'urgent_cap',
+              generatedAt: DateTime.now(),
+              sentiment: Sentiment.negative,
+              message: '⚠️ 今日支出已达90%，仅剩 ¥50 预算！',
+              actions: ['立即停止非必需消费', '查看今日详细支出'],
+              trigger: InsightTrigger.budgetExceeded,
+            ),
           ));
 
       // Act: Trigger urgent analysis
@@ -263,7 +241,7 @@ void main() {
       );
 
       // Wait for completion
-      final jobStream = insightService.watchJob(job.id);
+      final jobStream = insightService.jobStatusStream(job.id);
       final completedJob = await jobStream.firstWhere(
         (job) => job.isCompleted || job.isFailed,
       );
@@ -293,25 +271,23 @@ void main() {
       when(mockAiService.analyzeDailyCap(any))
           .thenAnswer((_) async {
             // Simulate different processing times
-            await Future.delayed(Duration(milliseconds: 10 * responseIndex));
+            await Future<void>.delayed(Duration(milliseconds: 10 * responseIndex));
             return DailyCap(
+              id: 'daily_cap_${responseIndex}',
               date: DateTime.now(),
-              budgetAmount: 500.0,
-              spentAmount: 100.0 + (responseIndex * 50.0),
-              remainingAmount: 400.0 - (responseIndex * 50.0),
-              percentageUsed: 20.0 + (responseIndex * 10.0),
-              status: CapStatus.healthy,
-              insights: [
-                MicroInsight(
-                  id: 'insight_${responseIndex}',
-                  type: InsightType.behavioral,
-                  content: responses[responseIndex],
-                  sentiment: InsightSentiment.positive,
-                  confidence: 0.8,
-                  createdAt: DateTime.now(),
-                  metadata: {'transactionId': transactionIds[responseIndex]},
-                ),
-              ],
+              referenceAmount: 500.0,
+              currentSpending: 100.0 + (responseIndex * 50.0),
+              percentage: 0.2 + (responseIndex * 0.1),
+              status: CapStatus.safe,
+              latestInsight: MicroInsight(
+                id: 'insight_${responseIndex}',
+                dailyCapId: 'daily_cap_${responseIndex}',
+                generatedAt: DateTime.now(),
+                sentiment: Sentiment.positive,
+                message: responses[responseIndex],
+                actions: ['查看详细分析'],
+                trigger: InsightTrigger.transactionAdded,
+              ),
             );
           });
 
@@ -328,7 +304,7 @@ void main() {
 
       // Wait for all jobs to complete
       final completionFutures = jobs.map((job) async {
-        final jobStream = insightService.watchJob(job.id);
+        final jobStream = insightService.jobStatusStream(job.id);
         return await jobStream.firstWhere(
           (job) => job.isCompleted || job.isFailed,
         );
@@ -363,33 +339,26 @@ void main() {
       ];
 
       var analysisIndex = 0;
-      when(mockAiService.analyzeDailyCap(any))
+      when(mockAiService.analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
           .thenAnswer((_) async => DailyCap(
+            id: 'trend_cap_${analysisIndex}',
             date: DateTime.now(),
-            budgetAmount: 500.0,
-            spentAmount: transactions.sublist(0, analysisIndex + 1)
+            referenceAmount: 500.0,
+            currentSpending: transactions.sublist(0, analysisIndex + 1)
                 .fold(0.0, (sum, tx) => sum + (tx['amount'] as double)),
-            remainingAmount: 500.0 - transactions.sublist(0, analysisIndex + 1)
-                .fold(0.0, (sum, tx) => sum + (tx['amount'] as double)),
-            percentageUsed: (transactions.sublist(0, analysisIndex + 1)
+            percentage: (transactions.sublist(0, analysisIndex + 1)
                     .fold(0.0, (sum, tx) => sum + (tx['amount'] as double)) /
-                500.0) *
-                100,
-            status: analysisIndex < 2 ? CapStatus.healthy : CapStatus.warning,
-            insights: [
-              MicroInsight(
-                id: 'trend_insight_${analysisIndex}',
-                type: InsightType.trend,
-                content: mockAnalyses[analysisIndex],
-                sentiment: analysisIndex < 2 ? InsightSentiment.positive : InsightSentiment.neutral,
-                confidence: 0.85,
-                createdAt: DateTime.now(),
-                metadata: {
-                  'transactionId': transactions[analysisIndex]['id'],
-                  'analysisSequence': analysisIndex,
-                },
-              ),
-            ],
+                500.0),
+            status: analysisIndex < 2 ? CapStatus.safe : CapStatus.warning,
+            latestInsight: MicroInsight(
+              id: 'trend_insight_${analysisIndex}',
+              dailyCapId: 'trend_cap_${analysisIndex}',
+              generatedAt: DateTime.now(),
+              sentiment: analysisIndex < 2 ? Sentiment.positive : Sentiment.neutral,
+              message: mockAnalyses[analysisIndex],
+              actions: ['查看消费趋势'],
+              trigger: InsightTrigger.timeCheck,
+            ),
           ));
 
       // Act: Process transactions sequentially to build analysis history
@@ -405,9 +374,9 @@ void main() {
           },
         );
 
-        final jobStream = insightService.watchJob(job.id);
+        final jobStream = insightService.jobStatusStream(job.id);
         final completedJob = await jobStream.firstWhere(
-          (job) => job.isCompleted || job.isFailed,
+          (jobUpdate) => jobUpdate.isCompleted || jobUpdate.isFailed,
         );
 
         completedJobs.add(completedJob);
@@ -426,7 +395,7 @@ void main() {
       // Verify the system can track spending progression
       final firstJob = completedJobs[0];
       final lastJob = completedJobs[2];
-      expect(lastJob.metadata['analysisSequence'], greaterThan(firstJob.metadata['analysisSequence']));
+      expect(lastJob.metadata['analysisSequence'] as int, greaterThan(firstJob.metadata['analysisSequence'] as int));
     });
   });
 }

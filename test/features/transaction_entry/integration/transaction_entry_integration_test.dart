@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
@@ -42,7 +41,6 @@ void main() {
 
       // 3. 验证状态管理集成
       final draftManager = container.read(draftManagerProvider.notifier);
-      final validationProvider = container.read(inputValidationProvider.notifier);
 
       // 测试草稿管理器初始化
       await draftManager.loadSavedDrafts();

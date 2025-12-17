@@ -15,7 +15,8 @@ class TotalAssetsService {
     required AccountProvider accountProvider,
   }) {
     // 1. 计算账户资产
-    final accountAssets = _calculateAccountAssets(accounts, transactions, accountProvider);
+    final accountAssets =
+        _calculateAccountAssets(accounts, transactions, accountProvider);
 
     // 2. 计算信封可用余额
     final envelopeAssets = _calculateEnvelopeAssets(envelopeBudgets);

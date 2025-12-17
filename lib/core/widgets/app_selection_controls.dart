@@ -108,27 +108,30 @@ class AppSegmentedControl<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return IntrinsicWidth(
       child: CupertinoSlidingSegmentedControl<T>(
         children: children.map((key, value) => MapEntry(
-          key, 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: DefaultTextStyle(
-              style: AppDesignTokens.headline(context).copyWith(
-                fontSize: 13, 
-                color: groupValue == key 
-                    ? (isDark ? Colors.white : Colors.black) // 选中态颜色
-                    : (isDark ? Colors.white60 : Colors.black54), // 未选中态颜色
+              key,
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: DefaultTextStyle(
+                  style: AppDesignTokens.headline(context).copyWith(
+                    fontSize: 13,
+                    color: groupValue == key
+                        ? (isDark ? Colors.white : Colors.black) // 选中态颜色
+                        : (isDark ? Colors.white60 : Colors.black54), // 未选中态颜色
+                  ),
+                  child: value,
+                ),
               ),
-              child: value,
-            ),
-          ),
-        )),
+            )),
         groupValue: groupValue,
         onValueChanged: onValueChanged,
-        backgroundColor: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFEEEEF2),
+        backgroundColor: isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : const Color(0xFFEEEEF2),
         thumbColor: isDark ? const Color(0xFF636366) : Colors.white,
         // 为选中项添加阴影，增加立体感
         padding: EdgeInsets.zero,
@@ -136,4 +139,3 @@ class AppSegmentedControl<T extends Object> extends StatelessWidget {
     );
   }
 }
-

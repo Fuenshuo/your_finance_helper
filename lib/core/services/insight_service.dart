@@ -5,7 +5,6 @@ import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
-import 'package:your_finance_flutter/features/insights/services/ai_analysis_service.dart';
 import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
 
@@ -62,7 +61,7 @@ class FluxLoopManager {
       _jobControllers[jobId]?.add(processingJob);
 
       // Simulate AI processing time (in real app, this would call AI service)
-      await Future.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 2));
 
       // Generate mock result based on job type
       final result = await _generateJobResult(processingJob);
@@ -76,7 +75,6 @@ class FluxLoopManager {
 
       _activeJobs[jobId] = completedJob;
       _jobControllers[jobId]?.add(completedJob);
-
     } catch (e) {
       // Fail job
       final failedJob = job.copyWith(
@@ -107,12 +105,15 @@ class FluxLoopManager {
   /// Clean up completed jobs
   static void cleanup() {
     final now = DateTime.now();
-    final expiredJobs = _activeJobs.entries.where((entry) {
-      final job = entry.value;
-      return job.status == JobStatus.completed &&
-             job.completedAt != null &&
-             now.difference(job.completedAt!).inMinutes > 30;
-    }).map((e) => e.key).toList();
+    final expiredJobs = _activeJobs.entries
+        .where((entry) {
+          final job = entry.value;
+          return job.status == JobStatus.completed &&
+              job.completedAt != null &&
+              now.difference(job.completedAt!).inMinutes > 30;
+        })
+        .map((e) => e.key)
+        .toList();
 
     for (final jobId in expiredJobs) {
       _activeJobs.remove(jobId);
@@ -186,17 +187,17 @@ class WeeklyInsight extends Equatable {
 
   @override
   List<Object?> get props => [
-    totalSpent,
-    averageSpent,
-    anomalies,
-    monday,
-    tuesday,
-    wednesday,
-    thursday,
-    friday,
-    saturday,
-    sunday,
-  ];
+        totalSpent,
+        averageSpent,
+        anomalies,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+        sunday,
+      ];
 }
 
 /// Monthly CFO report snapshot.
@@ -461,9 +462,19 @@ class MockInsightService implements InsightService {
   }
 
   Future<WeeklyInsight> _buildWeeklyInsight() async {
-    final dailySpending = List.generate(7, (index) => 100.0 + _random.nextInt(200));
-    final weekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
-    final categoryBreakdown = ['餐饮', '交通', '购物', '娱乐', '购物', '娱乐', '餐饮']; // 7 categories for 7 days
+    final dailySpending =
+        List.generate(7, (index) => 100.0 + _random.nextInt(200));
+    final weekStart =
+        DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+    final categoryBreakdown = [
+      '餐饮',
+      '交通',
+      '购物',
+      '娱乐',
+      '购物',
+      '娱乐',
+      '餐饮'
+    ]; // 7 categories for 7 days
 
     final anomalies = await _patternDetectionService.detectWeeklyAnomalies(
       dailySpending,

@@ -57,10 +57,10 @@ class BonusItemWidget extends StatelessWidget {
 
   String _buildSubtitle(BuildContext context) {
     final parts = <String>[];
-    
+
     // 金额（始终显示）
     parts.add('¥${bonus.amount.toStringAsFixed(0)}');
-    
+
     // 根据奖金类型显示关键日期信息（简化显示）
     if (bonus.type == BonusType.thirteenthSalary ||
         bonus.type == BonusType.yearEndBonus) {
@@ -73,7 +73,7 @@ class BonusItemWidget extends StatelessWidget {
       // 其他奖金类型：显示周期信息
       parts.add('周期：${bonus.frequencyDisplayName}');
     }
-    
+
     return parts.join(' • ');
   }
 

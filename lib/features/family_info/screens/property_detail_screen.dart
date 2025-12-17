@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/mortgage_calculator_screen.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   const PropertyDetailScreen({
@@ -49,9 +47,12 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
     // ===== v1.1.0 初始化企业级动效系统 =====
     // 注册房产详情专用动效曲线
-    IOSAnimationSystem.registerCustomCurve('property-card-expand', Curves.elasticOut);
-    IOSAnimationSystem.registerCustomCurve('valuation-chart', Curves.easeInOutCubic);
-    IOSAnimationSystem.registerCustomCurve('property-info-slide', Curves.fastOutSlowIn);
+    IOSAnimationSystem.registerCustomCurve(
+        'property-card-expand', Curves.elasticOut);
+    IOSAnimationSystem.registerCustomCurve(
+        'valuation-chart', Curves.easeInOutCubic);
+    IOSAnimationSystem.registerCustomCurve(
+        'property-info-slide', Curves.fastOutSlowIn);
 
     _property = widget.asset;
     _initializeControllers();
@@ -469,10 +470,11 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       final propertyValue =
                           double.tryParse(_amountController.text);
                       if (propertyValue != null && propertyValue > 0) {
-                        Navigator.of(context).push(
-                          AppAnimations.createRoute(MortgageCalculatorScreen(
-                            propertyValue: propertyValue,
-                          ),),
+                        // TODO: Navigate to mortgage calculator when implemented
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('房贷计算器功能即将上线'),
+                          ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

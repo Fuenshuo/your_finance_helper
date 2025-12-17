@@ -24,7 +24,6 @@ class TextInputField extends StatefulWidget {
 
 class _TextInputFieldState extends State<TextInputField>
     with SingleTickerProviderStateMixin {
-
   late final AnimationController _focusAnimationController;
   late final Animation<double> _borderAnimation;
 
@@ -128,7 +127,8 @@ class _TextInputFieldState extends State<TextInputField>
               // 限制输入长度
               LengthLimitingTextInputFormatter(500),
               // 过滤无效字符
-              FilteringTextInputFormatter.deny(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]')),
+              FilteringTextInputFormatter.deny(
+                  RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]')),
             ],
           ),
         );
@@ -136,4 +136,3 @@ class _TextInputFieldState extends State<TextInputField>
     );
   }
 }
-

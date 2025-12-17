@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// 应用主题枚举
 enum AppTheme {
@@ -48,14 +47,6 @@ class AppDesignTokens {
   static void setTheme(AppTheme theme) {
     _currentTheme = theme;
   }
-
-
-
-
-
-
-
-
 
   /// 获取当前风格
   static AppStyle getCurrentStyle() => _currentStyle;
@@ -214,7 +205,7 @@ class AppDesignTokens {
     if (s == AppStyle.SharpProfessional) {
       // SharpProfessional: 清晰阴影
       return BoxShadow(
-        color: Colors.black.withOpacity(isDark ? 0.4 : 0.15),
+        color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
         blurRadius: 8,
         offset: const Offset(0, 2),
         spreadRadius: 0,
@@ -224,8 +215,8 @@ class AppDesignTokens {
       final primaryColor = primaryAction(context);
       return BoxShadow(
         color: isDark
-            ? Colors.black.withOpacity(0.3)
-            : primaryColor.withOpacity(0.08), // 浅色模式透明度降低
+            ? Colors.black.withValues(alpha: 0.3)
+            : primaryColor.withValues(alpha: 0.08), // 浅色模式透明度降低
         blurRadius: isDark ? 24 : 32, // 浅色模式模糊半径增大
         offset: const Offset(0, 8),
         spreadRadius: -4,
@@ -244,7 +235,7 @@ class AppDesignTokens {
     if (s == AppStyle.SharpProfessional) {
       // SharpProfessional: elevation 4.0 的清晰阴影
       return BoxShadow(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.black.withValues(alpha: 0.2),
         blurRadius: 12,
         offset: const Offset(0, 4),
         spreadRadius: 0,
@@ -294,12 +285,12 @@ class AppDesignTokens {
 
   static TextStyle caption(BuildContext context) => TextStyle(
         fontSize: 13, fontWeight: FontWeight.w400, height: 1.4,
-        color: _textColor(context).withOpacity(0.6), // 次级文字
+        color: _textColor(context).withValues(alpha: 0.6), // 次级文字
       );
 
   static TextStyle microCaption(BuildContext context) => TextStyle(
         fontSize: 10, fontWeight: FontWeight.w400, height: 1.4,
-        color: _textColor(context).withOpacity(0.6), // 极致紧凑信息，用于计算透明度详情
+        color: _textColor(context).withValues(alpha: 0.6), // 极致紧凑信息，用于计算透明度详情
       );
 
   // --- 排版层级系统 (Typography Hierarchy) ---
@@ -333,7 +324,7 @@ class AppDesignTokens {
   static TextStyle subtitle(BuildContext context) => TextStyle(
         fontSize: 14, fontWeight: FontWeight.w400, height: 1.4,
         letterSpacing: -0.2,
-        color: _textColor(context).withOpacity(0.7), // 降低权重，作为主要数值的解释
+        color: _textColor(context).withValues(alpha: 0.7), // 降低权重，作为主要数值的解释
       );
 
   /// 标签/正文样式（12pt Regular）
@@ -343,7 +334,7 @@ class AppDesignTokens {
         fontSize: 12,
         fontWeight: FontWeight.w400,
         height: 1.4,
-        color: _textColor(context).withOpacity(0.6),
+        color: _textColor(context).withValues(alpha: 0.6),
       );
 
   static Color _textColor(BuildContext context) {
@@ -425,13 +416,13 @@ class AppDesignTokens {
   static Color accentBackground(BuildContext context) => surface(context);
   static Color primaryText(BuildContext context) => _textColor(context);
   static Color secondaryText(BuildContext context) =>
-      _textColor(context).withOpacity(0.6);
+      _textColor(context).withValues(alpha: 0.6);
   static Color tertiaryText(BuildContext context) =>
-      _textColor(context).withOpacity(0.4);
+      _textColor(context).withValues(alpha: 0.4);
   static Color dividerColor(BuildContext context) =>
-      _textColor(context).withOpacity(0.1);
+      _textColor(context).withValues(alpha: 0.1);
   static Color borderColor(BuildContext context) =>
-      _textColor(context).withOpacity(0.1);
+      _textColor(context).withValues(alpha: 0.1);
   static Color get errorColor => _errorTextLight;
   static Color get infoColor => _primaryBlue;
 

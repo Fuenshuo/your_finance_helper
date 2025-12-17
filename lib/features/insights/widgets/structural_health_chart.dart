@@ -39,7 +39,8 @@ class StructuralHealthChart extends StatefulWidget {
 
 class _StructuralHealthChartState extends State<StructuralHealthChart> {
   HealthScore? _healthScore;
-  final FinancialCalculationService _calculationService = FinancialCalculationService();
+  final FinancialCalculationService _calculationService =
+      FinancialCalculationService();
 
   @override
   void initState() {
@@ -64,7 +65,8 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
     }
 
     try {
-      final score = await _calculationService.calculateHealthScore(widget.allocationData!);
+      final score = await _calculationService
+          .calculateHealthScore(widget.allocationData!);
       setState(() {
         _healthScore = score;
       });
@@ -97,7 +99,8 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
               PieChart(
                 PieChartData(
                   sections: _buildChartSections(allocation),
-                  centerSpaceRadius: 60, // Thin 15px ring (60 radius - 45 inner = 15px)
+                  centerSpaceRadius:
+                      60, // Thin 15px ring (60 radius - 45 inner = 15px)
                   sectionsSpace: 0, // No space between sections for thin ring
                   centerSpaceColor: Colors.transparent,
                 ),
@@ -155,7 +158,8 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
         PieChartSectionData(
           value: allocation.flexibleAmount,
           title: '',
-          color: AppDesignTokens.amountPositiveColor(context), // Blue for flexible
+          color:
+              AppDesignTokens.amountPositiveColor(context), // Blue for flexible
           radius: 15, // 15px ring thickness
         ),
       );

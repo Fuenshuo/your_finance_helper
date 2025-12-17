@@ -11,19 +11,36 @@ class SharedPreferencesService extends StatefulService {
 
   /// 获取单例实例
   static Future<SharedPreferencesService> getInstance() async {
+    if (_instance != null && _prefs != null) return _instance!;
+
+    // Ensure thread-safety by checking again after potential race
     if (_instance == null) {
       _instance = SharedPreferencesService._();
-      _prefs ??= await SharedPreferences.getInstance();
-      // 初始化服务状态
+    }
+
+    // Initialize SharedPreferences if not already done
+    if (_prefs == null) {
+      _prefs = await SharedPreferences.getInstance();
+    }
+
+    // Initialize service state
+    if (_instance!.state != ServiceState.initialized) {
       await _instance!.initialize();
     }
+
     return _instance!;
   }
 
-  /// 获取SharedPreferences实例（仅供内部使用）
-  static SharedPreferences? get _sharedPrefs => _prefs;
-
   /// 获取SharedPreferences实例（供其他服务使用）
+  static Future<SharedPreferences> getSharedPreferences() async {
+    if (_prefs != null) return _prefs!;
+
+    // Ensure instance is created and initialized
+    await getInstance();
+    return _prefs!;
+  }
+
+  /// 获取SharedPreferences实例（同步版本，仅在确认已初始化后使用）
   static SharedPreferences? get sharedPreferences => _prefs;
 
   @override
@@ -192,8 +209,8 @@ class SharedPreferencesService extends StatefulService {
   }
 
   /// 批量获取值
-  Map<String, dynamic?> getBulk(List<String> keys) {
-    final results = <String, dynamic?>{};
+  Map<String, dynamic> getBulk(List<String> keys) {
+    final results = <String, dynamic>{};
 
     for (final key in keys) {
       try {

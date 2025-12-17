@@ -120,7 +120,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
   @override
   void dispose() {
-    Logger.debug('📝 SalaryIncomeSetupScreen dispose called with bonuses: $_bonuses');
+    Logger.debug(
+        '📝 SalaryIncomeSetupScreen dispose called with bonuses: $_bonuses');
     _disposeControllers();
     super.dispose();
   }
@@ -154,47 +155,56 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
       final now = DateTime.now();
       final currentMonth = now.month;
       final currentYear = now.year;
-      
+
       // 计算当前月收入（基本工资 + 津贴）
       final basicSalary = double.tryParse(_basicSalaryController.text) ?? 0;
-      final housingAllowance = double.tryParse(_housingAllowanceController.text) ?? 0;
+      final housingAllowance =
+          double.tryParse(_housingAllowanceController.text) ?? 0;
       final mealAllowance = double.tryParse(_mealAllowanceController.text) ?? 0;
-      final transportationAllowance = double.tryParse(_transportationAllowanceController.text) ?? 0;
-      final otherAllowance = double.tryParse(_otherAllowanceController.text) ?? 0;
-      
+      final transportationAllowance =
+          double.tryParse(_transportationAllowanceController.text) ?? 0;
+      final otherAllowance =
+          double.tryParse(_otherAllowanceController.text) ?? 0;
+
       // 计算当前月津贴（考虑月度津贴变化）
       double currentMonthAllowance;
       if (_monthlyAllowances.containsKey(currentMonth)) {
-        currentMonthAllowance = _monthlyAllowances[currentMonth]!.totalAllowance;
+        currentMonthAllowance =
+            _monthlyAllowances[currentMonth]!.totalAllowance;
       } else {
-        currentMonthAllowance = housingAllowance + mealAllowance + 
-                                transportationAllowance + otherAllowance;
+        currentMonthAllowance = housingAllowance +
+            mealAllowance +
+            transportationAllowance +
+            otherAllowance;
       }
-      
+
       // 计算当前月奖金（排除年终奖，年终奖单独计税）
       var currentMonthBonus = 0.0;
       for (final bonus in _bonuses) {
         if (bonus.type != BonusType.yearEndBonus) {
-          final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, currentMonth);
+          final monthlyBonus =
+              bonus.calculateMonthlyBonus(currentYear, currentMonth);
           currentMonthBonus += monthlyBonus;
         }
       }
-      
+
       // 当前月总收入
-      final currentMonthIncome = basicSalary + currentMonthAllowance + currentMonthBonus;
-      
+      final currentMonthIncome =
+          basicSalary + currentMonthAllowance + currentMonthBonus;
+
       // 当前月扣除项
-      final socialInsurance = double.tryParse(_socialInsuranceController.text) ?? 0;
+      final socialInsurance =
+          double.tryParse(_socialInsuranceController.text) ?? 0;
       final housingFund = double.tryParse(_housingFundController.text) ?? 0;
       final monthlyDeductions = socialInsurance + housingFund;
-      
+
       // 假设下个月收入稳定（与当前月相同）
       final nextMonthIncome = currentMonthIncome;
-      
+
       // 计算本年累计应纳税所得额（到当前月）
       var cumulativeTaxableIncome = 0.0;
       var cumulativeTax = 0.0;
-      
+
       // 计算1月到当前月的累计
       for (var month = 1; month <= currentMonth; month++) {
         // 计算指定月份的津贴
@@ -202,56 +212,63 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
         if (_monthlyAllowances.containsKey(month)) {
           monthAllowance = _monthlyAllowances[month]!.totalAllowance;
         } else {
-          monthAllowance = housingAllowance + mealAllowance + 
-                          transportationAllowance + otherAllowance;
+          monthAllowance = housingAllowance +
+              mealAllowance +
+              transportationAllowance +
+              otherAllowance;
         }
-        
+
         // 计算指定月份的奖金（排除年终奖）
         var monthBonus = 0.0;
         for (final bonus in _bonuses) {
           if (bonus.type != BonusType.yearEndBonus) {
-            final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
+            final monthlyBonus =
+                bonus.calculateMonthlyBonus(currentYear, month);
             monthBonus += monthlyBonus;
           }
         }
-        
+
         final monthIncome = basicSalary + monthAllowance + monthBonus;
-        final monthTaxableIncome = PersonalIncomeTaxService.calculateTaxableIncome(
+        final monthTaxableIncome =
+            PersonalIncomeTaxService.calculateTaxableIncome(
           monthIncome,
           monthlyDeductions,
           _specialDeductionMonthly,
           0,
         );
-        
+
         cumulativeTaxableIncome += monthTaxableIncome;
-        
+
         // 计算年度累计应纳税额
-        final annualTax = PersonalIncomeTaxService.calculateAnnualTax(cumulativeTaxableIncome);
-        
+        final annualTax = PersonalIncomeTaxService.calculateAnnualTax(
+            cumulativeTaxableIncome);
+
         // 计算当月应预扣税额
         final monthTax = annualTax - cumulativeTax;
         cumulativeTax += monthTax;
       }
-      
+
       // 预测下个月：假设下个月收入与当前月相同
-      final nextMonthTaxableIncome = PersonalIncomeTaxService.calculateTaxableIncome(
+      final nextMonthTaxableIncome =
+          PersonalIncomeTaxService.calculateTaxableIncome(
         nextMonthIncome,
         monthlyDeductions,
         _specialDeductionMonthly,
         0,
       );
-      
+
       // 下个月的累计应纳税所得额
-      final nextMonthCumulativeTaxableIncome = cumulativeTaxableIncome + nextMonthTaxableIncome;
-      
+      final nextMonthCumulativeTaxableIncome =
+          cumulativeTaxableIncome + nextMonthTaxableIncome;
+
       // 计算下个月的年度累计应纳税额
       final nextMonthAnnualTax = PersonalIncomeTaxService.calculateAnnualTax(
         nextMonthCumulativeTaxableIncome,
       );
-      
+
       // 计算下个月应预扣税额
       final nextMonthTax = nextMonthAnnualTax - cumulativeTax;
-      
+
       // 填入预测值（作为建议）
       _personalIncomeTaxController.text = nextMonthTax.toStringAsFixed(0);
 
@@ -329,9 +346,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
       // 4. 转换为SalaryIncome并填充表单
       final salaryIncome = result.toSalaryIncome(
-        name: _nameController.text.isNotEmpty
-            ? _nameController.text
-            : '工资收入',
+        name: _nameController.text.isNotEmpty ? _nameController.text : '工资收入',
         salaryDay: _salaryDay,
       );
 
@@ -365,7 +380,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                 Text('实发金额: ¥${result.netIncome.toStringAsFixed(2)}'),
                 Text('置信度: ${(result.confidence * 100).toStringAsFixed(0)}%'),
                 if (result.salaryDate != null)
-                  Text('发薪日期: ${result.salaryDate!.toString().substring(0, 10)}'),
+                  Text(
+                      '发薪日期: ${result.salaryDate!.toString().substring(0, 10)}'),
                 const SizedBox(height: 8),
                 const Text(
                   '提示: 已自动填充基本工资，其他字段请手动补充',
@@ -428,7 +444,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
       if (widget.salaryIncomeToEdit != null) {
         Logger.debug('📝 Updating existing salary income');
-        Logger.debug('📝 Original salary income ID: ${widget.salaryIncomeToEdit!.id}');
+        Logger.debug(
+            '📝 Original salary income ID: ${widget.salaryIncomeToEdit!.id}');
         // 编辑模式：更新现有工资收入
         final updatedIncome = widget.salaryIncomeToEdit!.copyWith(
           name: _nameController.text.trim(),

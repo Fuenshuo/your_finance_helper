@@ -84,7 +84,7 @@ class VerificationRunner {
   Future<VerificationResult> _verifyComponent(String componentName) async {
     // This will be implemented with actual verification logic
     // For now, return a placeholder result
-    await Future.delayed(const Duration(milliseconds: 100)); // Simulate work
+    await Future<void>.delayed(const Duration(milliseconds: 100)); // Simulate work
 
     return VerificationResult(
       componentName: componentName,
@@ -155,3 +155,4 @@ enum VerificationStatus {
   fail,
   warning
 }
+

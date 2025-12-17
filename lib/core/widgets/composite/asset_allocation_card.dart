@@ -4,7 +4,7 @@ import '../app_card.dart';
 
 /// 资产配置卡片样式
 /// 使用紧凑型水平堆叠条形图替代圆饼图
-/// 
+///
 /// **样式特征：**
 /// - 紧凑型水平堆叠条形图，信息转化率高
 /// - 最重要的账户类型使用 PrimaryColor
@@ -13,16 +13,16 @@ import '../app_card.dart';
 class AssetAllocationCard extends StatelessWidget {
   /// 标题
   final String title;
-  
+
   /// 资产配置数据（账户类型 -> 金额）
   final Map<String, double> allocationData;
-  
+
   /// 总资产（用于计算百分比）
   final double totalAssets;
-  
+
   /// 自定义颜色映射（账户类型 -> 颜色）
   final Map<String, Color>? colorMap;
-  
+
   /// 卡片内边距
   final EdgeInsetsGeometry? padding;
 
@@ -56,11 +56,11 @@ class AssetAllocationCard extends StatelessWidget {
         ),
       );
     }
-    
+
     // 按金额排序，最重要的在前
     final sortedEntries = allocationData.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    
+
     return AppCard(
       padding: padding,
       child: Column(
@@ -81,9 +81,10 @@ class AssetAllocationCard extends StatelessWidget {
       ),
     );
   }
-  
+
   /// 构建堆叠条形图
-  Widget _buildStackedBarChart(BuildContext context, List<MapEntry<String, double>> entries) {
+  Widget _buildStackedBarChart(
+      BuildContext context, List<MapEntry<String, double>> entries) {
     return Container(
       height: 8, // 紧凑的条形图高度
       decoration: BoxDecoration(
@@ -93,7 +94,7 @@ class AssetAllocationCard extends StatelessWidget {
       child: Row(
         children: entries.map((entry) {
           final color = _getColorForCategory(context, entry.key);
-          
+
           return Expanded(
             flex: (entry.value * 1000).round(), // 使用 flex 来分配宽度
             child: Container(
@@ -107,7 +108,7 @@ class AssetAllocationCard extends StatelessWidget {
       ),
     );
   }
-  
+
   /// 获取分段圆角（首尾需要圆角）
   BorderRadius _getBorderRadiusForSegment(
     MapEntry<String, double> current,
@@ -115,7 +116,7 @@ class AssetAllocationCard extends StatelessWidget {
   ) {
     final isFirst = all.first == current;
     final isLast = all.last == current;
-    
+
     if (isFirst && isLast) {
       return BorderRadius.circular(4); // 唯一一个，全部圆角
     } else if (isFirst) {
@@ -131,16 +132,17 @@ class AssetAllocationCard extends StatelessWidget {
     }
     return BorderRadius.zero;
   }
-  
+
   /// 构建图例
-  Widget _buildLegend(BuildContext context, List<MapEntry<String, double>> entries) {
+  Widget _buildLegend(
+      BuildContext context, List<MapEntry<String, double>> entries) {
     return Wrap(
       spacing: AppDesignTokens.spacingMedium,
       runSpacing: AppDesignTokens.spacingMinor,
       children: entries.map((entry) {
         final percentage = (entry.value / totalAssets) * 100;
         final color = _getColorForCategory(context, entry.key);
-        
+
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -162,20 +164,20 @@ class AssetAllocationCard extends StatelessWidget {
       }).toList(),
     );
   }
-  
+
   /// 获取账户类型的颜色
   /// 最重要的使用 PrimaryColor，次要的使用 SecondaryColor 或柔和的 SurfaceColor
   Color _getColorForCategory(BuildContext context, String category) {
     if (colorMap != null && colorMap!.containsKey(category)) {
       return colorMap![category]!;
     }
-    
+
     // 默认颜色方案：最重要的使用 PrimaryColor
     final sortedEntries = allocationData.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    
+
     final index = sortedEntries.indexWhere((e) => e.key == category);
-    
+
     if (index == 0) {
       // 最重要的账户类型：使用 PrimaryColor
       return AppDesignTokens.primaryAction(context);
@@ -184,8 +186,7 @@ class AssetAllocationCard extends StatelessWidget {
       return AppDesignTokens.successColor(context);
     } else {
       // 其他：使用柔和的 SurfaceColor 变体
-      return AppDesignTokens.secondaryText(context).withOpacity(0.3);
+      return AppDesignTokens.secondaryText(context).withValues(alpha: 0.3);
     }
   }
 }
-

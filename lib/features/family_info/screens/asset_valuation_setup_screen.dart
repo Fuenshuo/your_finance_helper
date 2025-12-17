@@ -365,7 +365,7 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
             ),
             borderRadius: BorderRadius.circular(context.responsiveSpacing12),
             color: _selectedMethod == method
-                ? color.withOpacity(0.05)
+                ? color.withValues(alpha: 0.05)
                 : Colors.transparent,
           ),
           child: Row(
@@ -374,7 +374,7 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius:
                       BorderRadius.circular(context.responsiveSpacing8),
                 ),
@@ -504,4 +504,3 @@ class AssetValuationResult {
   final double? depreciationRate;
   final double? currentValue;
 }
-

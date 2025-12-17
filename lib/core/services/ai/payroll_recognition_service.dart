@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:your_finance_flutter/core/models/budget.dart' show SalaryIncome;
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart' as ai_factory;
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart'
+    as ai_factory;
 import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
 import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
 import 'package:your_finance_flutter/core/utils/ai_date_parser.dart';
@@ -203,4 +204,3 @@ class PayrollRecognitionService {
     }
   }
 }
-

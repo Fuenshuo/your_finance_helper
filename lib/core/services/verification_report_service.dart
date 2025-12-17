@@ -7,12 +7,8 @@ import 'dart:convert';
 import 'dart:io';
 import '../models/verification_result.dart';
 import '../models/verification_session.dart';
-import 'verification_evidence_service.dart';
 
 class VerificationReportService {
-  final VerificationEvidenceService _evidenceService;
-
-  VerificationReportService(this._evidenceService);
 
   /// Generate comprehensive HTML report for a verification session
   Future<String> generateSessionReport(VerificationSession session) async {
@@ -73,9 +69,14 @@ class VerificationReportService {
 
     // Summary statistics
     final totalResults = session.results.length;
-    final passedResults = session.results.where((r) => r.status == VerificationStatus.pass).length;
-    final failedResults = session.results.where((r) => r.status == VerificationStatus.fail).length;
-    final passRate = totalResults > 0 ? ((passedResults / totalResults) * 100).round() : 0;
+    final passedResults = session.results
+        .where((r) => r.status == VerificationStatus.pass)
+        .length;
+    final failedResults = session.results
+        .where((r) => r.status == VerificationStatus.fail)
+        .length;
+    final passRate =
+        totalResults > 0 ? ((passedResults / totalResults) * 100).round() : 0;
 
     buffer.writeln('''
             <div class="summary-card">
@@ -112,8 +113,11 @@ class VerificationReportService {
 
     // Component results table
     for (final result in session.results) {
-      final statusClass = result.status == VerificationStatus.pass ? 'badge-pass' :
-                         result.status == VerificationStatus.fail ? 'badge-fail' : 'badge-pending';
+      final statusClass = result.status == VerificationStatus.pass
+          ? 'badge-pass'
+          : result.status == VerificationStatus.fail
+              ? 'badge-fail'
+              : 'badge-pending';
       final statusText = result.status.toString().split('.').last.toUpperCase();
 
       buffer.writeln('''
@@ -136,8 +140,6 @@ class VerificationReportService {
 
     // Detailed component results
     for (final result in session.results) {
-      final priorityClass = result.priority >= 4 ? 'priority-high' :
-                           result.priority >= 3 ? 'priority-medium' : 'priority-low';
 
       buffer.writeln('''
         <div class="component">
@@ -150,18 +152,20 @@ class VerificationReportService {
                 <p><strong>Duration:</strong> ${result.duration?.inSeconds ?? 'N/A'} seconds</p>
 ''');
 
-      if (result.checkResults.isNotEmpty) {
+      if (result.checkResults?.isNotEmpty == true) {
         buffer.writeln('''
                 <h4>Check Results:</h4>
                 <ul>
 ''');
-        result.checkResults.forEach((key, passed) {
-          buffer.writeln('                    <li class="${passed ? 'status-pass' : 'status-fail'}">${key}: ${passed ? 'PASS' : 'FAIL'}</li>');
+        result.checkResults?.forEach((key, passed) {
+          buffer.writeln(
+              '                    <li class="${passed ? 'status-pass' : 'status-fail'}">${key}: ${passed ? 'PASS' : 'FAIL'}</li>');
         });
         buffer.writeln('                </ul>');
       }
 
-      if (result.remediationSteps != null && result.remediationSteps!.isNotEmpty) {
+      if (result.remediationSteps != null &&
+          result.remediationSteps!.isNotEmpty) {
         buffer.writeln('''
                 <div class="remediation">
                     <h4>Remediation Steps:</h4>
@@ -207,14 +211,20 @@ class VerificationReportService {
   /// Generate summary statistics
   Map<String, dynamic> generateSummaryStats(VerificationSession session) {
     final totalComponents = session.results.length;
-    final passed = session.results.where((r) => r.status == VerificationStatus.pass).length;
-    final failed = session.results.where((r) => r.status == VerificationStatus.fail).length;
-    final pending = session.results.where((r) => r.status == VerificationStatus.pending).length;
+    final passed = session.results
+        .where((r) => r.status == VerificationStatus.pass)
+        .length;
+    final failed = session.results
+        .where((r) => r.status == VerificationStatus.fail)
+        .length;
+    final pending = session.results
+        .where((r) => r.status == VerificationStatus.pending)
+        .length;
 
     final avgDuration = session.results
-        .where((r) => r.duration != null)
-        .map((r) => r.duration!.inSeconds)
-        .fold<double>(0, (sum, duration) => sum + duration) /
+            .where((r) => r.duration != null)
+            .map((r) => r.duration!.inSeconds)
+            .fold<double>(0, (sum, duration) => sum + duration) /
         session.results.where((r) => r.duration != null).length;
 
     return {
@@ -222,9 +232,11 @@ class VerificationReportService {
       'passed': passed,
       'failed': failed,
       'pending': pending,
-      'success_rate': totalComponents > 0 ? (passed / totalComponents * 100).round() : 0,
+      'success_rate':
+          totalComponents > 0 ? (passed / totalComponents * 100).round() : 0,
       'average_duration_seconds': avgDuration.isNaN ? 0 : avgDuration.round(),
-      'session_duration_seconds': session.endTime?.difference(session.startTime).inSeconds ?? 0,
+      'session_duration_seconds':
+          session.endTime?.difference(session.startTime).inSeconds ?? 0,
       'high_priority_failures': session.results
           .where((r) => r.status == VerificationStatus.fail && r.priority >= 4)
           .map((r) => r.componentName)
@@ -244,16 +256,18 @@ class VerificationReportService {
         'overall_status': session.overallStatus.toString().split('.').last,
       },
       'summary': summary,
-      'results': session.results.map((result) => {
-        'component_name': result.componentName,
-        'status': result.status.toString().split('.').last,
-        'priority': result.priority,
-        'duration_seconds': result.duration?.inSeconds,
-        'details': result.details,
-        'check_results': result.checkResults,
-        'remediation_steps': result.remediationSteps,
-        'error_message': result.errorMessage,
-      }).toList(),
+      'results': session.results
+          .map((result) => {
+                'component_name': result.componentName,
+                'status': result.status.toString().split('.').last,
+                'priority': result.priority,
+                'duration_seconds': result.duration?.inSeconds,
+                'details': result.details,
+                'check_results': result.checkResults,
+                'remediation_steps': result.remediationSteps,
+                'error_message': result.errorMessage,
+              })
+          .toList(),
     };
 
     return JsonEncoder.withIndent('  ').convert(report);
@@ -265,3 +279,4 @@ class VerificationReportService {
     return '${text.substring(0, maxLength)}...';
   }
 }
+

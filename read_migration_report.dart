@@ -19,12 +19,12 @@ void main() async {
 
       // 尝试解析 JSON
       try {
-        final jsonData = jsonDecode(content);
+        final jsonData = jsonDecode(content) as Map<String, dynamic>;
         print('\n📊 解析后的数据:');
         print('  - 版本: ${jsonData['version']}');
         print('  - 时间戳: ${jsonData['timestamp']}');
 
-        if (jsonData.containsKey('modules')) {
+        if (jsonData.containsKey('modules') == true) {
           print('  - 模块:');
           final modules = jsonData['modules'] as Map<String, dynamic>;
           for (final entry in modules.entries) {
@@ -33,9 +33,10 @@ void main() async {
           }
         }
 
-        if (jsonData.containsKey('errors') && jsonData['errors'].isNotEmpty) {
+        if (jsonData.containsKey('errors') == true && (jsonData['errors'] as List).isNotEmpty) {
           print('  - 错误:');
-          for (final error in jsonData['errors']) {
+          final errors = jsonData['errors'] as List;
+          for (final error in errors) {
             print('    $error');
           }
         }

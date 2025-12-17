@@ -1,36 +1,32 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:your_finance_flutter/features/insights/services/serverless_ai_data_source.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
-import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
-import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
-import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/models/flux_view_state.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/features/insights/services/serverless_ai_data_source.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late ServerlessAiDataSource dataSource;
   late AiServiceFactory aiFactory;
-  late PromptLoader promptLoader;
-  late PerformanceMonitor performanceMonitor;
+  late AiConfigService aiConfigService;
 
   setUp(() async {
     // Initialize real dependencies for integration testing
-    aiFactory = AiServiceFactory();
-    promptLoader = PromptLoader();
-    performanceMonitor = PerformanceMonitor();
+    aiFactory = AiServiceFactoryImpl();
+    aiConfigService = await AiConfigService.getInstance();
 
     dataSource = ServerlessAiDataSource(
       aiFactory,
-      promptLoader,
-      performanceMonitor,
+      aiConfigService,
     );
   });
 
   group('AI Analysis Integration Tests', () {
     testWidgets('complete AI analysis workflow completes within 5 seconds',
-        (WidgetTester tester) async {
+        (tester) async {
       // Arrange
       final transaction = Transaction(
         id: 'integration-test-transaction',
@@ -47,7 +43,7 @@ void main() {
 
       // Assert
       expect(stopwatch.elapsedMilliseconds, lessThan(5000),
-          reason: 'AI analysis should complete within 5 seconds');
+          reason: 'AI analysis should complete within 5 seconds',);
 
       // Result should be valid AnalysisSummary (success or safe default)
       expect(result, isNotNull);
@@ -61,7 +57,7 @@ void main() {
     });
 
     testWidgets('AI analysis handles various transaction types',
-        (WidgetTester tester) async {
+        (tester) async {
       // Test different transaction scenarios
       final testCases = [
         Transaction(
@@ -95,19 +91,19 @@ void main() {
 
         // Assert
         expect(stopwatch.elapsedMilliseconds, lessThan(5000),
-            reason: 'Analysis for ${transaction.category} should complete within 5 seconds');
+            reason: 'Analysis for ${transaction.category} should complete within 5 seconds',);
 
         expect(result, isNotNull,
-            reason: 'Analysis result should not be null for ${transaction.category}');
+            reason: 'Analysis result should not be null for ${transaction.category}',);
         expect(result.improvementsFound, greaterThanOrEqualTo(0),
-            reason: 'Improvements found should be valid for ${transaction.category}');
+            reason: 'Improvements found should be valid for ${transaction.category}',);
         expect(result.score, greaterThanOrEqualTo(0),
-            reason: 'Score should be valid for ${transaction.category}');
+            reason: 'Score should be valid for ${transaction.category}',);
       }
     });
 
     testWidgets('AI analysis maintains silent failure on service unavailability',
-        (WidgetTester tester) async {
+        (tester) async {
       // This test verifies that if AI services are unavailable,
       // the system gracefully returns safe defaults without throwing exceptions
 
@@ -131,7 +127,7 @@ void main() {
     });
 
     testWidgets('AI analysis performance is consistent across multiple calls',
-        (WidgetTester tester) async {
+        (tester) async {
       // Test performance consistency
       final transaction = Transaction(
         id: 'performance-test',
@@ -144,7 +140,7 @@ void main() {
       final durations = <int>[];
 
       // Perform multiple analysis calls
-      for (int i = 0; i < 3; i++) {
+      for (var i = 0; i < 3; i++) {
         final stopwatch = Stopwatch()..start();
         await dataSource.analyze(transaction, FluxTimeframe.week);
         stopwatch.stop();
@@ -154,7 +150,7 @@ void main() {
       // Assert performance consistency
       final averageDuration = durations.reduce((a, b) => a + b) / durations.length;
       expect(averageDuration, lessThan(5000),
-          reason: 'Average analysis time should be under 5 seconds');
+          reason: 'Average analysis time should be under 5 seconds',);
 
       // Check that performance is reasonably consistent
       final maxDuration = durations.reduce((a, b) => a > b ? a : b);
@@ -162,7 +158,7 @@ void main() {
       final variance = maxDuration - minDuration;
 
       expect(variance, lessThan(2000),
-          reason: 'Performance variance should be reasonable (< 2 seconds difference)');
+          reason: 'Performance variance should be reasonable (< 2 seconds difference)',);
     });
   });
 }

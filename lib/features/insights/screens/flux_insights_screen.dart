@@ -57,7 +57,8 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
       }
 
       // Load allocation data
-      final savedAllocationData = await _calculationService.loadAllocationData();
+      final savedAllocationData =
+          await _calculationService.loadAllocationData();
       if (savedAllocationData != null) {
         setState(() {
           _allocationData = savedAllocationData;
@@ -76,12 +77,30 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
   void _initializeSampleData() {
     // Sample trend data for the past week
     _trendData = [
-      TrendData(date: DateTime.now().subtract(const Duration(days: 6)), amount: 1200.0, dayLabel: 'Mon'),
-      TrendData(date: DateTime.now().subtract(const Duration(days: 5)), amount: 800.0, dayLabel: 'Tue'),
-      TrendData(date: DateTime.now().subtract(const Duration(days: 4)), amount: 1500.0, dayLabel: 'Wed'),
-      TrendData(date: DateTime.now().subtract(const Duration(days: 3)), amount: 900.0, dayLabel: 'Thu'),
-      TrendData(date: DateTime.now().subtract(const Duration(days: 2)), amount: 2000.0, dayLabel: 'Fri'),
-      TrendData(date: DateTime.now().subtract(const Duration(days: 1)), amount: 600.0, dayLabel: 'Sat'),
+      TrendData(
+          date: DateTime.now().subtract(const Duration(days: 6)),
+          amount: 1200.0,
+          dayLabel: 'Mon'),
+      TrendData(
+          date: DateTime.now().subtract(const Duration(days: 5)),
+          amount: 800.0,
+          dayLabel: 'Tue'),
+      TrendData(
+          date: DateTime.now().subtract(const Duration(days: 4)),
+          amount: 1500.0,
+          dayLabel: 'Wed'),
+      TrendData(
+          date: DateTime.now().subtract(const Duration(days: 3)),
+          amount: 900.0,
+          dayLabel: 'Thu'),
+      TrendData(
+          date: DateTime.now().subtract(const Duration(days: 2)),
+          amount: 2000.0,
+          dayLabel: 'Fri'),
+      TrendData(
+          date: DateTime.now().subtract(const Duration(days: 1)),
+          amount: 600.0,
+          dayLabel: 'Sat'),
       TrendData(date: DateTime.now(), amount: 1100.0, dayLabel: 'Sun'),
     ];
 
@@ -95,7 +114,8 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
 
   Future<void> _calculateHealthScore() async {
     try {
-      final score = await _calculationService.calculateHealthScore(_allocationData);
+      final score =
+          await _calculationService.calculateHealthScore(_allocationData);
       setState(() {
         _healthScore = score;
       });
@@ -114,14 +134,6 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
     }
   }
 
-  Future<void> _persistCurrentData() async {
-    try {
-      await _calculationService.saveTrendData(_trendData);
-      await _calculationService.saveAllocationData(_allocationData);
-    } catch (e) {
-      print('[FluxInsightsScreen] Error persisting data: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,60 +207,60 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                      'Daily Budget Velocity',
-                      style: AppDesignTokens.headline(context),
+                          'Daily Budget Velocity',
+                          style: AppDesignTokens.headline(context),
+                        ),
+                        const SizedBox(height: 16),
+                        // Use actual DailyBudgetVelocity widget
+                        DailyBudgetVelocity(
+                          budgetData: BudgetData(
+                            budgetAmount: 200.0,
+                            spentAmount: 112.0,
+                            date: DateTime.now(),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    // Use actual DailyBudgetVelocity widget
-                    DailyBudgetVelocity(
-                      budgetData: BudgetData(
-                        budgetAmount: 200.0,
-                        spentAmount: 112.0,
-                        date: DateTime.now(),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-            // Trend Chart Section
-            AppCard(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                color: AppDesignTokens.surface(context),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Spending Trends',
-                      style: AppDesignTokens.headline(context),
+                // Trend Chart Section
+                AppCard(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    color: AppDesignTokens.surface(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Spending Trends',
+                          style: AppDesignTokens.headline(context),
+                        ),
+                        const SizedBox(height: 16),
+                        // Trend Radar Chart
+                        TrendRadarChart(trendData: _trendData),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    // Trend Radar Chart
-                    TrendRadarChart(trendData: _trendData),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-            // Structural Health Section
-            AppCard(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                color: AppDesignTokens.surface(context),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Structural Health',
-                      style: AppDesignTokens.headline(context),
-                    ),
-                    const SizedBox(height: 16),
+                // Structural Health Section
+                AppCard(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    color: AppDesignTokens.surface(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Structural Health',
+                          style: AppDesignTokens.headline(context),
+                        ),
+                        const SizedBox(height: 16),
                         // Structural Health Chart
                         StructuralHealthChart(allocationData: _allocationData),
                       ],
@@ -268,4 +280,4 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
 
     return result;
   }
-  }
+}

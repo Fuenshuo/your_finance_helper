@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 // 币种信息模型
-class Currency extends Equatable { // 是否启用
+class Currency extends Equatable {
+  // 是否启用
 
   const Currency({
     required this.code,
@@ -14,13 +15,13 @@ class Currency extends Equatable { // 是否启用
 
   // 反序列化
   factory Currency.fromJson(Map<String, dynamic> json) => Currency(
-      code: json['code'] as String,
-      name: json['name'] as String,
-      symbol: json['symbol'] as String,
-      decimalPlaces: json['decimalPlaces'] as int? ?? 2,
-      flag: json['flag'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-    );
+        code: json['code'] as String,
+        name: json['name'] as String,
+        symbol: json['symbol'] as String,
+        decimalPlaces: json['decimalPlaces'] as int? ?? 2,
+        flag: json['flag'] as String?,
+        isActive: json['isActive'] as bool? ?? true,
+      );
   final String code; // 币种代码，如 'CNY', 'USD', 'EUR'
   final String name; // 币种名称，如 '人民币', '美元', '欧元'
   final String symbol; // 币种符号，如 '¥', '$', '€'
@@ -59,31 +60,34 @@ class Currency extends Equatable { // 是否启用
     int? decimalPlaces,
     String? flag,
     bool? isActive,
-  }) => Currency(
-      code: code ?? this.code,
-      name: name ?? this.name,
-      symbol: symbol ?? this.symbol,
-      decimalPlaces: decimalPlaces ?? this.decimalPlaces,
-      flag: flag ?? this.flag,
-      isActive: isActive ?? this.isActive,
-    );
+  }) =>
+      Currency(
+        code: code ?? this.code,
+        name: name ?? this.name,
+        symbol: symbol ?? this.symbol,
+        decimalPlaces: decimalPlaces ?? this.decimalPlaces,
+        flag: flag ?? this.flag,
+        isActive: isActive ?? this.isActive,
+      );
 
   // 序列化
   Map<String, dynamic> toJson() => {
-      'code': code,
-      'name': name,
-      'symbol': symbol,
-      'decimalPlaces': decimalPlaces,
-      'flag': flag,
-      'isActive': isActive,
-    };
+        'code': code,
+        'name': name,
+        'symbol': symbol,
+        'decimalPlaces': decimalPlaces,
+        'flag': flag,
+        'isActive': isActive,
+      };
 
   @override
-  List<Object?> get props => [code, name, symbol, decimalPlaces, flag, isActive];
+  List<Object?> get props =>
+      [code, name, symbol, decimalPlaces, flag, isActive];
 }
 
 // 汇率信息模型
-class ExchangeRate extends Equatable { // 数据来源
+class ExchangeRate extends Equatable {
+  // 数据来源
 
   const ExchangeRate({
     required this.fromCurrency,
@@ -95,12 +99,12 @@ class ExchangeRate extends Equatable { // 数据来源
 
   // 反序列化
   factory ExchangeRate.fromJson(Map<String, dynamic> json) => ExchangeRate(
-      fromCurrency: json['fromCurrency'] as String,
-      toCurrency: json['toCurrency'] as String,
-      rate: json['rate'] as double,
-      updateTime: DateTime.parse(json['updateTime'] as String),
-      source: json['source'] as String?,
-    );
+        fromCurrency: json['fromCurrency'] as String,
+        toCurrency: json['toCurrency'] as String,
+        rate: json['rate'] as double,
+        updateTime: DateTime.parse(json['updateTime'] as String),
+        source: json['source'] as String?,
+      );
   final String fromCurrency;
   final String toCurrency;
   final double rate;
@@ -114,25 +118,27 @@ class ExchangeRate extends Equatable { // 数据来源
     double? rate,
     DateTime? updateTime,
     String? source,
-  }) => ExchangeRate(
-      fromCurrency: fromCurrency ?? this.fromCurrency,
-      toCurrency: toCurrency ?? this.toCurrency,
-      rate: rate ?? this.rate,
-      updateTime: updateTime ?? this.updateTime,
-      source: source ?? this.source,
-    );
+  }) =>
+      ExchangeRate(
+        fromCurrency: fromCurrency ?? this.fromCurrency,
+        toCurrency: toCurrency ?? this.toCurrency,
+        rate: rate ?? this.rate,
+        updateTime: updateTime ?? this.updateTime,
+        source: source ?? this.source,
+      );
 
   // 序列化
   Map<String, dynamic> toJson() => {
-      'fromCurrency': fromCurrency,
-      'toCurrency': toCurrency,
-      'rate': rate,
-      'updateTime': updateTime.toIso8601String(),
-      'source': source,
-    };
+        'fromCurrency': fromCurrency,
+        'toCurrency': toCurrency,
+        'rate': rate,
+        'updateTime': updateTime.toIso8601String(),
+        'source': source,
+      };
 
   @override
-  List<Object?> get props => [fromCurrency, toCurrency, rate, updateTime, source];
+  List<Object?> get props =>
+      [fromCurrency, toCurrency, rate, updateTime, source];
 }
 
 // 币种转换工具类
@@ -149,8 +155,10 @@ class CurrencyConverter {
 
     // 查找直接汇率
     final directRate = exchangeRates.firstWhere(
-      (rate) => rate.fromCurrency == fromCurrency && rate.toCurrency == toCurrency,
-      orElse: () => throw Exception('No direct exchange rate found for $fromCurrency to $toCurrency'),
+      (rate) =>
+          rate.fromCurrency == fromCurrency && rate.toCurrency == toCurrency,
+      orElse: () => throw Exception(
+          'No direct exchange rate found for $fromCurrency to $toCurrency'),
     );
 
     return amount * directRate.rate;
@@ -170,5 +178,6 @@ class CurrencyConverter {
   }
 
   // 获取汇率键
-  static String getRateKey(String fromCurrency, String toCurrency) => '${fromCurrency}_$toCurrency';
+  static String getRateKey(String fromCurrency, String toCurrency) =>
+      '${fromCurrency}_$toCurrency';
 }

@@ -661,9 +661,9 @@ class _ClearanceHomeScreenState extends ConsumerState<ClearanceHomeScreen> {
         vertical: context.responsiveSpacing4,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -920,7 +920,7 @@ class _ClearanceHomeScreenState extends ConsumerState<ClearanceHomeScreen> {
           context,
           message: '删除失败: $e',
           icon: Icons.error_outline,
-          backgroundColor: Colors.red.withOpacity(0.2),
+          backgroundColor: Colors.red.withValues(alpha: 0.2),
           textColor: Colors.red,
         );
       }
@@ -1310,7 +1310,7 @@ class _ClearanceHomeScreenState extends ConsumerState<ClearanceHomeScreen> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: _getAccountColor(wallet.type).withOpacity(0.1),
+                  color: _getAccountColor(wallet.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(

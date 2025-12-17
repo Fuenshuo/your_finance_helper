@@ -13,17 +13,17 @@ class LoggingService {
   /// 初始化日志服务
   Future<void> initialize() async {
     if (_initialized) return;
-    
+
     try {
       final directory = await getApplicationDocumentsDirectory();
       final logPath = '${directory.path}/salary_calculation.log';
       _logFile = File(logPath);
-      
+
       // 创建文件（如果不存在）
       if (!await _logFile!.exists()) {
         await _logFile!.create();
       }
-      
+
       _initialized = true;
       await log('=== 日志服务初始化完成 ===');
     } catch (e) {
@@ -43,7 +43,7 @@ class LoggingService {
     try {
       final timestamp = DateTime.now().toString();
       final logMessage = '[$timestamp] $message\n';
-      
+
       // 追加到文件
       await _logFile?.writeAsString(logMessage, mode: FileMode.append);
     } catch (e) {
@@ -56,7 +56,7 @@ class LoggingService {
   /// 清除日志文件
   Future<void> clearLogs() async {
     if (!_initialized) return;
-    
+
     try {
       await _logFile?.writeAsString('');
     } catch (e) {

@@ -126,8 +126,9 @@ class _AppTextFieldState extends State<AppTextField> {
                   decoration: InputDecoration(
                     hintText: widget.hintText,
                     hintStyle: TextStyle(
-                      color:
-                          AppDesignTokens.body(context).color!.withOpacity(0.4),
+                      color: AppDesignTokens.body(context)
+                          .color!
+                          .withValues(alpha: 0.4),
                       fontSize: 17,
                     ),
                     border: InputBorder.none,

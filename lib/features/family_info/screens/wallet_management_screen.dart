@@ -112,7 +112,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                         Container(
                           padding: EdgeInsets.all(context.responsiveSpacing12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2196F3).withOpacity(0.1),
+                            color:
+                                const Color(0xFF2196F3).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
                               context.responsiveSpacing8,
                             ),
@@ -165,7 +166,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
       Container(
         padding: EdgeInsets.all(context.responsiveSpacing12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(context.responsiveSpacing8),
         ),
         child: Column(
@@ -195,7 +196,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
               Icon(
                 Icons.account_balance_wallet_outlined,
                 size: 64,
-                color: context.secondaryText.withOpacity(0.5),
+                color: context.secondaryText.withValues(alpha: 0.5),
               ),
               SizedBox(height: context.spacing16),
               Text(
@@ -208,7 +209,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
               Text(
                 '添加您的第一个钱包账户，开始财务管理',
                 style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.secondaryText.withOpacity(0.7),
+                  color: context.secondaryText.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -313,7 +314,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _getAccountTypeColor(account.type).withOpacity(0.1),
+                  color:
+                      _getAccountTypeColor(account.type).withValues(alpha: 0.1),
                   borderRadius:
                       BorderRadius.circular(context.responsiveSpacing12),
                 ),
@@ -345,7 +347,8 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                               vertical: context.spacing4,
                             ),
                             decoration: BoxDecoration(
-                              color: context.primaryAction.withOpacity(0.1),
+                              color:
+                                  context.primaryAction.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(
                                 context.responsiveSpacing12,
                               ),
@@ -471,7 +474,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
 
   void _navigateToAddWallet(BuildContext context) {
     Navigator.of(context).push(
-      AppAnimations.createRoute(
+      AppAnimations.createRoute<void>(
         const AddWalletScreen(),
       ),
     );
@@ -479,7 +482,7 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
 
   void _showAccountDetail(BuildContext context, Account account) {
     Navigator.of(context).push(
-      AppAnimations.createRoute(
+      AppAnimations.createRoute<void>(
         AccountDetailScreen(account: account),
       ),
     );

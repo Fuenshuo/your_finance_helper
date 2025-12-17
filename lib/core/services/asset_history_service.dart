@@ -6,14 +6,31 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/core/models/asset_history.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
+import 'package:your_finance_flutter/core/services/base_service.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
 
-class AssetHistoryService {
+class AssetHistoryService extends BaseService {
   AssetHistoryService._();
   static const String _historyKey = 'asset_history_data';
   static AssetHistoryService? _instance;
   static StorageService? _storageService;
   static SharedPreferences? _prefs;
+
+  bool _isInitialized = false;
+  bool _isLoading = false;
+  String? _lastError;
+
+  @override
+  bool get isInitialized => _isInitialized;
+
+  @override
+  bool get isLoading => _isLoading;
+
+  @override
+  String? get lastError => _lastError;
+
+  @override
+  String get serviceName => 'AssetHistoryService';
 
   static Future<AssetHistoryService> getInstance() async {
     _instance ??= AssetHistoryService._();
@@ -215,4 +232,64 @@ class AssetHistoryService {
 
     return assets;
   }
+
+  @override
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    _isLoading = true;
+    try {
+      // Initialization is already done in getInstance()
+      _isInitialized = true;
+      _lastError = null;
+    } catch (e) {
+      _lastError = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> reset() async {
+    _isLoading = true;
+    try {
+      // Clear all history data by saving empty list
+      await _saveAssetHistory([]);
+      _lastError = null;
+    } catch (e) {
+      _lastError = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    // Clear references
+    _storageService = null;
+    _prefs = null;
+    _isInitialized = false;
+  }
+
+  @override
+  Future<bool> healthCheck() async {
+    try {
+      // Try to read history data
+      await getAssetHistory();
+      return true;
+    } catch (e) {
+      _lastError = e.toString();
+      return false;
+    }
+  }
+
+  @override
+  Map<String, dynamic> getStats() => {
+        'serviceName': serviceName,
+        'isInitialized': isInitialized,
+        'isLoading': isLoading,
+        'lastError': lastError,
+      };
 }

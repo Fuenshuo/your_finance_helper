@@ -17,11 +17,19 @@ sealed class AssetState {
   bool get isLoaded => this is AssetStateLoaded;
   bool get isError => this is AssetStateError;
 
-  List<AssetItem> get assets => this is AssetStateLoaded ? (this as AssetStateLoaded).assets : [];
-  String get errorMessage => this is AssetStateError ? (this as AssetStateError).message : '';
-  bool get isAmountHidden => this is AssetStateLoaded ? (this as AssetStateLoaded).isAmountHidden : false;
-  bool get excludeFixedAssets => this is AssetStateLoaded ? (this as AssetStateLoaded).excludeFixedAssets : false;
-  bool get isInitialized => this is AssetStateLoaded ? (this as AssetStateLoaded).isInitialized : false;
+  List<AssetItem> get assets =>
+      this is AssetStateLoaded ? (this as AssetStateLoaded).assets : [];
+  String get errorMessage =>
+      this is AssetStateError ? (this as AssetStateError).message : '';
+  bool get isAmountHidden => this is AssetStateLoaded
+      ? (this as AssetStateLoaded).isAmountHidden
+      : false;
+  bool get excludeFixedAssets => this is AssetStateLoaded
+      ? (this as AssetStateLoaded).excludeFixedAssets
+      : false;
+  bool get isInitialized => this is AssetStateLoaded
+      ? (this as AssetStateLoaded).isInitialized
+      : false;
 }
 
 class AssetStateInitial extends AssetState {
@@ -40,9 +48,13 @@ class AssetStateLoaded extends AssetState {
     required this.isInitialized,
   });
 
+  @override
   final List<AssetItem> assets;
+  @override
   final bool isAmountHidden;
+  @override
   final bool excludeFixedAssets;
+  @override
   final bool isInitialized;
 
   @override
@@ -100,7 +112,7 @@ class AssetNotifier extends StateNotifier<AssetState> {
     state = const AssetStateLoading();
     try {
       await loadAssets();
-      state = AssetStateLoaded(
+      state = const AssetStateLoaded(
         [],
         isAmountHidden: false,
         excludeFixedAssets: false,
@@ -121,7 +133,8 @@ class AssetNotifier extends StateNotifier<AssetState> {
           state = AssetStateLoaded(
             driftAssets,
             isAmountHidden: state.isLoaded ? state.isAmountHidden : false,
-            excludeFixedAssets: state.isLoaded ? state.excludeFixedAssets : false,
+            excludeFixedAssets:
+                state.isLoaded ? state.excludeFixedAssets : false,
             isInitialized: true,
           );
           return;
@@ -178,7 +191,8 @@ class AssetNotifier extends StateNotifier<AssetState> {
 
       await _storageService.updateAsset(asset);
 
-      final newAssets = currentAssets.map((a) => a.id == asset.id ? asset : a).toList();
+      final newAssets =
+          currentAssets.map((a) => a.id == asset.id ? asset : a).toList();
 
       // 记录历史
       await _historyService.recordAssetChange(
@@ -254,24 +268,21 @@ class AssetNotifier extends StateNotifier<AssetState> {
   }
 
   // 计算总资产（使用实际价值）
-  double calculateTotalAssets() {
-    return state.assets.where((asset) {
-      if (state.excludeFixedAssets && asset.isFixedAsset) {
-        return false;
-      }
-      return asset.category.isAsset;
-    }).fold(0.0, (sum, asset) => sum + asset.effectiveValue);
-  }
+  double calculateTotalAssets() => state.assets.where((asset) {
+        if (state.excludeFixedAssets && asset.isFixedAsset) {
+          return false;
+        }
+        return asset.category.isAsset;
+      }).fold(0.0, (sum, asset) => sum + asset.effectiveValue);
 
   // 计算总负债
-  double calculateTotalLiabilities() {
-    return state.assets
-        .where((asset) => asset.category.isLiability)
-        .fold(0.0, (sum, asset) => sum + asset.amount);
-  }
+  double calculateTotalLiabilities() => state.assets
+      .where((asset) => asset.category.isLiability)
+      .fold(0.0, (sum, asset) => sum + asset.amount);
 
   // 计算净资产
-  double calculateNetAssets() => calculateTotalAssets() - calculateTotalLiabilities();
+  double calculateNetAssets() =>
+      calculateTotalAssets() - calculateTotalLiabilities();
 
   // 计算负债率
   double calculateDebtRatio() {
@@ -334,9 +345,8 @@ class AssetNotifier extends StateNotifier<AssetState> {
   }
 
   // 获取本月资产变化数据
-  Future<Map<String, double>> getMonthlyChange() async {
-    return _historyService.calculateMonthlyChange();
-  }
+  Future<Map<String, double>> getMonthlyChange() async =>
+      _historyService.calculateMonthlyChange();
 
   // 固定资产管理相关方法
 
@@ -417,12 +427,15 @@ class AssetNotifier extends StateNotifier<AssetState> {
       for (final asset in currentAssets) {
         if (asset.requiresDepreciation &&
             asset.depreciationMethod == DepreciationMethod.smartEstimate) {
-          final depreciatedValue = _depreciationService.calculateDepreciatedValue(asset);
+          final depreciatedValue =
+              _depreciationService.calculateDepreciatedValue(asset);
           if (asset.currentValue != depreciatedValue) {
-            newAssets.add(asset.copyWith(
-              currentValue: depreciatedValue,
-              updateDate: DateTime.now(),
-            ));
+            newAssets.add(
+              asset.copyWith(
+                currentValue: depreciatedValue,
+                updateDate: DateTime.now(),
+              ),
+            );
             hasChanges = true;
           } else {
             newAssets.add(asset);
@@ -451,20 +464,24 @@ class AssetNotifier extends StateNotifier<AssetState> {
   }
 
   /// 获取固定资产列表（不动产 + 消费资产）
-  List<AssetItem> getFixedAssets() => state.assets.where((asset) => asset.isFixedAsset).toList();
+  List<AssetItem> getFixedAssets() =>
+      state.assets.where((asset) => asset.isFixedAsset).toList();
 
   /// 获取闲置资产列表
-  List<AssetItem> getIdleAssets() => state.assets.where((asset) => asset.isIdle).toList();
+  List<AssetItem> getIdleAssets() =>
+      state.assets.where((asset) => asset.isIdle).toList();
 
   /// 获取需要折旧的资产列表
-  List<AssetItem> getDepreciableAssets() => state.assets.where((asset) => asset.requiresDepreciation).toList();
+  List<AssetItem> getDepreciableAssets() =>
+      state.assets.where((asset) => asset.requiresDepreciation).toList();
 
   /// 计算固定资产的总折旧额
   double calculateTotalDepreciation() {
     var totalDepreciation = 0.0;
 
     for (final asset in state.assets) {
-      if (asset.requiresDepreciation && asset.depreciationMethod != DepreciationMethod.none) {
+      if (asset.requiresDepreciation &&
+          asset.depreciationMethod != DepreciationMethod.none) {
         final originalValue = asset.amount;
         final currentValue = asset.effectiveValue;
         totalDepreciation += originalValue - currentValue;
@@ -512,30 +529,25 @@ final assetProvider = StateNotifierProvider<AssetNotifier, AssetState>((ref) {
 });
 
 /// Computed providers for derived asset data
-final assetListProvider = Provider<List<AssetItem>>((ref) {
-  return ref.watch(assetProvider).assets;
-});
+final assetListProvider =
+    Provider<List<AssetItem>>((ref) => ref.watch(assetProvider).assets);
 
-final isAssetLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(assetProvider).isLoading;
-});
+final isAssetLoadingProvider =
+    Provider<bool>((ref) => ref.watch(assetProvider).isLoading);
 
-final isAssetInitializedProvider = Provider<bool>((ref) {
-  return ref.watch(assetProvider).isInitialized;
-});
+final isAssetInitializedProvider =
+    Provider<bool>((ref) => ref.watch(assetProvider).isInitialized);
 
 final assetErrorProvider = Provider<String?>((ref) {
   final state = ref.watch(assetProvider);
   return state.isError ? state.errorMessage : null;
 });
 
-final isAmountHiddenProvider = Provider<bool>((ref) {
-  return ref.watch(assetProvider).isAmountHidden;
-});
+final isAmountHiddenProvider =
+    Provider<bool>((ref) => ref.watch(assetProvider).isAmountHidden);
 
-final excludeFixedAssetsProvider = Provider<bool>((ref) {
-  return ref.watch(assetProvider).excludeFixedAssets;
-});
+final excludeFixedAssetsProvider =
+    Provider<bool>((ref) => ref.watch(assetProvider).excludeFixedAssets);
 
 final totalAssetsProvider = Provider<double>((ref) {
   // This is a simple computed provider - in a real app you might want to use

@@ -183,7 +183,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: _getAssetIconColor(category)
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Icon(
@@ -239,10 +239,10 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.08),
+                              color: Colors.red.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: Colors.red.withOpacity(0.15),
+                                color: Colors.red.withValues(alpha: 0.15),
                               ),
                             ),
                             child: Row(
@@ -251,7 +251,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
                                 Icon(
                                   Icons.access_time,
                                   size: 12,
-                                  color: Colors.red.withOpacity(0.7),
+                                  color: Colors.red.withValues(alpha: 0.7),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -322,7 +322,8 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
   }
 
   void _showAddAssetSheet(AssetCategory category) {
-    Logger.debug('📋 AddAssetFlowScreen: 显示添加资产表单 - 分类: ${category.displayName}');
+    Logger.debug(
+        '📋 AddAssetFlowScreen: 显示添加资产表单 - 分类: ${category.displayName}');
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -332,11 +333,13 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
           Logger.debug(
             '📋 AddAssetFlowScreen: 收到新资产 - 名称: ${asset.name}, ID: ${asset.id}, 分类: ${asset.category.displayName}',
           );
-          Logger.debug('📋 AddAssetFlowScreen: 添加前临时资产数量: ${_tempAssets.length}');
+          Logger.debug(
+              '📋 AddAssetFlowScreen: 添加前临时资产数量: ${_tempAssets.length}');
           setState(() {
             _tempAssets.add(asset);
           });
-          Logger.debug('📋 AddAssetFlowScreen: 添加后临时资产数量: ${_tempAssets.length}');
+          Logger.debug(
+              '📋 AddAssetFlowScreen: 添加后临时资产数量: ${_tempAssets.length}');
         },
       ),
     );
@@ -349,20 +352,21 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
 
     // 对于固定资产且为房产类，提供详细编辑选项
     if (asset.category == AssetCategory.realEstate && _isPropertyAsset(asset)) {
-      showModalBottomSheet(
+      showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         builder: (context) => _buildFixedAssetEditOptions(context, asset),
       );
     } else {
       // 对于其他资产，使用简单编辑表单
-      showModalBottomSheet(
+      showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         builder: (context) => EditAssetSheet(
           asset: asset,
           onAssetUpdated: (updatedAsset) {
-            Logger.debug('📋 AddAssetFlowScreen: 资产已更新 - 名称: ${updatedAsset.name}');
+            Logger.debug(
+                '📋 AddAssetFlowScreen: 资产已更新 - 名称: ${updatedAsset.name}');
             setState(() {
               final index = _tempAssets.indexWhere((a) => a.id == asset.id);
               if (index != -1) {
@@ -410,7 +414,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
               subtitle: '修改基本信息（名称、金额等）',
               onTap: () {
                 Navigator.of(context).pop();
-                showModalBottomSheet(
+                showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
                   builder: (context) => EditAssetSheet(
@@ -506,7 +510,7 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -569,10 +573,10 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
             vertical: 4,
           ),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -611,10 +615,10 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
           vertical: 4,
         ),
         decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
+          color: Colors.blue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: Colors.blue.withOpacity(0.3),
+            color: Colors.blue.withValues(alpha: 0.3),
           ),
         ),
         child: Row(

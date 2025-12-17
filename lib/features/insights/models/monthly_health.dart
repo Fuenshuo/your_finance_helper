@@ -33,6 +33,39 @@ class MonthlyHealthScore extends Equatable {
         recommendations,
         metrics,
       ];
+
+  /// 序列化为JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'month': month.toIso8601String(),
+      'grade': grade.name,
+      'score': score,
+      'diagnosis': diagnosis,
+      'factors': factors.map((f) => f.toJson()).toList(),
+      'recommendations': recommendations,
+      'metrics': metrics,
+    };
+  }
+
+  /// 从JSON反序列化
+  factory MonthlyHealthScore.fromJson(Map<String, dynamic> json) {
+    return MonthlyHealthScore(
+      id: json['id'] as String,
+      month: DateTime.parse(json['month'] as String),
+      grade: LetterGrade.values.firstWhere(
+        (e) => e.name == json['grade'],
+        orElse: () => LetterGrade.C,
+      ),
+      score: (json['score'] as num).toDouble(),
+      diagnosis: json['diagnosis'] as String,
+      factors: (json['factors'] as List)
+          .map((f) => HealthFactor.fromJson(f as Map<String, dynamic>))
+          .toList(),
+      recommendations: (json['recommendations'] as List).cast<String>(),
+      metrics: (json['metrics'] as Map).cast<String, double>(),
+    );
+  }
 }
 
 /// Letter grades for financial health
@@ -58,6 +91,23 @@ class HealthFactor extends Equatable {
 
   @override
   List<Object?> get props => [name, impact, description];
-}
 
+  /// 序列化为JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'impact': impact,
+      'description': description,
+    };
+  }
+
+  /// 从JSON反序列化
+  factory HealthFactor.fromJson(Map<String, dynamic> json) {
+    return HealthFactor(
+      name: json['name'] as String,
+      impact: (json['impact'] as num).toDouble(),
+      description: json['description'] as String,
+    );
+  }
+}
 

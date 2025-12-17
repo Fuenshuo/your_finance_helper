@@ -16,11 +16,14 @@ class SurvivalLifestyleAnalysis extends Equatable {
 
   final String id;
   final DateTime month;
-  final double survivalExpenses; // Essential expenses (rent, utilities, groceries)
-  final double lifestyleExpenses; // Discretionary expenses (dining, entertainment, shopping)
+  final double
+      survivalExpenses; // Essential expenses (rent, utilities, groceries)
+  final double
+      lifestyleExpenses; // Discretionary expenses (dining, entertainment, shopping)
   final double survivalRatio; // Percentage of survival expenses
   final double lifestyleRatio; // Percentage of lifestyle expenses
-  final Map<String, double> benchmarkComparison; // Comparison with industry benchmarks
+  final Map<String, double>
+      benchmarkComparison; // Comparison with industry benchmarks
   final List<String> recommendations; // Actionable advice
   final Map<String, dynamic> trendAnalysis; // Trend data over time
 

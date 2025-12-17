@@ -693,7 +693,7 @@ class SankeyBackgroundPainter extends CustomPainter {
       final targetRect = nodePositions[item.target];
 
       if (sourceRect != null && targetRect != null) {
-        paint.color = item.color.withOpacity(0.6);
+        paint.color = item.color.withValues(alpha: 0.6);
         _drawSankeyFlow(
           canvas,
           sourceRect.right,
@@ -743,7 +743,7 @@ class SankeyBackgroundPainter extends CustomPainter {
       path,
       Paint()
         ..style = PaintingStyle.fill
-        ..color = const Color(0xFF9370DB).withOpacity(0.3),
+        ..color = const Color(0xFF9370DB).withValues(alpha: 0.3),
     );
   }
 

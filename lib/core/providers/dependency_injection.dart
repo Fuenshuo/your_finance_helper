@@ -1,11 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
 import 'package:your_finance_flutter/core/services/asset_history_service.dart';
-import 'package:your_finance_flutter/core/services/depreciation_service.dart';
+import 'package:your_finance_flutter/core/services/base_service.dart';
 import 'package:your_finance_flutter/core/services/drift_database_service.dart';
 import 'package:your_finance_flutter/core/services/hybrid_storage_service.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
-import 'package:your_finance_flutter/core/services/base_service.dart';
 import 'package:your_finance_flutter/features/insights/providers/insights_provider.dart';
 
 /// 依赖注入配置 - 统一管理所有服务的依赖关系
@@ -13,13 +12,18 @@ class DependencyInjection {
   /// 获取所有提供者的列表，用于应用初始化
   static List<Override> getOverrides() => [
         // 基础设施服务
-        _storageServiceProvider.overrideWith((ref) => throw UnimplementedError()),
-        _hybridStorageServiceProvider.overrideWith((ref) => throw UnimplementedError()),
-        _driftDatabaseServiceProvider.overrideWith((ref) => throw UnimplementedError()),
+        _storageServiceProvider
+            .overrideWith((ref) => throw UnimplementedError()),
+        _hybridStorageServiceProvider
+            .overrideWith((ref) => throw UnimplementedError()),
+        _driftDatabaseServiceProvider
+            .overrideWith((ref) => throw UnimplementedError()),
 
         // 业务服务
-        _assetHistoryServiceProvider.overrideWith((ref) => throw UnimplementedError()),
-        _insightsProviderProvider.overrideWith((ref) => throw UnimplementedError()),
+        _assetHistoryServiceProvider
+            .overrideWith((ref) => throw UnimplementedError()),
+        _insightsProviderProvider
+            .overrideWith((ref) => throw UnimplementedError()),
 
         // AI服务
         _aiServiceFactoryProvider.overrideWithValue(aiServiceFactory),
@@ -48,17 +52,30 @@ class DependencyInjection {
       // 注册到服务管理器
       final serviceManager = ServiceManager.instance;
       serviceManager.registerService('StorageService', storageService);
-      serviceManager.registerService('HybridStorageService', hybridStorageService);
+      serviceManager.registerService(
+        'HybridStorageService',
+        hybridStorageService,
+      );
       serviceManager.registerService('DriftDatabaseService', driftService);
-      serviceManager.registerService('AssetHistoryService', assetHistoryService);
-
+      serviceManager.registerService(
+        'AssetHistoryService',
+        assetHistoryService,
+      );
     } catch (e) {
       // 如果异步初始化失败，提供默认的错误处理
       overrides.addAll([
-        _storageServiceProvider.overrideWith((ref) => throw StateError('StorageService 初始化失败: $e')),
-        _hybridStorageServiceProvider.overrideWith((ref) => throw StateError('HybridStorageService 初始化失败: $e')),
-        _driftDatabaseServiceProvider.overrideWith((ref) => throw StateError('DriftDatabaseService 初始化失败: $e')),
-        _assetHistoryServiceProvider.overrideWith((ref) => throw StateError('AssetHistoryService 初始化失败: $e')),
+        _storageServiceProvider.overrideWith(
+          (ref) => throw StateError('StorageService 初始化失败: $e'),
+        ),
+        _hybridStorageServiceProvider.overrideWith(
+          (ref) => throw StateError('HybridStorageService 初始化失败: $e'),
+        ),
+        _driftDatabaseServiceProvider.overrideWith(
+          (ref) => throw StateError('DriftDatabaseService 初始化失败: $e'),
+        ),
+        _assetHistoryServiceProvider.overrideWith(
+          (ref) => throw StateError('AssetHistoryService 初始化失败: $e'),
+        ),
       ]);
     }
 
@@ -66,7 +83,9 @@ class DependencyInjection {
   }
 
   /// 健康检查 - 验证所有依赖是否正确注入
-  static Future<Map<String, bool>> healthCheck(ProviderContainer container) async {
+  static Future<Map<String, bool>> healthCheck(
+    ProviderContainer container,
+  ) async {
     final results = <String, bool>{};
 
     try {
@@ -115,17 +134,23 @@ class DependencyInjection {
 
 /// StorageService 提供者
 final _storageServiceProvider = Provider<StorageService>((ref) {
-  throw UnimplementedError('StorageService must be provided via DependencyInjection.getAsyncOverrides()');
+  throw UnimplementedError(
+    'StorageService must be provided via DependencyInjection.getAsyncOverrides()',
+  );
 });
 
 /// HybridStorageService 提供者
 final _hybridStorageServiceProvider = Provider<HybridStorageService>((ref) {
-  throw UnimplementedError('HybridStorageService must be provided via DependencyInjection.getAsyncOverrides()');
+  throw UnimplementedError(
+    'HybridStorageService must be provided via DependencyInjection.getAsyncOverrides()',
+  );
 });
 
 /// DriftDatabaseService 提供者
 final _driftDatabaseServiceProvider = Provider<DriftDatabaseService>((ref) {
-  throw UnimplementedError('DriftDatabaseService must be provided via DependencyInjection.getAsyncOverrides()');
+  throw UnimplementedError(
+    'DriftDatabaseService must be provided via DependencyInjection.getAsyncOverrides()',
+  );
 });
 
 // ============================================================================
@@ -134,7 +159,9 @@ final _driftDatabaseServiceProvider = Provider<DriftDatabaseService>((ref) {
 
 /// AssetHistoryService 提供者
 final _assetHistoryServiceProvider = Provider<AssetHistoryService>((ref) {
-  throw UnimplementedError('AssetHistoryService must be provided via DependencyInjection.getAsyncOverrides()');
+  throw UnimplementedError(
+    'AssetHistoryService must be provided via DependencyInjection.getAsyncOverrides()',
+  );
 });
 
 /// InsightsProvider 提供者
@@ -148,22 +175,21 @@ final _insightsProviderProvider = Provider<InsightsProvider?>((ref) {
 // ============================================================================
 
 /// AiServiceFactory 提供者
-final _aiServiceFactoryProvider = Provider<AiServiceFactory>((ref) {
-  return aiServiceFactory;
-});
+final _aiServiceFactoryProvider =
+    Provider<AiServiceFactory>((ref) => aiServiceFactory);
 
 // ============================================================================
 // 组合提供者 - 组合多个服务的功能
 // ============================================================================
 
 /// 资产相关的组合服务提供者
-final assetServicesProvider = Provider<AssetServices>((ref) {
-  return AssetServices(
+final assetServicesProvider = Provider<AssetServices>(
+  (ref) => AssetServices(
     storage: ref.watch(_hybridStorageServiceProvider),
     history: ref.watch(_assetHistoryServiceProvider),
     database: ref.watch(_driftDatabaseServiceProvider),
-  );
-});
+  ),
+);
 
 /// 资产相关的组合服务类
 class AssetServices {
@@ -189,7 +215,7 @@ class AssetServices {
     }
 
     try {
-      await history.getAssetHistory('test');
+      await history.getAssetHistory();
       results['history'] = true;
     } catch (e) {
       results['history'] = false;
@@ -207,11 +233,11 @@ class AssetServices {
 }
 
 /// 预算相关的组合服务提供者
-final budgetServicesProvider = Provider<BudgetServices>((ref) {
-  return BudgetServices(
+final budgetServicesProvider = Provider<BudgetServices>(
+  (ref) => BudgetServices(
     storage: ref.watch(_storageServiceProvider),
-  );
-});
+  ),
+);
 
 /// 预算相关的组合服务类
 class BudgetServices {

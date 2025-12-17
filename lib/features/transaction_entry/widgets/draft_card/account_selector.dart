@@ -14,8 +14,18 @@ class AccountSelector extends StatelessWidget {
   // 临时账户数据
   static const List<Map<String, dynamic>> _accounts = [
     {'id': 'cash', 'name': '现金', 'icon': Icons.money, 'color': Colors.green},
-    {'id': 'card', 'name': '银行卡', 'icon': Icons.credit_card, 'color': Colors.blue},
-    {'id': 'alipay', 'name': '支付宝', 'icon': Icons.account_balance_wallet, 'color': Colors.blue},
+    {
+      'id': 'card',
+      'name': '银行卡',
+      'icon': Icons.credit_card,
+      'color': Colors.blue
+    },
+    {
+      'id': 'alipay',
+      'name': '支付宝',
+      'icon': Icons.account_balance_wallet,
+      'color': Colors.blue
+    },
     {'id': 'wechat', 'name': '微信', 'icon': Icons.chat, 'color': Colors.green},
   ];
 
@@ -76,7 +86,7 @@ class AccountSelector extends StatelessWidget {
   }
 
   void _showAccountPicker(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -102,4 +112,3 @@ class AccountSelector extends StatelessWidget {
     );
   }
 }
-

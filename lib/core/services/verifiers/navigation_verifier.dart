@@ -2,22 +2,23 @@
 ///
 /// Tests all navigation components including main tabs, router configuration,
 /// deep linking, and screen transitions.
+library;
 
-import '../verification_result.dart';
-import '../component_verifier.dart';
+import 'package:your_finance_flutter/core/services/component_verifier.dart';
+import 'package:your_finance_flutter/core/models/verification_result.dart';
 
-class NavigationVerifier implements ComponentVerifier {
+class NavigationVerifier extends ComponentVerifier {
   @override
   String get componentName => 'navigation';
 
   @override
   List<String> get dependencies => [
-    'FluxRouter',
-    'FluxNavigationScreen',
-    'MainNavigationScreen',
-    'DashboardHomeScreen',
-    'FluxInsightsScreen',
-  ];
+        'FluxRouter',
+        'FluxNavigationScreen',
+        'MainNavigationScreen',
+        'DashboardHomeScreen',
+        'FluxInsightsScreen',
+      ];
 
   @override
   int get priority => 4; // High priority - navigation is core UX
@@ -33,7 +34,7 @@ class NavigationVerifier implements ComponentVerifier {
   Future<bool> isReady() async {
     // Check if navigation components are accessible
     try {
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
       return true;
     } catch (e) {
       return false;
@@ -42,8 +43,8 @@ class NavigationVerifier implements ComponentVerifier {
 
   @override
   Future<VerificationResult> verify() async {
-    final Map<String, bool> checkResults = {};
-    final List<String> issues = [];
+    final checkResults = <String, bool>{};
+    final issues = <String>[];
 
     try {
       // Test 1: Main tab navigation
@@ -67,11 +68,13 @@ class NavigationVerifier implements ComponentVerifier {
       // Test 4: Dashboard screen loading
       checkResults['dashboard_screen'] = await _testDashboardScreenLoading();
       if (!checkResults['dashboard_screen']!) {
-        issues.add('Dashboard screen fails to load without ProviderNotFoundException');
+        issues.add(
+            'Dashboard screen fails to load without ProviderNotFoundException');
       }
 
       // Test 5: Insights screen functionality
-      checkResults['insights_screen'] = await _testInsightsScreenFunctionality();
+      checkResults['insights_screen'] =
+          await _testInsightsScreenFunctionality();
       if (!checkResults['insights_screen']!) {
         issues.add('Insights screen AI analysis not working');
       }
@@ -89,7 +92,8 @@ class NavigationVerifier implements ComponentVerifier {
       }
 
       final allPassed = checkResults.values.every((passed) => passed);
-      final status = allPassed ? VerificationStatus.pass : VerificationStatus.fail;
+      final status =
+          allPassed ? VerificationStatus.pass : VerificationStatus.fail;
 
       final details = allPassed
           ? 'All navigation functionality verified successfully'
@@ -102,7 +106,6 @@ class NavigationVerifier implements ComponentVerifier {
         checkResults: checkResults,
         remediationSteps: allPassed ? null : _generateRemediationSteps(issues),
       );
-
     } catch (e) {
       return VerificationResult.fail(
         componentName,
@@ -128,7 +131,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Test tab switching functionality
       // 4. Verify tab icons and labels are correct
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -144,7 +147,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Test route parameter handling
       // 4. Verify error route handling
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -160,7 +163,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Check parameter extraction
       // 4. Validate error handling for invalid URLs
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -176,7 +179,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Test initial data loading
       // 4. Verify no ProviderNotFoundException
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -192,7 +195,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Test insights data display
       // 4. Validate insights calculations
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -208,7 +211,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Test transition performance (60fps)
       // 4. Validate transition consistency
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -224,7 +227,7 @@ class NavigationVerifier implements ComponentVerifier {
       // 3. Check proper screen cleanup on back
       // 4. Validate navigation state preservation
 
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true;
     } catch (e) {
       return false;
@@ -235,8 +238,10 @@ class NavigationVerifier implements ComponentVerifier {
     final steps = <String>[];
 
     if (issues.any((issue) => issue.contains('tabs'))) {
-      steps.add('Fix BottomNavigationBar configuration in main navigation screen');
-      steps.add('Ensure all 4 main tabs are properly defined with icons and labels');
+      steps.add(
+          'Fix BottomNavigationBar configuration in main navigation screen');
+      steps.add(
+          'Ensure all 4 main tabs are properly defined with icons and labels');
       steps.add('Check tab switching logic and state management');
     }
 

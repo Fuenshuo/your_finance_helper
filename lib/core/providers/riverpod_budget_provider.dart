@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
-import 'package:your_finance_flutter/core/providers/shared_providers.dart';
+import 'package:your_finance_flutter/core/providers/dependency_injection.dart';
+import 'package:your_finance_flutter/core/services/hybrid_storage_service.dart';
 import 'package:your_finance_flutter/core/utils/logger.dart';
 
 /// Budget state for Riverpod
@@ -17,12 +18,23 @@ sealed class BudgetState {
   bool get isLoaded => this is BudgetStateLoaded;
   bool get isError => this is BudgetStateError;
 
-  List<EnvelopeBudget> get envelopeBudgets => this is BudgetStateLoaded ? (this as BudgetStateLoaded).envelopeBudgets : [];
-  List<ZeroBasedBudget> get zeroBasedBudgets => this is BudgetStateLoaded ? (this as BudgetStateLoaded).zeroBasedBudgets : [];
-  List<SalaryIncome> get salaryIncomes => this is BudgetStateLoaded ? (this as BudgetStateLoaded).salaryIncomes : [];
-  List<MonthlyWallet> get monthlyWallets => this is BudgetStateLoaded ? (this as BudgetStateLoaded).monthlyWallets : [];
-  bool get isInitialized => this is BudgetStateLoaded ? (this as BudgetStateLoaded).isInitialized : false;
-  String get errorMessage => this is BudgetStateError ? (this as BudgetStateError).message : '';
+  List<EnvelopeBudget> get envelopeBudgets => this is BudgetStateLoaded
+      ? (this as BudgetStateLoaded).envelopeBudgets
+      : [];
+  List<ZeroBasedBudget> get zeroBasedBudgets => this is BudgetStateLoaded
+      ? (this as BudgetStateLoaded).zeroBasedBudgets
+      : [];
+  List<SalaryIncome> get salaryIncomes => this is BudgetStateLoaded
+      ? (this as BudgetStateLoaded).salaryIncomes
+      : [];
+  List<MonthlyWallet> get monthlyWallets => this is BudgetStateLoaded
+      ? (this as BudgetStateLoaded).monthlyWallets
+      : [];
+  bool get isInitialized => this is BudgetStateLoaded
+      ? (this as BudgetStateLoaded).isInitialized
+      : false;
+  String get errorMessage =>
+      this is BudgetStateError ? (this as BudgetStateError).message : '';
 }
 
 class BudgetStateInitial extends BudgetState {
@@ -42,10 +54,15 @@ class BudgetStateLoaded extends BudgetState {
     required this.isInitialized,
   });
 
+  @override
   final List<EnvelopeBudget> envelopeBudgets;
+  @override
   final List<ZeroBasedBudget> zeroBasedBudgets;
+  @override
   final List<SalaryIncome> salaryIncomes;
+  @override
   final List<MonthlyWallet> monthlyWallets;
+  @override
   final bool isInitialized;
 
   List<EnvelopeBudget> get activeEnvelopeBudgets =>
@@ -94,22 +111,20 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     initialize();
   }
 
-  final StorageService _storageService;
-  bool _isInitialized = false;
+  final HybridStorageService _storageService;
 
   Future<void> initialize() async {
     Logger.info('[INIT] BudgetNotifier 开始初始化');
     state = const BudgetStateLoading();
     try {
       await loadBudgets();
-      state = BudgetStateLoaded(
+      state = const BudgetStateLoaded(
         [],
         [],
         [],
         [],
         isInitialized: true,
       );
-      _isInitialized = true;
       Logger.info('[SUCCESS] BudgetNotifier 初始化完成');
     } catch (e) {
       Logger.error('[ERROR] BudgetNotifier 初始化失败: $e');
@@ -178,9 +193,13 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newBudgets = currentState.envelopeBudgets.map((b) =>
-          b.id == updatedBudget.id ? updatedBudget.copyWith(updateDate: DateTime.now()) : b
-      ).toList();
+      final newBudgets = currentState.envelopeBudgets
+          .map(
+            (b) => b.id == updatedBudget.id
+                ? updatedBudget.copyWith(updateDate: DateTime.now())
+                : b,
+          )
+          .toList();
 
       await _storageService.saveEnvelopeBudgets(newBudgets);
 
@@ -202,7 +221,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newBudgets = currentState.envelopeBudgets.where((b) => b.id != budgetId).toList();
+      final newBudgets =
+          currentState.envelopeBudgets.where((b) => b.id != budgetId).toList();
       await _storageService.saveEnvelopeBudgets(newBudgets);
 
       state = BudgetStateLoaded(
@@ -246,9 +266,13 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newBudgets = currentState.zeroBasedBudgets.map((b) =>
-          b.id == updatedBudget.id ? updatedBudget.copyWith(updateDate: DateTime.now()) : b
-      ).toList();
+      final newBudgets = currentState.zeroBasedBudgets
+          .map(
+            (b) => b.id == updatedBudget.id
+                ? updatedBudget.copyWith(updateDate: DateTime.now())
+                : b,
+          )
+          .toList();
 
       await _storageService.saveZeroBasedBudgets(newBudgets);
 
@@ -270,7 +294,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newBudgets = currentState.zeroBasedBudgets.where((b) => b.id != budgetId).toList();
+      final newBudgets =
+          currentState.zeroBasedBudgets.where((b) => b.id != budgetId).toList();
       await _storageService.saveZeroBasedBudgets(newBudgets);
 
       state = BudgetStateLoaded(
@@ -319,9 +344,13 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newIncomes = currentState.salaryIncomes.map((i) =>
-          i.id == updatedIncome.id ? updatedIncome.copyWith(updateDate: DateTime.now()) : i
-      ).toList();
+      final newIncomes = currentState.salaryIncomes
+          .map(
+            (i) => i.id == updatedIncome.id
+                ? updatedIncome.copyWith(updateDate: DateTime.now())
+                : i,
+          )
+          .toList();
 
       await _storageService.saveSalaryIncomes(newIncomes);
 
@@ -346,7 +375,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newIncomes = currentState.salaryIncomes.where((i) => i.id != incomeId).toList();
+      final newIncomes =
+          currentState.salaryIncomes.where((i) => i.id != incomeId).toList();
       await _storageService.saveSalaryIncomes(newIncomes);
 
       state = BudgetStateLoaded(
@@ -414,7 +444,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final incomeIndex = currentState.salaryIncomes.indexWhere((income) => income.id == salaryIncomeId);
+      final incomeIndex = currentState.salaryIncomes
+          .indexWhere((income) => income.id == salaryIncomeId);
       if (incomeIndex == -1) return;
 
       final updatedIncome = currentState.salaryIncomes[incomeIndex].copyWith(
@@ -436,11 +467,11 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final incomeIndex = currentState.salaryIncomes.indexWhere((income) => income.id == salaryIncomeId);
+      final incomeIndex = currentState.salaryIncomes
+          .indexWhere((income) => income.id == salaryIncomeId);
       if (incomeIndex == -1) return;
 
-      final updatedBonuses = currentState.salaryIncomes[incomeIndex]
-          .bonuses
+      final updatedBonuses = currentState.salaryIncomes[incomeIndex].bonuses
           .where((bonus) => bonus.id != bonusId)
           .toList();
 
@@ -463,11 +494,11 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final incomeIndex = currentState.salaryIncomes.indexWhere((income) => income.id == salaryIncomeId);
+      final incomeIndex = currentState.salaryIncomes
+          .indexWhere((income) => income.id == salaryIncomeId);
       if (incomeIndex == -1) return;
 
-      final updatedBonuses = currentState.salaryIncomes[incomeIndex]
-          .bonuses
+      final updatedBonuses = currentState.salaryIncomes[incomeIndex].bonuses
           .map((bonus) => bonus.id == updatedBonus.id ? updatedBonus : bonus)
           .toList();
 
@@ -498,7 +529,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     final currentState = state;
     if (currentState is! BudgetStateLoaded) return 0.0;
 
-    return currentState.salaryIncomes.fold(0.0, (sum, income) => sum + income.netIncome);
+    return currentState.salaryIncomes
+        .fold(0.0, (sum, income) => sum + income.netIncome);
   }
 
   // 获取下个月总收入
@@ -608,7 +640,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
 
         if (existing.id.isEmpty) {
           // 生成新钱包
-          final wallet = MonthlyWallet.fromSalaryIncome(salaryIncome, year, month);
+          final wallet =
+              MonthlyWallet.fromSalaryIncome(salaryIncome, year, month);
           wallets.add(wallet);
         }
       }
@@ -657,9 +690,13 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newWallets = currentState.monthlyWallets.map((w) =>
-          w.id == updatedWallet.id ? updatedWallet.copyWith(updateDate: DateTime.now()) : w
-      ).toList();
+      final newWallets = currentState.monthlyWallets
+          .map(
+            (w) => w.id == updatedWallet.id
+                ? updatedWallet.copyWith(updateDate: DateTime.now())
+                : w,
+          )
+          .toList();
 
       await _storageService.saveMonthlyWallets(newWallets);
 
@@ -681,7 +718,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final currentState = state;
       if (currentState is! BudgetStateLoaded) return;
 
-      final newWallets = currentState.monthlyWallets.where((w) => w.id != walletId).toList();
+      final newWallets =
+          currentState.monthlyWallets.where((w) => w.id != walletId).toList();
       await _storageService.saveMonthlyWallets(newWallets);
 
       state = BudgetStateLoaded(
@@ -715,7 +753,9 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     final currentState = state;
     if (currentState is! BudgetStateLoaded) return [];
 
-    return currentState.monthlyWallets.where((wallet) => wallet.year == year).toList()
+    return currentState.monthlyWallets
+        .where((wallet) => wallet.year == year)
+        .toList()
       ..sort((a, b) => a.month.compareTo(b.month));
   }
 
@@ -747,7 +787,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     String envelopeId,
     double amount,
   ) async {
-    final index = currentState.envelopeBudgets.indexWhere((b) => b.id == envelopeId);
+    final index =
+        currentState.envelopeBudgets.indexWhere((b) => b.id == envelopeId);
     if (index != -1) {
       final currentBudget = currentState.envelopeBudgets[index];
       final updatedBudget = currentBudget.copyWith(
@@ -826,16 +867,16 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
   }
 
   // 计算总预算分配金额
-  double calculateTotalBudgetAllocated() =>
-      getCurrentEnvelopeBudgets().fold(0.0, (sum, budget) => sum + budget.allocatedAmount);
+  double calculateTotalBudgetAllocated() => getCurrentEnvelopeBudgets()
+      .fold(0.0, (sum, budget) => sum + budget.allocatedAmount);
 
   // 计算总预算支出
-  double calculateTotalBudgetSpent() =>
-      getCurrentEnvelopeBudgets().fold(0.0, (sum, budget) => sum + budget.spentAmount);
+  double calculateTotalBudgetSpent() => getCurrentEnvelopeBudgets()
+      .fold(0.0, (sum, budget) => sum + budget.spentAmount);
 
   // 计算总预算可用金额
-  double calculateTotalBudgetAvailable() =>
-      getCurrentEnvelopeBudgets().fold(0.0, (sum, budget) => sum + budget.availableAmount);
+  double calculateTotalBudgetAvailable() => getCurrentEnvelopeBudgets()
+      .fold(0.0, (sum, budget) => sum + budget.availableAmount);
 
   // 按分类统计预算
   Map<TransactionCategory, double> getBudgetByCategory() {
@@ -864,8 +905,9 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       getCurrentEnvelopeBudgets().where((b) => b.isOverBudget).toList();
 
   // 获取达到警告阈值的信封
-  List<EnvelopeBudget> getWarningEnvelopes() =>
-      getCurrentEnvelopeBudgets().where((b) => b.isWarningThresholdReached && !b.isOverBudget).toList();
+  List<EnvelopeBudget> getWarningEnvelopes() => getCurrentEnvelopeBudgets()
+      .where((b) => b.isWarningThresholdReached && !b.isOverBudget)
+      .toList();
 
   // ========== 预算创建和分配 ==========
 
@@ -876,7 +918,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     required DateTime month,
   }) async {
     final startDate = DateTime(month.year, month.month);
-    final endDate = DateTime(month.year, month.month + 1).subtract(const Duration(days: 1));
+    final endDate =
+        DateTime(month.year, month.month + 1).subtract(const Duration(days: 1));
 
     final budget = ZeroBasedBudget(
       name: name,
@@ -923,7 +966,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       if (currentState is! BudgetStateLoaded) return;
 
       // 更新零基预算
-      final zeroBasedIndex = currentState.zeroBasedBudgets.indexWhere((b) => b.id == zeroBasedBudgetId);
+      final zeroBasedIndex = currentState.zeroBasedBudgets
+          .indexWhere((b) => b.id == zeroBasedBudgetId);
       if (zeroBasedIndex != -1) {
         final currentZeroBased = currentState.zeroBasedBudgets[zeroBasedIndex];
         final updatedZeroBased = currentZeroBased.copyWith(
@@ -938,7 +982,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       }
 
       // 更新信封预算
-      final envelopeIndex = currentState.envelopeBudgets.indexWhere((b) => b.id == envelopeBudgetId);
+      final envelopeIndex = currentState.envelopeBudgets
+          .indexWhere((b) => b.id == envelopeBudgetId);
       if (envelopeIndex != -1) {
         final currentEnvelope = currentState.envelopeBudgets[envelopeIndex];
         final updatedEnvelope = currentEnvelope.copyWith(
@@ -974,7 +1019,8 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
   }
 
   // 格式化百分比
-  String formatPercentage(double percentage) => '${percentage.toStringAsFixed(1)}%';
+  String formatPercentage(double percentage) =>
+      '${percentage.toStringAsFixed(1)}%';
 
   // 获取预算状态颜色
   String getBudgetStatusColor(EnvelopeBudget budget) {
@@ -990,40 +1036,43 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
 }
 
 /// Riverpod providers for budget management
-final budgetProvider = StateNotifierProvider<BudgetNotifier, BudgetState>((ref) {
-  final storageService = ref.watch(storageServiceProvider);
+final budgetProvider =
+    StateNotifierProvider<BudgetNotifier, BudgetState>((ref) {
+  final storageService = ref.watch(hybridStorageServiceProvider);
   return BudgetNotifier(storageService);
 });
 
 /// Computed providers for derived budget data
-final envelopeBudgetsProvider = Provider<List<EnvelopeBudget>>((ref) {
-  return ref.watch(budgetProvider).envelopeBudgets;
-});
+final envelopeBudgetsProvider = Provider<List<EnvelopeBudget>>(
+  (ref) => ref.watch(budgetProvider).envelopeBudgets,
+);
 
-final zeroBasedBudgetsProvider = Provider<List<ZeroBasedBudget>>((ref) {
-  return ref.watch(budgetProvider).zeroBasedBudgets;
-});
+final zeroBasedBudgetsProvider = Provider<List<ZeroBasedBudget>>(
+  (ref) => ref.watch(budgetProvider).zeroBasedBudgets,
+);
 
-final salaryIncomesProvider = Provider<List<SalaryIncome>>((ref) {
-  return ref.watch(budgetProvider).salaryIncomes;
-});
+final salaryIncomesProvider = Provider<List<SalaryIncome>>(
+  (ref) => ref.watch(budgetProvider).salaryIncomes,
+);
 
-final monthlyWalletsProvider = Provider<List<MonthlyWallet>>((ref) {
-  return ref.watch(budgetProvider).monthlyWallets;
-});
+final monthlyWalletsProvider = Provider<List<MonthlyWallet>>(
+  (ref) => ref.watch(budgetProvider).monthlyWallets,
+);
 
 final activeEnvelopeBudgetsProvider = Provider<List<EnvelopeBudget>>((ref) {
   final state = ref.watch(budgetProvider);
-  return state.isLoaded ? state.envelopeBudgets.where((b) => b.status == BudgetStatus.active).toList() : [];
+  return state.isLoaded
+      ? state.envelopeBudgets
+          .where((b) => b.status == BudgetStatus.active)
+          .toList()
+      : [];
 });
 
-final isBudgetLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(budgetProvider).isLoading;
-});
+final isBudgetLoadingProvider =
+    Provider<bool>((ref) => ref.watch(budgetProvider).isLoading);
 
-final isBudgetInitializedProvider = Provider<bool>((ref) {
-  return ref.watch(budgetProvider).isInitialized;
-});
+final isBudgetInitializedProvider =
+    Provider<bool>((ref) => ref.watch(budgetProvider).isInitialized);
 
 final budgetErrorProvider = Provider<String?>((ref) {
   final state = ref.watch(budgetProvider);
@@ -1055,12 +1104,14 @@ final totalBudgetAvailableProvider = Provider<double>((ref) {
   return notifier.calculateTotalBudgetAvailable();
 });
 
-final budgetByCategoryProvider = Provider<Map<TransactionCategory, double>>((ref) {
+final budgetByCategoryProvider =
+    Provider<Map<TransactionCategory, double>>((ref) {
   final notifier = ref.watch(budgetProvider.notifier);
   return notifier.getBudgetByCategory();
 });
 
-final spentByCategoryProvider = Provider<Map<TransactionCategory, double>>((ref) {
+final spentByCategoryProvider =
+    Provider<Map<TransactionCategory, double>>((ref) {
   final notifier = ref.watch(budgetProvider.notifier);
   return notifier.getSpentByCategory();
 });

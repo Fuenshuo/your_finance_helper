@@ -33,8 +33,8 @@ class DraftManagerNotifier extends StateNotifier<DraftManagerState> {
 
   DraftManagerNotifier({
     required DraftPersistenceService persistenceService,
-  }) : _persistenceService = persistenceService,
-       super(const DraftManagerState());
+  })  : _persistenceService = persistenceService,
+        super(const DraftManagerState());
 
   /// 加载保存的草稿
   Future<void> loadSavedDrafts() async {
@@ -61,7 +61,8 @@ class DraftManagerNotifier extends StateNotifier<DraftManagerState> {
       final updatedDrafts = [...state.savedDrafts];
 
       // 检查是否已存在相同ID的草稿
-      final existingIndex = updatedDrafts.indexWhere((d) => d.createdAt == draft.createdAt);
+      final existingIndex =
+          updatedDrafts.indexWhere((d) => d.createdAt == draft.createdAt);
       if (existingIndex >= 0) {
         updatedDrafts[existingIndex] = savedDraft;
       } else {
@@ -98,8 +99,8 @@ class DraftManagerNotifier extends StateNotifier<DraftManagerState> {
   /// 获取最近的草稿
   DraftTransaction? getMostRecentDraft() {
     if (state.savedDrafts.isEmpty) return null;
-    return state.savedDrafts.reduce((a, b) =>
-      a.updatedAt.isAfter(b.updatedAt) ? a : b);
+    return state.savedDrafts
+        .reduce((a, b) => a.updatedAt.isAfter(b.updatedAt) ? a : b);
   }
 
   /// 获取草稿数量
@@ -108,23 +109,23 @@ class DraftManagerNotifier extends StateNotifier<DraftManagerState> {
   /// 检查是否有未保存的草稿
   bool hasUnsavedDraft(DraftTransaction currentDraft) {
     return state.savedDrafts.any((saved) =>
-      saved.updatedAt != currentDraft.updatedAt &&
-      _areDraftsSimilar(saved, currentDraft));
+        saved.updatedAt != currentDraft.updatedAt &&
+        _areDraftsSimilar(saved, currentDraft));
   }
 
   /// 比较两个草稿是否相似
   bool _areDraftsSimilar(DraftTransaction a, DraftTransaction b) {
     return a.amount == b.amount &&
-           a.description == b.description &&
-           a.type == b.type &&
-           a.accountId == b.accountId &&
-           a.categoryId == b.categoryId;
+        a.description == b.description &&
+        a.type == b.type &&
+        a.accountId == b.accountId &&
+        a.categoryId == b.categoryId;
   }
 }
 
 /// DraftManagerProvider
-final draftManagerProvider = StateNotifierProvider<DraftManagerNotifier, DraftManagerState>((ref) {
+final draftManagerProvider =
+    StateNotifierProvider<DraftManagerNotifier, DraftManagerState>((ref) {
   final persistenceService = ref.watch(draftPersistenceServiceProvider);
   return DraftManagerNotifier(persistenceService: persistenceService);
 });
-

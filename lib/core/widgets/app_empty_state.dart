@@ -133,4 +133,3 @@ class AppEmptyStates {
         onAction: onRetry,
       );
 }
-

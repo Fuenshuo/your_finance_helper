@@ -57,7 +57,8 @@ class DashScopeAiService extends AiService {
     int? maxTokens,
     Map<String, dynamic>? extraParams,
   }) async {
-    final selectedModel = model ?? config.llmModel ?? getAvailableLlmModels().first;
+    final selectedModel =
+        model ?? config.llmModel ?? getAvailableLlmModels().first;
     final requestBody = {
       'model': selectedModel,
       'input': {
@@ -86,7 +87,7 @@ class DashScopeAiService extends AiService {
       }
 
       final aiResponse = _parseResponse(response.data!, selectedModel);
-      
+
       Log.business('DashScopeAiService', 'LLM响应成功', {
         'model': aiResponse.model,
         'contentLength': aiResponse.content.length,
@@ -120,21 +121,22 @@ class DashScopeAiService extends AiService {
     int? maxTokens,
     Map<String, dynamic>? extraParams,
   }) async {
-    final selectedModel = model ?? config.visionModel ?? getAvailableVisionModels().first;
-    
+    final selectedModel =
+        model ?? config.visionModel ?? getAvailableVisionModels().first;
+
     // 转换消息格式：DashScope也使用OpenAI兼容的content数组格式
     final formattedMessages = messages.map((m) {
       final json = m.toJson();
-      
+
       // 如果有图片，需要转换为OpenAI兼容格式
       if (m.images != null && m.images!.isNotEmpty) {
         final content = <dynamic>[];
-        
+
         // 添加文本内容
         if (m.content.isNotEmpty) {
           content.add({'type': 'text', 'text': m.content});
         }
-        
+
         // 添加图片内容（OpenAI兼容格式）
         for (final imageUrl in m.images!) {
           content.add({
@@ -142,15 +144,15 @@ class DashScopeAiService extends AiService {
             'image_url': {'url': imageUrl},
           });
         }
-        
+
         json['content'] = content;
         // 移除images字段，因为已经转换为content格式
         json.remove('images');
       }
-      
+
       return json;
     }).toList();
-    
+
     final requestBody = {
       'model': selectedModel,
       'input': {
@@ -165,18 +167,17 @@ class DashScopeAiService extends AiService {
 
     try {
       // 调试日志：检查图片是否正确传递
-      final hasImages = formattedMessages.any((m) => 
-        m['content'] is List && 
-        (m['content'] as List).any((item) => 
-          item is Map && item['type'] == 'image_url'
-        )
-      );
-      
+      final hasImages = formattedMessages.any((m) =>
+          m['content'] is List &&
+          (m['content'] as List)
+              .any((item) => item is Map && item['type'] == 'image_url'));
+
       Log.business('DashScopeAiService', '发送Vision请求', {
         'model': selectedModel,
         'messageCount': messages.length,
         'hasImages': hasImages,
-        'imageCount': messages.fold<int>(0, (sum, m) => sum + (m.images?.length ?? 0)),
+        'imageCount':
+            messages.fold<int>(0, (sum, m) => sum + (m.images?.length ?? 0)),
       });
 
       final response = await _getDio.post<Map<String, dynamic>>(
@@ -189,7 +190,7 @@ class DashScopeAiService extends AiService {
       }
 
       final aiResponse = _parseResponse(response.data!, selectedModel);
-      
+
       Log.business('DashScopeAiService', 'Vision响应成功', {
         'model': aiResponse.model,
         'contentLength': aiResponse.content.length,
@@ -270,4 +271,3 @@ class DashScopeAiService extends AiService {
     }
   }
 }
-

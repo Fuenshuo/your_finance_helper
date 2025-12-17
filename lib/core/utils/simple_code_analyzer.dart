@@ -7,7 +7,6 @@ import 'dart:io';
 
 /// 代码分析结果
 class CodeAnalysisResult {
-
   CodeAnalysisResult({
     required this.filePath,
     required this.linesOfCode,
@@ -47,20 +46,26 @@ class SimpleCodeAnalyzer {
     final linesOfCode = lines.where((line) => line.trim().isNotEmpty).length;
 
     // 查找类定义
-    final classes = lines.where((line) =>
-      line.contains('class ') && !line.trim().startsWith('//'),
-    ).length;
+    final classes = lines
+        .where(
+          (line) => line.contains('class ') && !line.trim().startsWith('//'),
+        )
+        .length;
 
     // 查找函数定义
-    final functions = lines.where((line) =>
-      (line.contains('Function(') ||
-       line.contains(' void ') ||
-       line.contains(' String ') ||
-       line.contains(' int ') ||
-       line.contains(' bool ')) &&
-      line.contains('(') && line.contains(')') &&
-      !line.trim().startsWith('//'),
-    ).length;
+    final functions = lines
+        .where(
+          (line) =>
+              (line.contains('Function(') ||
+                  line.contains(' void ') ||
+                  line.contains(' String ') ||
+                  line.contains(' int ') ||
+                  line.contains(' bool ')) &&
+              line.contains('(') &&
+              line.contains(')') &&
+              !line.trim().startsWith('//'),
+        )
+        .length;
 
     // 查找导入语句
     final imports = <String>[];
@@ -89,7 +94,9 @@ class SimpleCodeAnalyzer {
   }
 
   /// 批量分析目录
-  Future<Map<String, CodeAnalysisResult>> analyzeDirectory(String directoryPath) async {
+  Future<Map<String, CodeAnalysisResult>> analyzeDirectory(
+    String directoryPath,
+  ) async {
     final results = <String, CodeAnalysisResult>{};
     final directory = Directory(directoryPath);
 
@@ -97,7 +104,8 @@ class SimpleCodeAnalyzer {
       return results;
     }
 
-    await for (final entity in directory.list(recursive: true, followLinks: false)) {
+    await for (final entity
+        in directory.list(recursive: true, followLinks: false)) {
       if (entity is File && entity.path.endsWith('.dart')) {
         final result = await analyzeFile(entity.path);
         results[entity.path] = result;
@@ -108,7 +116,9 @@ class SimpleCodeAnalyzer {
   }
 
   /// 生成摘要报告
-  Map<String, dynamic> generateSummaryReport(Map<String, CodeAnalysisResult> results) {
+  Map<String, dynamic> generateSummaryReport(
+    Map<String, CodeAnalysisResult> results,
+  ) {
     var totalFiles = 0;
     var totalLines = 0;
     var totalClasses = 0;
@@ -132,9 +142,12 @@ class SimpleCodeAnalyzer {
       'totalFunctions': totalFunctions,
       'uniqueImports': allImports.length,
       'uniqueDependencies': allDependencies.length,
-      'averageLinesPerFile': totalFiles > 0 ? (totalLines / totalFiles).round() : 0,
-      'averageClassesPerFile': totalFiles > 0 ? (totalClasses / totalFiles).round() : 0,
-      'averageFunctionsPerFile': totalFiles > 0 ? (totalFunctions / totalFiles).round() : 0,
+      'averageLinesPerFile':
+          totalFiles > 0 ? (totalLines / totalFiles).round() : 0,
+      'averageClassesPerFile':
+          totalFiles > 0 ? (totalClasses / totalFiles).round() : 0,
+      'averageFunctionsPerFile':
+          totalFiles > 0 ? (totalFunctions / totalFiles).round() : 0,
     };
   }
 
@@ -144,13 +157,15 @@ class SimpleCodeAnalyzer {
     for (final import in imports) {
       if (import.startsWith('package:your_finance_flutter/')) {
         // 内部依赖
-        final parts = import.replaceFirst('package:your_finance_flutter/', '').split('/');
+        final parts =
+            import.replaceFirst('package:your_finance_flutter/', '').split('/');
         if (parts.isNotEmpty) {
           dependencies.add(parts[0]);
         }
       } else if (import.startsWith('package:')) {
         // 外部包依赖
-        final packageName = import.split('/').first.replaceFirst('package:', '');
+        final packageName =
+            import.split('/').first.replaceFirst('package:', '');
         dependencies.add(packageName);
       } else if (import.startsWith('dart:')) {
         // Dart SDK

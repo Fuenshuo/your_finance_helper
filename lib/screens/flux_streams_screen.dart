@@ -136,7 +136,7 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.08)
+              ? Colors.white.withValues(alpha: 0.08)
               : Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
@@ -187,7 +187,7 @@ class _FluxStreamsScreenState extends State<FluxStreamsScreen> {
       height: 44,
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white.withOpacity(0.08)
+            ? Colors.white.withValues(alpha: 0.08)
             : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -371,7 +371,7 @@ class _TransactionCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: amountColor.withOpacity(0.15),
+              color: amountColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(

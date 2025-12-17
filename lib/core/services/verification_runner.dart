@@ -58,7 +58,10 @@ class DefaultVerificationRunner implements VerificationRunner {
           componentName,
           'Exception during verification',
           errorMessage: e.toString(),
-          remediationSteps: ['Check component implementation', 'Review error logs'],
+          remediationSteps: [
+            'Check component implementation',
+            'Review error logs'
+          ],
         );
         session.addResult(errorResult);
 
@@ -76,7 +79,7 @@ class DefaultVerificationRunner implements VerificationRunner {
   Future<VerificationResult> verifyComponent(String componentName) async {
     // This method will be implemented with actual verification logic
     // for each component. For now, return a placeholder.
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
 
     // Placeholder implementation - will be replaced with real verifiers
     return VerificationResult.pass(
@@ -146,3 +149,4 @@ class _CustomVerificationRunner implements VerificationRunner {
     return List.unmodifiable(_components);
   }
 }
+

@@ -8,6 +8,7 @@
 library;
 
 import 'dart:io';
+
 import 'package:path/path.dart' as path;
 
 /// 代码元素类型
@@ -22,11 +23,12 @@ enum CodeElementType {
 
 /// 代码元素
 class CodeElement {
-
   CodeElement({
     required this.type,
     required this.name,
-    required this.lineNumber, required this.sourceFile, this.returnType,
+    required this.lineNumber,
+    required this.sourceFile,
+    this.returnType,
     this.parameters = const [],
     this.superClass,
     this.interfaces = const [],
@@ -43,7 +45,6 @@ class CodeElement {
 
 /// 代码依赖关系
 class CodeDependency {
-
   CodeDependency({
     required this.fromFile,
     required this.toFile,
@@ -76,10 +77,10 @@ class CodeParser {
     multiLine: true,
   );
 
-  final RegExp _importRegex = RegExp(r"import\s+['\"](.*?)['\"]", multiLine: true);
-  final RegExp _exportRegex = RegExp(r"export\s+['\"](.*?)['\"]", multiLine: true);
-  final RegExp _partRegex = RegExp(r"part\s+['\"](.*?)['\"]", multiLine: true);
-  final RegExp _partOfRegex = RegExp(r"part\s+of\s+['\"](.*?)['\"]", multiLine: true);
+  final RegExp _importRegex = RegExp(r'import\s+.*?', multiLine: true);
+  final RegExp _exportRegex = RegExp(r'export\s+.*?', multiLine: true);
+  final RegExp _partRegex = RegExp(r'part\s+.*?', multiLine: true);
+  final RegExp _partOfRegex = RegExp(r'part\s+of\s+.*?', multiLine: true);
 
   /// 解析Dart文件
   Future<List<CodeElement>> parseFile(String filePath) async {
@@ -100,16 +101,21 @@ class CodeParser {
       if (classMatch != null) {
         final className = classMatch.group(1)!;
         final superClass = classMatch.group(2);
-        final implements = classMatch.group(3)?.split(',').map((s) => s.trim()).toList() ?? [];
+        final implements =
+            classMatch.group(3)?.split(',').map((s) => s.trim()).toList() ?? [];
 
-        elements.add(CodeElement(
-          type: line.contains('enum') ? CodeElementType.class_ : CodeElementType.class_,
-          name: className,
-          lineNumber: i + 1,
-          sourceFile: filePath,
-          superClass: superClass,
-          interfaces: implements,
-        ),);
+        elements.add(
+          CodeElement(
+            type: line.contains('enum')
+                ? CodeElementType.class_
+                : CodeElementType.class_,
+            name: className,
+            lineNumber: i + 1,
+            sourceFile: filePath,
+            superClass: superClass,
+            interfaces: implements,
+          ),
+        );
         continue;
       }
 
@@ -120,17 +126,20 @@ class CodeParser {
         final functionName = functionMatch.group(2)!;
 
         // 跳过构造函数和getter/setter
-        if (functionName.startsWith('get ') || functionName.startsWith('set ')) {
+        if (functionName.startsWith('get ') ||
+            functionName.startsWith('set ')) {
           continue;
         }
 
-        elements.add(CodeElement(
-          type: CodeElementType.function,
-          name: functionName,
-          returnType: returnType,
-          lineNumber: i + 1,
-          sourceFile: filePath,
-        ),);
+        elements.add(
+          CodeElement(
+            type: CodeElementType.function,
+            name: functionName,
+            returnType: returnType,
+            lineNumber: i + 1,
+            sourceFile: filePath,
+          ),
+        );
         continue;
       }
 
@@ -138,12 +147,14 @@ class CodeParser {
       final importMatch = _importRegex.firstMatch(line);
       if (importMatch != null) {
         final importPath = importMatch.group(1)!;
-        elements.add(CodeElement(
-          type: CodeElementType.import,
-          name: importPath,
-          lineNumber: i + 1,
-          sourceFile: filePath,
-        ),);
+        elements.add(
+          CodeElement(
+            type: CodeElementType.import,
+            name: importPath,
+            lineNumber: i + 1,
+            sourceFile: filePath,
+          ),
+        );
         continue;
       }
 
@@ -151,12 +162,16 @@ class CodeParser {
       final exportMatch = _exportRegex.firstMatch(line);
       if (exportMatch != null) {
         final exportPath = exportMatch.group(1);
-        elements.add(CodeElement(
-          type: CodeElementType.export,
-          name: exportPath,
-          lineNumber: i + 1,
-          sourceFile: filePath,
-        ),);
+        if (exportPath != null) {
+          elements.add(
+            CodeElement(
+              type: CodeElementType.export,
+              name: exportPath,
+              lineNumber: i + 1,
+              sourceFile: filePath,
+            ),
+          );
+        }
         continue;
       }
     }
@@ -165,7 +180,8 @@ class CodeParser {
   }
 
   /// 分析文件依赖关系
-  Future<List<CodeDependency>> analyzeDependencies(String filePath, String rootPath) async {
+  Future<List<CodeDependency>> analyzeDependencies(
+      String filePath, String rootPath) async {
     final file = File(filePath);
     if (!await file.exists()) {
       return [];
@@ -184,11 +200,13 @@ class CodeParser {
         final importPath = importMatch.group(1)!;
         final resolvedPath = _resolveImportPath(importPath, filePath, rootPath);
         if (resolvedPath != null) {
-          dependencies.add(CodeDependency(
-            fromFile: path.relative(filePath, from: rootPath),
-            toFile: path.relative(resolvedPath, from: rootPath),
-            type: DependencyType.import,
-          ),);
+          dependencies.add(
+            CodeDependency(
+              fromFile: path.relative(filePath, from: rootPath),
+              toFile: path.relative(resolvedPath, from: rootPath),
+              type: DependencyType.import,
+            ),
+          );
         }
         continue;
       }
@@ -197,13 +215,17 @@ class CodeParser {
       final exportMatch = _exportRegex.firstMatch(line);
       if (exportMatch != null) {
         final exportPath = exportMatch.group(1);
-        final resolvedPath = _resolveImportPath(exportPath, filePath, rootPath);
+        if (exportPath != null) {
+          final resolvedPath = _resolveImportPath(exportPath, filePath, rootPath);
         if (resolvedPath != null) {
-          dependencies.add(CodeDependency(
-            fromFile: path.relative(filePath, from: rootPath),
-            toFile: path.relative(resolvedPath, from: rootPath),
-            type: DependencyType.export,
-          ),);
+          dependencies.add(
+            CodeDependency(
+              fromFile: path.relative(filePath, from: rootPath),
+              toFile: path.relative(resolvedPath, from: rootPath),
+              type: DependencyType.export,
+            ),
+          );
+        }
         }
         continue;
       }
@@ -214,11 +236,13 @@ class CodeParser {
         final partPath = partMatch.group(1)!;
         final resolvedPath = _resolveImportPath(partPath, filePath, rootPath);
         if (resolvedPath != null) {
-          dependencies.add(CodeDependency(
-            fromFile: path.relative(filePath, from: rootPath),
-            toFile: path.relative(resolvedPath, from: rootPath),
-            type: DependencyType.part,
-          ),);
+          dependencies.add(
+            CodeDependency(
+              fromFile: path.relative(filePath, from: rootPath),
+              toFile: path.relative(resolvedPath, from: rootPath),
+              type: DependencyType.part,
+            ),
+          );
         }
         continue;
       }
@@ -228,11 +252,13 @@ class CodeParser {
         final partOfPath = partOfMatch.group(1)!;
         final resolvedPath = _resolveImportPath(partOfPath, filePath, rootPath);
         if (resolvedPath != null) {
-          dependencies.add(CodeDependency(
-            fromFile: path.relative(filePath, from: rootPath),
-            toFile: path.relative(resolvedPath, from: rootPath),
-            type: DependencyType.partOf,
-          ),);
+          dependencies.add(
+            CodeDependency(
+              fromFile: path.relative(filePath, from: rootPath),
+              toFile: path.relative(resolvedPath, from: rootPath),
+              type: DependencyType.partOf,
+            ),
+          );
         }
         continue;
       }
@@ -242,7 +268,8 @@ class CodeParser {
   }
 
   /// 解析导入路径为绝对路径
-  String? _resolveImportPath(String importPath, String fromFile, String rootPath) {
+  String? _resolveImportPath(
+      String importPath, String fromFile, String rootPath) {
     if (importPath.startsWith('dart:') || importPath.startsWith('package:')) {
       // 系统库和包导入，不解析为文件路径
       return null;
@@ -273,7 +300,6 @@ class CodeParser {
 
 /// 代码分析结果
 class CodeAnalysisResult {
-
   CodeAnalysisResult({
     required this.elements,
     required this.dependencies,
@@ -283,9 +309,12 @@ class CodeAnalysisResult {
   final List<CodeDependency> dependencies;
   final Map<String, int> complexityMetrics;
 
-  int get classCount => elements.where((e) => e.type == CodeElementType.class_).length;
-  int get functionCount => elements.where((e) => e.type == CodeElementType.function).length;
-  int get importCount => elements.where((e) => e.type == CodeElementType.import).length;
+  int get classCount =>
+      elements.where((e) => e.type == CodeElementType.class_).length;
+  int get functionCount =>
+      elements.where((e) => e.type == CodeElementType.function).length;
+  int get importCount =>
+      elements.where((e) => e.type == CodeElementType.import).length;
 
   List<String> getClasses() => elements
       .where((e) => e.type == CodeElementType.class_)
@@ -300,12 +329,12 @@ class CodeAnalysisResult {
 
 /// 批量代码分析器
 class BatchCodeAnalyzer {
-
   BatchCodeAnalyzer() : parser = CodeParser();
   final CodeParser parser;
 
   /// 分析整个目录的代码
-  Future<Map<String, CodeAnalysisResult>> analyzeDirectory(String directoryPath) async {
+  Future<Map<String, CodeAnalysisResult>> analyzeDirectory(
+      String directoryPath) async {
     final results = <String, CodeAnalysisResult>{};
     final directory = Directory(directoryPath);
 
@@ -313,15 +342,18 @@ class BatchCodeAnalyzer {
       return results;
     }
 
-    await for (final entity in directory.list(recursive: true, followLinks: false)) {
+    await for (final entity
+        in directory.list(recursive: true, followLinks: false)) {
       if (entity is File && path.extension(entity.path) == '.dart') {
         try {
           final elements = await parser.parseFile(entity.path);
-          final dependencies = await parser.analyzeDependencies(entity.path, directoryPath);
+          final dependencies =
+              await parser.analyzeDependencies(entity.path, directoryPath);
 
           final complexityMetrics = _calculateComplexityMetrics(elements);
 
-          results[path.relative(entity.path, from: directoryPath)] = CodeAnalysisResult(
+          results[path.relative(entity.path, from: directoryPath)] =
+              CodeAnalysisResult(
             elements: elements,
             dependencies: dependencies,
             complexityMetrics: complexityMetrics,
@@ -337,10 +369,14 @@ class BatchCodeAnalyzer {
   }
 
   Map<String, int> _calculateComplexityMetrics(List<CodeElement> elements) => {
-      'totalElements': elements.length,
-      'classes': elements.where((e) => e.type == CodeElementType.class_).length,
-      'functions': elements.where((e) => e.type == CodeElementType.function).length,
-      'imports': elements.where((e) => e.type == CodeElementType.import).length,
-      'exports': elements.where((e) => e.type == CodeElementType.export).length,
-    };
+        'totalElements': elements.length,
+        'classes':
+            elements.where((e) => e.type == CodeElementType.class_).length,
+        'functions':
+            elements.where((e) => e.type == CodeElementType.function).length,
+        'imports':
+            elements.where((e) => e.type == CodeElementType.import).length,
+        'exports':
+            elements.where((e) => e.type == CodeElementType.export).length,
+      };
 }

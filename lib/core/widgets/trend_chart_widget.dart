@@ -47,7 +47,7 @@ class TrendChartWidget extends StatelessWidget {
             drawVerticalLine: false,
             horizontalInterval: 1,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: context.dividerColor.withOpacity(0.3),
+              color: context.dividerColor.withValues(alpha: 0.3),
               strokeWidth: 1,
             ),
           ),
@@ -79,13 +79,13 @@ class TrendChartWidget extends StatelessWidget {
               ),
               belowBarData: BarAreaData(
                 show: true,
-                color: fillColor.withOpacity(0.1),
+                color: fillColor.withValues(alpha: 0.1),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    fillColor.withOpacity(0.3),
-                    fillColor.withOpacity(0.05),
+                    fillColor.withValues(alpha: 0.3),
+                    fillColor.withValues(alpha: 0.05),
                   ],
                 ),
               ),
@@ -139,7 +139,7 @@ class SimpleTrendChart extends StatelessWidget {
             width: width,
             child: Container(
               decoration: BoxDecoration(
-                color: context.dividerColor.withOpacity(0.1),
+                color: context.dividerColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),

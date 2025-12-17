@@ -1,4 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+
+// Re-export TransactionType from core models to avoid conflicts
+export 'package:your_finance_flutter/core/models/transaction.dart' show TransactionType;
 
 /// 草稿交易模型
 class DraftTransaction extends Equatable {
@@ -47,8 +51,8 @@ class DraftTransaction extends Equatable {
     this.confidence = 0.0,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) : createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
+  })  : createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
   DraftTransaction copyWith({
     double? amount,
@@ -97,6 +101,27 @@ class DraftTransaction extends Equatable {
       transactionDate != null ||
       tags.isNotEmpty;
 
+  /// 转换为 Transaction 对象
+  Transaction toTransaction() {
+    // 基本验证
+    if (!isComplete) {
+      throw StateError('DraftTransaction is not complete, cannot convert to Transaction');
+    }
+
+    return Transaction(
+      description: description!,
+      amount: amount!,
+      category: TransactionCategory.values.firstWhere(
+        (cat) => cat.name == categoryId,
+        orElse: () => TransactionCategory.otherIncome, // 默认分类
+      ),
+      date: transactionDate!,
+      fromAccountId: accountId,
+      type: type,
+      tags: tags,
+    );
+  }
+
   @override
   List<Object?> get props => [
         amount,
@@ -111,22 +136,4 @@ class DraftTransaction extends Equatable {
         createdAt,
         updatedAt,
       ];
-}
-
-/// 交易类型枚举
-enum TransactionType {
-  expense('支出'),
-  income('收入'),
-  transfer('转账');
-
-  const TransactionType(this.displayName);
-  final String displayName;
-
-  static TransactionType? fromString(String? value) {
-    if (value == null) return null;
-    return TransactionType.values.firstWhere(
-      (type) => type.name == value,
-      orElse: () => TransactionType.expense,
-    );
-  }
 }

@@ -35,7 +35,7 @@ class LegacyAssetsAdapter {
     return <AssetItem>[];
   }
 
-  static AssetItem _mapAsset(raw) {
+  static AssetItem _mapAsset(dynamic raw) {
     final m = (raw is Map<String, dynamic>) ? raw : <String, dynamic>{};
 
     final id = (m['id']?.toString().trim().isNotEmpty ?? false)
@@ -69,13 +69,13 @@ class LegacyAssetsAdapter {
     );
   }
 
-  static double _toDouble(v) {
+  static double _toDouble(dynamic v) {
     if (v is num) return v.toDouble();
     if (v is String) return double.tryParse(v) ?? 0.0;
     return 0.0;
   }
 
-  static DateTime _parseDate(v) {
+  static DateTime _parseDate(dynamic v) {
     if (v is DateTime) return v;
     if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
     if (v is String) {

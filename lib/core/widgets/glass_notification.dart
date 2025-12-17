@@ -134,7 +134,7 @@ class _GlassNotificationState extends State<GlassNotification>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -152,15 +152,15 @@ class _GlassNotificationState extends State<GlassNotification>
                         decoration: BoxDecoration(
                           // 提高背景不透明度，确保在复杂背景下也有足够对比度
                           color: widget.backgroundColor ??
-                              Colors.black.withOpacity(0.8),
+                              Colors.black.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                           // 添加阴影增强层次感
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -176,7 +176,7 @@ class _GlassNotificationState extends State<GlassNotification>
                                   widget.icon,
                                   size: 18,
                                   // 确保图标在深色背景下清晰可见
-                                  color: Colors.white.withOpacity(0.95),
+                                  color: Colors.white.withValues(alpha: 0.95),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -190,14 +190,16 @@ class _GlassNotificationState extends State<GlassNotification>
                                     widget.message,
                                     style: TextStyle(
                                       // 使用纯白色文字，确保在深色背景下高度清晰
-                                      color: Colors.white.withOpacity(0.95),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.95),
                                       fontSize: 14, // 稍微增大字体
                                       fontWeight: FontWeight.w600, // 增强字体粗细
                                       height: 1.4,
                                       // 添加文字阴影，提升可读性
                                       shadows: [
                                         Shadow(
-                                          color: Colors.black.withOpacity(0.3),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.3),
                                           offset: const Offset(0, 1),
                                           blurRadius: 2,
                                         ),
@@ -223,7 +225,7 @@ class _GlassNotificationState extends State<GlassNotification>
                                 Icons.close,
                                 size: 16,
                                 // 关闭按钮也要清晰可见
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -376,7 +378,7 @@ class _GlassNotificationDialogState extends State<_GlassNotificationDialog>
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -394,15 +396,15 @@ class _GlassNotificationDialogState extends State<_GlassNotificationDialog>
                               decoration: BoxDecoration(
                                 // 提高背景不透明度，确保在复杂背景下也有足够对比度
                                 color: widget.backgroundColor ??
-                                    Colors.black.withOpacity(0.8),
+                                    Colors.black.withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                 ),
                                 // 添加阴影增强层次感
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -418,7 +420,8 @@ class _GlassNotificationDialogState extends State<_GlassNotificationDialog>
                                         widget.icon,
                                         size: 18,
                                         // 确保图标在深色背景下清晰可见
-                                        color: Colors.white.withOpacity(0.95),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.95),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -433,8 +436,8 @@ class _GlassNotificationDialogState extends State<_GlassNotificationDialog>
                                           widget.message,
                                           style: TextStyle(
                                             // 使用纯白色文字，确保在深色背景下高度清晰
-                                            color:
-                                                Colors.white.withOpacity(0.95),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.95),
                                             fontSize: 14, // 稍微增大字体
                                             fontWeight:
                                                 FontWeight.w600, // 增强字体粗细
@@ -443,7 +446,7 @@ class _GlassNotificationDialogState extends State<_GlassNotificationDialog>
                                             shadows: [
                                               Shadow(
                                                 color: Colors.black
-                                                    .withOpacity(0.3),
+                                                    .withValues(alpha: 0.3),
                                                 offset: const Offset(0, 1),
                                                 blurRadius: 2,
                                               ),
@@ -462,7 +465,8 @@ class _GlassNotificationDialogState extends State<_GlassNotificationDialog>
                                       Icons.close,
                                       size: 16,
                                       // 关闭按钮也要清晰可见
-                                      color: Colors.white.withOpacity(0.7),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ],

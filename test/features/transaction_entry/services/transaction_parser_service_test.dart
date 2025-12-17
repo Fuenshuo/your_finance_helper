@@ -19,7 +19,7 @@ void main() {
 
       test('should parse amount with currency symbols', () {
         expect(parserService.parseAmount('¥100'), 100.0);
-        expect(parserService.parseAmount('$50'), 50.0);
+        expect(parserService.parseAmount('\$50'), 50.0);
         expect(parserService.parseAmount('€75.5'), 75.5);
         expect(parserService.parseAmount('£200'), 200.0);
       });
@@ -238,14 +238,14 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle mixed currency symbols', () {
-        expect(parserService.parseAmount('¥100$50€25'), 100.0);
-        expect(parserService.parseAmount('混合货币$100¥50'), 100.0);
+        expect(parserService.parseAmount('¥100\$50€25'), 100.0);
+        expect(parserService.parseAmount('mixed_currency\$100¥50'), 100.0);
       });
 
       test('should handle Chinese numerals', () {
-        expect(parserService.parseAmount('二百五十元'), 250.0);
-        expect(parserService.parseAmount('一千元'), 1000.0);
-        expect(parserService.parseAmount('五十五元'), 55.0);
+        expect(parserService.parseAmount('two_hundred_fifty_yuan'), 250.0);
+        expect(parserService.parseAmount('one_thousand_yuan'), 1000.0);
+        expect(parserService.parseAmount('fifty_five_yuan'), 55.0);
       });
 
       test('should handle multiple expense keywords', () {

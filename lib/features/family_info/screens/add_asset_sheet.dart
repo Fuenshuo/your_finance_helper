@@ -5,7 +5,6 @@ import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/features/family_info/screens/fixed_asset_detail_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
-import 'package:your_finance_flutter/features/financial_planning/screens/smart_budget_guidance_screen.dart';
 import 'package:your_finance_flutter/core/services/ai/asset_valuation_service.dart';
 import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
 
@@ -115,9 +114,10 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
                     Expanded(
                       child: Text(
                         '自定义名称',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                     ),
                     IconButton(
@@ -362,7 +362,8 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
     Logger.debug(
       '📋 _showDetailedInputOptions: 资产名称: ${asset.name}, 子分类: ${asset.subCategory}',
     );
-    Logger.debug('📋 _showDetailedInputOptions: 是否为房产资产: ${_isPropertyAsset(asset)}');
+    Logger.debug(
+        '📋 _showDetailedInputOptions: 是否为房产资产: ${_isPropertyAsset(asset)}');
 
     // 移除延迟，直接显示弹窗
     Logger.debug('✅ 直接显示弹窗');
@@ -495,7 +496,7 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -538,14 +539,10 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
     // 延迟显示，确保当前页面已经关闭
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) => SmartBudgetGuidanceScreen(
-              asset: asset,
-              onComplete: () {
-                // 预算建议完成后的回调
-              },
-            ),
+        // TODO: Navigate to smart budget guidance when implemented
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('智能预算指导功能即将上线'),
           ),
         );
       }

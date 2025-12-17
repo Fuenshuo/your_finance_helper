@@ -26,14 +26,14 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentStyle = AppDesignTokens.getCurrentStyle();
     final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
-    
+
     // SharpProfessional: Elevation 2.0 的清晰阴影，确保卡片与背景分界明确
     // iOS Fintech: 使用原有的有色阴影
     final boxShadow = showShadow
         ? (isSharpProfessional
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08), // 略深，确保分界清晰
+                  color: Colors.black.withValues(alpha: 0.08), // 略深，确保分界清晰
                   blurRadius: 8, // 清晰的模糊半径
                   offset: const Offset(0, 2), // Elevation 2.0
                   spreadRadius: 0, // 无扩散，保持紧凑
@@ -43,20 +43,22 @@ class AppCard extends StatelessWidget {
                 AppDesignTokens.primaryShadow(context),
               ])
         : null;
-    
+
     // 使用统一的水平边距，确保内容对齐
-    final effectivePadding = padding ?? EdgeInsets.symmetric(
-      horizontal: AppDesignTokens.globalHorizontalPadding,
-      vertical: AppDesignTokens.spacing16,
-    );
-    
+    final effectivePadding = padding ??
+        EdgeInsets.symmetric(
+          horizontal: AppDesignTokens.globalHorizontalPadding,
+          vertical: AppDesignTokens.spacing16,
+        );
+
     final cardContent = Container(
       width: double.infinity,
       margin: margin ?? EdgeInsets.zero,
       padding: effectivePadding,
       decoration: BoxDecoration(
         color: backgroundColor ?? AppDesignTokens.surface(context),
-        borderRadius: BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+        borderRadius:
+            BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
         boxShadow: boxShadow,
       ),
       child: child,

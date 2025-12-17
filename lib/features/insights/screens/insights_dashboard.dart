@@ -8,6 +8,7 @@ import 'package:your_finance_flutter/features/insights/widgets/monthly_structure
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
 import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
+import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
 import 'package:your_finance_flutter/core/services/insight_service.dart';
 
 /// Insights Dashboard with Daily/Weekly/Monthly tabs
@@ -42,9 +43,9 @@ class _InsightsDashboardState extends State<InsightsDashboard>
       date: DateTime.now(),
       referenceAmount: 500.0,
       currentSpending: 320.0,
-      percentage: 64.0,
+      percentage: 0.64,
       status: CapStatus.warning,
-      insights: [],
+      latestInsight: null,
     );
 
     _weeklyInsight = WeeklyInsight(
@@ -55,15 +56,12 @@ class _InsightsDashboardState extends State<InsightsDashboard>
           id: 'weekly_anomaly_dashboard',
           weekStart: DateTime.now().subtract(const Duration(days: 7)),
           anomalyDate: DateTime.now().subtract(const Duration(days: 3)),
-          day: 'Wednesday',
-          amount: 650.0,
           expectedAmount: 264.29,
-          deviation: 385.71,
-          percentageDeviation: 145.83,
+          actualAmount: 650.0,
+          deviation: 145.83,
+          reason: '购物支出显著高于平均水平，建议检查消费记录',
           severity: AnomalySeverity.high,
-          explanation: '购物支出显著高于平均水平',
-          insight: '建议检查购物记录，确认是否为正常消费',
-          categoryBreakdown: '购物',
+          categories: ['购物'],
         ),
       ],
       monday: 180.0,
@@ -84,21 +82,18 @@ class _InsightsDashboardState extends State<InsightsDashboard>
       factors: [
         HealthFactor(
           name: '预算控制',
-          value: 78.0,
-          impact: FactorImpact.neutral,
-          category: '支出管理',
+          impact: 0.0,
+          description: '支出控制在合理范围内',
         ),
         HealthFactor(
           name: '储蓄率',
-          value: 85.0,
-          impact: FactorImpact.positive,
-          category: '储蓄投资',
+          impact: 0.3,
+          description: '储蓄率良好，有助于财务健康',
         ),
         HealthFactor(
           name: '消费结构',
-          value: 82.0,
-          impact: FactorImpact.neutral,
-          category: '支出分析',
+          impact: 0.0,
+          description: '消费结构相对合理',
         ),
       ],
       recommendations: [
@@ -190,7 +185,6 @@ class _InsightsDashboardState extends State<InsightsDashboard>
           const SizedBox(height: 16),
           DailyPacerWidget(
             dailyCap: _dailyCap,
-            showThinking: false,
           ),
           const SizedBox(height: 24),
           _buildDailyInsights(),
@@ -258,26 +252,27 @@ class _InsightsDashboardState extends State<InsightsDashboard>
               style: AppDesignTokens.headline(context),
             ),
             const SizedBox(height: 12),
-            ..._dailyCap.insights.map((insight) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                children: [
-                  Icon(
-                    _getInsightIcon(insight.sentiment),
-                    color: _getInsightColor(insight.sentiment),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      insight.message,
-                      style: AppDesignTokens.body(context),
+            if (_dailyCap.latestInsight != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Icon(
+                      _getInsightIcon(_dailyCap.latestInsight!.sentiment),
+                      color: _getInsightColor(_dailyCap.latestInsight!.sentiment),
+                      size: 20,
                     ),
-                  ),
-                ],
-              ),
-            )),
-            if (_dailyCap.insights.isEmpty)
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _dailyCap.latestInsight!.message,
+                        style: AppDesignTokens.body(context),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
               Text(
                 '暂无特别洞察，继续保持良好的消费习惯',
                 style: AppDesignTokens.body(context).copyWith(
@@ -304,39 +299,39 @@ class _InsightsDashboardState extends State<InsightsDashboard>
             const SizedBox(height: 12),
             if (_weeklyInsight.anomalies.isNotEmpty) ...[
               ..._weeklyInsight.anomalies.map((anomaly) => Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          _getAnomalyIcon(anomaly.severity),
-                          color: _getAnomalyColor(anomaly.severity),
-                          size: 20,
+                        Row(
+                          children: [
+                            Icon(
+                              _getAnomalyIcon(anomaly.severity),
+                              color: _getAnomalyColor(anomaly.severity),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${anomaly.anomalyDate.weekday == 1 ? 'Mon' : anomaly.anomalyDate.weekday == 2 ? 'Tue' : anomaly.anomalyDate.weekday == 3 ? 'Wed' : anomaly.anomalyDate.weekday == 4 ? 'Thu' : anomaly.anomalyDate.weekday == 5 ? 'Fri' : anomaly.anomalyDate.weekday == 6 ? 'Sat' : 'Sun'}: ¥${anomaly.actualAmount.toStringAsFixed(0)}',
+                              style: AppDesignTokens.headline(context),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 4),
                         Text(
-                          '${anomaly.day}: ¥${anomaly.amount.toStringAsFixed(0)}',
-                          style: AppDesignTokens.headline(context),
+                          anomaly.reason,
+                          style: AppDesignTokens.body(context),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '影响分类: ${anomaly.categories.join(', ')}',
+                          style: AppDesignTokens.caption(context).copyWith(
+                            color: AppDesignTokens.secondaryText(context),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      anomaly.explanation,
-                      style: AppDesignTokens.body(context),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      anomaly.insight,
-                      style: AppDesignTokens.caption(context).copyWith(
-                        color: AppDesignTokens.secondaryText(context),
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+                  )),
             ] else ...[
               Row(
                 children: [
@@ -374,31 +369,31 @@ class _InsightsDashboardState extends State<InsightsDashboard>
                 ),
                 const SizedBox(height: 12),
                 ..._monthlyHealth.factors.map((factor) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        factor.name,
-                        style: AppDesignTokens.body(context),
-                      ),
-                      Row(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${factor.value.toStringAsFixed(0)}%',
-                            style: AppDesignTokens.headline(context),
+                            factor.name,
+                            style: AppDesignTokens.body(context),
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            _getFactorIcon(factor.impact),
-                            color: _getFactorColor(factor.impact),
-                            size: 16,
+                          Row(
+                            children: [
+                              Text(
+                                '${(factor.impact * 100).toStringAsFixed(0)}%',
+                                style: AppDesignTokens.headline(context),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                _getFactorIcon(factor.impact),
+                                color: _getFactorColor(factor.impact),
+                                size: 16,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                )),
+                    )),
               ],
             ),
           ),
@@ -415,26 +410,27 @@ class _InsightsDashboardState extends State<InsightsDashboard>
                   style: AppDesignTokens.headline(context),
                 ),
                 const SizedBox(height: 12),
-                ..._monthlyHealth.recommendations.map((recommendation) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.lightbulb_outline,
-                        color: AppDesignTokens.primaryAction(context),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          recommendation,
-                          style: AppDesignTokens.body(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
+                ..._monthlyHealth.recommendations
+                    .map((recommendation) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.lightbulb_outline,
+                                color: AppDesignTokens.primaryAction(context),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  recommendation,
+                                  style: AppDesignTokens.body(context),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
               ],
             ),
           ),
@@ -444,7 +440,7 @@ class _InsightsDashboardState extends State<InsightsDashboard>
   }
 
   void _showMonthlyReportDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
@@ -480,25 +476,25 @@ class _InsightsDashboardState extends State<InsightsDashboard>
     );
   }
 
-  IconData _getInsightIcon(InsightSentiment sentiment) {
+  IconData _getInsightIcon(Sentiment sentiment) {
     switch (sentiment) {
-      case InsightSentiment.positive:
+      case Sentiment.positive:
         return Icons.trending_up;
-      case InsightSentiment.neutral:
+      case Sentiment.neutral:
         return Icons.trending_flat;
-      case InsightSentiment.negative:
+      case Sentiment.negative:
         return Icons.trending_down;
     }
   }
 
-  Color _getInsightColor(InsightSentiment sentiment) {
+  Color _getInsightColor(Sentiment sentiment) {
     switch (sentiment) {
-      case InsightSentiment.positive:
+      case Sentiment.positive:
         return AppDesignTokens.successColor(context);
-      case InsightSentiment.neutral:
+      case Sentiment.neutral:
         return AppDesignTokens.secondaryText(context);
-      case InsightSentiment.negative:
-        return AppDesignTokens.errorColor(context);
+      case Sentiment.negative:
+        return AppDesignTokens.moneyNegative(context);
     }
   }
 
@@ -516,33 +512,23 @@ class _InsightsDashboardState extends State<InsightsDashboard>
   Color _getAnomalyColor(AnomalySeverity severity) {
     switch (severity) {
       case AnomalySeverity.low:
-        return AppDesignTokens.warningColor(context);
+        return AppDesignTokens.warningColor;
       case AnomalySeverity.medium:
         return Colors.orange;
       case AnomalySeverity.high:
-        return AppDesignTokens.errorColor(context);
+        return AppDesignTokens.moneyNegative(context);
     }
   }
 
-  IconData _getFactorIcon(FactorImpact impact) {
-    switch (impact) {
-      case FactorImpact.positive:
-        return Icons.trending_up;
-      case FactorImpact.neutral:
-        return Icons.trending_flat;
-      case FactorImpact.negative:
-        return Icons.trending_down;
-    }
+  IconData _getFactorIcon(double impact) {
+    if (impact > 0.1) return Icons.trending_up;
+    if (impact < -0.1) return Icons.trending_down;
+    return Icons.trending_flat;
   }
 
-  Color _getFactorColor(FactorImpact impact) {
-    switch (impact) {
-      case FactorImpact.positive:
-        return AppDesignTokens.successColor(context);
-      case FactorImpact.neutral:
-        return AppDesignTokens.secondaryText(context);
-      case FactorImpact.negative:
-        return AppDesignTokens.errorColor(context);
-    }
+  Color _getFactorColor(double impact) {
+    if (impact > 0.1) return AppDesignTokens.successColor(context);
+    if (impact < -0.1) return AppDesignTokens.moneyNegative(context);
+    return AppDesignTokens.secondaryText(context);
   }
 }

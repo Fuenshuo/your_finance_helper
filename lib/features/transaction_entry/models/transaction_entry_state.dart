@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 
 import 'draft_transaction.dart';
 import 'input_validation.dart';
@@ -48,8 +47,8 @@ class PerformanceMetrics extends Equatable {
   /// 是否超过性能阈值
   bool get exceedsThreshold =>
       parseResponseTimeMs > 50 || // 50ms解析阈值
-      uiRenderTimeMs > 16 ||     // 60fps (16ms/frame) 阈值
-      cpuUsagePercent > 80.0;    // 80% CPU使用率阈值
+      uiRenderTimeMs > 16 || // 60fps (16ms/frame) 阈值
+      cpuUsagePercent > 80.0; // 80% CPU使用率阈值
 
   @override
   List<Object?> get props => [
@@ -88,18 +87,18 @@ class TransactionEntryState extends Equatable {
   final dynamic savedTransaction;
 
   /// 性能指标
-  final PerformanceMetrics performanceMetrics;
+  final PerformanceMetrics? performanceMetrics;
 
-  const TransactionEntryState({
+  TransactionEntryState({
     this.currentInput = '',
     this.draftTransaction,
-    this.validation = InputValidation(),
+    this.validation = const InputValidation(),
     this.isParsing = false,
     this.parseError,
     this.isSaving = false,
     this.saveError,
     this.savedTransaction,
-    this.performanceMetrics = const PerformanceMetrics(),
+    this.performanceMetrics,
   });
 
   TransactionEntryState copyWith({

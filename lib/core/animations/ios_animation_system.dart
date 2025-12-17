@@ -100,15 +100,6 @@ class IOSAnimationSystem {
         vsync: vsync,
       );
 
-      final depthAnimation = Tween<double>(
-        begin: 0.0,
-        end: depth,
-      ).animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: curve,
-        ),
-      );
 
       await controller.forward();
       await controller.reverse();
@@ -297,13 +288,12 @@ class IOSAnimationSystem {
 
       _activeControllers[animationId] = controller;
 
-      // 配置动画
-      final animation = _createAnimation(controller, spec);
-
       // 执行动画
       controller.forward().then((_) {
         completer.complete();
-      }).catchError(completer.completeError);
+      }).catchError((Object error) {
+        completer.completeError(error);
+      });
     } catch (e) {
       completer.completeError(e);
     }
@@ -311,22 +301,6 @@ class IOSAnimationSystem {
     return completer.future;
   }
 
-  Animation<double> _createAnimation(
-    AnimationController controller,
-    IOSAnimationSpec spec,
-  ) {
-    final curve = spec.curve ?? IOSAnimationConfig.standard;
-
-    return Tween<double>(
-      begin: spec.begin ?? 0.0,
-      end: spec.end ?? 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: curve,
-      ),
-    );
-  }
 
   // ===== iOS风格动效组件 =====
 
@@ -391,18 +365,17 @@ class IOSAnimationSystem {
         barrierLabel: 'Dismiss',
         transitionDuration:
             _currentTheme.adjustDuration(IOSAnimationConfig.normal),
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            Material(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: 400,
-                    maxHeight: MediaQuery.of(context).size.height * 0.8,
-                  ),
-                  child: builder(context),
-                ),
+        pageBuilder: (context, animation, secondaryAnimation) => Material(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 400,
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
               ),
+              child: builder(context),
             ),
+          ),
+        ),
         transitionBuilder: (context, animation, secondaryAnimation, child) =>
             ScaleTransition(
           scale: Tween<double>(
@@ -466,27 +439,26 @@ class IOSAnimationSystem {
     VoidCallback? onLongPress,
     double actionWidth = 120.0,
     Duration animationDuration = const Duration(milliseconds: 300),
-  }) {
-    return SwipeActionItem(
-      action: action,
-      actionWidth: actionWidth,
-      child: iosListItem(
-        child: child,
-        isLast: false,
-        onTap: onTap,
-        onLongPress: onLongPress,
-      ),
-    )
-        .animate(
-          target: onTap != null ? 1.0 : 0.0,
-        )
-        .scale(
-          begin: const Offset(1.0, 1.0),
-          end: const Offset(0.98, 0.98),
-          curve: IOSAnimationSystem.getCustomCurve('swipe-delete-feedback') ?? Curves.elasticOut,
-          duration: animationDuration,
-        );
-  }
+  }) =>
+      SwipeActionItem(
+        action: action,
+        actionWidth: actionWidth,
+        child: iosListItem(
+          child: child,
+          onTap: onTap,
+          onLongPress: onLongPress,
+        ),
+      )
+          .animate(
+            target: onTap != null ? 1.0 : 0.0,
+          )
+          .scale(
+            begin: const Offset(1.0, 1.0),
+            end: const Offset(0.98, 0.98),
+            curve: IOSAnimationSystem.getCustomCurve('swipe-delete-feedback') ??
+                Curves.elasticOut,
+            duration: animationDuration,
+          );
 
   /// 搜索高亮动效
   Widget iosSearchHighlight({
@@ -494,33 +466,37 @@ class IOSAnimationSystem {
     required bool isHighlighted,
     Color highlightColor = Colors.yellow,
     Duration duration = const Duration(milliseconds: 400),
-  }) {
-    return Container(
-      child: child,
-    ).animate(
-      target: isHighlighted ? 1.0 : 0.0,
-    ).tint(
-      color: highlightColor.withOpacity(0.3),
-      curve: IOSAnimationSystem.getCustomCurve('search-highlight') ?? Curves.easeInOutCubic,
-      duration: duration,
-    );
-  }
+  }) =>
+      Container(
+        child: child,
+      )
+          .animate(
+            target: isHighlighted ? 1.0 : 0.0,
+          )
+          .tint(
+            color: highlightColor.withOpacity(0.3),
+            curve: IOSAnimationSystem.getCustomCurve('search-highlight') ??
+                Curves.easeInOutCubic,
+            duration: duration,
+          );
 
   /// 批量选择弹跳动效
   Widget iosBulkSelectBounce({
     required Widget child,
     required bool isSelected,
     Duration duration = const Duration(milliseconds: 300),
-  }) {
-    return child.animate(
-      target: isSelected ? 1.0 : 0.0,
-    ).scale(
-      begin: const Offset(1.0, 1.0),
-      end: const Offset(1.05, 1.05),
-      curve: IOSAnimationSystem.getCustomCurve('bulk-select-bounce') ?? Curves.bounceOut,
-      duration: duration,
-    );
-  }
+  }) =>
+      child
+          .animate(
+            target: isSelected ? 1.0 : 0.0,
+          )
+          .scale(
+            begin: const Offset(1.0, 1.0),
+            end: const Offset(1.05, 1.05),
+            curve: IOSAnimationSystem.getCustomCurve('bulk-select-bounce') ??
+                Curves.bounceOut,
+            duration: duration,
+          );
 
   /// 无限滚动淡入动效
   Widget iosInfiniteScrollFade({
@@ -529,16 +505,18 @@ class IOSAnimationSystem {
     double beginOpacity = 0.0,
     double endOpacity = 1.0,
     Duration duration = const Duration(milliseconds: 500),
-  }) {
-    return child.animate(
-      target: isVisible ? 1.0 : 0.0,
-    ).fade(
-      begin: beginOpacity,
-      end: endOpacity,
-      curve: IOSAnimationSystem.getCustomCurve('infinite-scroll-fade') ?? Curves.easeInOut,
-      duration: duration,
-    );
-  }
+  }) =>
+      child
+          .animate(
+            target: isVisible ? 1.0 : 0.0,
+          )
+          .fade(
+            begin: beginOpacity,
+            end: endOpacity,
+            curve: IOSAnimationSystem.getCustomCurve('infinite-scroll-fade') ??
+                Curves.easeInOut,
+            duration: duration,
+          );
 
   /// 拖拽排序弹跳反馈
   Widget iosDragSortBounce({
@@ -546,42 +524,52 @@ class IOSAnimationSystem {
     required bool isDragging,
     double elevation = 8.0,
     Duration duration = const Duration(milliseconds: 200),
-  }) {
-    return child.animate(
-      target: isDragging ? 1.0 : 0.0,
-    ).elevation(
-      begin: 2.0,
-      end: elevation,
-      curve: IOSAnimationSystem.getCustomCurve('drag-sort-bounce') ?? Curves.elasticIn,
-      duration: duration,
-    ).scale(
-      begin: const Offset(1.0, 1.0),
-      end: const Offset(1.02, 1.02),
-      curve: IOSAnimationSystem.getCustomCurve('drag-sort-bounce') ?? Curves.elasticIn,
-      duration: duration,
-    );
-  }
+  }) =>
+      child
+          .animate(
+            target: isDragging ? 1.0 : 0.0,
+          )
+          .elevation(
+            begin: 2.0,
+            end: elevation,
+            curve: IOSAnimationSystem.getCustomCurve('drag-sort-bounce') ??
+                Curves.elasticIn,
+            duration: duration,
+          )
+          .scale(
+            begin: const Offset(1.0, 1.0),
+            end: const Offset(1.02, 1.02),
+            curve: IOSAnimationSystem.getCustomCurve('drag-sort-bounce') ??
+                Curves.elasticIn,
+            duration: duration,
+          );
 
   /// 筛选展开/折叠动效
   Widget iosFilterExpandCollapse({
     required Widget child,
     required bool isExpanded,
     Duration duration = const Duration(milliseconds: 350),
-  }) {
-    return child.animate(
-      target: isExpanded ? 1.0 : 0.0,
-    ).slideY(
-      begin: -0.2,
-      end: 0.0,
-      curve: IOSAnimationSystem.getCustomCurve('filter-expand-collapse') ?? Curves.fastOutSlowIn,
-      duration: duration,
-    ).fade(
-      begin: 0.0,
-      end: 1.0,
-      curve: IOSAnimationSystem.getCustomCurve('filter-expand-collapse') ?? Curves.fastOutSlowIn,
-      duration: duration,
-    );
-  }
+  }) =>
+      child
+          .animate(
+            target: isExpanded ? 1.0 : 0.0,
+          )
+          .slideY(
+            begin: -0.2,
+            end: 0.0,
+            curve:
+                IOSAnimationSystem.getCustomCurve('filter-expand-collapse') ??
+                    Curves.fastOutSlowIn,
+            duration: duration,
+          )
+          .fade(
+            begin: 0.0,
+            end: 1.0,
+            curve:
+                IOSAnimationSystem.getCustomCurve('filter-expand-collapse') ??
+                    Curves.fastOutSlowIn,
+            duration: duration,
+          );
 }
 
 /// iOS动效主题配置

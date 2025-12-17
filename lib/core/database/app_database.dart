@@ -24,11 +24,14 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
+  /// 构造函数
   AppDatabase() : super(_openConnection());
 
+  /// 数据库schema版本
   @override
   int get schemaVersion => 1;
 
+  /// 数据库迁移策略
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
@@ -43,28 +46,35 @@ class AppDatabase extends _$AppDatabase {
   // Asset Operations
   // ============================================================================
 
+  /// 获取所有资产
   Future<List<Asset>> getAllAssets() => select(assets).get();
 
+  /// 根据ID获取资产
   Future<Asset?> getAssetById(String id) =>
       (select(assets)..where((a) => a.id.equals(id))).getSingleOrNull();
 
+  /// 插入新资产
   Future<int> insertAsset(AssetsCompanion asset) => into(assets).insert(asset);
 
+  /// 更新资产信息
   Future<bool> updateAsset(AssetsCompanion asset) =>
       update(assets).replace(asset);
 
+  /// 删除资产
   Future<int> deleteAsset(String id) =>
       (delete(assets)..where((a) => a.id.equals(id))).go();
 
-  /// Watch all assets with reactive streams
+  /// 监听所有资产变化
   Stream<List<Asset>> watchAllAssets() => select(assets).watch();
 
   // ============================================================================
   // Transaction Operations
   // ============================================================================
 
+  /// 获取所有交易记录
   Future<List<Transaction>> getAllTransactions() => select(transactions).get();
 
+  /// 获取指定账户的交易记录
   Future<List<Transaction>> getTransactionsByAccount(String accountId) =>
       (select(transactions)
             ..where(
@@ -74,12 +84,15 @@ class AppDatabase extends _$AppDatabase {
             ))
           .get();
 
+  /// 插入新交易记录
   Future<int> insertTransaction(TransactionsCompanion transaction) =>
       into(transactions).insert(transaction);
 
+  /// 更新交易记录
   Future<bool> updateTransaction(TransactionsCompanion transaction) =>
       update(transactions).replace(transaction);
 
+  /// 删除交易记录
   Future<int> deleteTransaction(String id) =>
       (delete(transactions)..where((t) => t.id.equals(id))).go();
 
@@ -87,17 +100,22 @@ class AppDatabase extends _$AppDatabase {
   // Account Operations
   // ============================================================================
 
+  /// 获取所有账户
   Future<List<Account>> getAllAccounts() => select(accounts).get();
 
+  /// 根据ID获取账户
   Future<Account?> getAccountById(String id) =>
       (select(accounts)..where((a) => a.id.equals(id))).getSingleOrNull();
 
+  /// 插入新账户
   Future<int> insertAccount(AccountsCompanion account) =>
       into(accounts).insert(account);
 
+  /// 更新账户信息
   Future<bool> updateAccount(AccountsCompanion account) =>
       update(accounts).replace(account);
 
+  /// 删除账户
   Future<int> deleteAccount(String id) =>
       (delete(accounts)..where((a) => a.id.equals(id))).go();
 
@@ -105,21 +123,27 @@ class AppDatabase extends _$AppDatabase {
   // Budget Operations
   // ============================================================================
 
+  /// 获取所有信封预算
   Future<List<EnvelopeBudget>> getAllEnvelopeBudgets() =>
       select(envelopeBudgets).get();
 
+  /// 获取所有零基预算
   Future<List<ZeroBasedBudget>> getAllZeroBasedBudgets() =>
       select(zeroBasedBudgets).get();
 
+  /// 插入信封预算
   Future<int> insertEnvelopeBudget(EnvelopeBudgetsCompanion budget) =>
       into(envelopeBudgets).insert(budget);
 
+  /// 插入零基预算
   Future<int> insertZeroBasedBudget(ZeroBasedBudgetsCompanion budget) =>
       into(zeroBasedBudgets).insert(budget);
 
+  /// 删除信封预算
   Future<int> deleteEnvelopeBudget(String id) =>
       (delete(envelopeBudgets)..where((b) => b.id.equals(id))).go();
 
+  /// 删除零基预算
   Future<int> deleteZeroBasedBudget(String id) =>
       (delete(zeroBasedBudgets)..where((b) => b.id.equals(id))).go();
 
@@ -127,18 +151,23 @@ class AppDatabase extends _$AppDatabase {
   // Salary Income Operations
   // ============================================================================
 
+  /// 获取所有薪资收入
   Future<List<SalaryIncome>> getAllSalaryIncomes() =>
       select(salaryIncomes).get();
 
+  /// 根据ID获取薪资收入
   Future<SalaryIncome?> getSalaryIncomeById(String id) =>
       (select(salaryIncomes)..where((s) => s.id.equals(id))).getSingleOrNull();
 
+  /// 插入薪资收入
   Future<int> insertSalaryIncome(SalaryIncomesCompanion salary) =>
       into(salaryIncomes).insert(salary);
 
+  /// 更新薪资收入
   Future<bool> updateSalaryIncome(SalaryIncomesCompanion salary) =>
       update(salaryIncomes).replace(salary);
 
+  /// 删除薪资收入
   Future<int> deleteSalaryIncome(String id) =>
       (delete(salaryIncomes)..where((s) => s.id.equals(id))).go();
 
@@ -146,15 +175,19 @@ class AppDatabase extends _$AppDatabase {
   // History Operations
   // ============================================================================
 
+  /// 获取指定资产的历史记录
   Future<List<AssetHistory>> getAssetHistoryByAsset(String assetId) =>
       (select(assetHistories)..where((h) => h.assetId.equals(assetId))).get();
 
+  /// 获取所有资产历史记录
   Future<List<AssetHistory>> getAllAssetHistory() =>
       select(assetHistories).get();
 
+  /// 插入资产历史记录
   Future<int> insertAssetHistory(AssetHistoriesCompanion history) =>
       into(assetHistories).insert(history);
 
+  /// 删除指定资产的所有历史记录
   Future<int> deleteAssetHistoryByAsset(String assetId) =>
       (delete(assetHistories)..where((h) => h.assetId.equals(assetId))).go();
 
@@ -162,13 +195,17 @@ class AppDatabase extends _$AppDatabase {
   // Plan Operations
   // ============================================================================
 
+  /// 获取所有支出计划
   Future<List<ExpensePlan>> getAllExpensePlans() => select(expensePlans).get();
 
+  /// 获取所有收入计划
   Future<List<IncomePlan>> getAllIncomePlans() => select(incomePlans).get();
 
+  /// 插入支出计划
   Future<int> insertExpensePlan(ExpensePlansCompanion plan) =>
       into(expensePlans).insert(plan);
 
+  /// 插入收入计划
   Future<int> insertIncomePlan(IncomePlansCompanion plan) =>
       into(incomePlans).insert(plan);
 

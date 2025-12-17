@@ -502,8 +502,9 @@ class BonusTaxCalculator {
     double specialDeductionMonthly,
     double otherTaxFreeMonthly,
   ) {
-    Logger.debug('🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount');
-    
+    Logger.debug(
+        '🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount');
+
     switch (bonus.type) {
       case BonusType.yearEndBonus:
         // 年终奖：单独按年终奖税率计算
@@ -524,7 +525,7 @@ class BonusTaxCalculator {
         final tax = monthlyTax * 12; // 乘回12个月
         Logger.debug('  十三薪/回奖金税费: 月税费=$monthlyTax, 年税费=$tax');
         return tax;
-        
+
       case BonusType.quarterlyBonus:
         // 季度奖金：按季度发放月份计算税费
         // 季度奖金应该在发放月份与工资合并计税，这里简化处理为按月均分计算
@@ -552,8 +553,6 @@ class BonusTaxCalculator {
         Logger.debug('  其他奖金税费: 月税费=$monthlyTax, 年税费=$tax');
         return tax;
     }
-
-    return 0;
   }
 
   /// 计算一次性奖金税费
@@ -570,17 +569,18 @@ class BonusTaxCalculator {
     double specialDeductionMonthly,
     double otherTaxFreeMonthly,
   ) {
-    Logger.debug('🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly');
+    Logger.debug(
+        '🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly');
     final totalMonthlyIncome = monthlyBaseIncome + monthlyBonusAmount;
     Logger.debug('  总月收入: $totalMonthlyIncome');
-    
+
     final tax = PersonalIncomeTaxService.calculateMonthlyTax(
       totalMonthlyIncome,
       monthlyDeductions,
       0, // 假设没有前期预扣税款
       0, // 当月
     );
-    
+
     Logger.debug('  月税费: $tax');
     return tax;
   }

@@ -42,7 +42,7 @@ class FlowDashboardProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  StreamSubscription? _analyticsSubscription;
+  StreamSubscription<dynamic>? _analyticsSubscription;
 
   Future<void> initialize() async {
     await loadDashboard();
@@ -246,7 +246,7 @@ class FlowInsightsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  StreamSubscription? _insightsSubscription;
+  StreamSubscription<dynamic>? _insightsSubscription;
 
   Future<void> initialize() async {
     await loadInsights();
@@ -278,44 +278,12 @@ class FlowInsightsProvider extends ChangeNotifier {
   }
 
   Future<void> markInsightAsRead(String insightId) async {
-    final insight = _insights.firstWhere((i) => i.id == insightId);
-    final updatedInsight = flux_models.FlowInsight(
-      id: insight.id,
-      userId: insight.userId,
-      type: insight.type,
-      title: insight.title,
-      description: insight.description,
-      severity: insight.severity,
-      data: insight.data,
-      relatedFlowIds: insight.relatedFlowIds,
-      generatedAt: insight.generatedAt,
-      expiresAt: insight.expiresAt,
-      isRead: true,
-      isActioned: insight.isActioned,
-    );
-
-    // TODO: 更新洞察状态
+    // TODO: 更新洞察状态 - insightId: $insightId
     await loadInsights();
   }
 
   Future<void> markInsightAsActioned(String insightId) async {
-    final insight = _insights.firstWhere((i) => i.id == insightId);
-    final updatedInsight = flux_models.FlowInsight(
-      id: insight.id,
-      userId: insight.userId,
-      type: insight.type,
-      title: insight.title,
-      description: insight.description,
-      severity: insight.severity,
-      data: insight.data,
-      relatedFlowIds: insight.relatedFlowIds,
-      generatedAt: insight.generatedAt,
-      expiresAt: insight.expiresAt,
-      isRead: insight.isRead,
-      isActioned: true,
-    );
-
-    // TODO: 更新洞察状态
+    // TODO: 更新洞察状态 - insightId: $insightId
     await loadInsights();
   }
 
@@ -336,7 +304,7 @@ class FlowAnalyticsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  StreamSubscription? _analyticsSubscription;
+  StreamSubscription<dynamic>? _analyticsSubscription;
 
   Future<void> initialize() async {
     await loadAnalytics();
@@ -602,7 +570,8 @@ final aiConfigServiceProvider = FutureProvider<AiConfigService>((ref) async {
 });
 
 /// Analysis data source provider - fixed to Serverless AI
-final analysisDataSourceProvider = FutureProvider<AnalysisDataSource>((ref) async {
+final analysisDataSourceProvider =
+    FutureProvider<AnalysisDataSource>((ref) async {
   final aiFactory = ref.watch(aiServiceFactoryProvider);
   final aiConfigService = await ref.watch(aiConfigServiceProvider.future);
   return ServerlessAiDataSource(aiFactory, aiConfigService);

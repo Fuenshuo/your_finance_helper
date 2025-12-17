@@ -23,11 +23,14 @@ class HealthAnalysisService {
     final survivalSpending = categorized['survival'] as double;
     final lifestyleSpending = categorized['lifestyle'] as double;
 
-    final survivalPercentage = totalSpending > 0 ? survivalSpending / totalSpending : 0.0;
-    final lifestylePercentage = totalSpending > 0 ? lifestyleSpending / totalSpending : 0.0;
+    final survivalPercentage =
+        totalSpending > 0 ? survivalSpending / totalSpending : 0.0;
+    final lifestylePercentage =
+        totalSpending > 0 ? lifestyleSpending / totalSpending : 0.0;
 
     // Determine spending pattern
-    final pattern = _determineSpendingPattern(survivalPercentage, lifestylePercentage);
+    final pattern =
+        _determineSpendingPattern(survivalPercentage, lifestylePercentage);
 
     return {
       'survivalSpending': survivalSpending,
@@ -35,7 +38,8 @@ class HealthAnalysisService {
       'survivalPercentage': survivalPercentage,
       'lifestylePercentage': lifestylePercentage,
       'pattern': pattern,
-      'analysis': _generatePatternAnalysis(pattern, survivalPercentage, lifestylePercentage),
+      'analysis': _generatePatternAnalysis(
+          pattern, survivalPercentage, lifestylePercentage),
       'categories': categorized['categories'],
     };
   }
@@ -58,7 +62,8 @@ class HealthAnalysisService {
     final pattern = breakdown['pattern'] as String;
 
     // Calculate base metrics
-    final savingsRate = totalIncome > 0 ? (totalIncome - totalSpending) / totalIncome : 0.0;
+    final savingsRate =
+        totalIncome > 0 ? (totalIncome - totalSpending) / totalIncome : 0.0;
     final spendingRatio = totalIncome > 0 ? totalSpending / totalIncome : 0.0;
 
     // Calculate health score (0-100)
@@ -108,25 +113,42 @@ class HealthAnalysisService {
     );
   }
 
-  Map<String, dynamic> _categorizeTransactions(List<Map<String, dynamic>> transactions) {
+  Map<String, dynamic> _categorizeTransactions(
+      List<Map<String, dynamic>> transactions) {
     double survivalSpending = 0.0;
     double lifestyleSpending = 0.0;
     final categories = <String, Map<String, dynamic>>{};
 
     // Define survival vs lifestyle categories
     const survivalCategories = [
-      '住房', '房租', '物业费', '水电', '燃气', '暖气',
-      '交通', '公交', '地铁', '打车', '加油',
-      '通讯', '电话费', '网费',
-      '医疗', '药品', '保险',
-      '教育', '学费', '书本',
+      '住房',
+      '房租',
+      '物业费',
+      '水电',
+      '燃气',
+      '暖气',
+      '交通',
+      '公交',
+      '地铁',
+      '打车',
+      '加油',
+      '通讯',
+      '电话费',
+      '网费',
+      '医疗',
+      '药品',
+      '保险',
+      '教育',
+      '学费',
+      '书本',
     ];
 
     for (final transaction in transactions) {
       final category = transaction['category'] as String;
       final amount = transaction['amount'] as double;
 
-      if (survivalCategories.contains(category) || survivalCategories.any((c) => category.contains(c))) {
+      if (survivalCategories.contains(category) ||
+          survivalCategories.any((c) => category.contains(c))) {
         survivalSpending += amount;
         categories[category] = {
           'amount': (categories[category]?['amount'] ?? 0.0) + amount,
@@ -148,7 +170,8 @@ class HealthAnalysisService {
     };
   }
 
-  String _determineSpendingPattern(double survivalPercent, double lifestylePercent) {
+  String _determineSpendingPattern(
+      double survivalPercent, double lifestylePercent) {
     if (survivalPercent > 0.75) return 'survival_heavy';
     if (lifestylePercent > 0.75) return 'lifestyle_heavy';
     if ((survivalPercent - lifestylePercent).abs() < 0.1) {
@@ -158,7 +181,8 @@ class HealthAnalysisService {
     return 'lifestyle_leaning';
   }
 
-  String _generatePatternAnalysis(String pattern, double survivalPercent, double lifestylePercent) {
+  String _generatePatternAnalysis(
+      String pattern, double survivalPercent, double lifestylePercent) {
     switch (pattern) {
       case 'survival_heavy':
         return '生存支出占比过高 (${(survivalPercent * 100).round()}%)，建议优化生活支出比例。';
@@ -188,16 +212,24 @@ class HealthAnalysisService {
     if (totalIncome == 0) {
       score = 0; // No income = 0 score
     } else {
-      if (savingsRate >= 0.2) score += 25; // Good savings
-      else if (savingsRate >= 0.1) score += 15; // Decent savings
-      else if (savingsRate >= 0) score += 5; // Some savings
-      else score -= (savingsRate.abs() * 100).clamp(0, 50); // Overspending penalty
+      if (savingsRate >= 0.2)
+        score += 25; // Good savings
+      else if (savingsRate >= 0.1)
+        score += 15; // Decent savings
+      else if (savingsRate >= 0)
+        score += 5; // Some savings
+      else
+        score -= (savingsRate.abs() * 100).clamp(0, 50); // Overspending penalty
     }
 
     // Spending ratio impact
-    if (spendingRatio <= 0.8) score += 15; // Under 80% of income
-    else if (spendingRatio <= 1.0) score += 5; // Under 100% of income
-    else score -= ((spendingRatio - 1.0) * 20).clamp(0, 20); // Overspending penalty
+    if (spendingRatio <= 0.8)
+      score += 15; // Under 80% of income
+    else if (spendingRatio <= 1.0)
+      score += 5; // Under 100% of income
+    else
+      score -=
+          ((spendingRatio - 1.0) * 20).clamp(0, 20); // Overspending penalty
 
     // Pattern impact
     switch (pattern) {
@@ -285,7 +317,8 @@ class HealthAnalysisService {
     return factors;
   }
 
-  String _generateDiagnosis(double score, String pattern, List<HealthFactor> factors) {
+  String _generateDiagnosis(
+      double score, String pattern, List<HealthFactor> factors) {
     final grade = _calculateGrade(score);
 
     switch (grade) {
@@ -302,7 +335,8 @@ class HealthAnalysisService {
     }
   }
 
-  List<String> _generateRecommendations(double score, String pattern, List<HealthFactor> factors) {
+  List<String> _generateRecommendations(
+      double score, String pattern, List<HealthFactor> factors) {
     final recommendations = <String>[];
 
     if (score < 60) {

@@ -22,9 +22,8 @@ class InsightBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = AppDesignTokens.surface(context);
-    final shadowColor = Colors.black.withOpacity(0.1);
+    final shadowColor = Colors.black.withValues(alpha: 0.1);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -110,7 +109,8 @@ class InsightBubble extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getSeverityColor(context).withValues(alpha: 0.1),
+                            color: _getSeverityColor(context)
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -176,7 +176,8 @@ class InsightBubble extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: _getSeverityColor(context).withValues(alpha: (1 - value) * 0.5),
+                          color: _getSeverityColor(context)
+                              .withValues(alpha: (1 - value) * 0.5),
                           width: 2 * (1 - value),
                         ),
                       ),
@@ -243,12 +244,14 @@ class InsightBubbleOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: anomalies.map((anomaly) {
-        final dayIndex = anomaly.anomalyDate.difference(anomaly.weekStart).inDays;
+        final dayIndex =
+            anomaly.anomalyDate.difference(anomaly.weekStart).inDays;
         final targetPosition = dayToPosition(dayIndex);
 
         // Position bubble above the target point
         final bubblePosition = Offset(
-          (targetPosition.dx - 140).clamp(10, chartSize.width - 290), // Center horizontally with margins
+          (targetPosition.dx - 140).clamp(
+              10, chartSize.width - 290), // Center horizontally with margins
           targetPosition.dy - 120, // Above the point
         );
 

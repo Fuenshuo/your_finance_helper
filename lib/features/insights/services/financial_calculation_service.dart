@@ -25,11 +25,13 @@ class FinancialCalculationService {
   Future<void> saveTrendData(List<TrendData> trendData) async {
     await _initPrefs();
     try {
-      final jsonList = trendData.map((data) => {
-        'date': data.date.toIso8601String(),
-        'amount': data.amount,
-        'dayLabel': data.dayLabel,
-      }).toList();
+      final jsonList = trendData
+          .map((data) => {
+                'date': data.date.toIso8601String(),
+                'amount': data.amount,
+                'dayLabel': data.dayLabel,
+              })
+          .toList();
       final jsonString = jsonEncode(jsonList);
       await _prefs!.setString(_trendDataKey, jsonString);
     } catch (e) {
@@ -96,25 +98,25 @@ class FinancialCalculationService {
 
   /// Calculate financial health score based on spending allocation data
   Future<HealthScore> calculateHealthScore(AllocationData data) async {
-    PerformanceMonitor.startOperation('FinancialCalculationService.calculateHealthScore');
+    PerformanceMonitor.startOperation(
+        'FinancialCalculationService.calculateHealthScore');
     try {
       if (!data.isValid) {
         PerformanceMonitor.logError(
-          'Invalid allocation data: amounts cannot be negative',
-          'FinancialCalculationService.calculateHealthScore'
-        );
-        throw ArgumentError('Invalid allocation data: amounts cannot be negative');
+            'Invalid allocation data: amounts cannot be negative',
+            'FinancialCalculationService.calculateHealthScore');
+        throw ArgumentError(
+            'Invalid allocation data: amounts cannot be negative');
       }
 
       final healthScore = HealthScore.calculate(data);
-      PerformanceMonitor.endOperation('FinancialCalculationService.calculateHealthScore');
+      PerformanceMonitor.endOperation(
+          'FinancialCalculationService.calculateHealthScore');
 
       return healthScore;
     } catch (e) {
       PerformanceMonitor.logError(
-        e.toString(),
-        'FinancialCalculationService.calculateHealthScore'
-      );
+          e.toString(), 'FinancialCalculationService.calculateHealthScore');
       rethrow;
     }
   }
@@ -134,7 +136,8 @@ class FinancialCalculationService {
       };
 
       final duration = DateTime.now().difference(startTime);
-      print('[FinancialCalculationService.calculateBudgetProgress] ⏱️ 执行时间: ${duration.inMilliseconds}ms');
+      print(
+          '[FinancialCalculationService.calculateBudgetProgress] ⏱️ 执行时间: ${duration.inMilliseconds}ms');
 
       return result;
     } catch (e) {
@@ -158,7 +161,8 @@ class FinancialCalculationService {
       }
 
       final duration = DateTime.now().difference(startTime);
-      print('[FinancialCalculationService.validateTrendData] ⏱️ 执行时间: ${duration.inMilliseconds}ms');
+      print(
+          '[FinancialCalculationService.validateTrendData] ⏱️ 执行时间: ${duration.inMilliseconds}ms');
 
       return validatedData;
     } catch (e) {

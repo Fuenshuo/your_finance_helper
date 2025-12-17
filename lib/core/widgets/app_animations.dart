@@ -1055,23 +1055,23 @@ class AppAnimations {
   // ===== 导航和页面转场动画 =====
 
   /// 创建滑动页面转场路由
-  static PageRouteBuilder createSlideRoute(Widget page) =>
+  static PageRouteBuilder<dynamic> createSlideRoute(Widget page) =>
       _AnimatedSlideTransition(page: page);
 
   /// 创建渐变页面转场路由
-  static PageRouteBuilder createFadeRoute(Widget page) =>
+  static PageRouteBuilder<dynamic> createFadeRoute(Widget page) =>
       _AnimatedFadeTransition(page: page);
 
   /// 创建展开页面转场路由
-  static PageRouteBuilder createScaleRoute(Widget page) =>
+  static PageRouteBuilder<dynamic> createScaleRoute(Widget page) =>
       _AnimatedScaleTransition(page: page);
 
   /// 创建旋转页面转场路由
-  static PageRouteBuilder createRotationRoute(Widget page) =>
+  static PageRouteBuilder<dynamic> createRotationRoute(Widget page) =>
       _AnimatedRotationTransition(page: page);
 
   /// 创建底部滑入页面转场路由
-  static PageRouteBuilder createBottomSlideRoute(Widget page) =>
+  static PageRouteBuilder<dynamic> createBottomSlideRoute(Widget page) =>
       _AnimatedBottomSlideTransition(page: page);
 
   /// 标签页切换动画
@@ -2048,6 +2048,7 @@ class _AnimatedGradientNumber extends StatefulWidget {
 class _AnimatedGradientNumberState extends State<_AnimatedGradientNumber>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  // ignore: unused_field
   late Animation<double> _numberAnimation;
   late Animation<double> _opacityAnimation;
   double _previousValue = 0.0;
@@ -2161,7 +2162,6 @@ class _AnimatedLoadingIndicator extends StatefulWidget {
 class _AnimatedLoadingIndicatorState extends State<_AnimatedLoadingIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
 
   @override
@@ -2171,16 +2171,6 @@ class _AnimatedLoadingIndicatorState extends State<_AnimatedLoadingIndicator>
       duration: widget.duration,
       vsync: this,
     )..repeat();
-
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 2 * 3.14159,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.linear,
-      ),
-    );
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
@@ -4935,7 +4925,7 @@ class _GridPainter extends CustomPainter {
 // ===== 导航和页面转场动画 =====
 
 /// 滑动页面转场
-class _AnimatedSlideTransition extends PageRouteBuilder {
+class _AnimatedSlideTransition extends PageRouteBuilder<dynamic> {
   _AnimatedSlideTransition({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -4959,7 +4949,7 @@ class _AnimatedSlideTransition extends PageRouteBuilder {
 }
 
 /// 渐变页面转场
-class _AnimatedFadeTransition extends PageRouteBuilder {
+class _AnimatedFadeTransition extends PageRouteBuilder<dynamic> {
   _AnimatedFadeTransition({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -4974,7 +4964,7 @@ class _AnimatedFadeTransition extends PageRouteBuilder {
 }
 
 /// 展开页面转场
-class _AnimatedScaleTransition extends PageRouteBuilder {
+class _AnimatedScaleTransition extends PageRouteBuilder<dynamic> {
   _AnimatedScaleTransition({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -5000,7 +4990,7 @@ class _AnimatedScaleTransition extends PageRouteBuilder {
 }
 
 /// 旋转页面转场
-class _AnimatedRotationTransition extends PageRouteBuilder {
+class _AnimatedRotationTransition extends PageRouteBuilder<dynamic> {
   _AnimatedRotationTransition({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -5037,7 +5027,7 @@ class _AnimatedRotationTransition extends PageRouteBuilder {
 }
 
 /// 底部滑入页面转场
-class _AnimatedBottomSlideTransition extends PageRouteBuilder {
+class _AnimatedBottomSlideTransition extends PageRouteBuilder<dynamic> {
   _AnimatedBottomSlideTransition({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -5192,7 +5182,6 @@ class _AnimatedDrawerTransitionState extends State<_AnimatedDrawerTransition>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -5233,16 +5222,6 @@ class _AnimatedDrawerTransitionState extends State<_AnimatedDrawerTransition>
       CurvedAnimation(
         parent: _controller,
         curve: Curves.easeOutCubic,
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOut,
       ),
     );
   }
@@ -5310,6 +5289,7 @@ class _AnimatedBottomNavigationState extends State<_AnimatedBottomNavigation>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<Color?> _colorAnimation;
+  // ignore: unused_field
   int _previousIndex = 0;
 
   @override
@@ -7451,7 +7431,6 @@ class _AnimatedNumberFormatState extends State<_AnimatedNumberFormat>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  String _previousFormatted = '';
   String _currentFormatted = '';
 
   @override
@@ -7479,7 +7458,6 @@ class _AnimatedNumberFormatState extends State<_AnimatedNumberFormat>
   void didUpdateWidget(_AnimatedNumberFormat oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
-      _previousFormatted = _currentFormatted;
       _updateFormattedValue();
       _controller.forward(from: 0.0);
     }
@@ -8573,7 +8551,6 @@ class _AnimatedBadgeState extends State<_AnimatedBadge>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  int _previousCount = 0;
 
   @override
   void initState() {
@@ -8592,8 +8569,6 @@ class _AnimatedBadgeState extends State<_AnimatedBadge>
         curve: Curves.elasticOut,
       ),
     );
-
-    _previousCount = widget.count;
   }
 
   @override
@@ -8601,7 +8576,6 @@ class _AnimatedBadgeState extends State<_AnimatedBadge>
     super.didUpdateWidget(oldWidget);
     if (widget.count != oldWidget.count) {
       _controller.forward(from: 0.0);
-      _previousCount = widget.count;
     }
   }
 

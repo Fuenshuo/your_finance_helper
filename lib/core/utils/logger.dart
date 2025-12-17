@@ -21,7 +21,6 @@ class Logger {
   static LogLevel _currentLevel = LogLevel.info;
   static bool _fileLoggingEnabled = false;
   static File? _logFile;
-  static const int _maxLogLines = 1000;
   static final List<String> _logBuffer = [];
 
   /// 初始化日志系统
@@ -205,7 +204,7 @@ class Log {
   }
 
   /// 数据操作日志
-  static void data(String operation, String dataType, [details]) {
+  static void data(String operation, String dataType, [dynamic details]) {
     final detailsStr =
         details is Map ? jsonEncode(details) : details?.toString() ?? '';
     final message =
@@ -256,7 +255,7 @@ mixin LoggingMixin {
   }
 
   /// 记录方法结束
-  void logMethodEnd(String methodName, [result]) {
+  void logMethodEnd(String methodName, [dynamic result]) {
     final resultStr = result != null ? ' -> $result' : '';
     Log.method(logTag, '$methodName completed$resultStr');
   }
@@ -267,7 +266,7 @@ mixin LoggingMixin {
   }
 
   /// 记录数据变更
-  void logDataChange(String operation, String dataType, [details]) {
+  void logDataChange(String operation, String dataType, [dynamic details]) {
     Log.data(operation, dataType, details?.toString());
   }
 }

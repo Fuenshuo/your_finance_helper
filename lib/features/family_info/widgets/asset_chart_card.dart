@@ -78,7 +78,6 @@ class AssetChartCard extends StatelessWidget {
                     child: PieChart(
                       PieChartData(
                         sections: chartData.asMap().entries.map((entry) {
-                          final index = entry.key;
                           final data = entry.value;
                           return PieChartSectionData(
                             color: _getCategoryColor(data.category),

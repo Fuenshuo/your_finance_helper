@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/services/logging_service.dart';
@@ -50,12 +49,15 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
   @override
   Widget build(BuildContext context) {
     // 计算月收入中除年终奖外的部分
-    final monthlyIncomeWithoutBonus = widget.monthlyIncome - widget.yearEndBonusAmount;
-    final monthlyTaxableIncome =
-        monthlyIncomeWithoutBonus - widget.monthlyDeductions - 5000 - widget.otherTaxDeductions;
+    final monthlyIncomeWithoutBonus =
+        widget.monthlyIncome - widget.yearEndBonusAmount;
+    final monthlyTaxableIncome = monthlyIncomeWithoutBonus -
+        widget.monthlyDeductions -
+        5000 -
+        widget.otherTaxDeductions;
     // 使用累计应纳税所得额确定税率阶梯，符合年度累积预扣法
-    final taxBracket =
-        PersonalIncomeTaxService.getApplicableTaxBracket(widget.cumulativeTaxableIncome);
+    final taxBracket = PersonalIncomeTaxService.getApplicableTaxBracket(
+        widget.cumulativeTaxableIncome);
     final taxRate = taxBracket.rate;
     final quickDeduction = taxBracket.deduction;
     final annualTax = widget.cumulativeTaxableIncome * taxRate - quickDeduction;
@@ -65,10 +67,10 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
+            color: Colors.grey.withValues(alpha: 0.05),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -83,7 +85,7 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
             child: Container(
               padding: EdgeInsets.all(context.spacing12),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.03),
+                color: Colors.grey.withValues(alpha: 0.03),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(6),
                   topRight: Radius.circular(6),
@@ -179,17 +181,19 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
                     monthlyTaxableIncome > 0 ? Colors.green : Colors.grey,
                     '当月应纳税所得额 = 月收入(不含年终奖) - 基础减除 - 五险一金 - 专项扣除 - 其他税收扣除',
                   ),
-                  
+
                   const Divider(height: 20, color: Colors.grey),
 
                   // 累计计算
                   _buildTaxCalculationStep(
                     '7. 累计应纳税所得额',
                     '¥${widget.cumulativeTaxableIncome.toStringAsFixed(0)}',
-                    widget.cumulativeTaxableIncome > 0 ? Colors.blue : Colors.grey,
+                    widget.cumulativeTaxableIncome > 0
+                        ? Colors.blue
+                        : Colors.grey,
                     '累计应纳税所得额 = 之前累计 + 当月应纳税所得额（不含年终奖）',
                   ),
-                  
+
                   const Divider(height: 20, color: Colors.grey),
 
                   // 税率和速算扣除数（基于累计应纳税所得额）
@@ -212,9 +216,10 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
                   Container(
                     padding: EdgeInsets.all(context.spacing12),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.05),
+                      color: Colors.red.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.red.withOpacity(0.2)),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.2)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,9 +336,9 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
         margin: EdgeInsets.only(bottom: context.spacing8),
         padding: EdgeInsets.all(context.spacing8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -569,13 +574,13 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                   if (widget.otherTaxDeductions > 0) ...[
                     ExpandableCalculationItem(
                       title: '其他税收扣除',
-                      amount: '¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
+                      amount:
+                          '¥${widget.otherTaxDeductions.toStringAsFixed(0)}',
                       amountColor: Colors.brown,
                       icon: Icons.receipt_long,
                       monthlyDetails:
                           _generateOtherTaxDeductionsMonthlyDetails(),
-                      calculationFormula:
-                          '其他税收扣除 = 其他可扣除项目',
+                      calculationFormula: '其他税收扣除 = 其他可扣除项目',
                     ),
                     SizedBox(height: context.spacing12),
                   ],
@@ -584,9 +589,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                   Container(
                     padding: EdgeInsets.all(context.spacing16),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.05),
+                      color: Colors.red.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withOpacity(0.2)),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.2)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -667,9 +673,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                 Container(
                   padding: EdgeInsets.all(context.spacing12),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withOpacity(0.1),
+                    color: Colors.purple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                    border:
+                        Border.all(color: Colors.purple.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -777,7 +784,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
                       Container(
                         padding: EdgeInsets.all(context.spacing8),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -844,8 +851,8 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       }
 
       // 津贴收入（考虑月度津贴变化）
-      final allowanceRecord = widget.monthlyAllowances != null && 
-                               widget.monthlyAllowances!.containsKey(month)
+      final allowanceRecord = widget.monthlyAllowances != null &&
+              widget.monthlyAllowances!.containsKey(month)
           ? widget.monthlyAllowances![month]!
           : AllowanceRecord(
               housingAllowance: widget.housingAllowance,
@@ -1139,10 +1146,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
     for (var month = 1; month <= 12; month++) {
       // 计算当月收入和扣除（不包括年终奖）
       final baseIncome = widget.basicSalary;
-      
+
       // 津贴收入（考虑月度津贴变化）
-      final allowanceRecord = widget.monthlyAllowances != null && 
-                               widget.monthlyAllowances!.containsKey(month)
+      final allowanceRecord = widget.monthlyAllowances != null &&
+              widget.monthlyAllowances!.containsKey(month)
           ? widget.monthlyAllowances![month]!
           : AllowanceRecord(
               housingAllowance: widget.housingAllowance,
@@ -1150,7 +1157,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
               transportationAllowance: widget.transportationAllowance,
               otherAllowance: widget.otherAllowance,
             );
-      
+
       final allowanceIncome = allowanceRecord.housingAllowance +
           allowanceRecord.mealAllowance +
           allowanceRecord.transportationAllowance +
@@ -1179,7 +1186,6 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       );
 
       // 累积当月应纳税所得额（不包括年终奖）
-      final previousCumulativeTaxableIncome = cumulativeTaxableIncome;
       cumulativeTaxableIncome += monthlyTaxableIncome;
 
       // 计算年度累积应纳税额
@@ -1202,7 +1208,8 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
           if (monthlyBonus > 0) {
             yearEndBonusAmount = monthlyBonus;
             // 年终奖单独计税
-            yearEndBonusTax = PersonalIncomeTaxService.calculateYearEndBonusTax(yearEndBonusAmount);
+            yearEndBonusTax = PersonalIncomeTaxService.calculateYearEndBonusTax(
+                yearEndBonusAmount);
             break;
           }
         }
@@ -1214,9 +1221,11 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
           monthlyDeductions: monthlyDeductions,
           specialDeductionMonthly: widget.otherDeductions,
           otherTaxDeductions: widget.otherTaxDeductions, // 其他税收扣除
-          monthlyTax: (monthlyTax > 0 ? monthlyTax : 0) + yearEndBonusTax, // 总税额包括年终奖税
+          monthlyTax:
+              (monthlyTax > 0 ? monthlyTax : 0) + yearEndBonusTax, // 总税额包括年终奖税
           month: '$month月',
-          cumulativeTaxableIncome: cumulativeTaxableIncome, // 传递累计应纳税所得额（不包括年终奖）
+          cumulativeTaxableIncome:
+              cumulativeTaxableIncome, // 传递累计应纳税所得额（不包括年终奖）
           cumulativeTax: previousCumulativeTax, // 传递累计已预扣税款（计算当月税额前的值，不包括年终奖）
           yearEndBonusAmount: yearEndBonusAmount, // 年终奖金额
           yearEndBonusTax: yearEndBonusTax, // 年终奖税额
@@ -1293,10 +1302,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
 
       // 计算当月收入用于个税计算
       final baseIncome = widget.basicSalary;
-      
+
       // 津贴收入（考虑月度津贴变化）
-      final allowanceRecord = widget.monthlyAllowances != null && 
-                               widget.monthlyAllowances!.containsKey(month)
+      final allowanceRecord = widget.monthlyAllowances != null &&
+              widget.monthlyAllowances!.containsKey(month)
           ? widget.monthlyAllowances![month]!
           : AllowanceRecord(
               housingAllowance: widget.housingAllowance,
@@ -1304,7 +1313,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
               transportationAllowance: widget.transportationAllowance,
               otherAllowance: widget.otherAllowance,
             );
-      
+
       final allowanceIncome = allowanceRecord.housingAllowance +
           allowanceRecord.mealAllowance +
           allowanceRecord.transportationAllowance +
@@ -1392,10 +1401,10 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
 
       // 计算收入部分
       final baseIncome = widget.basicSalary;
-      
+
       // 津贴收入（考虑月度津贴变化）
-      final allowanceRecord = widget.monthlyAllowances != null && 
-                               widget.monthlyAllowances!.containsKey(month)
+      final allowanceRecord = widget.monthlyAllowances != null &&
+              widget.monthlyAllowances!.containsKey(month)
           ? widget.monthlyAllowances![month]!
           : AllowanceRecord(
               housingAllowance: widget.housingAllowance,
@@ -1403,7 +1412,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
               transportationAllowance: widget.transportationAllowance,
               otherAllowance: widget.otherAllowance,
             );
-      
+
       final allowanceIncome = allowanceRecord.housingAllowance +
           allowanceRecord.mealAllowance +
           allowanceRecord.transportationAllowance +
@@ -1797,7 +1806,7 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
             child: Container(
               padding: EdgeInsets.all(context.spacing8),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Column(
@@ -1896,8 +1905,8 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
       }
 
       // 津贴收入（考虑月度津贴变化）
-      final allowanceRecord = widget.monthlyAllowances != null && 
-                               widget.monthlyAllowances!.containsKey(month)
+      final allowanceRecord = widget.monthlyAllowances != null &&
+              widget.monthlyAllowances!.containsKey(month)
           ? widget.monthlyAllowances![month]!
           : AllowanceRecord(
               housingAllowance: widget.housingAllowance,

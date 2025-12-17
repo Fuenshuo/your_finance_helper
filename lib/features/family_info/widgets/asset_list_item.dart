@@ -5,7 +5,6 @@ import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
 import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 class AssetListItem extends StatefulWidget {
@@ -108,8 +107,8 @@ class _AssetListItemState extends State<AssetListItem>
                             height: 48,
                             decoration: BoxDecoration(
                               color: _getCategoryColor(widget.asset.category)
-                                  .withOpacity(
-                                _isHovered ? 0.15 : 0.1,
+                                  .withValues(
+                                alpha: _isHovered ? 0.15 : 0.1,
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -160,8 +159,8 @@ class _AssetListItemState extends State<AssetListItem>
                                       decoration: BoxDecoration(
                                         color: _getCategoryColor(
                                           widget.asset.category,
-                                        ).withOpacity(
-                                          _isHovered ? 0.2 : 0.1,
+                                        ).withValues(
+                                          alpha: _isHovered ? 0.2 : 0.1,
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -192,11 +191,11 @@ class _AssetListItemState extends State<AssetListItem>
                                     ),
                                     decoration: BoxDecoration(
                                       color: context.secondaryText
-                                          .withOpacity(0.05),
+                                          .withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
                                         color: context.secondaryText
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                       ),
                                     ),
                                     child: Row(
@@ -310,7 +309,8 @@ class _AssetListItemState extends State<AssetListItem>
                                   EdgeInsets.all(context.responsiveSpacing4),
                               decoration: BoxDecoration(
                                 color: _isHovered
-                                    ? context.primaryAction.withOpacity(0.1)
+                                    ? context.primaryAction
+                                        .withValues(alpha: 0.1)
                                     : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -447,10 +447,10 @@ class _AssetListItemState extends State<AssetListItem>
             vertical: 2,
           ),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.1),
+            color: Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: Colors.orange.withOpacity(0.3),
+              color: Colors.orange.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -491,10 +491,10 @@ class _AssetListItemState extends State<AssetListItem>
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: Colors.blue.withOpacity(0.3),
+                color: Colors.blue.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -529,10 +529,10 @@ class _AssetListItemState extends State<AssetListItem>
             vertical: 2,
           ),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: Colors.green.withOpacity(0.3),
+              color: Colors.green.withValues(alpha: 0.3),
             ),
           ),
           child: Row(

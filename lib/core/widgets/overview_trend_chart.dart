@@ -20,10 +20,10 @@ class OverviewTrendChart extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: EdgeInsets.all(context.responsiveSpacing12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
         ),
         child: Column(

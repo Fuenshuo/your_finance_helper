@@ -111,19 +111,19 @@ class _EnhancedFloatingActionButtonState
               boxShadow: [
                 // 主阴影
                 BoxShadow(
-                  color: backgroundColor.withOpacity(0.3),
+                  color: backgroundColor.withValues(alpha: 0.3),
                   blurRadius: 16,
                   offset: const Offset(0, 8),
                 ),
                 // 光晕效果
                 BoxShadow(
-                  color: backgroundColor.withOpacity(0.2),
+                  color: backgroundColor.withValues(alpha: 0.2),
                   blurRadius: 24 * _pulseAnimation.value,
                   spreadRadius: 4 * _pulseAnimation.value,
                 ),
                 // 内阴影
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   blurRadius: 1,
                   offset: const Offset(0, -1),
                 ),
@@ -145,7 +145,7 @@ class _EnhancedFloatingActionButtonState
                       end: Alignment.bottomRight,
                       colors: [
                         backgroundColor,
-                        backgroundColor.withOpacity(0.8),
+                        backgroundColor.withValues(alpha: 0.8),
                       ],
                     ),
                   ),

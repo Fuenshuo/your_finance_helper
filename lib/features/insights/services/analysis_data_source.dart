@@ -16,5 +16,6 @@ abstract class AnalysisDataSource {
   /// [transaction] The transaction to analyze
   /// [timeframe] Analysis context (daily, weekly, monthly)
   /// Returns analysis results or safe defaults on failure
-  Future<AnalysisSummary> analyze(Transaction transaction, FluxTimeframe timeframe);
+  Future<AnalysisSummary> analyze(
+      Transaction transaction, FluxTimeframe timeframe);
 }

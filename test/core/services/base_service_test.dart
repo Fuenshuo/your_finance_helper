@@ -15,7 +15,7 @@ class TestService extends StatefulService {
 
     await executeOperation('initialize', () async {
       // 模拟初始化逻辑
-      await Future.delayed(const Duration(milliseconds: 10));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
       setState(ServiceState.initialized);
     });
   }
@@ -23,7 +23,7 @@ class TestService extends StatefulService {
   // 测试用的业务方法
   Future<String> processData(String input) async {
     return executeOperation('processData', () async {
-      await Future.delayed(const Duration(milliseconds: 5));
+      await Future<void>.delayed(const Duration(milliseconds: 5));
       return '$testData-$input';
     });
   }

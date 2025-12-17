@@ -38,10 +38,8 @@ class CurrencyFormatter {
   static double? parse(String currencyString) {
     try {
       // Remove currency symbol and commas
-      final cleanString = currencyString
-          .replaceAll('¥', '')
-          .replaceAll(',', '')
-          .trim();
+      final cleanString =
+          currencyString.replaceAll('¥', '').replaceAll(',', '').trim();
 
       return double.tryParse(cleanString);
     } catch (e) {

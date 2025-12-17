@@ -8,7 +8,8 @@ import '../models/verification_session.dart';
 
 class VerificationAggregator {
   /// Aggregate results from multiple sessions
-  VerificationAggregation aggregateSessions(List<VerificationSession> sessions) {
+  VerificationAggregation aggregateSessions(
+      List<VerificationSession> sessions) {
     final allResults = sessions.expand((s) => s.results).toList();
 
     return VerificationAggregation(
@@ -24,7 +25,8 @@ class VerificationAggregator {
   }
 
   /// Aggregate results by component name across sessions
-  Map<String, ComponentAggregation> _aggregateComponentResults(List<VerificationResult> results) {
+  Map<String, ComponentAggregation> _aggregateComponentResults(
+      List<VerificationResult> results) {
     final componentMap = <String, List<VerificationResult>>{};
 
     // Group results by component
@@ -35,18 +37,28 @@ class VerificationAggregator {
     // Calculate aggregation for each component
     final aggregations = <String, ComponentAggregation>{};
     componentMap.forEach((componentName, componentResults) {
-      final passed = componentResults.where((r) => r.status == VerificationStatus.pass).length;
-      final failed = componentResults.where((r) => r.status == VerificationStatus.fail).length;
-      final pending = componentResults.where((r) => r.status == VerificationStatus.pending).length;
+      final passed = componentResults
+          .where((r) => r.status == VerificationStatus.pass)
+          .length;
+      final failed = componentResults
+          .where((r) => r.status == VerificationStatus.fail)
+          .length;
+      final pending = componentResults
+          .where((r) => r.status == VerificationStatus.pending)
+          .length;
 
-      final avgPriority = componentResults.map((r) => r.priority).reduce((a, b) => a + b) / componentResults.length;
+      final avgPriority =
+          componentResults.map((r) => r.priority).reduce((a, b) => a + b) /
+              componentResults.length;
       final avgDuration = componentResults
-          .where((r) => r.duration != null)
-          .map((r) => r.duration!.inSeconds)
-          .fold<double>(0, (sum, duration) => sum + duration) /
+              .where((r) => r.duration != null)
+              .map((r) => r.duration!.inSeconds)
+              .fold<double>(0, (sum, duration) => sum + duration) /
           componentResults.where((r) => r.duration != null).length;
 
-      final successRate = componentResults.isNotEmpty ? (passed / componentResults.length * 100).round() : 0;
+      final successRate = componentResults.isNotEmpty
+          ? (passed / componentResults.length * 100).round()
+          : 0;
 
       aggregations[componentName] = ComponentAggregation(
         componentName: componentName,
@@ -78,9 +90,15 @@ class VerificationAggregator {
 
     final priorityStats = <int, PriorityAggregation>{};
     priorityGroups.forEach((priority, priorityResults) {
-      final passed = priorityResults.where((r) => r.status == VerificationStatus.pass).length;
-      final failed = priorityResults.where((r) => r.status == VerificationStatus.fail).length;
-      final successRate = priorityResults.isNotEmpty ? (passed / priorityResults.length * 100).round() : 0;
+      final passed = priorityResults
+          .where((r) => r.status == VerificationStatus.pass)
+          .length;
+      final failed = priorityResults
+          .where((r) => r.status == VerificationStatus.fail)
+          .length;
+      final successRate = priorityResults.isNotEmpty
+          ? (passed / priorityResults.length * 100).round()
+          : 0;
 
       priorityStats[priority] = PriorityAggregation(
         priority: priority,
@@ -119,15 +137,22 @@ class VerificationAggregator {
         .toList();
 
     return TimeStats(
-      totalVerificationTime: sessionDurations.fold(Duration.zero, (sum, duration) => sum + duration),
+      totalVerificationTime: sessionDurations.fold(
+          Duration.zero, (sum, duration) => sum + duration),
       averageSessionTime: sessionDurations.isNotEmpty
           ? sessionDurations.reduce((a, b) => a + b) ~/ sessionDurations.length
           : Duration.zero,
-      fastestSession: sessionDurations.isNotEmpty ? sessionDurations.reduce((a, b) => a < b ? a : b) : Duration.zero,
-      slowestSession: sessionDurations.isNotEmpty ? sessionDurations.reduce((a, b) => a > b ? a : b) : Duration.zero,
-      totalComponentTime: componentDurations.fold(Duration.zero, (sum, duration) => sum + duration),
+      fastestSession: sessionDurations.isNotEmpty
+          ? sessionDurations.reduce((a, b) => a < b ? a : b)
+          : Duration.zero,
+      slowestSession: sessionDurations.isNotEmpty
+          ? sessionDurations.reduce((a, b) => a > b ? a : b)
+          : Duration.zero,
+      totalComponentTime: componentDurations.fold(
+          Duration.zero, (sum, duration) => sum + duration),
       averageComponentTime: componentDurations.isNotEmpty
-          ? componentDurations.reduce((a, b) => a + b) ~/ componentDurations.length
+          ? componentDurations.reduce((a, b) => a + b) ~/
+              componentDurations.length
           : Duration.zero,
     );
   }
@@ -153,7 +178,8 @@ class VerificationAggregator {
     // Track pass/fail for each component across sessions
     for (final session in sortedSessions) {
       for (final result in session.results) {
-        componentTrends.putIfAbsent(result.componentName, () => [])
+        componentTrends
+            .putIfAbsent(result.componentName, () => [])
             .add(result.status == VerificationStatus.pass);
       }
     }
@@ -177,12 +203,16 @@ class VerificationAggregator {
         final firstHalf = results.sublist(0, results.length ~/ 2);
         final secondHalf = results.sublist(results.length ~/ 2);
 
-        final firstHalfSuccess = firstHalf.where((p) => p).length / firstHalf.length;
-        final secondHalfSuccess = secondHalf.where((p) => p).length / secondHalf.length;
+        final firstHalfSuccess =
+            firstHalf.where((p) => p).length / firstHalf.length;
+        final secondHalfSuccess =
+            secondHalf.where((p) => p).length / secondHalf.length;
 
-        if (secondHalfSuccess > firstHalfSuccess + 0.2) { // 20% improvement
+        if (secondHalfSuccess > firstHalfSuccess + 0.2) {
+          // 20% improvement
           improvingComponents.add(componentName);
-        } else if (firstHalfSuccess > secondHalfSuccess + 0.2) { // 20% decline
+        } else if (firstHalfSuccess > secondHalfSuccess + 0.2) {
+          // 20% decline
           decliningComponents.add(componentName);
         }
       }
@@ -191,14 +221,16 @@ class VerificationAggregator {
     // Determine overall trend
     final recentSessions = sortedSessions.sublist(sortedSessions.length - 3);
     final recentSuccessRates = recentSessions.map((s) {
-      final passed = s.results.where((r) => r.status == VerificationStatus.pass).length;
+      final passed =
+          s.results.where((r) => r.status == VerificationStatus.pass).length;
       return s.results.isNotEmpty ? passed / s.results.length : 0.0;
     }).toList();
 
     String overallTrend = 'stable';
     if (recentSuccessRates.length >= 2) {
       final trend = recentSuccessRates.last - recentSuccessRates.first;
-      if (trend > 0.1) overallTrend = 'improving';
+      if (trend > 0.1)
+        overallTrend = 'improving';
       else if (trend < -0.1) overallTrend = 'declining';
     }
 
@@ -212,8 +244,10 @@ class VerificationAggregator {
   }
 
   /// Identify common failure patterns
-  List<FailurePattern> _identifyFailurePatterns(List<VerificationResult> results) {
-    final failedResults = results.where((r) => r.status == VerificationStatus.fail).toList();
+  List<FailurePattern> _identifyFailurePatterns(
+      List<VerificationResult> results) {
+    final failedResults =
+        results.where((r) => r.status == VerificationStatus.fail).toList();
 
     if (failedResults.isEmpty) {
       return [];
@@ -230,14 +264,16 @@ class VerificationAggregator {
     }
 
     return patternMap.entries.map((entry) {
-      final affectedComponents = entry.value.map((r) => r.componentName).toSet().toList();
+      final affectedComponents =
+          entry.value.map((r) => r.componentName).toSet().toList();
       final frequency = entry.value.length;
 
       return FailurePattern(
         pattern: entry.key,
         frequency: frequency,
         affectedComponents: affectedComponents,
-        severity: _calculatePatternSeverity(entry.key, frequency, affectedComponents.length),
+        severity: _calculatePatternSeverity(
+            entry.key, frequency, affectedComponents.length),
       );
     }).toList()
       ..sort((a, b) => b.frequency.compareTo(a.frequency)); // Sort by frequency
@@ -247,18 +283,23 @@ class VerificationAggregator {
   List<String> _generateRecommendations(List<VerificationResult> results) {
     final recommendations = <String>[];
 
-    final failedResults = results.where((r) => r.status == VerificationStatus.fail).toList();
-    final highPriorityFailures = failedResults.where((r) => r.priority >= 4).toList();
+    final failedResults =
+        results.where((r) => r.status == VerificationStatus.fail).toList();
+    final highPriorityFailures =
+        failedResults.where((r) => r.priority >= 4).toList();
 
     if (highPriorityFailures.isNotEmpty) {
-      recommendations.add('Address ${highPriorityFailures.length} high-priority verification failures immediately');
-      recommendations.add('High-priority components failing: ${highPriorityFailures.map((r) => r.componentName).join(", ")}');
+      recommendations.add(
+          'Address ${highPriorityFailures.length} high-priority verification failures immediately');
+      recommendations.add(
+          'High-priority components failing: ${highPriorityFailures.map((r) => r.componentName).join(", ")}');
     }
 
     // Check for common failure patterns
     final failurePatterns = _identifyFailurePatterns(results);
     if (failurePatterns.isNotEmpty) {
-      recommendations.add('Investigate recurring failure patterns: ${failurePatterns.take(3).map((p) => p.pattern).join(", ")}');
+      recommendations.add(
+          'Investigate recurring failure patterns: ${failurePatterns.take(3).map((p) => p.pattern).join(", ")}');
     }
 
     // Check for slow components
@@ -268,17 +309,24 @@ class VerificationAggregator {
         .toList();
 
     if (slowComponents.isNotEmpty) {
-      recommendations.add('Optimize performance for slow components: ${slowComponents.join(", ")}');
+      recommendations.add(
+          'Optimize performance for slow components: ${slowComponents.join(", ")}');
     }
 
     // General recommendations
-    final successRate = results.isNotEmpty ?
-        (results.where((r) => r.status == VerificationStatus.pass).length / results.length * 100).round() : 0;
+    final successRate = results.isNotEmpty
+        ? (results.where((r) => r.status == VerificationStatus.pass).length /
+                results.length *
+                100)
+            .round()
+        : 0;
 
     if (successRate < 80) {
-      recommendations.add('Overall success rate (${successRate}%) needs improvement - focus on failing components');
+      recommendations.add(
+          'Overall success rate (${successRate}%) needs improvement - focus on failing components');
     } else if (successRate >= 95) {
-      recommendations.add('Excellent verification success rate (${successRate}%) - consider adding more comprehensive tests');
+      recommendations.add(
+          'Excellent verification success rate (${successRate}%) - consider adding more comprehensive tests');
     }
 
     return recommendations;
@@ -320,7 +368,8 @@ class VerificationAggregator {
   }
 
   /// Calculate severity for failure patterns
-  String _calculatePatternSeverity(String pattern, int frequency, int componentCount) {
+  String _calculatePatternSeverity(
+      String pattern, int frequency, int componentCount) {
     final score = frequency * componentCount;
 
     if (score >= 10) return 'critical';
@@ -423,7 +472,8 @@ class TrendAnalysis {
   final List<String> decliningComponents;
   final List<String> consistentlyPassing;
   final List<String> consistentlyFailing;
-  final String overallTrend; // 'improving', 'declining', 'stable', 'insufficient_data'
+  final String
+      overallTrend; // 'improving', 'declining', 'stable', 'insufficient_data'
 
   TrendAnalysis({
     required this.improvingComponents,
@@ -447,3 +497,4 @@ class FailurePattern {
     required this.severity,
   });
 }
+

@@ -34,8 +34,8 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
 
   InputValidationNotifier({
     required ValidationService validationService,
-  }) : _validationService = validationService,
-       super(const InputValidationState());
+  })  : _validationService = validationService,
+        super(const InputValidationState());
 
   /// 验证完整草稿
   Future<void> validateDraft(DraftTransaction draft) async {
@@ -61,8 +61,10 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
   /// 验证单个字段
   Future<void> validateField(String fieldName, dynamic value) async {
     try {
-      final fieldValidation = await _validationService.validateField(fieldName, value);
-      final updatedFieldValidations = Map<String, InputValidation>.from(state.fieldValidations);
+      final fieldValidation =
+          await _validationService.validateField(fieldName, value);
+      final updatedFieldValidations =
+          Map<String, InputValidation>.from(state.fieldValidations);
       updatedFieldValidations[fieldName] = fieldValidation;
 
       state = state.copyWith(fieldValidations: updatedFieldValidations);
@@ -72,7 +74,8 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
         errorMessage: '字段验证失败: ${e.toString()}',
       ).copyWith(lastValidatedAt: DateTime.now());
 
-      final updatedFieldValidations = Map<String, InputValidation>.from(state.fieldValidations);
+      final updatedFieldValidations =
+          Map<String, InputValidation>.from(state.fieldValidations);
       updatedFieldValidations[fieldName] = errorValidation;
 
       state = state.copyWith(fieldValidations: updatedFieldValidations);
@@ -107,14 +110,16 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
 
   /// 检查所有字段是否有效
   bool areAllFieldsValid() {
-    return state.fieldValidations.values.every((validation) => validation.isValid);
+    return state.fieldValidations.values
+        .every((validation) => validation.isValid);
   }
 
   /// 获取所有验证错误
   List<String> getAllErrors() {
     final errors = <String>[];
 
-    if (!state.currentValidation.isValid && state.currentValidation.errorMessage != null) {
+    if (!state.currentValidation.isValid &&
+        state.currentValidation.errorMessage != null) {
       errors.add(state.currentValidation.errorMessage!);
     }
 
@@ -160,15 +165,16 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
 
   /// 重置字段验证
   void resetFieldValidation(String fieldName) {
-    final updatedFieldValidations = Map<String, InputValidation>.from(state.fieldValidations);
+    final updatedFieldValidations =
+        Map<String, InputValidation>.from(state.fieldValidations);
     updatedFieldValidations.remove(fieldName);
     state = state.copyWith(fieldValidations: updatedFieldValidations);
   }
 }
 
 /// InputValidationProvider
-final inputValidationProvider = StateNotifierProvider<InputValidationNotifier, InputValidationState>((ref) {
+final inputValidationProvider =
+    StateNotifierProvider<InputValidationNotifier, InputValidationState>((ref) {
   final validationService = ref.watch(validationServiceProvider);
   return InputValidationNotifier(validationService: validationService);
 });
-

@@ -68,7 +68,11 @@ class ParsedTransaction extends Equatable {
   final Map<String, dynamic>? rawData;
 
   /// 是否有效（至少包含描述和金额）
-  bool get isValid => description != null && description!.isNotEmpty && amount != null && amount! > 0;
+  bool get isValid =>
+      description != null &&
+      description!.isNotEmpty &&
+      amount != null &&
+      amount! > 0;
 
   /// 转换为Transaction对象
   Transaction? toTransaction({
@@ -86,12 +90,14 @@ class ParsedTransaction extends Equatable {
       type: type,
       category: category ?? TransactionCategory.otherExpense,
       subCategory: subCategory,
-      fromAccountId: type == TransactionType.expense || type == TransactionType.transfer
-          ? (fromAccountId ?? accountId)
-          : null,
-      toAccountId: type == TransactionType.income || type == TransactionType.transfer
-          ? (toAccountId ?? accountId)
-          : null,
+      fromAccountId:
+          type == TransactionType.expense || type == TransactionType.transfer
+              ? (fromAccountId ?? accountId)
+              : null,
+      toAccountId:
+          type == TransactionType.income || type == TransactionType.transfer
+              ? (toAccountId ?? accountId)
+              : null,
       envelopeBudgetId: envelopeBudgetId,
       date: date ?? DateTime.now(),
       notes: notes,
@@ -120,7 +126,8 @@ class ParsedTransaction extends Equatable {
       accountId: json['accountId'] as String?,
       accountName: json['accountName'] as String?,
       envelopeBudgetId: json['envelopeBudgetId'] as String?,
-      date: json['date'] != null ? DateTime.parse(json['date'] as String) : null,
+      date:
+          json['date'] != null ? DateTime.parse(json['date'] as String) : null,
       notes: json['notes'] as String?,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
       uncertainty: json['uncertainty'] as String?,
@@ -219,4 +226,3 @@ enum ParsedTransactionSource {
   const ParsedTransactionSource(this.displayName);
   final String displayName;
 }
-

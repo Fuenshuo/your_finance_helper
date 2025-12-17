@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction_entry_state.dart';
 import '../models/draft_transaction.dart';
@@ -14,9 +13,9 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
   TransactionEntryNotifier({
     required TransactionParserService parserService,
     required ValidationService validationService,
-  }) : _parserService = parserService,
-       _validationService = validationService,
-       super(const TransactionEntryState());
+  })  : _parserService = parserService,
+        _validationService = validationService,
+        super(TransactionEntryState());
 
   /// 更新输入文本并自动解析
   Future<void> updateInput(String input) async {
@@ -44,9 +43,9 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
         draftTransaction: draft,
         validation: validation,
         isParsing: false,
-        performanceMetrics: state.performanceMetrics.copyWith(
+        performanceMetrics: state.performanceMetrics?.copyWith(
           parseResponseTimeMs: parseTime,
-        ),
+        ) ?? PerformanceMetrics(parseResponseTimeMs: parseTime),
       );
     } on Exception catch (e) {
       state = state.copyWith(
@@ -68,7 +67,7 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
 
   /// 清空输入和草稿
   void clearInput() {
-    state = const TransactionEntryState();
+    state = TransactionEntryState();
   }
 
   /// 重新验证当前草稿
@@ -76,7 +75,8 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
     if (state.draftTransaction == null) return;
 
     try {
-      final validation = await _validationService.validateDraft(state.draftTransaction!);
+      final validation =
+          await _validationService.validateDraft(state.draftTransaction!);
       state = state.copyWith(validation: validation);
     } on Exception catch (e) {
       state = state.copyWith(
@@ -95,9 +95,9 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
 
   /// 检查是否可以保存
   bool canSave() {
-    return state.draftTransaction?.isValid == true &&
-           state.validation.isValid &&
-           !state.isParsing;
+    return state.draftTransaction?.isComplete == true &&
+        state.validation.isValid &&
+        !state.isParsing;
   }
 
   /// 确认交易并保存
@@ -109,14 +109,11 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
     state = state.copyWith(isSaving: true, saveError: null);
 
     try {
-      final startTime = DateTime.now();
       final transaction = state.draftTransaction!.toTransaction();
 
       // TODO: 调用实际的交易保存服务
       // await transactionService.saveTransaction(transaction);
-      await Future.delayed(const Duration(milliseconds: 200)); // 模拟保存
-
-      final saveTime = DateTime.now().difference(startTime).inMilliseconds;
+      await Future<void>.delayed(const Duration(milliseconds: 200)); // 模拟保存
 
       state = state.copyWith(
         isSaving: false,
@@ -124,9 +121,9 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
         draftTransaction: null,
         validation: const InputValidation(),
         currentInput: '',
-        performanceMetrics: state.performanceMetrics.copyWith(
+        performanceMetrics: state.performanceMetrics?.copyWith(
           lastUpdated: DateTime.now(),
-        ),
+        ) ?? PerformanceMetrics(lastUpdated: DateTime.now()),
       );
     } on Exception catch (e) {
       state = state.copyWith(
@@ -152,12 +149,16 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
     if (state.draftTransaction == null) return;
 
     final updatedDraft = state.draftTransaction!.copyWith(
-      amount: field == 'amount' ? value : state.draftTransaction!.amount,
-      description: field == 'description' ? value : state.draftTransaction!.description,
-      type: field == 'type' ? value : state.draftTransaction!.type,
-      transactionDate: field == 'date' ? value : state.draftTransaction!.transactionDate,
-      accountId: field == 'accountId' ? value : state.draftTransaction!.accountId,
-      categoryId: field == 'categoryId' ? value : state.draftTransaction!.categoryId,
+      amount: field == 'amount' ? value as double? : state.draftTransaction!.amount,
+      description:
+          field == 'description' ? value as String? : state.draftTransaction!.description,
+      type: field == 'type' ? value as TransactionType? : state.draftTransaction!.type,
+      transactionDate:
+          field == 'date' ? value as DateTime? : state.draftTransaction!.transactionDate,
+      accountId:
+          field == 'accountId' ? value as String? : state.draftTransaction!.accountId,
+      categoryId:
+          field == 'categoryId' ? value as String? : state.draftTransaction!.categoryId,
     );
 
     final validation = await _validationService.validateDraft(updatedDraft);
@@ -179,7 +180,9 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
 }
 
 /// TransactionEntryProvider
-final transactionEntryProvider = StateNotifierProvider<TransactionEntryNotifier, TransactionEntryState>((ref) {
+final transactionEntryProvider =
+    StateNotifierProvider<TransactionEntryNotifier, TransactionEntryState>(
+        (ref) {
   final parserService = ref.watch(transactionParserServiceProvider);
   final validationService = ref.watch(validationServiceProvider);
 
@@ -188,4 +191,3 @@ final transactionEntryProvider = StateNotifierProvider<TransactionEntryNotifier,
     validationService: validationService,
   );
 });
-
