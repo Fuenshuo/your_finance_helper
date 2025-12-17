@@ -5,16 +5,101 @@
 # IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
 # invoked from the command line by running `flutter analyze`.
 
-# Minimal configuration - focus on CI passing with Flutter defaults
+# 引入 Very Good Ventures 提供的非常严格的规则集。
+# 适合对代码质量有极高要求，且愿意遵守统一规范的团队。
+include: package:very_good_analysis/analysis_options.yaml
+
 analyzer:
   exclude:
+    - "lib/generated_plugin_registrant.dart"
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "**/*.mocks.dart"
+    - "test/**/*.mocks.dart"
+
+  # very_good_analysis 已经默认开启了严格模式，这里可以再次确认
+  # language:
+  #   strict-casts: true
+  #   strict-inference: true
+  #   strict-raw-types: true
+
+  errors:
+    # Very Good Analysis 默认将许多 lint 视为 warning 甚至 error。
+    # 你可以在这里进行降级。
+
+    # 例如，如果你觉得 TODO 报 warning 太烦人，可以降级为 info
+    # todo: info
 
 linter:
   rules:
-    # Only disable the rules that cause CI failures
-    public_member_api_docs: false  # Too many existing undocumented members
-    deprecated_member_use: false  # Allow deprecated APIs during migration
-    deprecated_member_use_from_same_package: false
+    # 即使在严格模式下，也有一些规则可能过于苛刻或不适合你的项目。
+    # 可以在这里根据需要禁用它们。
+
+    # 强制所有公共成员编写文档。如果团队无法坚持，建议关闭。
+    public_member_api_docs: false
+
+    # 对于现有大型代码库，一些风格规则过于严格，需要适度放宽
+    # 允许级联调用重复（有时是必要的）
+    cascade_invocations: false
+
+    # 允许未等待的Future（有时Future不需要等待）
+    unawaited_futures: false
+
+    # 允许double字面量（有时double更清晰）
+    prefer_int_literals: false
+
+    # 允许位置布尔参数（有时更简洁）
+    avoid_positional_boolean_parameters: false
+
+    # 允许初始化形式参数（有时可读性更好）
+    prefer_initializing_formals: false
+
+    # 允许setter（有时需要改变属性）
+    use_setters_to_change_properties: false
+
+    # 强制 Widget 测试不仅要 pump，还要 expect 结果。
+    # 有时候我们只想确认它能渲染而不崩溃。
+    avoid_redundant_argument_values: false
+
+    # 强制每行只能声明一个变量。
+    # int x = 1, y = 2; // 不允许
+    # 如果你不喜欢这个规则，可以禁用。
+    one_declaration_per_line: false
+
+    # 强制使用 sorted imports (按字母顺序排列导入)。
+    # 这需要 IDE 插件支持自动排序，否则手动维护很痛苦。
+    directives_ordering: false
+
+    # 允许返回this（Builder模式常用）
+    avoid_returning_this: false
+
+    # 允许控制语句体在新行（有时单行更清晰）
+    always_put_control_body_on_new_line: false
+
+    # 对于现有代码库，80字符行长度限制过于严格
+    lines_longer_than_80_chars: false
+
+    # 尾随逗号虽然是好实践，但对现有代码库改动太大
+    require_trailing_commas: false
+
+    # 允许可变类重写equals/hashCode（有时是必要的）
+    avoid_equals_and_hash_code_on_mutable_classes: false
+
+    # 对于现有代码库，一些规则过于严格
+    # 允许条件表达式中的bool字面量
+    avoid_bool_literals_in_conditional_expressions: false
+
+    # 不强制弃用消息（现有代码可能没有）
+    provide_deprecation_message: false
+
+    # 不强制对私有字段使用late（有时不需要）
+    use_late_for_private_fields_and_variables: false
+
+    # 不强制注释引用（可能过于严格）
+    comment_references: false
+
+    # Flutter风格TODO注释（现有代码可能不遵循）
+    flutter_style_todos: false
+
+    # 允许在生产代码中使用print（开发调试需要）
+    avoid_print: false
