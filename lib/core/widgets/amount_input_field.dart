@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_design_tokens.dart';
-import '../theme/app_design_tokens.dart' show AppStyle;
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// 金额输入组件 - 带单位显示的金额输入框
 class AmountInputField extends StatefulWidget {

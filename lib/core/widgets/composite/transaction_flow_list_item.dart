@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import '../../theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// S25: 收支流水列表项样式
 /// 应用中最常用、最高频的列表展示项
@@ -10,6 +9,19 @@ import '../../theme/app_design_tokens.dart';
 /// - 可点击（带波纹效果），点击后跳转至交易详情
 /// - 分类名使用 `AppDesignTokens.headline`，金额使用 `AppDesignTokens.headline`（加粗）
 class TransactionFlowListItem extends StatelessWidget {
+  const TransactionFlowListItem({
+    required this.icon,
+    required this.categoryName,
+    required this.accountName,
+    required this.amount,
+    required this.isIncome,
+    required this.categoryColor,
+    super.key,
+    this.onTap,
+    this.iconSize,
+    this.iconContainerSize,
+  });
+
   /// 左侧图标
   final IconData icon;
 
@@ -37,19 +49,6 @@ class TransactionFlowListItem extends StatelessWidget {
   /// 自定义图标容器大小
   final double? iconContainerSize;
 
-  const TransactionFlowListItem({
-    super.key,
-    required this.icon,
-    required this.categoryName,
-    required this.accountName,
-    required this.amount,
-    required this.isIncome,
-    required this.categoryColor,
-    this.onTap,
-    this.iconSize,
-    this.iconContainerSize,
-  });
-
   @override
   Widget build(BuildContext context) {
     // 收入使用鲜草绿，支出使用明确的朱红色
@@ -60,7 +59,7 @@ class TransactionFlowListItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: AppDesignTokens.globalHorizontalPadding, // 使用全局水平边距
           vertical: AppDesignTokens.spacingMedium, // 至少 16pt 垂直间距，拉开行高和对比度
         ),
@@ -83,7 +82,8 @@ class TransactionFlowListItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: categoryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(
-                    AppDesignTokens.radiusMedium(context)),
+                  AppDesignTokens.radiusMedium(context),
+                ),
               ),
               child: Icon(
                 icon,
@@ -103,8 +103,9 @@ class TransactionFlowListItem extends StatelessWidget {
                       fontWeight: FontWeight.w600, // 14pt SemiBold，拉开对比
                     ),
                   ),
-                  SizedBox(
-                      height: AppDesignTokens.spacingMinor), // Minor spacing
+                  const SizedBox(
+                    height: AppDesignTokens.spacingMinor,
+                  ), // Minor spacing
                   Text(
                     accountName,
                     style: AppDesignTokens.label(context).copyWith(

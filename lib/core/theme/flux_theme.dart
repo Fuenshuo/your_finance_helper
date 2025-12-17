@@ -105,56 +105,50 @@ class FluxTheme {
   // ==================== 流文字样式 ====================
 
   /// 流标题样式
-  static TextStyle flowHeadline(BuildContext context) {
-    return Theme.of(context).textTheme.headlineSmall!.copyWith(
-          color: const Color(0xFF1C1C1E),
-          fontWeight: FontWeight.w600,
-          height: 1.2,
-        );
-  }
+  static TextStyle flowHeadline(BuildContext context) =>
+      Theme.of(context).textTheme.headlineSmall!.copyWith(
+            color: const Color(0xFF1C1C1E),
+            fontWeight: FontWeight.w600,
+            height: 1.2,
+          );
 
   /// 流正文样式
-  static TextStyle flowBody(BuildContext context) {
-    return Theme.of(context).textTheme.bodyLarge!.copyWith(
-          color: const Color(0xFF3C3C43),
-          height: 1.4,
-        );
-  }
+  static TextStyle flowBody(BuildContext context) =>
+      Theme.of(context).textTheme.bodyLarge!.copyWith(
+            color: const Color(0xFF3C3C43),
+            height: 1.4,
+          );
 
   /// 流说明样式
-  static TextStyle flowCaption(BuildContext context) {
-    return Theme.of(context).textTheme.bodySmall!.copyWith(
-          color: neutralGray,
-          height: 1.3,
-        );
-  }
+  static TextStyle flowCaption(BuildContext context) =>
+      Theme.of(context).textTheme.bodySmall!.copyWith(
+            color: neutralGray,
+            height: 1.3,
+          );
 
   /// 流金额样式 - 正数（收入）
-  static TextStyle flowAmountPositive(BuildContext context) {
-    return Theme.of(context).textTheme.headlineMedium!.copyWith(
-      color: incomeGreen,
-      fontWeight: FontWeight.w700,
-      fontFeatures: [const FontFeature.tabularFigures()],
-    );
-  }
+  static TextStyle flowAmountPositive(BuildContext context) =>
+      Theme.of(context).textTheme.headlineMedium!.copyWith(
+        color: incomeGreen,
+        fontWeight: FontWeight.w700,
+        fontFeatures: [const FontFeature.tabularFigures()],
+      );
 
   /// 流金额样式 - 负数（支出）
-  static TextStyle flowAmountNegative(BuildContext context) {
-    return Theme.of(context).textTheme.headlineMedium!.copyWith(
-      color: expenseRed,
-      fontWeight: FontWeight.w700,
-      fontFeatures: [const FontFeature.tabularFigures()],
-    );
-  }
+  static TextStyle flowAmountNegative(BuildContext context) =>
+      Theme.of(context).textTheme.headlineMedium!.copyWith(
+        color: expenseRed,
+        fontWeight: FontWeight.w700,
+        fontFeatures: [const FontFeature.tabularFigures()],
+      );
 
   /// 流金额样式 - 中性
-  static TextStyle flowAmountNeutral(BuildContext context) {
-    return Theme.of(context).textTheme.headlineMedium!.copyWith(
-      color: const Color(0xFF1C1C1E),
-      fontWeight: FontWeight.w600,
-      fontFeatures: [const FontFeature.tabularFigures()],
-    );
-  }
+  static TextStyle flowAmountNeutral(BuildContext context) =>
+      Theme.of(context).textTheme.headlineMedium!.copyWith(
+        color: const Color(0xFF1C1C1E),
+        fontWeight: FontWeight.w600,
+        fontFeatures: [const FontFeature.tabularFigures()],
+      );
 
   // ==================== 流装饰 ====================
 
@@ -222,35 +216,34 @@ class FluxTheme {
     String? hintText,
     Widget? prefixIcon,
     Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      hintText: hintText,
-      prefixIcon: prefixIcon,
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: const Color(0xFFF7F7F7),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(flowInputRadius),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(flowInputRadius),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(flowInputRadius),
-        borderSide: const BorderSide(
-          color: flowBlue,
-          width: 2,
+  }) =>
+      InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: const Color(0xFFF7F7F7),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(flowInputRadius),
+          borderSide: BorderSide.none,
         ),
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 16,
-      ),
-    );
-  }
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(flowInputRadius),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(flowInputRadius),
+          borderSide: const BorderSide(
+            color: flowBlue,
+            width: 2,
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+      );
 
   // ==================== 流按钮样式 ====================
 
@@ -359,9 +352,8 @@ class FluxSpacing {
 
 /// 流文本样式类
 class FluxTextStyles {
-  final BuildContext context;
-
   const FluxTextStyles(this.context);
+  final BuildContext context;
 
   TextStyle get headline => FluxTheme.flowHeadline(context);
   TextStyle get body => FluxTheme.flowBody(context);

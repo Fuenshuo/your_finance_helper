@@ -1,6 +1,6 @@
-import '../models/input_validation.dart';
-import '../models/draft_transaction.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
 
 /// 验证服务接口
 abstract class ValidationService {
@@ -8,11 +8,12 @@ abstract class ValidationService {
   Future<InputValidation> validateDraft(DraftTransaction draft);
 
   /// 验证单个字段
-  Future<InputValidation> validateField(String fieldName, dynamic value);
+  Future<InputValidation> validateField(String fieldName, Object? value);
 
   /// 批量验证字段
   Future<Map<String, InputValidation>> validateFields(
-      Map<String, dynamic> fields);
+    Map<String, dynamic> fields,
+  );
 }
 
 /// 默认验证服务实现
@@ -96,19 +97,17 @@ class DefaultValidationService implements ValidationService {
         errorMessage: errors.isNotEmpty ? errors.first : null,
         warnings: warnings,
         suggestions: suggestions,
-        lastValidatedAt: null,
       );
     } catch (e) {
       return InputValidation(
         isValid: false,
-        errorMessage: '验证过程出错: ${e.toString()}',
-        lastValidatedAt: null,
+        errorMessage: '验证过程出错: $e',
       );
     }
   }
 
   @override
-  Future<InputValidation> validateField(String fieldName, dynamic value) async {
+  Future<InputValidation> validateField(String fieldName, value) async {
     switch (fieldName) {
       case 'amount':
         return _validateAmount(value);
@@ -123,13 +122,14 @@ class DefaultValidationService implements ValidationService {
       case 'categoryId':
         return _validateCategoryId(value);
       default:
-        return const InputValidation(isValid: true);
+        return const InputValidation();
     }
   }
 
   @override
   Future<Map<String, InputValidation>> validateFields(
-      Map<String, dynamic> fields) async {
+    Map<String, dynamic> fields,
+  ) async {
     final results = <String, InputValidation>{};
 
     for (final entry in fields.entries) {
@@ -139,7 +139,7 @@ class DefaultValidationService implements ValidationService {
     return results;
   }
 
-  InputValidation _validateAmount(dynamic value) {
+  InputValidation _validateAmount(Object? value) {
     if (value == null) {
       return const InputValidation(
         isValid: false,
@@ -159,17 +159,17 @@ class DefaultValidationService implements ValidationService {
     final amount = value.toDouble();
 
     if (amount < _minAmount) {
-      return InputValidation(
+      return const InputValidation(
         isValid: false,
-        errorMessage: '金额不能小于 ${_minAmount}',
-        suggestions: ['请输入大于 ${_minAmount} 的金额'],
+        errorMessage: '金额不能小于 $_minAmount',
+        suggestions: ['请输入大于 $_minAmount 的金额'],
       );
     }
 
     if (amount > _maxAmount) {
-      return InputValidation(
+      return const InputValidation(
         isValid: false,
-        errorMessage: '金额不能超过 ${_maxAmount}',
+        errorMessage: '金额不能超过 $_maxAmount',
         suggestions: ['金额过大，请确认是否正确'],
       );
     }
@@ -180,13 +180,12 @@ class DefaultValidationService implements ValidationService {
     }
 
     return InputValidation(
-      isValid: true,
       warnings: warnings,
       lastValidatedAt: DateTime.now(),
     );
   }
 
-  InputValidation _validateDescription(dynamic value) {
+  InputValidation _validateDescription(Object? value) {
     if (value == null || value.toString().trim().isEmpty) {
       return const InputValidation(
         isValid: false,
@@ -206,20 +205,19 @@ class DefaultValidationService implements ValidationService {
     }
 
     if (description.length > _maxDescriptionLength) {
-      return InputValidation(
+      return const InputValidation(
         isValid: false,
-        errorMessage: '描述过长，最多 ${_maxDescriptionLength} 个字符',
+        errorMessage: '描述过长，最多 $_maxDescriptionLength 个字符',
         suggestions: ['请缩短描述内容'],
       );
     }
 
     return InputValidation(
-      isValid: true,
       lastValidatedAt: DateTime.now(),
     );
   }
 
-  InputValidation _validateTransactionType(dynamic value) {
+  InputValidation _validateTransactionType(Object? value) {
     if (value == null) {
       return const InputValidation(
         isValid: false,
@@ -236,15 +234,12 @@ class DefaultValidationService implements ValidationService {
       );
     }
 
-    return const InputValidation(
-      isValid: true,
-    ).copyWith(lastValidatedAt: DateTime.now());
+    return const InputValidation().copyWith(lastValidatedAt: DateTime.now());
   }
 
-  InputValidation _validateTransactionDate(dynamic value) {
+  InputValidation _validateTransactionDate(Object? value) {
     if (value == null) {
       return const InputValidation(
-        isValid: true, // 日期可以为空，使用默认值
         suggestions: ['未设置日期，将使用当前日期'],
       );
     }
@@ -278,12 +273,10 @@ class DefaultValidationService implements ValidationService {
       );
     }
 
-    return const InputValidation(
-      isValid: true,
-    ).copyWith(lastValidatedAt: DateTime.now());
+    return const InputValidation().copyWith(lastValidatedAt: DateTime.now());
   }
 
-  InputValidation _validateAccountId(dynamic value) {
+  InputValidation _validateAccountId(Object? value) {
     if (value == null || value.toString().isEmpty) {
       return const InputValidation(
         isValid: false,
@@ -295,12 +288,10 @@ class DefaultValidationService implements ValidationService {
     // 这里可以添加账户存在性检查的逻辑
     // 暂时只做基本验证
 
-    return const InputValidation(
-      isValid: true,
-    ).copyWith(lastValidatedAt: DateTime.now());
+    return const InputValidation().copyWith(lastValidatedAt: DateTime.now());
   }
 
-  InputValidation _validateCategoryId(dynamic value) {
+  InputValidation _validateCategoryId(Object? value) {
     if (value == null || value.toString().isEmpty) {
       return const InputValidation(
         isValid: false,
@@ -312,13 +303,10 @@ class DefaultValidationService implements ValidationService {
     // 这里可以添加分类存在性检查的逻辑
     // 暂时只做基本验证
 
-    return const InputValidation(
-      isValid: true,
-    ).copyWith(lastValidatedAt: DateTime.now());
+    return const InputValidation().copyWith(lastValidatedAt: DateTime.now());
   }
 }
 
 /// ValidationService Provider
-final validationServiceProvider = Provider<ValidationService>((ref) {
-  return DefaultValidationService();
-});
+final validationServiceProvider =
+    Provider<ValidationService>((ref) => DefaultValidationService());

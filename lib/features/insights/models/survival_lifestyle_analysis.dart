@@ -65,19 +65,18 @@ class SurvivalLifestyleAnalysis extends Equatable {
     Map<String, double>? benchmarkComparison,
     List<String>? recommendations,
     Map<String, dynamic>? trendAnalysis,
-  }) {
-    return SurvivalLifestyleAnalysis(
-      id: id ?? this.id,
-      month: month ?? this.month,
-      survivalExpenses: survivalExpenses ?? this.survivalExpenses,
-      lifestyleExpenses: lifestyleExpenses ?? this.lifestyleExpenses,
-      survivalRatio: survivalRatio ?? this.survivalRatio,
-      lifestyleRatio: lifestyleRatio ?? this.lifestyleRatio,
-      benchmarkComparison: benchmarkComparison ?? this.benchmarkComparison,
-      recommendations: recommendations ?? this.recommendations,
-      trendAnalysis: trendAnalysis ?? this.trendAnalysis,
-    );
-  }
+  }) =>
+      SurvivalLifestyleAnalysis(
+        id: id ?? this.id,
+        month: month ?? this.month,
+        survivalExpenses: survivalExpenses ?? this.survivalExpenses,
+        lifestyleExpenses: lifestyleExpenses ?? this.lifestyleExpenses,
+        survivalRatio: survivalRatio ?? this.survivalRatio,
+        lifestyleRatio: lifestyleRatio ?? this.lifestyleRatio,
+        benchmarkComparison: benchmarkComparison ?? this.benchmarkComparison,
+        recommendations: recommendations ?? this.recommendations,
+        trendAnalysis: trendAnalysis ?? this.trendAnalysis,
+      );
 
   @override
   List<Object?> get props => [

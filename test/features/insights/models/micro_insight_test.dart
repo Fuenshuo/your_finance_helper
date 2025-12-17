@@ -12,19 +12,22 @@ void main() {
         generatedAt: DateTime(2025, 11, 27, 10, 30),
         sentiment: Sentiment.neutral,
         message: '今日消费适中，还有 ¥150 的预算空间。',
-        actions: ['合理安排剩余预算'],
+        actions: const ['合理安排剩余预算'],
         trigger: InsightTrigger.transactionAdded,
       );
     });
 
     test('should identify positive sentiment', () {
-      final positiveInsight = microInsight.copyWith(sentiment: Sentiment.positive);
+      final positiveInsight =
+          microInsight.copyWith(sentiment: Sentiment.positive);
       expect(positiveInsight.isPositive, true);
 
-      final neutralInsight = microInsight.copyWith(sentiment: Sentiment.neutral);
+      final neutralInsight =
+          microInsight.copyWith(sentiment: Sentiment.neutral);
       expect(neutralInsight.isPositive, false);
 
-      final negativeInsight = microInsight.copyWith(sentiment: Sentiment.negative);
+      final negativeInsight =
+          microInsight.copyWith(sentiment: Sentiment.negative);
       expect(negativeInsight.isPositive, false);
     });
 
@@ -42,7 +45,7 @@ void main() {
         generatedAt: DateTime(2025, 11, 27, 10, 30),
         sentiment: Sentiment.neutral,
         message: '今日消费适中，还有 ¥150 的预算空间。',
-        actions: ['合理安排剩余预算'],
+        actions: const ['合理安排剩余预算'],
         trigger: InsightTrigger.transactionAdded,
       );
 
@@ -50,7 +53,8 @@ void main() {
     });
 
     test('should be different when properties change', () {
-      final differentInsight = microInsight.copyWith(message: 'Different message');
+      final differentInsight =
+          microInsight.copyWith(message: 'Different message');
       expect(microInsight, isNot(equals(differentInsight)));
     });
 
@@ -70,11 +74,13 @@ void main() {
 
     group('InsightTrigger enum values', () {
       test('transactionAdded trigger', () {
-        expect(InsightTrigger.transactionAdded, equals(InsightTrigger.transactionAdded));
+        expect(InsightTrigger.transactionAdded,
+            equals(InsightTrigger.transactionAdded));
       });
 
       test('budgetExceeded trigger', () {
-        expect(InsightTrigger.budgetExceeded, equals(InsightTrigger.budgetExceeded));
+        expect(InsightTrigger.budgetExceeded,
+            equals(InsightTrigger.budgetExceeded));
       });
 
       test('timeCheck trigger', () {
@@ -82,7 +88,8 @@ void main() {
       });
 
       test('manualRequest trigger', () {
-        expect(InsightTrigger.manualRequest, equals(InsightTrigger.manualRequest));
+        expect(
+            InsightTrigger.manualRequest, equals(InsightTrigger.manualRequest));
       });
     });
 
@@ -100,7 +107,7 @@ void main() {
       });
 
       test('should handle messages with special characters', () {
-        final specialMessage = '今日消费 ¥150.50，还剩 25% 预算！';
+        const specialMessage = '今日消费 ¥150.50，还剩 25% 预算！';
         final specialInsight = microInsight.copyWith(message: specialMessage);
         expect(specialInsight.message, specialMessage);
       });
@@ -117,9 +124,10 @@ void main() {
         final multipleActions = [
           '合理安排剩余预算',
           '查看大额消费明细',
-          '设置消费提醒'
+          '设置消费提醒',
         ];
-        final multiActionInsight = microInsight.copyWith(actions: multipleActions);
+        final multiActionInsight =
+            microInsight.copyWith(actions: multipleActions);
         expect(multiActionInsight.actions, hasLength(3));
         expect(multiActionInsight.requiresAction, true);
       });

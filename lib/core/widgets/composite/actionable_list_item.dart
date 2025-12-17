@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
-import 'standard_list_item.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/composite/standard_list_item.dart';
 
 /// 可操作列表项 (ActionableListItemStyle)
 /// 右侧有操作按钮（编辑、删除等），用于需要操作的列表项
@@ -9,6 +9,17 @@ import 'standard_list_item.dart';
 /// - 奖金列表、福利列表等需要编辑/删除的列表项
 /// - 所有需要操作按钮的列表项
 class ActionableListItem extends StandardListItem {
+  const ActionableListItem({
+    required super.title,
+    required this.actions,
+    super.key,
+    super.leading,
+    super.titleStyle,
+    super.spacing,
+    this.subtitle,
+    this.subtitleStyle,
+  });
+
   /// 右侧操作按钮列表
   final List<Widget> actions;
 
@@ -17,17 +28,6 @@ class ActionableListItem extends StandardListItem {
 
   /// 副标题样式
   final TextStyle? subtitleStyle;
-
-  const ActionableListItem({
-    super.key,
-    required super.title,
-    super.leading,
-    super.titleStyle,
-    super.spacing,
-    required this.actions,
-    this.subtitle,
-    this.subtitleStyle,
-  });
 
   @override
   Widget buildLeading(BuildContext context) {
@@ -46,7 +46,7 @@ class ActionableListItem extends StandardListItem {
           children: [
             if (leading != null) ...[
               leading!,
-              SizedBox(width: AppDesignTokens.spacing12),
+              const SizedBox(width: AppDesignTokens.spacing12),
             ],
             Expanded(
               child: Text(
@@ -58,7 +58,7 @@ class ActionableListItem extends StandardListItem {
             ),
           ],
         ),
-        SizedBox(height: AppDesignTokens.spacing4),
+        const SizedBox(height: AppDesignTokens.spacing4),
         Text(
           subtitle!,
           style: subtitleStyle ?? AppDesignTokens.caption(context),
@@ -70,12 +70,10 @@ class ActionableListItem extends StandardListItem {
   }
 
   @override
-  Widget buildTrailing(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: actions,
-    );
-  }
+  Widget buildTrailing(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: actions,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -99,10 +97,11 @@ class ActionableListItem extends StandardListItem {
           Expanded(
             child: buildLeading(context),
           ),
-          SizedBox(width: AppDesignTokens.spacing12),
+          const SizedBox(width: AppDesignTokens.spacing12),
           Padding(
             padding: EdgeInsets.only(
-                top: subtitle != null ? AppDesignTokens.spacing4 : 0),
+              top: subtitle != null ? AppDesignTokens.spacing4 : 0,
+            ),
             child: buildTrailing(context),
           ),
         ],

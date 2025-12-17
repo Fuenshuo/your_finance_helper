@@ -7402,9 +7402,9 @@ class _AnimatedSearchHintState extends State<_AnimatedSearchHint>
             widget.hintText,
             style: widget.style?.copyWith(
               color: widget.style?.color?.withValues(
-                  alpha: widget.currentText.isEmpty
-                      ? 1.0
-                      : _opacityAnimation.value),
+                alpha:
+                    widget.currentText.isEmpty ? 1.0 : _opacityAnimation.value,
+              ),
             ),
           ),
         ),
@@ -7849,7 +7849,8 @@ class _AnimatedTagAppearState extends State<_AnimatedTagAppear>
 
           return AnimatedBuilder(
             animation: Listenable.merge(
-                [_scaleAnimations[index], _slideAnimations[index]]),
+              [_scaleAnimations[index], _slideAnimations[index]],
+            ),
             builder: (context, child) => Transform.translate(
               offset: _slideAnimations[index].value,
               child: Transform.scale(
@@ -10093,7 +10094,9 @@ class _AnimatedStepperState extends State<_AnimatedStepper>
                 child: Text(
                   widget.value.toString(),
                   style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -10745,7 +10748,8 @@ class _AnimatedLevelUpState extends State<_AnimatedLevelUp>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: Listenable.merge(
-            [_scaleAnimation, _rotationAnimation, _slideAnimation]),
+          [_scaleAnimation, _rotationAnimation, _slideAnimation],
+        ),
         builder: (context, child) => Transform.translate(
           offset: _slideAnimation.value,
           child: Transform.scale(

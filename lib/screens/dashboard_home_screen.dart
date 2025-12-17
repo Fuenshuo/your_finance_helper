@@ -31,19 +31,19 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
           onRefresh: _refreshData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.all(AppDesignTokens.spacing16),
+            padding: const EdgeInsets.all(AppDesignTokens.spacing16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 顶部：财务健康胶囊
                 _buildFinancialHealthCapsule(context),
 
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 中部：待办事项
                 _buildActionableItems(context),
 
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 下部：最近交易
                 _buildRecentTransactions(context),
@@ -57,8 +57,13 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
   /// 构建财务健康胶囊
   Widget _buildFinancialHealthCapsule(BuildContext context) =>
       Consumer3<AssetProvider, BudgetProvider, TransactionProvider>(
-        builder: (context, assetProvider, budgetProvider, transactionProvider,
-            child) {
+        builder: (
+          context,
+          assetProvider,
+          budgetProvider,
+          transactionProvider,
+          child,
+        ) {
           // 计算净资产
           final accounts = context.read<AccountProvider>().activeAccounts;
           final envelopeBudgets = budgetProvider.getCurrentEnvelopeBudgets();
@@ -117,7 +122,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                           '净资产',
                           style: AppTextStyles.bodySmall(context),
                         ),
-                        SizedBox(height: AppDesignTokens.spacing4),
+                        const SizedBox(height: AppDesignTokens.spacing4),
                         Row(
                           children: [
                             Text(
@@ -130,7 +135,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                                     : AppDesignTokens.errorColor,
                               ),
                             ),
-                            SizedBox(width: AppDesignTokens.spacing8),
+                            const SizedBox(width: AppDesignTokens.spacing8),
                             Icon(
                               Icons.visibility_outlined,
                               size: AppDesignTokens.iconSizeSmall,
@@ -148,7 +153,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                           '本月结余',
                           style: AppTextStyles.bodySmall(context),
                         ),
-                        SizedBox(height: AppDesignTokens.spacing4),
+                        const SizedBox(height: AppDesignTokens.spacing4),
                         Text(
                           context.formatAmount(monthlyBalance),
                           style: AppTextStyles.displayMedium(context).copyWith(
@@ -164,7 +169,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                   ],
                 ),
 
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 预算进度条
                 if (totalBudget > 0) ...[
@@ -186,7 +191,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: AppDesignTokens.spacing8),
+                  const SizedBox(height: AppDesignTokens.spacing8),
                   ClipRRect(
                     borderRadius:
                         BorderRadius.circular(AppDesignTokens.borderRadius4),
@@ -213,8 +218,13 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
   /// 构建待办事项
   Widget _buildActionableItems(BuildContext context) =>
       Consumer3<ExpensePlanProvider, BudgetProvider, TransactionProvider>(
-        builder: (context, expensePlanProvider, budgetProvider,
-            transactionProvider, child) {
+        builder: (
+          context,
+          expensePlanProvider,
+          budgetProvider,
+          transactionProvider,
+          child,
+        ) {
           final items = <ActionableItem>[];
 
           // 检查还款提醒
@@ -307,7 +317,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                   '待办事项',
                   style: AppTextStyles.headlineMedium(context),
                 ),
-                SizedBox(height: AppDesignTokens.spacing12),
+                const SizedBox(height: AppDesignTokens.spacing12),
                 ...items.map((item) => _buildActionableItem(context, item)),
               ],
             ),
@@ -323,11 +333,12 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
         onTap: item.onTap,
         borderRadius: BorderRadius.circular(AppDesignTokens.borderRadius8),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: AppDesignTokens.spacing8),
+          padding:
+              const EdgeInsets.symmetric(vertical: AppDesignTokens.spacing8),
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.all(AppDesignTokens.spacing8),
+                padding: const EdgeInsets.all(AppDesignTokens.spacing8),
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.1),
                   borderRadius:
@@ -339,7 +350,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                   size: AppDesignTokens.iconSizeMedium,
                 ),
               ),
-              SizedBox(width: AppDesignTokens.spacing12),
+              const SizedBox(width: AppDesignTokens.spacing12),
               Expanded(
                 child: Text(
                   item.title,
@@ -393,7 +404,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: AppDesignTokens.spacing12),
+                const SizedBox(height: AppDesignTokens.spacing12),
                 if (displayTransactions.isEmpty)
                   AppEmptyStates.emptyList(
                     actionLabel: '添加交易',
@@ -424,7 +435,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                                       : AppDesignTokens.errorColor)
                                   .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(
-                                  AppDesignTokens.borderRadius8),
+                                AppDesignTokens.borderRadius8,
+                              ),
                             ),
                             child: Icon(
                               isIncome
@@ -464,14 +476,15 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    'Transaction: ${transaction.description}'),
+                                  'Transaction: ${transaction.description}',
+                                ),
                                 duration: const Duration(seconds: 2),
                               ),
                             );
                           },
                         ),
                         if (displayTransactions.last != transaction)
-                          Divider(height: 1),
+                          const Divider(height: 1),
                       ],
                     );
                   }),

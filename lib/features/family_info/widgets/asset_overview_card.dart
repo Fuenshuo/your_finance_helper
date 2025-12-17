@@ -65,7 +65,7 @@ class AssetOverviewCard extends StatelessWidget {
                         value: assetProvider.excludeFixedAssets,
                         onChanged: (_) =>
                             assetProvider.toggleExcludeFixedAssets(),
-                        activeColor: context.primaryAction,
+                        activeThumbColor: context.primaryAction,
                       ),
                       SizedBox(width: context.spacing8),
                       Expanded(

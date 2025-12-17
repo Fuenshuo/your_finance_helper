@@ -21,27 +21,21 @@ class TestService extends StatefulService {
   }
 
   // 测试用的业务方法
-  Future<String> processData(String input) async {
-    return executeOperation('processData', () async {
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      return '$testData-$input';
-    });
-  }
+  Future<String> processData(String input) async =>
+      executeOperation('processData', () async {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        return '$testData-$input';
+      });
 
   // 测试用的同步方法
-  String syncProcess(String input) {
-    return executeSyncOperation('syncProcess', () {
-      return '$testData-$input-sync';
-    });
-  }
+  String syncProcess(String input) =>
+      executeSyncOperation('syncProcess', () => '$testData-$input-sync');
 
   @override
-  Map<String, dynamic> getStats() {
-    return {
-      ...super.getStats(),
-      'serviceName': serviceName,
-    };
-  }
+  Map<String, dynamic> getStats() => {
+        ...super.getStats(),
+        'serviceName': serviceName,
+      };
 }
 
 void main() {
@@ -161,12 +155,12 @@ void main() {
     });
 
     test('should convert to string correctly', () {
-      final exception = ServiceOperationException('Test error');
+      const exception = ServiceOperationException('Test error');
       expect(exception.toString(), 'ServiceOperationException: Test error');
     });
 
     test('should handle null operation', () {
-      final exception = ServiceOperationException('Test error');
+      const exception = ServiceOperationException('Test error');
       expect(exception.operation, null);
     });
   });
@@ -183,8 +177,9 @@ void main() {
     });
 
     test('should convert to string correctly', () {
-      final exception = ServiceInitializationException('Init error');
-      expect(exception.toString(), 'ServiceInitializationException: Init error');
+      const exception = ServiceInitializationException('Init error');
+      expect(
+          exception.toString(), 'ServiceInitializationException: Init error');
     });
   });
 }

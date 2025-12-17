@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/draft_transaction.dart';
-import '../models/input_validation.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
 
 /// 跨层通信事件类型
 enum CommunicationEvent {
@@ -26,23 +26,22 @@ enum CommunicationEvent {
 
 /// 通信事件数据
 class CommunicationEventData {
-  final CommunicationEvent type;
-  final dynamic data;
-  final DateTime timestamp;
-  final String? source;
-
   CommunicationEventData({
     required this.type,
     this.data,
     DateTime? timestamp,
     this.source,
   }) : timestamp = timestamp ?? DateTime.now();
+  final CommunicationEvent type;
+  final dynamic data;
+  final DateTime timestamp;
+  final String? source;
 }
 
 /// 跨层通信服务接口
 abstract class CrossLayerCommunicationService {
   /// 发送事件
-  void sendEvent(CommunicationEvent event, dynamic data, {String? source});
+  void sendEvent(CommunicationEvent event, Object? data, {String? source});
 
   /// 监听事件
   Stream<CommunicationEventData> listenEvents([CommunicationEvent? filterType]);
@@ -64,7 +63,7 @@ class DefaultCrossLayerCommunicationService
       StreamController.broadcast();
 
   @override
-  void sendEvent(CommunicationEvent event, dynamic data, {String? source}) {
+  void sendEvent(CommunicationEvent event, data, {String? source}) {
     final eventData = CommunicationEventData(
       type: event,
       data: data,
@@ -75,8 +74,9 @@ class DefaultCrossLayerCommunicationService
   }
 
   @override
-  Stream<CommunicationEventData> listenEvents(
-      [CommunicationEvent? filterType]) {
+  Stream<CommunicationEventData> listenEvents([
+    CommunicationEvent? filterType,
+  ]) {
     if (filterType == null) {
       return _controller.stream;
     }
@@ -85,9 +85,8 @@ class DefaultCrossLayerCommunicationService
   }
 
   @override
-  Stream<CommunicationEventData> listenTo(CommunicationEvent eventType) {
-    return listenEvents(eventType);
-  }
+  Stream<CommunicationEventData> listenTo(CommunicationEvent eventType) =>
+      listenEvents(eventType);
 
   @override
   void removeListener(Function listener) {
@@ -109,9 +108,8 @@ class DefaultCrossLayerCommunicationService
 
 /// 跨层通信服务Provider
 final crossLayerCommunicationServiceProvider =
-    Provider<CrossLayerCommunicationService>((ref) {
-  return DefaultCrossLayerCommunicationService();
-});
+    Provider<CrossLayerCommunicationService>(
+        (ref) => DefaultCrossLayerCommunicationService());
 
 /// 扩展方法：用于在UI层发送事件
 extension CrossLayerCommunicationExtensions on WidgetRef {
@@ -124,22 +122,31 @@ extension CrossLayerCommunicationExtensions on WidgetRef {
   /// 发送验证状态变更事件
   void sendValidationChanged(InputValidation validation, {String? source}) {
     final service = read(crossLayerCommunicationServiceProvider);
-    service.sendEvent(CommunicationEvent.validationChanged, validation,
-        source: source);
+    service.sendEvent(
+      CommunicationEvent.validationChanged,
+      validation,
+      source: source,
+    );
   }
 
   /// 发送解析完成事件
   void sendParsingCompleted(DraftTransaction draft, {String? source}) {
     final service = read(crossLayerCommunicationServiceProvider);
-    service.sendEvent(CommunicationEvent.parsingCompleted, draft,
-        source: source);
+    service.sendEvent(
+      CommunicationEvent.parsingCompleted,
+      draft,
+      source: source,
+    );
   }
 
   /// 发送保存成功事件
-  void sendSaveCompleted(dynamic transaction, {String? source}) {
+  void sendSaveCompleted(Object? transaction, {String? source}) {
     final service = read(crossLayerCommunicationServiceProvider);
-    service.sendEvent(CommunicationEvent.saveCompleted, transaction,
-        source: source);
+    service.sendEvent(
+      CommunicationEvent.saveCompleted,
+      transaction,
+      source: source,
+    );
   }
 
   /// 发送错误事件

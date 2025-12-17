@@ -13,7 +13,7 @@ void main() {
       grade: LetterGrade.A,
       score: 92.5,
       diagnosis: '本月财务状况良好，生存支出比例适中，建议继续保持。',
-      factors: [
+      factors: const [
         HealthFactor(
           name: '预算控制',
           impact: 0.8,
@@ -25,11 +25,11 @@ void main() {
           description: '生存支出占总支出的42%，比例适中',
         ),
       ],
-      recommendations: [
+      recommendations: const [
         '继续保持良好的消费习惯',
         '考虑增加储蓄比例',
       ],
-      metrics: {
+      metrics: const {
         'savingsRate': 0.2,
         'spendingRatio': 0.8,
         'survivalPercentage': 0.417,
@@ -45,7 +45,7 @@ void main() {
       grade: LetterGrade.D,
       score: 45.0,
       diagnosis: '本月支出严重超预算，生活支出占比过高，建议立即调整消费结构。',
-      factors: [
+      factors: const [
         HealthFactor(
           name: '预算超支',
           impact: -0.9,
@@ -57,12 +57,12 @@ void main() {
           description: '生活支出占61%，严重偏高',
         ),
       ],
-      recommendations: [
+      recommendations: const [
         '立即削减非必要支出',
         '制定严格的预算计划',
         '寻求额外的收入来源',
       ],
-      metrics: {
+      metrics: const {
         'savingsRate': -0.125,
         'spendingRatio': 1.125,
         'survivalPercentage': 0.389,
@@ -78,7 +78,7 @@ void main() {
       grade: LetterGrade.B,
       score: 78.0,
       diagnosis: '本月消费结构合理，生存与生活支出比例均衡，表现稳定。',
-      factors: [
+      factors: const [
         HealthFactor(
           name: '支出比例均衡',
           impact: 0.7,
@@ -90,11 +90,11 @@ void main() {
           description: '支出控制在合理范围内',
         ),
       ],
-      recommendations: [
+      recommendations: const [
         '保持当前的消费结构',
         '适当增加储蓄',
       ],
-      metrics: {
+      metrics: const {
         'savingsRate': 0.167,
         'spendingRatio': 0.833,
         'survivalPercentage': 0.6,
@@ -149,7 +149,7 @@ void main() {
         grade: LetterGrade.A,
         score: 92.5,
         diagnosis: '本月财务状况良好，生存支出比例适中，建议继续保持。',
-        factors: [
+        factors: const [
           HealthFactor(
             name: '预算控制',
             impact: 0.8,
@@ -161,11 +161,11 @@ void main() {
             description: '生存支出占总支出的42%，比例适中',
           ),
         ],
-        recommendations: [
+        recommendations: const [
           '继续保持良好的消费习惯',
           '考虑增加储蓄比例',
         ],
-        metrics: {
+        metrics: const {
           'savingsRate': 0.2,
           'spendingRatio': 0.8,
           'survivalPercentage': 0.417,
@@ -211,7 +211,7 @@ void main() {
 
     group('HealthFactor tests', () {
       test('should create health factor correctly', () {
-        final factor = HealthFactor(
+        const factor = HealthFactor(
           name: '预算控制',
           impact: 0.8,
           description: '支出控制在预算范围内',
@@ -278,9 +278,9 @@ void main() {
           grade: LetterGrade.F,
           score: 0.0,
           diagnosis: '严重财务危机',
-          factors: [],
-          recommendations: ['立即寻求专业帮助'],
-          metrics: {},
+          factors: const [],
+          recommendations: const ['立即寻求专业帮助'],
+          metrics: const {},
         );
 
         expect(zeroScore.score, 0.0);
@@ -294,9 +294,9 @@ void main() {
           grade: LetterGrade.A,
           score: 100.0,
           diagnosis: '完美财务状况',
-          factors: [],
-          recommendations: ['保持现状'],
-          metrics: {},
+          factors: const [],
+          recommendations: const ['保持现状'],
+          metrics: const {},
         );
 
         expect(perfectScore.score, 100.0);
@@ -310,9 +310,9 @@ void main() {
           grade: LetterGrade.C,
           score: 70.0,
           diagnosis: '一般财务状况',
-          factors: [],
-          recommendations: [],
-          metrics: {},
+          factors: const [],
+          recommendations: const [],
+          metrics: const {},
         );
 
         expect(minimalScore.factors, isEmpty);

@@ -5,7 +5,6 @@ import 'package:your_finance_flutter/features/insights/models/micro_insight.dart
 
 /// Provider for daily spending cap and micro-insights management
 class DailyCapProvider with ChangeNotifier {
-
   DailyCap? _dailyCap;
   MicroInsight? _latestInsight;
   bool _isLoading = false;
@@ -18,64 +17,62 @@ class DailyCapProvider with ChangeNotifier {
   String? get error => _error;
 
   /// Initialize daily cap for current date
-  Future<void> initializeDailyCap() async {
-    return PerformanceMonitor.monitorBuild(
-      'DailyCapProvider.initializeDailyCap',
-      () async {
-        try {
-          _isLoading = true;
-          _error = null;
-          notifyListeners();
+  Future<void> initializeDailyCap() async => PerformanceMonitor.monitorBuild(
+        'DailyCapProvider.initializeDailyCap',
+        () async {
+          try {
+            _isLoading = true;
+            _error = null;
+            notifyListeners();
 
-          // Calculate daily budget reference (monthly budget - fixed expenses) / 30
-          // This would be implemented based on user's monthly budget
-          const double dailyReference =
-              200.0; // Placeholder - implement real calculation
+            // Calculate daily budget reference (monthly budget - fixed expenses) / 30
+            // This would be implemented based on user's monthly budget
+            const dailyReference =
+                200.0; // Placeholder - implement real calculation
 
-          _dailyCap = DailyCap(
-            id: 'daily_cap_${DateTime.now().toIso8601String().split('T').first}',
-            date: DateTime.now(),
-            referenceAmount: dailyReference,
-            currentSpending: 0.0, // Calculate from transactions
-            percentage: 0.0,
-            status: CapStatus.safe,
-          );
+            _dailyCap = DailyCap(
+              id: 'daily_cap_${DateTime.now().toIso8601String().split('T').first}',
+              date: DateTime.now(),
+              referenceAmount: dailyReference,
+              currentSpending: 0.0, // Calculate from transactions
+              percentage: 0.0,
+              status: CapStatus.safe,
+            );
 
-          await _generateInitialInsight();
-        } catch (e) {
-          _error = e.toString();
-        } finally {
-          _isLoading = false;
-          notifyListeners();
-        }
-      },
-    );
-  }
+            await _generateInitialInsight();
+          } catch (e) {
+            _error = e.toString();
+          } finally {
+            _isLoading = false;
+            notifyListeners();
+          }
+        },
+      );
 
   /// Update daily cap when transactions change
-  Future<void> updateDailySpending(double newSpending) async {
-    return PerformanceMonitor.monitorBuild(
-      'DailyCapProvider.updateDailySpending',
-      () async {
-        if (_dailyCap == null) return;
+  Future<void> updateDailySpending(double newSpending) async =>
+      PerformanceMonitor.monitorBuild(
+        'DailyCapProvider.updateDailySpending',
+        () async {
+          if (_dailyCap == null) return;
 
-        try {
-          final updatedCap = _dailyCap!.copyWith(
-            currentSpending: newSpending,
-            percentage: newSpending / _dailyCap!.referenceAmount,
-            status: _calculateStatus(newSpending / _dailyCap!.referenceAmount),
-          );
+          try {
+            final updatedCap = _dailyCap!.copyWith(
+              currentSpending: newSpending,
+              percentage: newSpending / _dailyCap!.referenceAmount,
+              status:
+                  _calculateStatus(newSpending / _dailyCap!.referenceAmount),
+            );
 
-          _dailyCap = updatedCap;
-          await _generateMicroInsight();
-          notifyListeners();
-        } catch (e) {
-          _error = e.toString();
-          notifyListeners();
-        }
-      },
-    );
-  }
+            _dailyCap = updatedCap;
+            await _generateMicroInsight();
+            notifyListeners();
+          } catch (e) {
+            _error = e.toString();
+            notifyListeners();
+          }
+        },
+      );
 
   /// Generate initial insight for the day
   Future<void> _generateInitialInsight() async {
@@ -89,7 +86,7 @@ class DailyCapProvider with ChangeNotifier {
         generatedAt: DateTime.now(),
         sentiment: Sentiment.neutral,
         message: '新的一天开始了，保持良好的消费习惯！',
-        actions: ['设置今日消费目标', '查看昨日消费总结'],
+        actions: const ['设置今日消费目标', '查看昨日消费总结'],
         trigger: InsightTrigger.timeCheck,
       );
     } catch (e) {
@@ -100,7 +97,7 @@ class DailyCapProvider with ChangeNotifier {
         generatedAt: DateTime.now(),
         sentiment: Sentiment.neutral,
         message: '今日消费目标：¥${_dailyCap!.referenceAmount.toStringAsFixed(0)}',
-        actions: [],
+        actions: const [],
         trigger: InsightTrigger.timeCheck,
       );
     }

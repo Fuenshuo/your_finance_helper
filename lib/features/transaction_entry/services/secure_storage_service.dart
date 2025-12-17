@@ -7,7 +7,6 @@ class SecureStorageService {
   // iOS Keychain选项
   static const IOSOptions _iosOptions = IOSOptions(
     accessibility: KeychainAccessibility.first_unlock,
-    synchronizable: false, // 不同步到iCloud
   );
 
   // Android选项
@@ -96,14 +95,15 @@ class SecureStorageService {
 
   /// 安全存储金融数据的便捷方法
   static Future<void> saveFinancialData(
-      String dataId, String encryptedData) async {
+    String dataId,
+    String encryptedData,
+  ) async {
     await writeSecureData('financial_$dataId', encryptedData);
   }
 
   /// 读取金融数据的便捷方法
-  static Future<String?> loadFinancialData(String dataId) async {
-    return await readSecureData('financial_$dataId');
-  }
+  static Future<String?> loadFinancialData(String dataId) async =>
+      readSecureData('financial_$dataId');
 
   /// 删除金融数据的便捷方法
   static Future<void> removeFinancialData(String dataId) async {

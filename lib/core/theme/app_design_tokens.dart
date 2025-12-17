@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 
 /// 应用主题枚举
 enum AppTheme {
@@ -57,9 +56,8 @@ class AppDesignTokens {
   }
 
   /// 获取主题颜色配置（用于UI展示）
-  static Map<String, Color> getThemeColors(AppTheme theme) {
-    return _themeColors[theme]!;
-  }
+  static Map<String, Color> getThemeColors(AppTheme theme) =>
+      _themeColors[theme]!;
 
   // --- 1. 色彩系统 (Color System) ---
 
@@ -178,15 +176,13 @@ class AppDesignTokens {
   static Color amountNeutralColor(BuildContext context, {MoneyTheme? theme}) =>
       moneyNeutral(context, theme: theme);
 
-  static Color pageBackground(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark ? _bgDark : _bgLight;
-  }
+  static Color pageBackground(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? _bgDark : _bgLight;
 
-  static Color surface(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? _surfaceDark
-        : _surfaceLight;
-  }
+  static Color surface(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? _surfaceDark
+          : _surfaceLight;
 
   // 输入框填充色 (iOS Search Bar style)
   static Color inputFill(BuildContext context) {
@@ -208,7 +204,6 @@ class AppDesignTokens {
         color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
         blurRadius: 8,
         offset: const Offset(0, 2),
-        spreadRadius: 0,
       );
     } else {
       // iOS Fintech: 弥散阴影（有色阴影）
@@ -225,9 +220,8 @@ class AppDesignTokens {
   }
 
   /// 获取卡片阴影（支持风格切换）
-  static BoxShadow cardShadow(BuildContext context, {AppStyle? style}) {
-    return primaryShadow(context, style: style);
-  }
+  static BoxShadow cardShadow(BuildContext context, {AppStyle? style}) =>
+      primaryShadow(context, style: style);
 
   /// 获取按钮阴影（支持风格切换）
   static BoxShadow buttonShadow(BuildContext context, {AppStyle? style}) {
@@ -238,7 +232,6 @@ class AppDesignTokens {
         color: Colors.black.withValues(alpha: 0.2),
         blurRadius: 12,
         offset: const Offset(0, 4),
-        spreadRadius: 0,
       );
     } else {
       // iOS Fintech: 使用主阴影
@@ -337,11 +330,10 @@ class AppDesignTokens {
         color: _textColor(context).withValues(alpha: 0.6),
       );
 
-  static Color _textColor(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black;
-  }
+  static Color _textColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : Colors.black;
 
   // --- 3. 间距与圆角 (Metrics) - 支持风格切换 ---
 

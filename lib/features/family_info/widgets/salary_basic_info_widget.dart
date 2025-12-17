@@ -36,7 +36,7 @@ class _SalaryBasicInfoWidgetState extends State<SalaryBasicInfoWidget> {
         index: 0,
         child: AppCard(
           child: Padding(
-            padding: EdgeInsets.all(AppDesignTokens.spacing16),
+            padding: const EdgeInsets.all(AppDesignTokens.spacing16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -44,7 +44,7 @@ class _SalaryBasicInfoWidgetState extends State<SalaryBasicInfoWidget> {
                   '基本信息',
                   style: AppDesignTokens.title1(context),
                 ),
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 收入名称
                 AppTextField(
@@ -54,7 +54,7 @@ class _SalaryBasicInfoWidgetState extends State<SalaryBasicInfoWidget> {
                   prefixIcon: const Icon(Icons.work),
                   validator: SalaryFormValidators.validateIncomeName,
                 ),
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 发工资日期
                 Row(
@@ -63,7 +63,7 @@ class _SalaryBasicInfoWidgetState extends State<SalaryBasicInfoWidget> {
                       Icons.calendar_today,
                       color: AppDesignTokens.primaryAction(context),
                     ),
-                    SizedBox(width: AppDesignTokens.spacing12),
+                    const SizedBox(width: AppDesignTokens.spacing12),
                     Text(
                       '每月',
                       style: AppDesignTokens.body(context),
@@ -92,7 +92,7 @@ class _SalaryBasicInfoWidgetState extends State<SalaryBasicInfoWidget> {
 
                 // Mode toggles
                 if (widget.onMidYearModeChanged != null) ...[
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
                   SwitchListTile.adaptive(
                     title: const Text('启用补录模式（年中调整）'),
                     subtitle: const Text('根据今年已发工资重新计算累计数据'),

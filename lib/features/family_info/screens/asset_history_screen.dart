@@ -33,11 +33,17 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
 
     // 注册资产历史专用动效曲线
     IOSAnimationSystem.registerCustomCurve(
-        'history-list-item', Curves.easeOutCubic);
+      'history-list-item',
+      Curves.easeOutCubic,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'history-swipe-delete', Curves.elasticOut);
+      'history-swipe-delete',
+      Curves.elasticOut,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'history-stats-highlight', Curves.easeInOutCubic);
+      'history-stats-highlight',
+      Curves.easeInOutCubic,
+    );
 
     _loadHistory();
   }
@@ -365,7 +371,7 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
   }
 
   // ===== v1.1.0 新增：删除历史记录项 =====
-  void _deleteHistoryItem(AssetHistory history) async {
+  Future<void> _deleteHistoryItem(AssetHistory history) async {
     if (_historyService == null) return;
 
     // 显示删除确认对话框
@@ -374,7 +380,8 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
       builder: (context) => AlertDialog(
         title: const Text('删除历史记录'),
         content: Text(
-            '确定要删除"${history.changeDescription ?? '资产变更'}"的历史记录吗？此操作不可撤销。'),
+          '确定要删除"${history.changeDescription ?? '资产变更'}"的历史记录吗？此操作不可撤销。',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -391,7 +398,7 @@ class _AssetHistoryScreenState extends State<AssetHistoryScreen> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       try {
         await _historyService!.deleteHistory(history.id);
 

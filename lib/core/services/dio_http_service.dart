@@ -76,8 +76,11 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'GET request failed',
-          {'path': path, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'GET request failed',
+        {'path': path, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -85,7 +88,7 @@ class DioHttpService {
   /// POST request
   Future<Response<T>> post<T>(
     String path, {
-    dynamic data,
+    Object? data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -104,8 +107,11 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'POST request failed',
-          {'path': path, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'POST request failed',
+        {'path': path, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -113,7 +119,7 @@ class DioHttpService {
   /// PUT request
   Future<Response<T>> put<T>(
     String path, {
-    dynamic data,
+    Object? data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -132,8 +138,11 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'PUT request failed',
-          {'path': path, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'PUT request failed',
+        {'path': path, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -141,7 +150,7 @@ class DioHttpService {
   /// DELETE request
   Future<Response<T>> delete<T>(
     String path, {
-    dynamic data,
+    Object? data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
@@ -156,8 +165,11 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'DELETE request failed',
-          {'path': path, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'DELETE request failed',
+        {'path': path, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -165,7 +177,7 @@ class DioHttpService {
   /// PATCH request
   Future<Response<T>> patch<T>(
     String path, {
-    dynamic data,
+    Object? data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     ProgressCallback? onSendProgress,
@@ -184,8 +196,11 @@ class DioHttpService {
       );
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'PATCH request failed',
-          {'path': path, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'PATCH request failed',
+        {'path': path, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -226,8 +241,11 @@ class DioHttpService {
 
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'File upload failed',
-          {'path': path, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'File upload failed',
+        {'path': path, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -241,7 +259,7 @@ class DioHttpService {
     CancelToken? cancelToken,
     bool deleteOnError = true,
     String lengthHeader = Headers.contentLengthHeader,
-    dynamic data,
+    Object? data,
     Options? options,
   }) async {
     try {
@@ -259,8 +277,11 @@ class DioHttpService {
 
       return response;
     } catch (e) {
-      Log.error('DioHttpService', 'File download failed',
-          {'url': url, 'error': e.toString()});
+      Log.error(
+        'DioHttpService',
+        'File download failed',
+        {'url': url, 'error': e.toString()},
+      );
       rethrow;
     }
   }
@@ -314,7 +335,8 @@ class _LoggingInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
+  void onResponse(
+      Response<dynamic> response, ResponseInterceptorHandler handler) {
     if (kDebugMode) {
       Log.business('HTTP Response', response.statusCode.toString(), {
         'url': response.requestOptions.uri.toString(),
@@ -402,7 +424,9 @@ class _RetryInterceptor extends Interceptor {
 
   @override
   Future<void> onError(
-      DioException err, ErrorInterceptorHandler handler) async {
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     final requestOptions = err.requestOptions;
 
     // Only retry on network errors, not on bad responses

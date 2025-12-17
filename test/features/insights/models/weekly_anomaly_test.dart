@@ -12,25 +12,25 @@ void main() {
     highAnomaly = WeeklyAnomaly(
       id: 'test_high_anomaly',
       weekStart: testWeekStart,
-      anomalyDate: testWeekStart.add(Duration(days: 2)), // Wednesday
+      anomalyDate: testWeekStart.add(const Duration(days: 2)), // Wednesday
       expectedAmount: 150.0,
       actualAmount: 320.0,
       deviation: 1.13, // 113% higher
       reason: '餐饮,娱乐 开支激增 113%，超出预期 ¥170。可能是特殊事件或消费习惯变化。',
       severity: AnomalySeverity.high,
-      categories: ['餐饮', '娱乐'],
+      categories: const ['餐饮', '娱乐'],
     );
 
     lowAnomaly = WeeklyAnomaly(
       id: 'test_low_anomaly',
       weekStart: testWeekStart,
-      anomalyDate: testWeekStart.add(Duration(days: 4)), // Friday
+      anomalyDate: testWeekStart.add(const Duration(days: 4)), // Friday
       expectedAmount: 150.0,
       actualAmount: 60.0,
       deviation: -0.6, // 60% lower
       reason: '餐饮 支出偏低 60%，比平时少 ¥90。良好的节约表现！',
       severity: AnomalySeverity.medium,
-      categories: ['餐饮'],
+      categories: const ['餐饮'],
     );
   });
 
@@ -38,7 +38,8 @@ void main() {
     test('should create high spending anomaly correctly', () {
       expect(highAnomaly.id, 'test_high_anomaly');
       expect(highAnomaly.weekStart, testWeekStart);
-      expect(highAnomaly.anomalyDate, testWeekStart.add(Duration(days: 2)));
+      expect(
+          highAnomaly.anomalyDate, testWeekStart.add(const Duration(days: 2)));
       expect(highAnomaly.expectedAmount, 150.0);
       expect(highAnomaly.actualAmount, 320.0);
       expect(highAnomaly.deviation, 1.13);
@@ -59,13 +60,13 @@ void main() {
       final identicalAnomaly = WeeklyAnomaly(
         id: 'test_high_anomaly',
         weekStart: testWeekStart,
-        anomalyDate: testWeekStart.add(Duration(days: 2)),
+        anomalyDate: testWeekStart.add(const Duration(days: 2)),
         expectedAmount: 150.0,
         actualAmount: 320.0,
         deviation: 1.13,
         reason: '餐饮,娱乐 开支激增 113%，超出预期 ¥170。可能是特殊事件或消费习惯变化。',
         severity: AnomalySeverity.high,
-        categories: ['餐饮', '娱乐'],
+        categories: const ['餐饮', '娱乐'],
       );
 
       expect(highAnomaly, equals(identicalAnomaly));
@@ -137,15 +138,19 @@ void main() {
 
     group('Date validation', () {
       test('should have anomaly date within the week', () {
-        expect(highAnomaly.anomalyDate.difference(highAnomaly.weekStart).inDays, 2);
-        expect(lowAnomaly.anomalyDate.difference(lowAnomaly.weekStart).inDays, 4);
+        expect(highAnomaly.anomalyDate.difference(highAnomaly.weekStart).inDays,
+            2);
+        expect(
+            lowAnomaly.anomalyDate.difference(lowAnomaly.weekStart).inDays, 4);
       });
 
       test('should handle different week starts', () {
         final sundayStart = DateTime(2025, 11, 24); // Sunday
-        final anomalyWithSundayStart = highAnomaly.copyWith(weekStart: sundayStart);
+        final anomalyWithSundayStart =
+            highAnomaly.copyWith(weekStart: sundayStart);
         // In Dart, weekday 7 = Sunday, 1 = Monday
-        expect(anomalyWithSundayStart.weekStart.weekday, greaterThanOrEqualTo(1));
+        expect(
+            anomalyWithSundayStart.weekStart.weekday, greaterThanOrEqualTo(1));
         expect(anomalyWithSundayStart.weekStart.weekday, lessThanOrEqualTo(7));
       });
     });
@@ -163,18 +168,19 @@ void main() {
 
       test('should calculate percentage correctly', () {
         // For high anomaly: (320 - 150) / 150 = 170 / 150 = 1.133...
-        final expectedHighDeviation = (320.0 - 150.0) / 150.0;
+        const expectedHighDeviation = (320.0 - 150.0) / 150.0;
         expect(highAnomaly.deviation, closeTo(expectedHighDeviation, 0.01));
 
         // For low anomaly: (60 - 150) / 150 = -90 / 150 = -0.6
-        final expectedLowDeviation = (60.0 - 150.0) / 150.0;
+        const expectedLowDeviation = (60.0 - 150.0) / 150.0;
         expect(lowAnomaly.deviation, closeTo(expectedLowDeviation, 0.01));
       });
     });
 
     group('Edge cases', () {
       test('should handle zero expected amount', () {
-        final anomalyWithZeroExpected = highAnomaly.copyWith(expectedAmount: 0.0);
+        final anomalyWithZeroExpected =
+            highAnomaly.copyWith(expectedAmount: 0.0);
         // Division by zero would cause issues, but this should be prevented at creation time
         expect(anomalyWithZeroExpected.expectedAmount, 0.0);
       });

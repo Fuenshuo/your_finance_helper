@@ -173,7 +173,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<LoanType>(
-                value: _loanType,
+                initialValue: _loanType,
                 decoration: const InputDecoration(
                   labelText: '贷款类型',
                   border: OutlineInputBorder(),
@@ -271,7 +271,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<RepaymentMethod>(
-                value: _repaymentMethod,
+                initialValue: _repaymentMethod,
                 decoration: const InputDecoration(
                   labelText: '还款方式',
                   border: OutlineInputBorder(),

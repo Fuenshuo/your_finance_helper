@@ -42,8 +42,11 @@ void main() {
       stopwatch.stop();
 
       // Assert
-      expect(stopwatch.elapsedMilliseconds, lessThan(5000),
-          reason: 'AI analysis should complete within 5 seconds',);
+      expect(
+        stopwatch.elapsedMilliseconds,
+        lessThan(5000),
+        reason: 'AI analysis should complete within 5 seconds',
+      );
 
       // Result should be valid AnalysisSummary (success or safe default)
       expect(result, isNotNull);
@@ -86,23 +89,40 @@ void main() {
       for (final transaction in testCases) {
         // Act
         final stopwatch = Stopwatch()..start();
-        final result = await dataSource.analyze(transaction, FluxTimeframe.month);
+        final result =
+            await dataSource.analyze(transaction, FluxTimeframe.month);
         stopwatch.stop();
 
         // Assert
-        expect(stopwatch.elapsedMilliseconds, lessThan(5000),
-            reason: 'Analysis for ${transaction.category} should complete within 5 seconds',);
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(5000),
+          reason:
+              'Analysis for ${transaction.category} should complete within 5 seconds',
+        );
 
-        expect(result, isNotNull,
-            reason: 'Analysis result should not be null for ${transaction.category}',);
-        expect(result.improvementsFound, greaterThanOrEqualTo(0),
-            reason: 'Improvements found should be valid for ${transaction.category}',);
-        expect(result.score, greaterThanOrEqualTo(0),
-            reason: 'Score should be valid for ${transaction.category}',);
+        expect(
+          result,
+          isNotNull,
+          reason:
+              'Analysis result should not be null for ${transaction.category}',
+        );
+        expect(
+          result.improvementsFound,
+          greaterThanOrEqualTo(0),
+          reason:
+              'Improvements found should be valid for ${transaction.category}',
+        );
+        expect(
+          result.score,
+          greaterThanOrEqualTo(0),
+          reason: 'Score should be valid for ${transaction.category}',
+        );
       }
     });
 
-    testWidgets('AI analysis maintains silent failure on service unavailability',
+    testWidgets(
+        'AI analysis maintains silent failure on service unavailability',
         (tester) async {
       // This test verifies that if AI services are unavailable,
       // the system gracefully returns safe defaults without throwing exceptions
@@ -148,17 +168,25 @@ void main() {
       }
 
       // Assert performance consistency
-      final averageDuration = durations.reduce((a, b) => a + b) / durations.length;
-      expect(averageDuration, lessThan(5000),
-          reason: 'Average analysis time should be under 5 seconds',);
+      final averageDuration =
+          durations.reduce((a, b) => a + b) / durations.length;
+      expect(
+        averageDuration,
+        lessThan(5000),
+        reason: 'Average analysis time should be under 5 seconds',
+      );
 
       // Check that performance is reasonably consistent
       final maxDuration = durations.reduce((a, b) => a > b ? a : b);
       final minDuration = durations.reduce((a, b) => a < b ? a : b);
       final variance = maxDuration - minDuration;
 
-      expect(variance, lessThan(2000),
-          reason: 'Performance variance should be reasonable (< 2 seconds difference)',);
+      expect(
+        variance,
+        lessThan(2000),
+        reason:
+            'Performance variance should be reasonable (< 2 seconds difference)',
+      );
     });
   });
 }

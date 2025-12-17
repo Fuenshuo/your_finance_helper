@@ -2,42 +2,39 @@
 ///
 /// Provides structured logging for verification operations with different
 /// log levels and component-specific tracking.
+library;
 
-enum VerificationLogLevel {
-  debug,
-  info,
-  warning,
-  error,
-  success
-}
+enum VerificationLogLevel { debug, info, warning, error, success }
 
 class VerificationLogger {
   static const String _logPrefix = '[VERIFICATION]';
 
-  static void debug(String component, String message, [dynamic data]) {
+  static void debug(String component, String message, [Object? data]) {
     _log(VerificationLogLevel.debug, component, message, data);
   }
 
-  static void info(String component, String message, [dynamic data]) {
+  static void info(String component, String message, [Object? data]) {
     _log(VerificationLogLevel.info, component, message, data);
   }
 
-  static void warning(String component, String message, [dynamic data]) {
+  static void warning(String component, String message, [Object? data]) {
     _log(VerificationLogLevel.warning, component, message, data);
   }
 
-  static void error(String component, String message, [dynamic error, StackTrace? stackTrace]) {
+  static void error(String component, String message,
+      [Object? error, StackTrace? stackTrace]) {
     _log(VerificationLogLevel.error, component, message, error);
     if (stackTrace != null) {
       print('$_logPrefix StackTrace: $stackTrace');
     }
   }
 
-  static void success(String component, String message, [dynamic data]) {
+  static void success(String component, String message, [Object? data]) {
     _log(VerificationLogLevel.success, component, message, data);
   }
 
-  static void _log(VerificationLogLevel level, String component, String message, [dynamic data]) {
+  static void _log(VerificationLogLevel level, String component, String message,
+      [Object? data]) {
     final timestamp = DateTime.now().toIso8601String();
     final levelStr = _levelToString(level);
     final prefix = '$_logPrefix [$timestamp] [$levelStr] [$component]';
@@ -70,10 +67,13 @@ class VerificationLogger {
   }
 
   /// Log verification session end
-  static void logSessionEnd(String sessionId, int totalChecks, int passed, int failed) {
+  static void logSessionEnd(
+      String sessionId, int totalChecks, int passed, int failed) {
     final success = failed == 0;
-    final level = success ? VerificationLogLevel.success : VerificationLogLevel.warning;
-    _log(level, 'Session', 'Completed verification session: $sessionId - Total: $totalChecks, Passed: $passed, Failed: $failed');
+    final level =
+        success ? VerificationLogLevel.success : VerificationLogLevel.warning;
+    _log(level, 'Session',
+        'Completed verification session: $sessionId - Total: $totalChecks, Passed: $passed, Failed: $failed');
   }
 
   /// Log component verification start
@@ -82,15 +82,18 @@ class VerificationLogger {
   }
 
   /// Log component verification result
-  static void logComponentResult(String componentName, bool success, [String? details]) {
-    final level = success ? VerificationLogLevel.success : VerificationLogLevel.error;
+  static void logComponentResult(String componentName, bool success,
+      [String? details]) {
+    final level =
+        success ? VerificationLogLevel.success : VerificationLogLevel.error;
     final message = success ? 'Verification passed' : 'Verification failed';
-    _log(level, componentName, '$message${details != null ? ' - $details' : ''}');
+    _log(level, componentName,
+        '$message${details != null ? ' - $details' : ''}');
   }
 
   /// Log evidence capture
-  static void logEvidence(String componentName, String evidenceType, String filePath) {
+  static void logEvidence(
+      String componentName, String evidenceType, String filePath) {
     debug(componentName, 'Captured $evidenceType evidence: $filePath');
   }
 }
-

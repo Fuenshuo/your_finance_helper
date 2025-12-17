@@ -253,7 +253,6 @@ class _AnimatedListDeleteState extends State<_AnimatedListDelete>
       duration: widget.duration,
       vsync: this,
     );
-
   }
 
   @override
@@ -261,7 +260,6 @@ class _AnimatedListDeleteState extends State<_AnimatedListDelete>
     _controller.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) => Dismissible(

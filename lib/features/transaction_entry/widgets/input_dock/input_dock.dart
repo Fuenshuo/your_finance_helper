@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/transaction_entry_provider.dart';
-import 'text_input_field.dart';
-import 'send_button.dart';
-import 'voice_input_button.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/transaction_entry_state.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/input_dock/send_button.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/input_dock/text_input_field.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/input_dock/voice_input_button.dart';
 
 /// 输入面板组件
 ///
@@ -49,10 +50,12 @@ class _InputDockState extends ConsumerState<InputDock>
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     // 监听输入变化
     _textController.addListener(_onTextChanged);
@@ -133,17 +136,15 @@ class _InputDockState extends ConsumerState<InputDock>
               // 发送按钮
               AnimatedBuilder(
                 animation: _scaleAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: SendButton(
-                      onPressed: _textController.text.trim().isNotEmpty
-                          ? _onSendPressed
-                          : null,
-                      isLoading: entryState.isParsing,
-                    ),
-                  );
-                },
+                builder: (context, child) => Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: SendButton(
+                    onPressed: _textController.text.trim().isNotEmpty
+                        ? _onSendPressed
+                        : null,
+                    isLoading: entryState.isParsing,
+                  ),
+                ),
               ),
             ],
           ),
@@ -159,7 +160,7 @@ class _InputDockState extends ConsumerState<InputDock>
     );
   }
 
-  Widget _buildStatusIndicator(dynamic entryState) {
+  Widget _buildStatusIndicator(TransactionEntryState entryState) {
     if (entryState.parseError != null) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

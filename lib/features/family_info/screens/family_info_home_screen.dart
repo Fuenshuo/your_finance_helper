@@ -47,8 +47,7 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
 
     // 导航逻辑
 
-    Navigator.of(context)
-        .push(
+    Navigator.of(context).push(
       AppAnimations.createRoute<void>(
         SalaryIncomeSetupScreen(
           salaryIncomeToEdit: salaryIncomeToEdit,
@@ -153,7 +152,7 @@ class _FamilyInfoHomeScreenState extends State<FamilyInfoHomeScreen> {
                     onTap: () {
                       Navigator.of(context).push(
                         AppAnimations.createRoute<void>(
-                          ClearanceHomeScreen(),
+                          const ClearanceHomeScreen(),
                         ),
                       );
                     },

@@ -21,12 +21,11 @@ import 'package:your_finance_flutter/features/insights/models/budget_data.dart';
 /// )
 /// ```
 class DailyBudgetVelocity extends StatelessWidget {
-  final BudgetData? budgetData;
-
   const DailyBudgetVelocity({
     super.key,
     this.budgetData,
   });
+  final BudgetData? budgetData;
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +56,11 @@ class DailyBudgetVelocity extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isOverspent
                     ? AppDesignTokens.amountNegativeColor(
-                        context) // Red for overspend
+                        context,
+                      ) // Red for overspend
                     : AppDesignTokens.amountPositiveColor(
-                        context), // Green for normal
+                        context,
+                      ), // Green for normal
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -91,17 +92,15 @@ class DailyBudgetVelocity extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      height: 60, // Minimum touch target
-      alignment: Alignment.center,
-      child: Text(
-        'Set a budget to see velocity',
-        style: AppDesignTokens.caption(context).copyWith(
-          color: AppDesignTokens.secondaryText(context),
+  Widget _buildEmptyState(BuildContext context) => Container(
+        height: 60, // Minimum touch target
+        alignment: Alignment.center,
+        child: Text(
+          'Set a budget to see velocity',
+          style: AppDesignTokens.caption(context).copyWith(
+            color: AppDesignTokens.secondaryText(context),
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
+      );
 }

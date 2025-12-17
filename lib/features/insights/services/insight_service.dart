@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
-import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart'
     as ai_factory;
+import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
+import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
 
 /// Flux Loop Insight Service - orchestrates AI-powered financial insights
 class InsightService {
@@ -49,9 +49,8 @@ class InsightService {
   }
 
   /// Get job status updates stream
-  Stream<FluxLoopJob> jobStatusStream(String jobId) {
-    return _jobControllers[jobId]?.stream ?? Stream.empty();
-  }
+  Stream<FluxLoopJob> jobStatusStream(String jobId) =>
+      _jobControllers[jobId]?.stream ?? const Stream.empty();
 
   /// Generate micro-insight for daily spending
   Future<MicroInsight> generateMicroInsight({
@@ -94,7 +93,7 @@ class InsightService {
         generatedAt: DateTime.now(),
         sentiment: Sentiment.neutral,
         message: '消费分析完成，请继续保持良好的消费习惯。',
-        actions: ['查看消费明细'],
+        actions: const ['查看消费明细'],
         trigger: trigger,
       );
     }
@@ -143,13 +142,13 @@ class InsightService {
   Future<Map<String, dynamic>> _performAnalysis(FluxLoopJob job) async {
     switch (job.type) {
       case JobType.dailyAnalysis:
-        return await _performDailyAnalysis(job);
+        return _performDailyAnalysis(job);
       case JobType.weeklyPatterns:
-        return await _performWeeklyAnalysis(job);
+        return _performWeeklyAnalysis(job);
       case JobType.monthlyHealth:
-        return await _performMonthlyAnalysis(job);
+        return _performMonthlyAnalysis(job);
       case JobType.microInsight:
-        return await _performMicroInsightAnalysis(job);
+        return _performMicroInsightAnalysis(job);
     }
   }
 
@@ -185,7 +184,8 @@ class InsightService {
 
   /// Micro-insight analysis
   Future<Map<String, dynamic>> _performMicroInsightAnalysis(
-      FluxLoopJob job) async {
+    FluxLoopJob job,
+  ) async {
     // Generate targeted micro-insight
     return {
       'sentiment': 'neutral',
@@ -228,7 +228,7 @@ ${context != null ? '上下文信息: $context' : ''}
   /// Extract message from AI response
   String _extractMessageFromResponse(String response) {
     // Simplified extraction - would need proper JSON parsing
-    final messageMatch = RegExp(r'"message": "([^"]*)"').firstMatch(response);
+    final messageMatch = RegExp('"message": "([^"]*)"').firstMatch(response);
     return messageMatch?.group(1) ?? '消费分析完成';
   }
 
@@ -242,7 +242,7 @@ ${context != null ? '上下文信息: $context' : ''}
     if (actionsSection.isEmpty) return ['查看消费明细'];
 
     // Extract quoted strings
-    final actionMatches = RegExp(r'"([^"]*)"').allMatches(actionsSection);
+    final actionMatches = RegExp('"([^"]*)"').allMatches(actionsSection);
     return actionMatches.map((match) => match.group(1)!).toList();
   }
 

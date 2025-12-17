@@ -7,8 +7,8 @@ import 'package:your_finance_flutter/features/insights/models/monthly_health.dar
 /// in a Bento grid layout as designed for the CFO monthly report
 class MonthlyStructureCard extends StatelessWidget {
   const MonthlyStructureCard({
-    super.key,
     required this.monthlyHealth,
+    super.key,
     this.onCardTap,
   });
 
@@ -16,50 +16,48 @@ class MonthlyStructureCard extends StatelessWidget {
   final VoidCallback? onCardTap;
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onCardTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppDesignTokens.spacing16),
-        decoration: BoxDecoration(
-          color: AppDesignTokens.surface(context),
-          borderRadius:
-              BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '月度结构分析',
-                  style: AppDesignTokens.headline(context),
-                ),
-                _buildGradeBadge(context),
-              ],
-            ),
-            const SizedBox(height: AppDesignTokens.spacing16),
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onCardTap,
+        child: Container(
+          padding: const EdgeInsets.all(AppDesignTokens.spacing16),
+          decoration: BoxDecoration(
+            color: AppDesignTokens.surface(context),
+            borderRadius:
+                BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '月度结构分析',
+                    style: AppDesignTokens.headline(context),
+                  ),
+                  _buildGradeBadge(context),
+                ],
+              ),
+              const SizedBox(height: AppDesignTokens.spacing16),
 
-            // Bento Grid Layout
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 400;
-                return isWide
-                    ? _buildWideLayout(context)
-                    : _buildNarrowLayout(context);
-              },
-            ),
+              // Bento Grid Layout
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 400;
+                  return isWide
+                      ? _buildWideLayout(context)
+                      : _buildNarrowLayout(context);
+                },
+              ),
 
-            // CFO Report Section
-            const SizedBox(height: AppDesignTokens.spacing24),
-            _buildCFOReport(context),
-          ],
+              // CFO Report Section
+              const SizedBox(height: AppDesignTokens.spacing24),
+              _buildCFOReport(context),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 
   Widget _buildGradeBadge(BuildContext context) {
     final gradeColor = _getGradeColor(context);
@@ -75,7 +73,6 @@ class MonthlyStructureCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDesignTokens.borderRadius8),
         border: Border.all(
           color: gradeColor.withValues(alpha: 0.3),
-          width: 1,
         ),
       ),
       child: Text(
@@ -88,38 +85,35 @@ class MonthlyStructureCard extends StatelessWidget {
     );
   }
 
-  Widget _buildWideLayout(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Left side: Survival vs Lifestyle donut chart
-        Expanded(
-          flex: 2,
-          child: _buildDonutChart(context),
-        ),
-        const SizedBox(width: AppDesignTokens.spacing16),
-        // Right side: Top spending categories
-        Expanded(
-          flex: 3,
-          child: _buildTopCategories(context),
-        ),
-      ],
-    );
-  }
+  Widget _buildWideLayout(BuildContext context) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left side: Survival vs Lifestyle donut chart
+          Expanded(
+            flex: 2,
+            child: _buildDonutChart(context),
+          ),
+          const SizedBox(width: AppDesignTokens.spacing16),
+          // Right side: Top spending categories
+          Expanded(
+            flex: 3,
+            child: _buildTopCategories(context),
+          ),
+        ],
+      );
 
-  Widget _buildNarrowLayout(BuildContext context) {
-    return Column(
-      children: [
-        _buildDonutChart(context),
-        const SizedBox(height: AppDesignTokens.spacing16),
-        _buildTopCategories(context),
-      ],
-    );
-  }
+  Widget _buildNarrowLayout(BuildContext context) => Column(
+        children: [
+          _buildDonutChart(context),
+          const SizedBox(height: AppDesignTokens.spacing16),
+          _buildTopCategories(context),
+        ],
+      );
 
   Widget _buildDonutChart(BuildContext context) {
     final survivalPercent = monthlyHealth.metrics['survivalPercentage'] ?? 0.0;
-    final lifestylePercent = monthlyHealth.metrics['lifestylePercentage'] ?? 0.0;
+    final lifestylePercent =
+        monthlyHealth.metrics['lifestylePercentage'] ?? 0.0;
 
     return Container(
       height: 200,
@@ -168,10 +162,16 @@ class MonthlyStructureCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildLegendItem(
-                  context, '生存', AppDesignTokens.amountPositiveColor(context)),
+                context,
+                '生存',
+                AppDesignTokens.amountPositiveColor(context),
+              ),
               const SizedBox(width: AppDesignTokens.spacing16),
               _buildLegendItem(
-                  context, '生活', AppDesignTokens.amountNegativeColor(context)),
+                context,
+                '生活',
+                AppDesignTokens.amountNegativeColor(context),
+              ),
             ],
           ),
         ],
@@ -203,76 +203,76 @@ class MonthlyStructureCard extends StatelessWidget {
             style: AppDesignTokens.body(context),
           ),
           const SizedBox(height: AppDesignTokens.spacing12),
-          ...mockCategories.map((category) => Padding(
-                padding:
-                    const EdgeInsets.only(bottom: AppDesignTokens.spacing8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      category['category'] as String,
-                      style: AppDesignTokens.body(context),
+          ...mockCategories.map(
+            (category) => Padding(
+              padding: const EdgeInsets.only(bottom: AppDesignTokens.spacing8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    category['category']! as String,
+                    style: AppDesignTokens.body(context),
+                  ),
+                  Text(
+                    '¥${(category['amount']! as double).toStringAsFixed(0)}',
+                    style: AppDesignTokens.body(context).copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text(
-                      '¥${(category['amount'] as double).toStringAsFixed(0)}',
-                      style: AppDesignTokens.body(context).copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCFOReport(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppDesignTokens.spacing16),
-      decoration: BoxDecoration(
-        color: _getGradeColor(context).withValues(alpha: 0.05),
-        borderRadius:
-            BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              PhosphorIcon(
-                PhosphorIconsRegular.briefcase,
-                size: 20,
-                color: _getGradeColor(context),
-              ),
-              const SizedBox(width: AppDesignTokens.spacing8),
-              Text(
-                'CFO 月度诊断',
-                style: AppDesignTokens.body(context).copyWith(
+  Widget _buildCFOReport(BuildContext context) => Container(
+        padding: const EdgeInsets.all(AppDesignTokens.spacing16),
+        decoration: BoxDecoration(
+          color: _getGradeColor(context).withValues(alpha: 0.05),
+          borderRadius:
+              BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                PhosphorIcon(
+                  PhosphorIconsRegular.briefcase,
+                  size: 20,
                   color: _getGradeColor(context),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDesignTokens.spacing12),
-          Text(
-            monthlyHealth.diagnosis,
-            style: AppDesignTokens.body(context),
-          ),
-          if (monthlyHealth.recommendations.isNotEmpty) ...[
+                const SizedBox(width: AppDesignTokens.spacing8),
+                Text(
+                  'CFO 月度诊断',
+                  style: AppDesignTokens.body(context).copyWith(
+                    color: _getGradeColor(context),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: AppDesignTokens.spacing12),
             Text(
-              '建议行动：',
-              style: AppDesignTokens.body(context).copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              monthlyHealth.diagnosis,
+              style: AppDesignTokens.body(context),
             ),
-            const SizedBox(height: AppDesignTokens.spacing8),
-            ...monthlyHealth.recommendations
-                .take(2)
-                .map((recommendation) => Padding(
+            if (monthlyHealth.recommendations.isNotEmpty) ...[
+              const SizedBox(height: AppDesignTokens.spacing12),
+              Text(
+                '建议行动：',
+                style: AppDesignTokens.body(context).copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppDesignTokens.spacing8),
+              ...monthlyHealth.recommendations.take(2).map(
+                    (recommendation) => Padding(
                       padding: const EdgeInsets.only(
-                          bottom: AppDesignTokens.spacing4),
+                        bottom: AppDesignTokens.spacing4,
+                      ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -285,32 +285,31 @@ class MonthlyStructureCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                    )),
+                    ),
+                  ),
+            ],
           ],
-        ],
-      ),
-    );
-  }
+        ),
+      );
 
-  Widget _buildLegendItem(BuildContext context, String label, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
+  Widget _buildLegendItem(BuildContext context, String label, Color color) =>
+      Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        const SizedBox(width: AppDesignTokens.spacing4),
-        Text(
-          label,
-          style: AppDesignTokens.caption(context),
-        ),
-      ],
-    );
-  }
+          const SizedBox(width: AppDesignTokens.spacing4),
+          Text(
+            label,
+            style: AppDesignTokens.caption(context),
+          ),
+        ],
+      );
 
   Color _getGradeColor(BuildContext context) {
     switch (monthlyHealth.grade) {
@@ -360,7 +359,7 @@ class _DonutChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 * 0.7;
-    final strokeWidth = 20.0;
+    const strokeWidth = 20.0;
 
     final survivalSweep = survivalPercent * 2 * 3.14159;
     final lifestyleSweep = lifestylePercent * 2 * 3.14159;
@@ -397,10 +396,9 @@ class _DonutChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DonutChartPainter oldDelegate) {
-    return oldDelegate.survivalPercent != survivalPercent ||
-        oldDelegate.lifestylePercent != lifestylePercent ||
-        oldDelegate.survivalColor != survivalColor ||
-        oldDelegate.lifestyleColor != lifestyleColor;
-  }
+  bool shouldRepaint(_DonutChartPainter oldDelegate) =>
+      oldDelegate.survivalPercent != survivalPercent ||
+      oldDelegate.lifestylePercent != lifestylePercent ||
+      oldDelegate.survivalColor != survivalColor ||
+      oldDelegate.lifestyleColor != lifestyleColor;
 }

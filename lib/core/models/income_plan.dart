@@ -29,38 +29,19 @@ class IncomePlan extends Equatable {
     required this.frequency,
     required this.walletId,
     required this.startDate,
+    required this.creationDate,
+    required this.updateDate,
     this.description,
     this.endDate,
     this.isActive = true,
     this.category = '工资收入',
     this.tags = const [],
-    required this.creationDate,
-    required this.updateDate,
     this.lastExecutionDate,
     this.nextExecutionDate,
     this.totalExecuted = 0.0,
     this.executionCount = 0,
     this.salaryIncomeId, // 关联的工资收入ID（如果是详细工资类型）
-  });
-
-  final String id;
-  final String name;
-  final double amount;
-  final IncomeFrequency frequency;
-  final String walletId; // 关联的钱包ID
-  final DateTime startDate;
-  final String? description;
-  final DateTime? endDate;
-  final bool isActive;
-  final String category;
-  final List<String> tags;
-  final DateTime creationDate;
-  final DateTime updateDate;
-  final DateTime? lastExecutionDate;
-  final DateTime? nextExecutionDate;
-  final double totalExecuted;
-  final int executionCount;
-  final String? salaryIncomeId; // 如果是从工资设置创建的，关联工资收入ID
+  }); // 如果是从工资设置创建的，关联工资收入ID
 
   factory IncomePlan.fromJson(Map<String, dynamic> json) => IncomePlan(
         id: json['id'] as String,
@@ -124,6 +105,25 @@ class IncomePlan extends Equatable {
       salaryIncomeId: salaryIncomeId,
     );
   }
+
+  final String id;
+  final String name;
+  final double amount;
+  final IncomeFrequency frequency;
+  final String walletId; // 关联的钱包ID
+  final DateTime startDate;
+  final String? description;
+  final DateTime? endDate;
+  final bool isActive;
+  final String category;
+  final List<String> tags;
+  final DateTime creationDate;
+  final DateTime updateDate;
+  final DateTime? lastExecutionDate;
+  final DateTime? nextExecutionDate;
+  final double totalExecuted;
+  final int executionCount;
+  final String? salaryIncomeId;
 
   IncomePlan copyWith({
     String? id,
@@ -201,12 +201,10 @@ class IncomePlan extends Equatable {
         while (nextDate.isBefore(now) || nextDate.isAtSameMomentAs(now)) {
           nextDate = nextDate.add(const Duration(days: 1));
         }
-        break;
       case IncomeFrequency.weekly:
         while (nextDate.isBefore(now) || nextDate.isAtSameMomentAs(now)) {
           nextDate = nextDate.add(const Duration(days: 7));
         }
-        break;
       case IncomeFrequency.monthly:
         while (nextDate.isBefore(now) || nextDate.isAtSameMomentAs(now)) {
           nextDate = DateTime(
@@ -215,7 +213,6 @@ class IncomePlan extends Equatable {
             nextDate.day,
           );
         }
-        break;
       case IncomeFrequency.quarterly:
         while (nextDate.isBefore(now) || nextDate.isAtSameMomentAs(now)) {
           nextDate = DateTime(
@@ -224,7 +221,6 @@ class IncomePlan extends Equatable {
             nextDate.day,
           );
         }
-        break;
       case IncomeFrequency.yearly:
         while (nextDate.isBefore(now) || nextDate.isAtSameMomentAs(now)) {
           nextDate = DateTime(
@@ -233,7 +229,6 @@ class IncomePlan extends Equatable {
             nextDate.day,
           );
         }
-        break;
     }
 
     return nextDate;
@@ -284,16 +279,9 @@ class IncomePlanExecution extends Equatable {
     required this.planId,
     required this.executionDate,
     required this.amount,
-    this.description,
     required this.creationDate,
+    this.description,
   });
-
-  final String id;
-  final String planId;
-  final DateTime executionDate;
-  final double amount;
-  final String? description;
-  final DateTime creationDate;
 
   factory IncomePlanExecution.fromJson(Map<String, dynamic> json) =>
       IncomePlanExecution(
@@ -304,6 +292,13 @@ class IncomePlanExecution extends Equatable {
         description: json['description'] as String?,
         creationDate: DateTime.parse(json['creationDate'] as String),
       );
+
+  final String id;
+  final String planId;
+  final DateTime executionDate;
+  final double amount;
+  final String? description;
+  final DateTime creationDate;
 
   Map<String, dynamic> toJson() => {
         'id': id,

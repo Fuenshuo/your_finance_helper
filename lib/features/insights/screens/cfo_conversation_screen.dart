@@ -559,8 +559,10 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.history,
-                  color: AppDesignTokens.primaryAction(context)),
+              leading: Icon(
+                Icons.history,
+                color: AppDesignTokens.primaryAction(context),
+              ),
               title: Text('对话历史', style: AppDesignTokens.body(context)),
               onTap: () {
                 Navigator.of(context).pop();
@@ -568,8 +570,10 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings,
-                  color: AppDesignTokens.primaryAction(context)),
+              leading: Icon(
+                Icons.settings,
+                color: AppDesignTokens.primaryAction(context),
+              ),
               title: Text('顾问设置', style: AppDesignTokens.body(context)),
               onTap: () {
                 Navigator.of(context).pop();
@@ -577,8 +581,10 @@ class _CFOConversationScreenState extends ConsumerState<CFOConversationScreen>
               },
             ),
             ListTile(
-              leading: Icon(Icons.help_outline,
-                  color: AppDesignTokens.primaryAction(context)),
+              leading: Icon(
+                Icons.help_outline,
+                color: AppDesignTokens.primaryAction(context),
+              ),
               title: Text('帮助说明', style: AppDesignTokens.body(context)),
               onTap: () {
                 Navigator.of(context).pop();

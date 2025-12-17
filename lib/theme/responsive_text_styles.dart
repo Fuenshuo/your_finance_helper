@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart' as legacy_theme;
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart' as legacy_theme;
 
 /// 响应式文本样式工具类
 class ResponsiveTextStyles {

@@ -93,13 +93,14 @@ class DefaultPerformanceMonitorService implements PerformanceMonitorService {
 
   /// 记录性能警告
   void _logPerformanceWarning(
-      String operationName, int actualMs, int thresholdMs) {
+    String operationName,
+    int actualMs,
+    int thresholdMs,
+  ) {
     // debugPrint('性能警告: $operationName 耗时 ${actualMs}ms (阈值: ${thresholdMs}ms)');
   }
 }
 
 /// PerformanceMonitorService Provider
-final performanceMonitorServiceProvider =
-    Provider<PerformanceMonitorService>((ref) {
-  return DefaultPerformanceMonitorService();
-});
+final performanceMonitorServiceProvider = Provider<PerformanceMonitorService>(
+    (ref) => DefaultPerformanceMonitorService());

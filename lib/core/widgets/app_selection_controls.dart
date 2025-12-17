@@ -1,51 +1,47 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../theme/app_design_tokens.dart';
+import 'package:flutter/material.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// iOS 风格开关
 /// 封装 CupertinoSwitch 以保持全平台一致的优雅手感
 class AppSwitch extends StatelessWidget {
+  const AppSwitch({
+    required this.value,
+    required this.onChanged,
+    super.key,
+  });
   final bool value;
   final ValueChanged<bool>? onChanged;
 
-  const AppSwitch({
-    super.key,
-    required this.value,
-    required this.onChanged,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return CupertinoSwitch(
-      value: value,
-      onChanged: onChanged,
-      activeColor: AppDesignTokens.primaryAction(context),
-    );
-  }
+  Widget build(BuildContext context) => CupertinoSwitch(
+        value: value,
+        onChanged: onChanged,
+        activeTrackColor: AppDesignTokens.primaryAction(context),
+      );
 }
 
 /// iOS 风格复选框
 /// 这是一个自定义动画组件，因为 iOS 原生没有 Checkbox
 /// 样式：圆形，选中变蓝，带有微小的缩放动画
 class AppCheckbox extends StatelessWidget {
+  const AppCheckbox({
+    required this.value,
+    required this.onChanged,
+    super.key,
+    this.label,
+  });
   final bool value;
   final ValueChanged<bool>? onChanged;
   final String? label;
 
-  const AppCheckbox({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    this.label,
-  });
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color activeColor = AppDesignTokens.primaryAction(context);
-    final Color inactiveBorderColor = isDark ? Colors.white38 : Colors.black26;
+    final activeColor = AppDesignTokens.primaryAction(context);
+    final inactiveBorderColor = isDark ? Colors.white38 : Colors.black26;
 
-    Widget checkbox = GestureDetector(
+    final Widget checkbox = GestureDetector(
       onTap: onChanged == null ? null : () => onChanged!(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -94,16 +90,15 @@ class AppCheckbox extends StatelessWidget {
 /// 分段控制器 (用于切换 日/周/月)
 /// 封装 CupertinoSlidingSegmentedControl
 class AppSegmentedControl<T extends Object> extends StatelessWidget {
-  final Map<T, Widget> children;
-  final T? groupValue;
-  final ValueChanged<T?> onValueChanged;
-
   const AppSegmentedControl({
-    super.key,
     required this.children,
     required this.groupValue,
     required this.onValueChanged,
+    super.key,
   });
+  final Map<T, Widget> children;
+  final T? groupValue;
+  final ValueChanged<T?> onValueChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -111,22 +106,23 @@ class AppSegmentedControl<T extends Object> extends StatelessWidget {
 
     return IntrinsicWidth(
       child: CupertinoSlidingSegmentedControl<T>(
-        children: children.map((key, value) => MapEntry(
-              key,
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: DefaultTextStyle(
-                  style: AppDesignTokens.headline(context).copyWith(
-                    fontSize: 13,
-                    color: groupValue == key
-                        ? (isDark ? Colors.white : Colors.black) // 选中态颜色
-                        : (isDark ? Colors.white60 : Colors.black54), // 未选中态颜色
-                  ),
-                  child: value,
+        children: children.map(
+          (key, value) => MapEntry(
+            key,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: DefaultTextStyle(
+                style: AppDesignTokens.headline(context).copyWith(
+                  fontSize: 13,
+                  color: groupValue == key
+                      ? (isDark ? Colors.white : Colors.black) // 选中态颜色
+                      : (isDark ? Colors.white60 : Colors.black54), // 未选中态颜色
                 ),
+                child: value,
               ),
-            )),
+            ),
+          ),
+        ),
         groupValue: groupValue,
         onValueChanged: onValueChanged,
         backgroundColor: isDark

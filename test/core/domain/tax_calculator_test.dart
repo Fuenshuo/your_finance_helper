@@ -11,15 +11,15 @@ void main() {
 
     group('月度预缴计算 (calculateMonthlyTax)', () {
       // 基础数据（来自文档）
-      const double monthlySocialSecurity = 7250.65; // 五险一金月缴费额
-      const double monthlySpecialDeduction = 1800.0; // 月度专项附加扣除
-      const double annualSpecialDeduction = monthlySpecialDeduction * 12; // 年度专项附加扣除
+      const monthlySocialSecurity = 7250.65; // 五险一金月缴费额
+      const monthlySpecialDeduction = 1800.0; // 月度专项附加扣除
+      const annualSpecialDeduction = monthlySpecialDeduction * 12; // 年度专项附加扣除
 
       test('1月：基础工资计算（验证计算逻辑）', () {
         // 注意：文档中的79170是1月总收入，但我们的计算器是估算稳态税额
         // 这里我们验证计算逻辑是否正确，而不是验证具体数值
         // 假设月收入约为30000（79170可能是包含奖金的一次性收入）
-        const double januaryIncome = 30000.0;
+        const januaryIncome = 30000.0;
 
         // 执行计算
         final result = calculator.calculateMonthlyTax(
@@ -29,7 +29,10 @@ void main() {
         );
 
         // 验证计算逻辑
-        final expectedTaxableIncome = januaryIncome - 5000 - monthlySocialSecurity - monthlySpecialDeduction;
+        const expectedTaxableIncome = januaryIncome -
+            5000 -
+            monthlySocialSecurity -
+            monthlySpecialDeduction;
         expect(result['taxableIncome'], closeTo(expectedTaxableIncome, 0.01));
         expect(result['monthlyTax'], greaterThan(0));
         expect(result['postTaxIncome'], greaterThan(0));
@@ -39,7 +42,7 @@ void main() {
       test('2月：累计计算验证', () {
         // 输入数据（来自文档）
         // 2月收入 = 累计收入 - 1月收入 = 109915.26 - 79170 = 30745.26
-        const double februaryIncome = 30745.26;
+        const februaryIncome = 30745.26;
 
         // 执行计算（使用2月单月数据）
         final result = calculator.calculateMonthlyTax(
@@ -51,16 +54,22 @@ void main() {
         // 注意：我们的计算器是估算稳态税额，不是累计预扣法
         // 但我们可以验证计算逻辑是否正确
         expect(result['monthlyTax'], greaterThan(0));
-        expect(result['taxableIncome'], closeTo(
-          februaryIncome - 5000 - monthlySocialSecurity - monthlySpecialDeduction,
-          0.01,
-        ));
+        expect(
+          result['taxableIncome'],
+          closeTo(
+            februaryIncome -
+                5000 -
+                monthlySocialSecurity -
+                monthlySpecialDeduction,
+            0.01,
+          ),
+        );
       });
 
       test('3月：累计计算验证', () {
         // 输入数据（来自文档）
         // 3月收入 = 累计收入 - 前两月收入 = 141019.07 - 109915.26 = 31103.81
-        const double marchIncome = 31103.81;
+        const marchIncome = 31103.81;
 
         // 执行计算
         final result = calculator.calculateMonthlyTax(
@@ -70,16 +79,22 @@ void main() {
         );
 
         expect(result['monthlyTax'], greaterThan(0));
-        expect(result['taxableIncome'], closeTo(
-          marchIncome - 5000 - monthlySocialSecurity - monthlySpecialDeduction,
-          0.01,
-        ));
+        expect(
+          result['taxableIncome'],
+          closeTo(
+            marchIncome -
+                5000 -
+                monthlySocialSecurity -
+                monthlySpecialDeduction,
+            0.01,
+          ),
+        );
       });
 
       test('4月：累计计算验证', () {
         // 输入数据（来自文档）
         // 4月收入 = 累计收入 - 前三月收入 = 197113.17 - 141019.07 = 56094.10
-        const double aprilIncome = 56094.10;
+        const aprilIncome = 56094.10;
 
         // 执行计算
         final result = calculator.calculateMonthlyTax(
@@ -89,10 +104,16 @@ void main() {
         );
 
         expect(result['monthlyTax'], greaterThan(0));
-        expect(result['taxableIncome'], closeTo(
-          aprilIncome - 5000 - monthlySocialSecurity - monthlySpecialDeduction,
-          0.01,
-        ));
+        expect(
+          result['taxableIncome'],
+          closeTo(
+            aprilIncome -
+                5000 -
+                monthlySocialSecurity -
+                monthlySpecialDeduction,
+            0.01,
+          ),
+        );
       });
 
       test('边界情况：应纳税所得额为0', () {
@@ -168,7 +189,7 @@ void main() {
     group('全年一次性奖金单独计税 (calculateOneTimeBonusTax)', () {
       test('年终奖：190,000元（来自文档）', () {
         // 输入数据（来自文档）
-        const double bonusAmount = 190000.0;
+        const bonusAmount = 190000.0;
 
         // 执行计算
         final result = calculator.calculateOneTimeBonusTax(
@@ -185,7 +206,7 @@ void main() {
 
       test('年终奖：低档（3%）', () {
         // 月均3000元，年度36000元
-        const double bonusAmount = 36000.0;
+        const bonusAmount = 36000.0;
 
         final result = calculator.calculateOneTimeBonusTax(
           bonusAmount: bonusAmount,
@@ -201,7 +222,7 @@ void main() {
 
       test('年终奖：中档（10%）', () {
         // 月均12000元，年度144000元
-        const double bonusAmount = 144000.0;
+        const bonusAmount = 144000.0;
 
         final result = calculator.calculateOneTimeBonusTax(
           bonusAmount: bonusAmount,
@@ -211,7 +232,8 @@ void main() {
         expect(result['taxRate'], anyOf(equals(0.10), equals(0.20)));
         // 验证税额计算正确
         if (result['taxRate'] == 0.10) {
-          expect(result['taxAmount'], closeTo(14190.0, 0.01)); // 144000 × 0.10 - 210
+          expect(result['taxAmount'],
+              closeTo(14190.0, 0.01)); // 144000 × 0.10 - 210
         }
       });
 
@@ -238,10 +260,10 @@ void main() {
       test('年度汇算：完整案例', () {
         // 使用文档中的4月累计数据
         // 注意：文档中使用的是4个月的累计数据，但我们的计算器使用年度免征额60000
-        const double annualPreTaxIncome = 197113.17; // 年度收入（去除年终奖，实际是4个月）
-        const double annualSocialSecurity = 7250.65 * 4; // 29002.60
-        const double annualDeduction = 1800.0 * 4; // 7200
-        const double prepaidTax = 7366.71; // 前3月累计预缴税额
+        const annualPreTaxIncome = 197113.17; // 年度收入（去除年终奖，实际是4个月）
+        const annualSocialSecurity = 7250.65 * 4; // 29002.60
+        const annualDeduction = 1800.0 * 4; // 7200
+        const prepaidTax = 7366.71; // 前3月累计预缴税额
 
         final result = calculator.calculateAnnualSettlement(
           annualPreTaxIncome: annualPreTaxIncome,
@@ -291,7 +313,7 @@ void main() {
 
     group('税率表查询 (getTaxRateTable)', () {
       test('获取年度综合所得税率表', () {
-        final table = calculator.getTaxRateTable(isBonusTable: false);
+        final table = calculator.getTaxRateTable();
 
         expect(table.length, equals(7));
         expect(table[0]['rate'], equals(0.03));
@@ -314,10 +336,10 @@ void main() {
     group('综合场景测试', () {
       test('完整年度计算：工资 + 年终奖', () {
         // 模拟完整年度场景
-        const double monthlyIncome = 15000.0;
-        const double monthlySocialSecurity = 2000.0;
-        const double annualDeduction = 12000.0; // 年度专项附加扣除
-        const double yearEndBonus = 50000.0;
+        const monthlyIncome = 15000.0;
+        const monthlySocialSecurity = 2000.0;
+        const annualDeduction = 12000.0; // 年度专项附加扣除
+        const yearEndBonus = 50000.0;
 
         // 1. 计算月度工资税额
         final monthlyResult = calculator.calculateMonthlyTax(
@@ -332,8 +354,8 @@ void main() {
         );
 
         // 3. 计算年度汇算清缴
-        final annualIncome = monthlyIncome * 12;
-        final annualSocialSecurity = monthlySocialSecurity * 12;
+        const annualIncome = monthlyIncome * 12;
+        const annualSocialSecurity = monthlySocialSecurity * 12;
         final prepaidTax = monthlyResult['monthlyTax']! * 12;
 
         final settlementResult = calculator.calculateAnnualSettlement(
@@ -355,4 +377,3 @@ void main() {
     });
   });
 }
-

@@ -1,6 +1,5 @@
 /// Business logic calculator for quarterly bonuses
 class QuarterlyBonusCalculator {
-
   /// Custom quarterly months that user can configure (deprecated - moved to BonusItem)
   @deprecated
   static List<int> customQuarterlyMonths = [3, 6, 9, 12];

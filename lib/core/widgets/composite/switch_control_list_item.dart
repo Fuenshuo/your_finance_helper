@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
-import '../app_selection_controls.dart';
-import 'standard_list_item.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/app_selection_controls.dart';
+import 'package:your_finance_flutter/core/widgets/composite/standard_list_item.dart';
 
 /// 开关控制行 (SwitchControlListItemStyle)
 /// 右侧是开关，标题字体应为 sectionTitle (18pt SemiBold)
@@ -10,6 +10,17 @@ import 'standard_list_item.dart';
 /// - S26: 开启计划关联、通知设置开关
 /// - 所有需要开关控制的设置项
 class SwitchControlListItem extends StandardListItem {
+  const SwitchControlListItem({
+    required super.title,
+    required this.value,
+    super.key,
+    super.leading,
+    super.titleStyle,
+    super.spacing,
+    this.onChanged,
+    this.enabled = true,
+  });
+
   /// 开关的值
   final bool value;
 
@@ -18,17 +29,6 @@ class SwitchControlListItem extends StandardListItem {
 
   /// 是否启用开关（默认 true）
   final bool enabled;
-
-  const SwitchControlListItem({
-    super.key,
-    required super.title,
-    super.leading,
-    super.titleStyle,
-    super.spacing,
-    required this.value,
-    this.onChanged,
-    this.enabled = true,
-  });
 
   @override
   Widget buildLeading(BuildContext context) {
@@ -40,7 +40,7 @@ class SwitchControlListItem extends StandardListItem {
       return Row(
         children: [
           leading!,
-          SizedBox(width: AppDesignTokens.spacing12),
+          const SizedBox(width: AppDesignTokens.spacing12),
           Expanded(
             child: Text(
               title,
@@ -57,10 +57,8 @@ class SwitchControlListItem extends StandardListItem {
   }
 
   @override
-  Widget buildTrailing(BuildContext context) {
-    return AppSwitch(
-      value: value,
-      onChanged: enabled ? onChanged : null,
-    );
-  }
+  Widget buildTrailing(BuildContext context) => AppSwitch(
+        value: value,
+        onChanged: enabled ? onChanged : null,
+      );
 }

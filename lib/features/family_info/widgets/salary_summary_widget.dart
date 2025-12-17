@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
@@ -9,7 +11,6 @@ import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/expandable_calculation_item.dart';
-import 'dart:convert';
 
 // 个税计算详情组件
 class TaxCalculationDetailItem extends StatefulWidget {
@@ -57,7 +58,8 @@ class _TaxCalculationDetailItemState extends State<TaxCalculationDetailItem> {
         widget.otherTaxDeductions;
     // 使用累计应纳税所得额确定税率阶梯，符合年度累积预扣法
     final taxBracket = PersonalIncomeTaxService.getApplicableTaxBracket(
-        widget.cumulativeTaxableIncome);
+      widget.cumulativeTaxableIncome,
+    );
     final taxRate = taxBracket.rate;
     final quickDeduction = taxBracket.deduction;
     final annualTax = widget.cumulativeTaxableIncome * taxRate - quickDeduction;
@@ -451,7 +453,8 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
     for (var i = 0; i < widget.bonuses.length; i++) {
       final bonus = widget.bonuses[i];
       await logger.log(
-          '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}');
+        '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}',
+      );
       if (bonus.type == BonusType.quarterlyBonus) {
         await logger.log('    季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
       }
@@ -1209,7 +1212,8 @@ class _SalarySummaryWidgetState extends State<SalarySummaryWidget> {
             yearEndBonusAmount = monthlyBonus;
             // 年终奖单独计税
             yearEndBonusTax = PersonalIncomeTaxService.calculateYearEndBonusTax(
-                yearEndBonusAmount);
+              yearEndBonusAmount,
+            );
             break;
           }
         }

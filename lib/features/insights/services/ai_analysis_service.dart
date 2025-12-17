@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
@@ -98,7 +98,7 @@ class AiAnalysisService {
 用户今日消费数据：
 - 预算上限：¥${budget.toStringAsFixed(0)}
 - 实际消费：¥${spending.toStringAsFixed(0)}
-- 消费比例：${percentage}%
+- 消费比例：$percentage%
 
 触发原因：${_triggerDescription(trigger)}
 
@@ -130,12 +130,11 @@ ${context != null ? '额外上下文：$context' : ''}
       final jsonStart = response.indexOf('{');
       final jsonEnd = response.lastIndexOf('}');
       if (jsonStart == -1 || jsonEnd == -1) {
-        throw FormatException('No JSON found in response');
+        throw const FormatException('No JSON found in response');
       }
 
       final jsonStr = response.substring(jsonStart, jsonEnd + 1);
-      final Map<String, dynamic> data =
-          json.decode(jsonStr) as Map<String, dynamic>;
+      final data = json.decode(jsonStr) as Map<String, dynamic>;
 
       return MicroInsight(
         id: 'ai_${dailyCapId}_${DateTime.now().millisecondsSinceEpoch}',
@@ -149,16 +148,17 @@ ${context != null ? '额外上下文：$context' : ''}
     } catch (e) {
       // Fallback parsing
       return _generateFallbackInsight(
-          dailyCapId,
-          DailyCap(
-            id: dailyCapId,
-            date: DateTime.now(),
-            referenceAmount: 200.0,
-            currentSpending: 0.0,
-            percentage: 0.0,
-            status: CapStatus.safe,
-          ),
-          trigger);
+        dailyCapId,
+        DailyCap(
+          id: dailyCapId,
+          date: DateTime.now(),
+          referenceAmount: 200.0,
+          currentSpending: 0.0,
+          percentage: 0.0,
+          status: CapStatus.safe,
+        ),
+        trigger,
+      );
     }
   }
 
@@ -175,7 +175,9 @@ ${context != null ? '额外上下文：$context' : ''}
   }
 
   String _buildAnomalyExplanationPrompt(
-      WeeklyAnomaly anomaly, String? context) {
+    WeeklyAnomaly anomaly,
+    String? context,
+  ) {
     final isHigh = anomaly.deviation > 0;
     final percent = anomaly.deviation.abs().toStringAsFixed(0);
     final categories = anomaly.categories.join('、');

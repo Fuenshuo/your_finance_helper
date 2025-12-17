@@ -14,14 +14,10 @@ class SharedPreferencesService extends StatefulService {
     if (_instance != null && _prefs != null) return _instance!;
 
     // Ensure thread-safety by checking again after potential race
-    if (_instance == null) {
-      _instance = SharedPreferencesService._();
-    }
+    _instance ??= SharedPreferencesService._();
 
     // Initialize SharedPreferences if not already done
-    if (_prefs == null) {
-      _prefs = await SharedPreferences.getInstance();
-    }
+    _prefs ??= await SharedPreferences.getInstance();
 
     // Initialize service state
     if (_instance!.state != ServiceState.initialized) {
@@ -185,7 +181,7 @@ class SharedPreferencesService extends StatefulService {
       final value = entry.value;
 
       try {
-        bool success = false;
+        var success = false;
         if (value is String) {
           success = await setString(key, value);
         } else if (value is int) {

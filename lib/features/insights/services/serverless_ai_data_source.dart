@@ -1,30 +1,38 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
-import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
 import 'package:your_finance_flutter/core/models/ai_config.dart';
-import 'analysis_data_source.dart';
-import '../../../core/models/analysis_summary.dart';
-import '../../../core/models/transaction.dart';
-import '../../../core/models/flux_view_state.dart';
+import 'package:your_finance_flutter/core/models/analysis_summary.dart';
+import 'package:your_finance_flutter/core/models/flux_view_state.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
+import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
+import 'package:your_finance_flutter/features/insights/services/analysis_data_source.dart';
 
 /// Serverless AI-powered implementation of AnalysisDataSource.
 /// Provides local AI analysis using prompt templates and AI services.
 class ServerlessAiDataSource implements AnalysisDataSource {
+  // For testing
+
+  ServerlessAiDataSource(
+    this._aiFactory,
+    this._aiConfigService, [
+    this._promptTemplate,
+  ]);
   final AiServiceFactory _aiFactory;
   final AiConfigService _aiConfigService;
-  final String? _promptTemplate; // For testing
-
-  ServerlessAiDataSource(this._aiFactory, this._aiConfigService,
-      [this._promptTemplate]);
+  final String? _promptTemplate;
 
   @override
   Future<AnalysisSummary> analyze(
-      Transaction transaction, FluxTimeframe timeframe) async {
+    Transaction transaction,
+    FluxTimeframe timeframe,
+  ) async {
     try {
       debugPrint(
-          '[ServerlessAiDataSource] Starting AI analysis for transaction: ${transaction.id}');
+        '[ServerlessAiDataSource] Starting AI analysis for transaction: ${transaction.id}',
+      );
 
       // Load and populate prompt
       final promptTemplate =
@@ -38,15 +46,18 @@ class ServerlessAiDataSource implements AnalysisDataSource {
         if (loadedConfig != null) {
           aiConfig = loadedConfig;
           debugPrint(
-              '[ServerlessAiDataSource] Using loaded AI config: ${aiConfig.provider}');
+            '[ServerlessAiDataSource] Using loaded AI config: ${aiConfig.provider}',
+          );
         } else {
           debugPrint(
-              '[ServerlessAiDataSource] No saved config found, using default');
+            '[ServerlessAiDataSource] No saved config found, using default',
+          );
           aiConfig = _createDefaultConfig();
         }
       } catch (e) {
         debugPrint(
-            '[ServerlessAiDataSource] Failed to load config: $e, using default');
+          '[ServerlessAiDataSource] Failed to load config: $e, using default',
+        );
         aiConfig = _createDefaultConfig();
       }
 
@@ -62,23 +73,23 @@ class ServerlessAiDataSource implements AnalysisDataSource {
       final analysisSummary = AnalysisSummary.fromJson(analysisData);
 
       debugPrint(
-          '[ServerlessAiDataSource] AI analysis completed successfully for transaction: ${transaction.id}');
+        '[ServerlessAiDataSource] AI analysis completed successfully for transaction: ${transaction.id}',
+      );
       return analysisSummary;
     } catch (e) {
       debugPrint(
-          '[ServerlessAiDataSource] AI analysis failed for transaction: ${transaction.id}, error: $e');
+        '[ServerlessAiDataSource] AI analysis failed for transaction: ${transaction.id}, error: $e',
+      );
       return AnalysisSummary.empty();
     }
   }
 
   /// Populates the prompt template with transaction data
-  String _populatePrompt(String template, Transaction transaction) {
-    return template
-        .replaceAll('\${amount}', transaction.amount.toString())
-        .replaceAll('\${category}', transaction.category.displayName)
-        .replaceAll('\${description}', transaction.description)
-        .replaceAll('\${date}', transaction.date.toIso8601String());
-  }
+  String _populatePrompt(String template, Transaction transaction) => template
+      .replaceAll(r'${amount}', transaction.amount.toString())
+      .replaceAll(r'${category}', transaction.category.displayName)
+      .replaceAll(r'${description}', transaction.description)
+      .replaceAll(r'${date}', transaction.date.toIso8601String());
 
   /// Cleans AI response by removing markdown formatting
   String _cleanJsonResponse(String aiResponse) {

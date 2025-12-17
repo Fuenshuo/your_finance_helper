@@ -46,7 +46,7 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
         index: 2,
         child: AppCard(
           child: Padding(
-            padding: EdgeInsets.all(AppDesignTokens.spacing16),
+            padding: const EdgeInsets.all(AppDesignTokens.spacing16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -54,7 +54,7 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
                 // Header with title and add button
                 _buildHeader(context),
 
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // Bonus list or empty state
                 // 使用 ConstrainedBox 限制最大高度，让列表可以在内部滚动
@@ -70,7 +70,7 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
 
                 // Tax information (only show if there are bonuses)
                 if (_tempBonuses.isNotEmpty) ...[
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
                   _buildTaxInfo(context),
                 ],
               ],
@@ -122,14 +122,14 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
     }
   }
 
-  Widget _buildEmptyState(BuildContext context) => AppEmptyState(
+  Widget _buildEmptyState(BuildContext context) => const AppEmptyState(
         icon: Icons.info_outline,
         title: '暂无奖金项目',
         subtitle: '点击上方按钮添加奖金和福利',
       );
 
   Widget _buildTaxInfo(BuildContext context) => Container(
-        padding: EdgeInsets.all(AppDesignTokens.spacing12),
+        padding: const EdgeInsets.all(AppDesignTokens.spacing12),
         decoration: BoxDecoration(
           color: AppDesignTokens.primaryAction(context).withValues(alpha: 0.1),
           borderRadius:
@@ -147,7 +147,7 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
               color: AppDesignTokens.primaryAction(context),
               size: 20,
             ),
-            SizedBox(width: AppDesignTokens.spacing8),
+            const SizedBox(width: AppDesignTokens.spacing8),
             Expanded(
               child: Text(
                 '奖金税收说明：\n'
@@ -175,12 +175,14 @@ class _BonusManagementWidgetState extends State<BonusManagementWidget> {
 
   Future<void> _handleEditBonus(BonusItem bonus) async {
     print(
-        '📝 Editing bonus: ${bonus.name} with quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}');
+      '📝 Editing bonus: ${bonus.name} with quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}',
+    );
     final updatedBonus =
         await BonusDialogManager.showEditDialog(context, bonus);
     if (updatedBonus != null) {
       print(
-          '✅ Updated bonus: ${updatedBonus.name} with quarterlyPaymentMonths: ${updatedBonus.quarterlyPaymentMonths}');
+        '✅ Updated bonus: ${updatedBonus.name} with quarterlyPaymentMonths: ${updatedBonus.quarterlyPaymentMonths}',
+      );
       setState(() {
         final index = _tempBonuses.indexWhere((b) => b.id == bonus.id);
         if (index != -1) {

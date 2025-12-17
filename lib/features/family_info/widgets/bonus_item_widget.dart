@@ -17,43 +17,41 @@ class BonusItemWidget extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
-  Widget build(BuildContext context) {
-    return ActionableListItem(
-      key: ValueKey(bonus.id),
-      title: bonus.name,
-      leading: Icon(
-        _getBonusTypeIcon(bonus.type),
-        color: _getBonusTypeColor(bonus.type),
-        size: 20,
-      ),
-      subtitle: _buildSubtitle(context),
-      actions: [
-        IconButton(
-          onPressed: onEdit,
-          icon: Icon(
-            Icons.edit,
-            size: 18,
-            color: AppDesignTokens.primaryAction(context),
-          ),
-          tooltip: '编辑',
-          padding: EdgeInsets.all(AppDesignTokens.spacing4),
-          constraints: const BoxConstraints(),
+  Widget build(BuildContext context) => ActionableListItem(
+        key: ValueKey(bonus.id),
+        title: bonus.name,
+        leading: Icon(
+          _getBonusTypeIcon(bonus.type),
+          color: _getBonusTypeColor(bonus.type),
+          size: 20,
         ),
-        SizedBox(width: AppDesignTokens.spacing4),
-        IconButton(
-          onPressed: onDelete,
-          icon: Icon(
-            Icons.delete,
-            size: 18,
-            color: AppDesignTokens.errorColor,
+        subtitle: _buildSubtitle(context),
+        actions: [
+          IconButton(
+            onPressed: onEdit,
+            icon: Icon(
+              Icons.edit,
+              size: 18,
+              color: AppDesignTokens.primaryAction(context),
+            ),
+            tooltip: '编辑',
+            padding: const EdgeInsets.all(AppDesignTokens.spacing4),
+            constraints: const BoxConstraints(),
           ),
-          tooltip: '删除',
-          padding: EdgeInsets.all(AppDesignTokens.spacing4),
-          constraints: const BoxConstraints(),
-        ),
-      ],
-    );
-  }
+          const SizedBox(width: AppDesignTokens.spacing4),
+          IconButton(
+            onPressed: onDelete,
+            icon: Icon(
+              Icons.delete,
+              size: 18,
+              color: AppDesignTokens.errorColor,
+            ),
+            tooltip: '删除',
+            padding: const EdgeInsets.all(AppDesignTokens.spacing4),
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      );
 
   String _buildSubtitle(BuildContext context) {
     final parts = <String>[];

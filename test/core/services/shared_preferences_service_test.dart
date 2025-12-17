@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:your_finance_flutter/core/services/shared_preferences_service.dart';
 import 'package:your_finance_flutter/core/services/base_service.dart';
+import 'package:your_finance_flutter/core/services/shared_preferences_service.dart';
 
 void main() {
   group('SharedPreferencesService Tests', () {

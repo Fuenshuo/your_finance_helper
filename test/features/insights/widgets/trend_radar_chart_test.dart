@@ -13,7 +13,8 @@ void main() {
       TrendData(date: DateTime.now(), amount: 100.0, dayLabel: 'Mon'),
       TrendData(date: DateTime.now(), amount: 200.0, dayLabel: 'Tue'),
       TrendData(date: DateTime.now(), amount: 150.0, dayLabel: 'Wed'),
-      TrendData(date: DateTime.now(), amount: 0.0, dayLabel: 'Thu'), // Zero value
+      TrendData(
+          date: DateTime.now(), amount: 0.0, dayLabel: 'Thu'), // Zero value
       TrendData(date: DateTime.now(), amount: 300.0, dayLabel: 'Fri'),
     ];
 
@@ -24,7 +25,7 @@ void main() {
   });
 
   group('TrendRadarChart Widget Tests', () {
-    testWidgets('displays chart with sample data correctly', (WidgetTester tester) async {
+    testWidgets('displays chart with sample data correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -39,7 +40,7 @@ void main() {
       expect(find.byType(AspectRatio), findsOneWidget);
     });
 
-    testWidgets('displays empty state correctly', (WidgetTester tester) async {
+    testWidgets('displays empty state correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -52,7 +53,7 @@ void main() {
       expect(find.text('No trend data available'), findsOneWidget);
     });
 
-    testWidgets('displays single data point correctly', (WidgetTester tester) async {
+    testWidgets('displays single data point correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -66,11 +67,11 @@ void main() {
       expect(find.byType(AspectRatio), findsOneWidget);
     });
 
-    testWidgets('handles null data correctly', (WidgetTester tester) async {
+    testWidgets('handles null data correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
-            body: TrendRadarChart(trendData: null),
+            body: TrendRadarChart(),
           ),
         ),
       );
@@ -79,7 +80,8 @@ void main() {
       expect(find.text('No trend data available'), findsOneWidget);
     });
 
-    testWidgets('pads data to 7 days when less than 7 provided', (WidgetTester tester) async {
+    testWidgets('pads data to 7 days when less than 7 provided',
+        (tester) async {
       // Test with only 3 days of data
       final shortData = [
         TrendData(date: DateTime.now(), amount: 100.0, dayLabel: 'Mon'),
@@ -99,7 +101,8 @@ void main() {
       expect(find.byType(TrendRadarChart), findsOneWidget);
     });
 
-    testWidgets('limits data to 7 days when more than 7 provided', (WidgetTester tester) async {
+    testWidgets('limits data to 7 days when more than 7 provided',
+        (tester) async {
       // Test with 10 days of data
       final longData = List.generate(
         10,
@@ -122,7 +125,7 @@ void main() {
       expect(find.byType(TrendRadarChart), findsOneWidget);
     });
 
-    testWidgets('handles zero values correctly', (WidgetTester tester) async {
+    testWidgets('handles zero values correctly', (tester) async {
       final dataWithZeros = [
         TrendData(date: DateTime.now(), amount: 100.0, dayLabel: 'Mon'),
         TrendData(date: DateTime.now(), amount: 0.0, dayLabel: 'Tue'), // Zero

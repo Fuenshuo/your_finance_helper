@@ -1,13 +1,11 @@
 import 'package:equatable/equatable.dart';
-import 'allocation_data.dart';
+import 'package:your_finance_flutter/features/insights/models/allocation_data.dart';
 
 /// Represents calculated financial health score with grading.
 enum HealthGrade { A, B, C, D, F }
 
 class HealthScore extends Equatable {
-  final double score; // Calculated score (0-100)
-  final HealthGrade grade; // Letter grade
-  final DateTime calculatedAt; // Calculation timestamp
+  // Calculation timestamp
 
   const HealthScore._({
     required this.score,
@@ -29,6 +27,9 @@ class HealthScore extends Equatable {
       calculatedAt: DateTime.now(),
     );
   }
+  final double score; // Calculated score (0-100)
+  final HealthGrade grade; // Letter grade
+  final DateTime calculatedAt;
 
   static HealthGrade _calculateGrade(double score) {
     if (score >= 90) return HealthGrade.A;

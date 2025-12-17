@@ -52,8 +52,10 @@ class SalaryFormValidators {
   }
 
   /// 验证个人养老金年度缴费金额
-  static String? validatePensionContribution(String? value,
-      {double maxAmount = 12000}) {
+  static String? validatePensionContribution(
+    String? value, {
+    double maxAmount = 12000,
+  }) {
     if (value?.isEmpty ?? true) {
       return null; // 可选字段
     }

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_finance_flutter/features/insights/services/insight_service.dart';
-import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
+import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
-import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
+import 'package:your_finance_flutter/features/insights/services/insight_service.dart';
+import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
 
 void main() {
   late InsightService insightService;
@@ -23,10 +23,16 @@ void main() {
   group('Weekly Analysis Workflow Integration Tests', () {
     test('should complete full weekly pattern analysis workflow', () async {
       // Arrange: Create a week with anomalous spending patterns
-      final weekStart = DateTime(2024, 1, 1); // Monday
+      final weekStart = DateTime(2024); // Monday
       final dailySpending = [120.0, 140.0, 450.0, 130.0, 280.0, 160.0, 140.0];
       final categoryBreakdown = [
-        '餐饮', '交通', '购物', '娱乐', '餐饮', '日用品', '餐饮'
+        '餐饮',
+        '交通',
+        '购物',
+        '娱乐',
+        '餐饮',
+        '日用品',
+        '餐饮',
       ];
 
       // Mock AI service response for weekly analysis
@@ -74,7 +80,13 @@ void main() {
       final weekStart = DateTime(2024, 1, 8);
       final dailySpending = [140.0, 150.0, 160.0, 145.0, 170.0, 155.0, 150.0];
       final categoryBreakdown = [
-        '餐饮', '交通', '餐饮', '日用品', '娱乐', '餐饮', '购物'
+        '餐饮',
+        '交通',
+        '餐饮',
+        '日用品',
+        '娱乐',
+        '餐饮',
+        '购物',
       ];
 
       // Mock setup removed - method doesn't exist in actual implementation
@@ -102,7 +114,8 @@ void main() {
 
       final result = completedJob.result!;
       expect(result.contains('1070'), true); // Total spent
-      expect(result.contains('anomalies') && result.contains('0'), true); // No anomalies
+      expect(result.contains('anomalies') && result.contains('0'),
+          true); // No anomalies
       expect(result.contains('✅'), true); // Success indicator
     });
 
@@ -112,48 +125,75 @@ void main() {
       final weeksData = [
         {
           'week': 1,
-          'spending': [200.0, 180.0, 500.0, 190.0, 350.0, 220.0, 210.0], // High variance
+          'spending': [
+            200.0,
+            180.0,
+            500.0,
+            190.0,
+            350.0,
+            220.0,
+            210.0
+          ], // High variance
           'expectedAnomalies': 3,
         },
         {
           'week': 2,
-          'spending': [170.0, 160.0, 250.0, 180.0, 200.0, 190.0, 175.0], // Reduced variance
+          'spending': [
+            170.0,
+            160.0,
+            250.0,
+            180.0,
+            200.0,
+            190.0,
+            175.0
+          ], // Reduced variance
           'expectedAnomalies': 1,
         },
         {
           'week': 3,
-          'spending': [150.0, 145.0, 160.0, 155.0, 170.0, 165.0, 150.0], // Stable pattern
+          'spending': [
+            150.0,
+            145.0,
+            160.0,
+            155.0,
+            170.0,
+            165.0,
+            150.0
+          ], // Stable pattern
           'expectedAnomalies': 0,
         },
       ];
 
-      var callCount = 0;
+      const callCount = 0;
       // Mock setup removed - analyzeWeeklyPatterns method doesn't exist
-        final weekData = weeksData[callCount % weeksData.length];
-        final spending = weekData['spending'] as List<double>;
-        final total = spending.reduce((a, b) => a + b);
+      final weekData = weeksData[callCount % weeksData.length];
+      final spending = weekData['spending']! as List<double>;
+      final total = spending.reduce((a, b) => a + b);
 
-        // Generate mock anomalies based on expected count
-        final anomalies = <WeeklyAnomaly>[];
-        final expectedCount = weekData['expectedAnomalies'] as int;
+      // Generate mock anomalies based on expected count
+      final anomalies = <WeeklyAnomaly>[];
+      final expectedCount = weekData['expectedAnomalies']! as int;
 
-        if (expectedCount > 0) {
-          for (var i = 0; i < expectedCount; i++) {
-            anomalies.add(WeeklyAnomaly(
-              id: 'anomaly_week${weekData['week']}_${i}',
-              weekStart: DateTime(2024, 1, (weekData['week'] as int) * 7 - 6),
-              anomalyDate: DateTime(2024, 1, (weekData['week'] as int) * 7 - 6 + i),
+      if (expectedCount > 0) {
+        for (var i = 0; i < expectedCount; i++) {
+          anomalies.add(
+            WeeklyAnomaly(
+              id: 'anomaly_week${weekData['week']}_$i',
+              weekStart: DateTime(2024, 1, (weekData['week']! as int) * 7 - 6),
+              anomalyDate:
+                  DateTime(2024, 1, (weekData['week']! as int) * 7 - 6 + i),
               expectedAmount: total / 7,
               actualAmount: spending[i],
               deviation: spending[i] - (total / 7),
               reason: '支出模式分析',
               severity: i == 0 ? AnomalySeverity.high : AnomalySeverity.medium,
-              categories: ['混合支出'],
-            ));
-          }
+              categories: const ['混合支出'],
+            ),
+          );
         }
+      }
 
-        // Mock setup removed - analyzeWeeklyPatterns method doesn't exist
+      // Mock setup removed - analyzeWeeklyPatterns method doesn't exist
 
       // Act: Process each week sequentially
       final completedJobs = <FluxLoopJob>[];
@@ -181,11 +221,17 @@ void main() {
 
       // First week should have most anomalies
       final firstWeekResult = completedJobs[0].result!;
-      expect(firstWeekResult.contains('3') && firstWeekResult.contains('anomalies'), true);
+      expect(
+          firstWeekResult.contains('3') &&
+              firstWeekResult.contains('anomalies'),
+          true);
 
       // Third week should have no anomalies
       final thirdWeekResult = completedJobs[2].result!;
-      expect(thirdWeekResult.contains('0') && thirdWeekResult.contains('anomalies'), true);
+      expect(
+          thirdWeekResult.contains('0') &&
+              thirdWeekResult.contains('anomalies'),
+          true);
     });
 
     test('should handle weekly analysis failures gracefully', () async {
@@ -217,11 +263,18 @@ void main() {
       final dailySpending = [100.0, 120.0, 400.0, 110.0, 250.0, 130.0, 120.0];
       final weekStart = DateTime(2024, 1, 15);
       final categoryBreakdown = [
-        '餐饮', '交通', '购物', '日用品', '娱乐', '餐饮', '购物'
+        '餐饮',
+        '交通',
+        '购物',
+        '日用品',
+        '娱乐',
+        '餐饮',
+        '购物',
       ];
 
       // First verify pattern detection works independently
-      final detectedAnomalies = await patternDetectionService.detectWeeklyAnomalies(
+      final detectedAnomalies =
+          await patternDetectionService.detectWeeklyAnomalies(
         dailySpending,
         weekStart,
         categoryBreakdown,
@@ -252,11 +305,13 @@ void main() {
       expect(completedJob.isCompleted, true);
       final result = completedJob.result!;
       expect(result.contains(detectedAnomalies.length.toString()), true);
-      expect(result.contains('Wednesday'), true); // Should detect Wednesday anomaly
+      expect(result.contains('Wednesday'),
+          true); // Should detect Wednesday anomaly
       expect(result.contains('Friday'), true); // Should detect Friday anomaly
     });
 
-    test('should provide actionable insights for different spending patterns', () async {
+    test('should provide actionable insights for different spending patterns',
+        () async {
       // Test various spending scenarios and their insights
 
       final scenarios = [
@@ -296,7 +351,7 @@ void main() {
 
         expect(completedJob.isCompleted, true);
         final result = completedJob.result!;
-        expect(result.contains(scenario['expectedInsight'] as String), true);
+        expect(result.contains(scenario['expectedInsight']! as String), true);
       }
     });
 

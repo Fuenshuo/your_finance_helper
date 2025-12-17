@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
-import 'package:your_finance_flutter/features/family_info/screens/fixed_asset_detail_screen.dart';
-import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
 import 'package:your_finance_flutter/core/services/ai/asset_valuation_service.dart';
 import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/features/family_info/screens/fixed_asset_detail_screen.dart';
+import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
 
 class AddAssetSheet extends StatefulWidget {
   const AddAssetSheet({
@@ -227,12 +227,15 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
   Future<void> _valuateAsset() async {
     try {
       // 1. 选择图片
-      final imageService = ImageProcessingService.getInstance();
+      final imageService = await ImageProcessingService.getInstance();
       final imageFile = await imageService.pickImageFromGallery();
       if (imageFile == null) return;
 
       // 2. 保存图片
       final imagePath = await imageService.saveImageToAppDirectory(imageFile);
+      if (imagePath == null) {
+        return;
+      }
 
       // 3. 显示加载对话框
       if (!mounted) return;
@@ -255,7 +258,7 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
 
       // 6. 填充表单字段（只填充名称，金额需要用户手动输入）
       setState(() {
-        _nameController.text = result.assetName;
+        _nameController.text = result.assetName ?? '';
         // 不自动填充金额，让用户手动输入
       });
 
@@ -363,7 +366,8 @@ class _AddAssetSheetState extends State<AddAssetSheet> {
       '📋 _showDetailedInputOptions: 资产名称: ${asset.name}, 子分类: ${asset.subCategory}',
     );
     Logger.debug(
-        '📋 _showDetailedInputOptions: 是否为房产资产: ${_isPropertyAsset(asset)}');
+      '📋 _showDetailedInputOptions: 是否为房产资产: ${_isPropertyAsset(asset)}',
+    );
 
     // 移除延迟，直接显示弹窗
     Logger.debug('✅ 直接显示弹窗');

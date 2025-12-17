@@ -1,10 +1,18 @@
 import 'package:equatable/equatable.dart';
 
-import 'draft_transaction.dart';
-import 'input_validation.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
 
 /// 性能指标模型
 class PerformanceMetrics extends Equatable {
+  PerformanceMetrics({
+    this.parseResponseTimeMs = 0,
+    this.uiRenderTimeMs = 0,
+    this.memoryUsageBytes = 0,
+    this.cpuUsagePercent = 0.0,
+    DateTime? lastUpdated,
+  }) : lastUpdated = lastUpdated ?? DateTime.now();
+
   /// 解析响应时间 (毫秒)
   final int parseResponseTimeMs;
 
@@ -20,29 +28,20 @@ class PerformanceMetrics extends Equatable {
   /// 最后更新时间
   final DateTime lastUpdated;
 
-  PerformanceMetrics({
-    this.parseResponseTimeMs = 0,
-    this.uiRenderTimeMs = 0,
-    this.memoryUsageBytes = 0,
-    this.cpuUsagePercent = 0.0,
-    DateTime? lastUpdated,
-  }) : lastUpdated = lastUpdated ?? DateTime.now();
-
   PerformanceMetrics copyWith({
     int? parseResponseTimeMs,
     int? uiRenderTimeMs,
     int? memoryUsageBytes,
     double? cpuUsagePercent,
     DateTime? lastUpdated,
-  }) {
-    return PerformanceMetrics(
-      parseResponseTimeMs: parseResponseTimeMs ?? this.parseResponseTimeMs,
-      uiRenderTimeMs: uiRenderTimeMs ?? this.uiRenderTimeMs,
-      memoryUsageBytes: memoryUsageBytes ?? this.memoryUsageBytes,
-      cpuUsagePercent: cpuUsagePercent ?? this.cpuUsagePercent,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
-    );
-  }
+  }) =>
+      PerformanceMetrics(
+        parseResponseTimeMs: parseResponseTimeMs ?? this.parseResponseTimeMs,
+        uiRenderTimeMs: uiRenderTimeMs ?? this.uiRenderTimeMs,
+        memoryUsageBytes: memoryUsageBytes ?? this.memoryUsageBytes,
+        cpuUsagePercent: cpuUsagePercent ?? this.cpuUsagePercent,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
+      );
 
   /// 是否超过性能阈值
   bool get exceedsThreshold =>
@@ -62,6 +61,18 @@ class PerformanceMetrics extends Equatable {
 
 /// 交易录入页面的整体状态模型
 class TransactionEntryState extends Equatable {
+  const TransactionEntryState({
+    this.currentInput = '',
+    this.draftTransaction,
+    this.validation = const InputValidation(),
+    this.isParsing = false,
+    this.parseError,
+    this.isSaving = false,
+    this.saveError,
+    this.savedTransaction,
+    this.performanceMetrics,
+  });
+
   /// 当前输入文本
   final String currentInput;
 
@@ -89,18 +100,6 @@ class TransactionEntryState extends Equatable {
   /// 性能指标
   final PerformanceMetrics? performanceMetrics;
 
-  TransactionEntryState({
-    this.currentInput = '',
-    this.draftTransaction,
-    this.validation = const InputValidation(),
-    this.isParsing = false,
-    this.parseError,
-    this.isSaving = false,
-    this.saveError,
-    this.savedTransaction,
-    this.performanceMetrics,
-  });
-
   TransactionEntryState copyWith({
     String? currentInput,
     DraftTransaction? draftTransaction,
@@ -109,21 +108,20 @@ class TransactionEntryState extends Equatable {
     String? parseError,
     bool? isSaving,
     String? saveError,
-    dynamic savedTransaction,
+    Object? savedTransaction,
     PerformanceMetrics? performanceMetrics,
-  }) {
-    return TransactionEntryState(
-      currentInput: currentInput ?? this.currentInput,
-      draftTransaction: draftTransaction ?? this.draftTransaction,
-      validation: validation ?? this.validation,
-      isParsing: isParsing ?? this.isParsing,
-      parseError: parseError ?? this.parseError,
-      isSaving: isSaving ?? this.isSaving,
-      saveError: saveError ?? this.saveError,
-      savedTransaction: savedTransaction ?? this.savedTransaction,
-      performanceMetrics: performanceMetrics ?? this.performanceMetrics,
-    );
-  }
+  }) =>
+      TransactionEntryState(
+        currentInput: currentInput ?? this.currentInput,
+        draftTransaction: draftTransaction ?? this.draftTransaction,
+        validation: validation ?? this.validation,
+        isParsing: isParsing ?? this.isParsing,
+        parseError: parseError ?? this.parseError,
+        isSaving: isSaving ?? this.isSaving,
+        saveError: saveError ?? this.saveError,
+        savedTransaction: savedTransaction ?? this.savedTransaction,
+        performanceMetrics: performanceMetrics ?? this.performanceMetrics,
+      );
 
   @override
   List<Object?> get props => [

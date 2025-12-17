@@ -36,7 +36,8 @@ void main() {
   });
 
   group('StructuralHealthChart Widget Tests', () {
-    testWidgets('displays chart with sample allocation correctly', (WidgetTester tester) async {
+    testWidgets('displays chart with sample allocation correctly',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -60,7 +61,7 @@ void main() {
       expect(find.text('¥1000'), findsOneWidget); // Total
     });
 
-    testWidgets('displays empty state correctly', (WidgetTester tester) async {
+    testWidgets('displays empty state correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -70,23 +71,25 @@ void main() {
       );
 
       // Should show empty state message
-      expect(find.text('Complete spending setup to see health score'), findsOneWidget);
+      expect(find.text('Complete spending setup to see health score'),
+          findsOneWidget);
     });
 
-    testWidgets('displays null allocation correctly', (WidgetTester tester) async {
+    testWidgets('displays null allocation correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
-            body: StructuralHealthChart(allocationData: null),
+            body: StructuralHealthChart(),
           ),
         ),
       );
 
       // Should show empty state
-      expect(find.text('Complete spending setup to see health score'), findsOneWidget);
+      expect(find.text('Complete spending setup to see health score'),
+          findsOneWidget);
     });
 
-    testWidgets('displays fixed-only allocation correctly', (WidgetTester tester) async {
+    testWidgets('displays fixed-only allocation correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -103,7 +106,7 @@ void main() {
       expect(find.text('¥0'), findsOneWidget); // Flexible amount
     });
 
-    testWidgets('displays flexible-only allocation correctly', (WidgetTester tester) async {
+    testWidgets('displays flexible-only allocation correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -120,7 +123,7 @@ void main() {
       expect(find.text('¥1000'), findsOneWidget); // Flexible amount
     });
 
-    testWidgets('displays health score correctly', (WidgetTester tester) async {
+    testWidgets('displays health score correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -137,7 +140,7 @@ void main() {
       expect(find.text('Health Score'), findsOneWidget);
     });
 
-    testWidgets('handles large amounts correctly', (WidgetTester tester) async {
+    testWidgets('handles large amounts correctly', (tester) async {
       final largeAllocation = AllocationData(
         fixedAmount: 50000.0,
         flexibleAmount: 25000.0,
@@ -158,7 +161,7 @@ void main() {
       expect(find.text('¥75000'), findsOneWidget); // Total
     });
 
-    testWidgets('updates when allocation data changes', (WidgetTester tester) async {
+    testWidgets('updates when allocation data changes', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

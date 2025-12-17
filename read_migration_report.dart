@@ -29,11 +29,13 @@ void main() async {
           final modules = jsonData['modules'] as Map<String, dynamic>;
           for (final entry in modules.entries) {
             final moduleData = entry.value as Map<String, dynamic>;
-            print('    ${entry.key}: 总数=${moduleData['total']}, 成功=${moduleData['imported']}, 失败=${moduleData['failed']}');
+            print(
+                '    ${entry.key}: 总数=${moduleData['total']}, 成功=${moduleData['imported']}, 失败=${moduleData['failed']}');
           }
         }
 
-        if (jsonData.containsKey('errors') == true && (jsonData['errors'] as List).isNotEmpty) {
+        if (jsonData.containsKey('errors') == true &&
+            (jsonData['errors'] as List).isNotEmpty) {
           print('  - 错误:');
           final errors = jsonData['errors'] as List;
           for (final error in errors) {
@@ -46,7 +48,6 @@ void main() async {
     } else {
       print('❌ 迁移报告文件不存在');
     }
-
   } catch (e, stackTrace) {
     print('❌ 读取失败: $e');
     print('📋 堆栈跟踪: $stackTrace');

@@ -42,7 +42,9 @@ class TransactionStateLoaded extends TransactionState {
     this.draftTransactions,
   );
 
+  @override
   final List<Transaction> transactions;
+  @override
   final List<Transaction> draftTransactions;
 
   @override
@@ -99,7 +101,8 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     }
     await loadTransactions();
     debugPrint(
-        '[TransactionNotifier.initialize] [TARGET] TransactionNotifier 初始化完成');
+      '[TransactionNotifier.initialize] [TARGET] TransactionNotifier 初始化完成',
+    );
   }
 
   // 加载交易数据
@@ -109,24 +112,31 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 
     try {
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [STORAGE] 从 StorageService 加载正式交易');
+        '[TransactionNotifier.loadTransactions] [STORAGE] 从 StorageService 加载正式交易',
+      );
       final transactions = await _storageService.loadTransactions();
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${transactions.length}');
+        '[TransactionNotifier.loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${transactions.length}',
+      );
 
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [DRAFT] 从 StorageService 加载草稿交易');
+        '[TransactionNotifier.loadTransactions] [DRAFT] 从 StorageService 加载草稿交易',
+      );
       final draftTransactions = await _storageService.loadDraftTransactions();
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${draftTransactions.length}');
+        '[TransactionNotifier.loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${draftTransactions.length}',
+      );
 
       debugPrint('[TransactionNotifier.loadTransactions] [STATS] 数据加载完成统计:');
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [CHART] 正式交易: ${transactions.length} 笔');
+        '[TransactionNotifier.loadTransactions] [CHART] 正式交易: ${transactions.length} 笔',
+      );
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [DRAFT] 草稿交易: ${draftTransactions.length} 笔');
+        '[TransactionNotifier.loadTransactions] [DRAFT] 草稿交易: ${draftTransactions.length} 笔',
+      );
       debugPrint(
-          '[TransactionNotifier.loadTransactions] [TREND] 总计: ${transactions.length + draftTransactions.length} 笔');
+        '[TransactionNotifier.loadTransactions] [TREND] 总计: ${transactions.length + draftTransactions.length} 笔',
+      );
 
       state = TransactionStateLoaded(transactions, draftTransactions);
     } catch (e) {
@@ -148,7 +158,9 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       await _triggerInsightAnalysis(transaction.id, JobType.dailyAnalysis);
 
       state = TransactionStateLoaded(
-          newTransactions, currentState.draftTransactions);
+        newTransactions,
+        currentState.draftTransactions,
+      );
     } catch (e) {
       state = TransactionStateError(e.toString());
     }
@@ -161,19 +173,25 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       if (currentState is! TransactionStateLoaded) return;
 
       final newTransactions = currentState.transactions
-          .map((t) => t.id == updatedTransaction.id
-              ? updatedTransaction.copyWith(updateDate: DateTime.now())
-              : t)
+          .map(
+            (t) => t.id == updatedTransaction.id
+                ? updatedTransaction.copyWith(updateDate: DateTime.now())
+                : t,
+          )
           .toList();
 
       await _storageService.saveTransactions(newTransactions);
 
       // Trigger Flux Loop analysis for updated transaction
       await _triggerInsightAnalysis(
-          updatedTransaction.id, JobType.dailyAnalysis);
+        updatedTransaction.id,
+        JobType.dailyAnalysis,
+      );
 
       state = TransactionStateLoaded(
-          newTransactions, currentState.draftTransactions);
+        newTransactions,
+        currentState.draftTransactions,
+      );
     } catch (e) {
       state = TransactionStateError(e.toString());
     }
@@ -194,7 +212,9 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       await _triggerInsightAnalysis(transactionId, JobType.dailyAnalysis);
 
       state = TransactionStateLoaded(
-          newTransactions, currentState.draftTransactions);
+        newTransactions,
+        currentState.draftTransactions,
+      );
     } catch (e) {
       state = TransactionStateError(e.toString());
     }
@@ -202,7 +222,9 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 
   // Helper method to trigger insight analysis
   Future<void> _triggerInsightAnalysis(
-      String transactionId, JobType jobType) async {
+    String transactionId,
+    JobType jobType,
+  ) async {
     try {
       // Only trigger if insights provider is available
       if (_insightsProvider != null) {
@@ -226,12 +248,14 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 
       final newDraftTransactions = [
         ...currentState.draftTransactions,
-        transaction
+        transaction,
       ];
       await _storageService.saveDraftTransactions(newDraftTransactions);
 
       state = TransactionStateLoaded(
-          currentState.transactions, newDraftTransactions);
+        currentState.transactions,
+        newDraftTransactions,
+      );
     } catch (e) {
       state = TransactionStateError(e.toString());
     }
@@ -254,7 +278,7 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 
         final newTransactions = [
           ...currentState.transactions,
-          confirmedTransaction
+          confirmedTransaction,
         ];
         final newDraftTransactions =
             List<Transaction>.from(currentState.draftTransactions)
@@ -281,7 +305,9 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       await _storageService.saveDraftTransactions(newDraftTransactions);
 
       state = TransactionStateLoaded(
-          currentState.transactions, newDraftTransactions);
+        currentState.transactions,
+        newDraftTransactions,
+      );
     } catch (e) {
       state = TransactionStateError(e.toString());
     }
@@ -335,7 +361,9 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 
   // 获取指定时间范围的交易
   List<Transaction> getTransactionsByDateRange(
-      DateTime startDate, DateTime endDate) {
+    DateTime startDate,
+    DateTime endDate,
+  ) {
     final currentState = state;
     if (currentState is! TransactionStateLoaded) return [];
 
@@ -415,8 +443,10 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       calculateTotalExpense(startDate: startDate, endDate: endDate);
 
   // 按分类统计支出
-  Map<TransactionCategory, double> getExpenseByCategory(
-      {DateTime? startDate, DateTime? endDate}) {
+  Map<TransactionCategory, double> getExpenseByCategory({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
     final currentState = state;
     if (currentState is! TransactionStateLoaded) return {};
 
@@ -510,17 +540,14 @@ final transactionProvider =
 });
 
 /// Computed providers for derived transaction data
-final transactionListProvider = Provider<List<Transaction>>((ref) {
-  return ref.watch(transactionProvider).transactions;
-});
+final transactionListProvider = Provider<List<Transaction>>(
+    (ref) => ref.watch(transactionProvider).transactions);
 
-final draftTransactionListProvider = Provider<List<Transaction>>((ref) {
-  return ref.watch(transactionProvider).draftTransactions;
-});
+final draftTransactionListProvider = Provider<List<Transaction>>(
+    (ref) => ref.watch(transactionProvider).draftTransactions);
 
-final isTransactionLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(transactionProvider).isLoading;
-});
+final isTransactionLoadingProvider =
+    Provider<bool>((ref) => ref.watch(transactionProvider).isLoading);
 
 final transactionErrorProvider = Provider<String?>((ref) {
   final state = ref.watch(transactionProvider);

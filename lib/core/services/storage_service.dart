@@ -85,22 +85,24 @@ class StorageService extends StatefulService {
   }
 
   // 获取资产列表
-  Future<List<AssetItem>> getAssets() async {
-    return executeOperation('getAssets', () async {
-      final jsonString = _prefsService.getString(_assetsKey);
-      if (jsonString == null) {
-        _incrementRead();
-        return [];
-      }
+  Future<List<AssetItem>> getAssets() async => executeOperation(
+        'getAssets',
+        () async {
+          final jsonString = _prefsService.getString(_assetsKey);
+          if (jsonString == null) {
+            _incrementRead();
+            return [];
+          }
 
-      final jsonList = jsonDecode(jsonString) as List<dynamic>;
-      final assets = jsonList
-          .map((json) => AssetItem.fromJson(json as Map<String, dynamic>))
-          .toList();
-      _incrementRead();
-      return assets;
-    }, defaultValue: []);
-  }
+          final jsonList = jsonDecode(jsonString) as List<dynamic>;
+          final assets = jsonList
+              .map((json) => AssetItem.fromJson(json as Map<String, dynamic>))
+              .toList();
+          _incrementRead();
+          return assets;
+        },
+        defaultValue: [],
+      );
 
   // 添加资产
   Future<void> addAsset(AssetItem asset) async {
@@ -442,7 +444,8 @@ class StorageService extends StatefulService {
 
   // 保存周期清账会话列表
   Future<void> savePeriodClearanceSessions(
-      List<PeriodClearanceSession> sessions) async {
+    List<PeriodClearanceSession> sessions,
+  ) async {
     try {
       final jsonList = sessions.map((session) => session.toJson()).toList();
       final jsonString = jsonEncode(jsonList);

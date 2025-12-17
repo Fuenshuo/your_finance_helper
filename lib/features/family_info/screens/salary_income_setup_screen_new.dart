@@ -45,7 +45,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
   // State variables
   bool _isLoading = false;
-  bool _autoCalculateTax = true;
+  final bool _autoCalculateTax = true;
   int _salaryDay = 15;
   bool _isMidYearMode = false;
   bool _useAutoCalculation = false;

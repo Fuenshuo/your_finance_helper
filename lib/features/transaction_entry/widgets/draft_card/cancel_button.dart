@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 /// 取消按钮组件
 class CancelButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-
   const CancelButton({
     super.key,
     this.onPressed,
   });
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

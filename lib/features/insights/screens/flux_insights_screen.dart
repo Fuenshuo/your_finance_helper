@@ -8,8 +8,8 @@ import 'package:your_finance_flutter/features/insights/models/health_score.dart'
 import 'package:your_finance_flutter/features/insights/models/trend_data.dart';
 import 'package:your_finance_flutter/features/insights/services/financial_calculation_service.dart';
 import 'package:your_finance_flutter/features/insights/widgets/daily_budget_velocity.dart';
-import 'package:your_finance_flutter/features/insights/widgets/trend_radar_chart.dart';
 import 'package:your_finance_flutter/features/insights/widgets/structural_health_chart.dart';
+import 'package:your_finance_flutter/features/insights/widgets/trend_radar_chart.dart';
 
 /// Flux Insights Premium High-Density UI Screen
 ///
@@ -78,29 +78,35 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
     // Sample trend data for the past week
     _trendData = [
       TrendData(
-          date: DateTime.now().subtract(const Duration(days: 6)),
-          amount: 1200.0,
-          dayLabel: 'Mon'),
+        date: DateTime.now().subtract(const Duration(days: 6)),
+        amount: 1200.0,
+        dayLabel: 'Mon',
+      ),
       TrendData(
-          date: DateTime.now().subtract(const Duration(days: 5)),
-          amount: 800.0,
-          dayLabel: 'Tue'),
+        date: DateTime.now().subtract(const Duration(days: 5)),
+        amount: 800.0,
+        dayLabel: 'Tue',
+      ),
       TrendData(
-          date: DateTime.now().subtract(const Duration(days: 4)),
-          amount: 1500.0,
-          dayLabel: 'Wed'),
+        date: DateTime.now().subtract(const Duration(days: 4)),
+        amount: 1500.0,
+        dayLabel: 'Wed',
+      ),
       TrendData(
-          date: DateTime.now().subtract(const Duration(days: 3)),
-          amount: 900.0,
-          dayLabel: 'Thu'),
+        date: DateTime.now().subtract(const Duration(days: 3)),
+        amount: 900.0,
+        dayLabel: 'Thu',
+      ),
       TrendData(
-          date: DateTime.now().subtract(const Duration(days: 2)),
-          amount: 2000.0,
-          dayLabel: 'Fri'),
+        date: DateTime.now().subtract(const Duration(days: 2)),
+        amount: 2000.0,
+        dayLabel: 'Fri',
+      ),
       TrendData(
-          date: DateTime.now().subtract(const Duration(days: 1)),
-          amount: 600.0,
-          dayLabel: 'Sat'),
+        date: DateTime.now().subtract(const Duration(days: 1)),
+        amount: 600.0,
+        dayLabel: 'Sat',
+      ),
       TrendData(date: DateTime.now(), amount: 1100.0, dayLabel: 'Sun'),
     ];
 
@@ -134,13 +140,12 @@ class _FluxInsightsScreenState extends State<FluxInsightsScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     // Monitor build performance
     PerformanceMonitor.startOperation('FluxInsightsScreen.build');
 
-    final result = Container(
+    final result = ColoredBox(
       color: AppDesignTokens.pageBackground(context),
       child: CustomScrollView(
         slivers: [

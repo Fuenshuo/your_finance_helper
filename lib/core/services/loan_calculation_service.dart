@@ -102,7 +102,10 @@ class LoanCalculationService {
 
     final secondMonthlyPayment = secondAmount != null && secondRate != null
         ? _calculateMonthlyPayment(
-            secondAmount, secondMonthlyRate.toDouble(), loanTermMonths)
+            secondAmount,
+            secondMonthlyRate.toDouble(),
+            loanTermMonths,
+          )
         : 0.0;
 
     final totalMonthlyPayment = monthlyPayment + secondMonthlyPayment;
@@ -241,7 +244,10 @@ class LoanCalculationService {
 
   /// 计算月还款额（等额本息）
   double _calculateMonthlyPayment(
-      double principal, double monthlyRate, int months) {
+    double principal,
+    double monthlyRate,
+    int months,
+  ) {
     if (monthlyRate == 0) {
       return principal / months;
     }

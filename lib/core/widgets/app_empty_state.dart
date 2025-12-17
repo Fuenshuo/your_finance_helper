@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../theme/app_design_tokens.dart';
-import 'app_primary_button.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/app_primary_button.dart';
 
 /// 空状态组件 - 统一的空状态展示
 /// 用于列表为空、数据加载失败等场景
 class AppEmptyState extends StatelessWidget {
   const AppEmptyState({
-    super.key,
     required this.icon,
     required this.title,
+    super.key,
     this.subtitle,
     this.actionLabel,
     this.onAction,
@@ -24,7 +24,7 @@ class AppEmptyState extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(AppDesignTokens.spacing32),
+            padding: const EdgeInsets.all(AppDesignTokens.spacing32),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -42,14 +42,14 @@ class AppEmptyState extends StatelessWidget {
                     color: AppDesignTokens.secondaryText(context),
                   ),
                 ),
-                SizedBox(height: AppDesignTokens.spacing24),
+                const SizedBox(height: AppDesignTokens.spacing24),
                 Text(
                   title,
                   style: AppTextStyles.headlineMedium(context),
                   textAlign: TextAlign.center,
                 ),
                 if (subtitle != null) ...[
-                  SizedBox(height: AppDesignTokens.spacing8),
+                  const SizedBox(height: AppDesignTokens.spacing8),
                   Text(
                     subtitle!,
                     style: AppTextStyles.bodyMedium(context),
@@ -57,7 +57,7 @@ class AppEmptyState extends StatelessWidget {
                   ),
                 ],
                 if (actionLabel != null && onAction != null) ...[
-                  SizedBox(height: AppDesignTokens.spacing24),
+                  const SizedBox(height: AppDesignTokens.spacing24),
                   AppPrimaryButton(
                     onPressed: onAction,
                     label: actionLabel!,

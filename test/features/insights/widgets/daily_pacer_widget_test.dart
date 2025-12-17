@@ -52,13 +52,13 @@ void main() {
         sentiment: Sentiment.positive,
         message: '今日控制得很好，节省了20元咖啡钱。',
         trigger: InsightTrigger.timeCheck,
-        actions: ['继续保持', '查看本周趋势'],
+        actions: const ['继续保持', '查看本周趋势'],
       ),
     );
   });
 
   group('DailyPacerWidget Tests', () {
-    testWidgets('should display safe status correctly', (WidgetTester tester) async {
+    testWidgets('should display safe status correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -78,7 +78,7 @@ void main() {
       expect(find.text('剩余 ¥150'), findsOneWidget);
     });
 
-    testWidgets('should display warning status correctly', (WidgetTester tester) async {
+    testWidgets('should display warning status correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -95,7 +95,7 @@ void main() {
       expect(find.text('剩余 ¥50'), findsOneWidget);
     });
 
-    testWidgets('should display danger status correctly', (WidgetTester tester) async {
+    testWidgets('should display danger status correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -112,7 +112,7 @@ void main() {
       expect(find.text('超支 ¥50'), findsOneWidget);
     });
 
-    testWidgets('should display micro insight when available', (WidgetTester tester) async {
+    testWidgets('should display micro insight when available', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -132,7 +132,8 @@ void main() {
       expect(find.text('查看本周趋势'), findsOneWidget);
     });
 
-    testWidgets('should not display insight section when no insight', (WidgetTester tester) async {
+    testWidgets('should not display insight section when no insight',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -145,8 +146,8 @@ void main() {
       expect(find.text('AI 建议'), findsNothing);
     });
 
-    testWidgets('should handle tap gesture', (WidgetTester tester) async {
-      bool tapped = false;
+    testWidgets('should handle tap gesture', (tester) async {
+      var tapped = false;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -166,7 +167,8 @@ void main() {
       expect(tapped, true);
     });
 
-    testWidgets('should render progress bar with correct percentage', (WidgetTester tester) async {
+    testWidgets('should render progress bar with correct percentage',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -179,7 +181,8 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should display correct remaining amount calculation', (WidgetTester tester) async {
+    testWidgets('should display correct remaining amount calculation',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -192,7 +195,7 @@ void main() {
       expect(find.text('剩余 ¥150'), findsOneWidget);
     });
 
-    testWidgets('should display correct over budget amount', (WidgetTester tester) async {
+    testWidgets('should display correct over budget amount', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -206,7 +209,8 @@ void main() {
     });
 
     group('Progress bar animations', () {
-      testWidgets('should animate danger status with shake effect', (WidgetTester tester) async {
+      testWidgets('should animate danger status with shake effect',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -219,22 +223,22 @@ void main() {
         expect(find.byType(DailyPacerWidget), findsOneWidget);
       });
 
-      testWidgets('should not animate safe status', (WidgetTester tester) async {
+      testWidgets('should not animate safe status', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-          home: Scaffold(
-            body: DailyPacerWidget(dailyCap: safeDailyCap),
+            home: Scaffold(
+              body: DailyPacerWidget(dailyCap: safeDailyCap),
+            ),
           ),
-        ),
-      );
+        );
 
-      // Should render without shake animation
-      expect(find.byType(DailyPacerWidget), findsOneWidget);
+        // Should render without shake animation
+        expect(find.byType(DailyPacerWidget), findsOneWidget);
+      });
     });
-  });
 
     group('Insight actions', () {
-      testWidgets('should display multiple actions as chips', (WidgetTester tester) async {
+      testWidgets('should display multiple actions as chips', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -248,7 +252,7 @@ void main() {
         expect(find.text('查看本周趋势'), findsOneWidget);
       });
 
-      testWidgets('should handle empty actions list', (WidgetTester tester) async {
+      testWidgets('should handle empty actions list', (tester) async {
         final capWithEmptyActions = DailyCap(
           id: 'empty_actions',
           date: DateTime.now(),
@@ -263,7 +267,7 @@ void main() {
             sentiment: Sentiment.neutral,
             message: 'No actions insight',
             trigger: InsightTrigger.manualRequest,
-            actions: [],
+            actions: const [],
           ),
         );
 
@@ -280,7 +284,8 @@ void main() {
         expect(find.byType(Chip), findsNothing);
       });
 
-      testWidgets('should display sentiment-appropriate colors', (WidgetTester tester) async {
+      testWidgets('should display sentiment-appropriate colors',
+          (tester) async {
         // Test positive sentiment
         await tester.pumpWidget(
           MaterialApp(
@@ -296,7 +301,7 @@ void main() {
     });
 
     group('Status colors', () {
-      testWidgets('should use green for safe status', (WidgetTester tester) async {
+      testWidgets('should use green for safe status', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -309,7 +314,7 @@ void main() {
         expect(find.text('安全'), findsOneWidget);
       });
 
-      testWidgets('should use orange for warning status', (WidgetTester tester) async {
+      testWidgets('should use orange for warning status', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -322,7 +327,7 @@ void main() {
         expect(find.text('注意'), findsOneWidget);
       });
 
-      testWidgets('should use red for danger status', (WidgetTester tester) async {
+      testWidgets('should use red for danger status', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -337,7 +342,7 @@ void main() {
     });
 
     group('Edge cases', () {
-      testWidgets('should handle zero spending', (WidgetTester tester) async {
+      testWidgets('should handle zero spending', (tester) async {
         final zeroSpendingCap = DailyCap(
           id: 'zero_spending',
           date: DateTime.now(),
@@ -359,7 +364,7 @@ void main() {
         expect(find.text('剩余 ¥200'), findsOneWidget);
       });
 
-      testWidgets('should handle very high spending', (WidgetTester tester) async {
+      testWidgets('should handle very high spending', (tester) async {
         final highSpendingCap = DailyCap(
           id: 'high_spending',
           date: DateTime.now(),
@@ -381,7 +386,7 @@ void main() {
         expect(find.text('超支 ¥900'), findsOneWidget);
       });
 
-      testWidgets('should handle negative spending (refunds)', (WidgetTester tester) async {
+      testWidgets('should handle negative spending (refunds)', (tester) async {
         final negativeSpendingCap = DailyCap(
           id: 'negative_spending',
           date: DateTime.now(),
@@ -403,7 +408,7 @@ void main() {
         expect(find.text('剩余 ¥250'), findsOneWidget);
       });
 
-      testWidgets('should handle zero budget', (WidgetTester tester) async {
+      testWidgets('should handle zero budget', (tester) async {
         final zeroBudgetCap = DailyCap(
           id: 'zero_budget',
           date: DateTime.now(),

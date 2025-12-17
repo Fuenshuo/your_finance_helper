@@ -14,6 +14,22 @@ class WeeklyAnomaly extends Equatable {
     required this.categories,
   });
 
+  /// 从JSON反序列化
+  factory WeeklyAnomaly.fromJson(Map<String, dynamic> json) => WeeklyAnomaly(
+        id: json['id'] as String,
+        weekStart: DateTime.parse(json['weekStart'] as String),
+        anomalyDate: DateTime.parse(json['anomalyDate'] as String),
+        expectedAmount: (json['expectedAmount'] as num).toDouble(),
+        actualAmount: (json['actualAmount'] as num).toDouble(),
+        deviation: (json['deviation'] as num).toDouble(),
+        reason: json['reason'] as String,
+        severity: AnomalySeverity.values.firstWhere(
+          (e) => e.name == json['severity'],
+          orElse: () => AnomalySeverity.medium,
+        ),
+        categories: (json['categories'] as List).cast<String>(),
+      );
+
   final String id;
   final DateTime weekStart;
   final DateTime anomalyDate;
@@ -34,19 +50,18 @@ class WeeklyAnomaly extends Equatable {
     String? reason,
     AnomalySeverity? severity,
     List<String>? categories,
-  }) {
-    return WeeklyAnomaly(
-      id: id ?? this.id,
-      weekStart: weekStart ?? this.weekStart,
-      anomalyDate: anomalyDate ?? this.anomalyDate,
-      expectedAmount: expectedAmount ?? this.expectedAmount,
-      actualAmount: actualAmount ?? this.actualAmount,
-      deviation: deviation ?? this.deviation,
-      reason: reason ?? this.reason,
-      severity: severity ?? this.severity,
-      categories: categories ?? this.categories,
-    );
-  }
+  }) =>
+      WeeklyAnomaly(
+        id: id ?? this.id,
+        weekStart: weekStart ?? this.weekStart,
+        anomalyDate: anomalyDate ?? this.anomalyDate,
+        expectedAmount: expectedAmount ?? this.expectedAmount,
+        actualAmount: actualAmount ?? this.actualAmount,
+        deviation: deviation ?? this.deviation,
+        reason: reason ?? this.reason,
+        severity: severity ?? this.severity,
+        categories: categories ?? this.categories,
+      );
 
   @override
   List<Object?> get props => [
@@ -62,37 +77,17 @@ class WeeklyAnomaly extends Equatable {
       ];
 
   /// 序列化为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'weekStart': weekStart.toIso8601String(),
-      'anomalyDate': anomalyDate.toIso8601String(),
-      'expectedAmount': expectedAmount,
-      'actualAmount': actualAmount,
-      'deviation': deviation,
-      'reason': reason,
-      'severity': severity.name,
-      'categories': categories,
-    };
-  }
-
-  /// 从JSON反序列化
-  factory WeeklyAnomaly.fromJson(Map<String, dynamic> json) {
-    return WeeklyAnomaly(
-      id: json['id'] as String,
-      weekStart: DateTime.parse(json['weekStart'] as String),
-      anomalyDate: DateTime.parse(json['anomalyDate'] as String),
-      expectedAmount: (json['expectedAmount'] as num).toDouble(),
-      actualAmount: (json['actualAmount'] as num).toDouble(),
-      deviation: (json['deviation'] as num).toDouble(),
-      reason: json['reason'] as String,
-      severity: AnomalySeverity.values.firstWhere(
-        (e) => e.name == json['severity'],
-        orElse: () => AnomalySeverity.medium,
-      ),
-      categories: (json['categories'] as List).cast<String>(),
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'weekStart': weekStart.toIso8601String(),
+        'anomalyDate': anomalyDate.toIso8601String(),
+        'expectedAmount': expectedAmount,
+        'actualAmount': actualAmount,
+        'deviation': deviation,
+        'reason': reason,
+        'severity': severity.name,
+        'categories': categories,
+      };
 }
 
 /// Severity levels for spending anomalies

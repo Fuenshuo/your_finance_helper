@@ -15,20 +15,24 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Unified Transaction Entry Screen Integration Tests', () {
-    testWidgets('Screen renders without errors', (WidgetTester tester) async {
+    testWidgets('Screen renders without errors', (tester) async {
       // Pump the screen with all required providers
       await tester.pumpWidget(
         provider.MultiProvider(
           providers: [
             provider.ChangeNotifierProvider(create: (_) => AccountProvider()),
             provider.ChangeNotifierProvider(create: (_) => BudgetProvider()),
-            provider.ChangeNotifierProvider(create: (_) => TransactionProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => TransactionProvider()),
             provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-            provider.ChangeNotifierProvider(create: (_) => ThemeStyleProvider()),
-            provider.ChangeNotifierProvider(create: (_) => StreamInsightsFlagProvider(flagKey: 'stream_insights', defaultValue: true)),
+            provider.ChangeNotifierProvider(
+                create: (_) => ThemeStyleProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => StreamInsightsFlagProvider(
+                    flagKey: 'stream_insights', defaultValue: true)),
           ],
-          child: ProviderScope(
-            child: const MaterialApp(
+          child: const ProviderScope(
+            child: MaterialApp(
               home: UnifiedTransactionEntryScreen(),
             ),
           ),
@@ -42,25 +46,30 @@ void main() {
       expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
 
       // Check for key UI elements (timeframe controls)
-      expect(find.byKey(const Key('unified_timeframe_segmented_control')), findsOneWidget);
+      expect(find.byKey(const Key('unified_timeframe_segmented_control')),
+          findsOneWidget);
 
       // Check for input dock
       expect(find.byKey(const Key('unified_input_dock')), findsOneWidget);
     });
 
-    testWidgets('Time range controls are functional', (WidgetTester tester) async {
+    testWidgets('Time range controls are functional', (tester) async {
       await tester.pumpWidget(
         provider.MultiProvider(
           providers: [
             provider.ChangeNotifierProvider(create: (_) => AccountProvider()),
             provider.ChangeNotifierProvider(create: (_) => BudgetProvider()),
-            provider.ChangeNotifierProvider(create: (_) => TransactionProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => TransactionProvider()),
             provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-            provider.ChangeNotifierProvider(create: (_) => ThemeStyleProvider()),
-            provider.ChangeNotifierProvider(create: (_) => StreamInsightsFlagProvider(flagKey: 'stream_insights', defaultValue: true)),
+            provider.ChangeNotifierProvider(
+                create: (_) => ThemeStyleProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => StreamInsightsFlagProvider(
+                    flagKey: 'stream_insights', defaultValue: true)),
           ],
-          child: ProviderScope(
-            child: const MaterialApp(
+          child: const ProviderScope(
+            child: MaterialApp(
               home: UnifiedTransactionEntryScreen(),
             ),
           ),
@@ -70,7 +79,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify timeframe control exists and can be interacted with
-      final timeframeControl = find.byKey(const Key('unified_timeframe_segmented_control'));
+      final timeframeControl =
+          find.byKey(const Key('unified_timeframe_segmented_control'));
       expect(timeframeControl, findsOneWidget);
 
       // Test that we can tap the control (this verifies the control is interactive)
@@ -78,19 +88,23 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Timeline view renders', (WidgetTester tester) async {
+    testWidgets('Timeline view renders', (tester) async {
       await tester.pumpWidget(
         provider.MultiProvider(
           providers: [
             provider.ChangeNotifierProvider(create: (_) => AccountProvider()),
             provider.ChangeNotifierProvider(create: (_) => BudgetProvider()),
-            provider.ChangeNotifierProvider(create: (_) => TransactionProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => TransactionProvider()),
             provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-            provider.ChangeNotifierProvider(create: (_) => ThemeStyleProvider()),
-            provider.ChangeNotifierProvider(create: (_) => StreamInsightsFlagProvider(flagKey: 'stream_insights', defaultValue: true)),
+            provider.ChangeNotifierProvider(
+                create: (_) => ThemeStyleProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => StreamInsightsFlagProvider(
+                    flagKey: 'stream_insights', defaultValue: true)),
           ],
-          child: ProviderScope(
-            child: const MaterialApp(
+          child: const ProviderScope(
+            child: MaterialApp(
               home: UnifiedTransactionEntryScreen(),
             ),
           ),
@@ -103,19 +117,23 @@ void main() {
       expect(find.byKey(const Key('unified_timeline_view')), findsOneWidget);
     });
 
-    testWidgets('Insights view renders', (WidgetTester tester) async {
+    testWidgets('Insights view renders', (tester) async {
       await tester.pumpWidget(
         provider.MultiProvider(
           providers: [
             provider.ChangeNotifierProvider(create: (_) => AccountProvider()),
             provider.ChangeNotifierProvider(create: (_) => BudgetProvider()),
-            provider.ChangeNotifierProvider(create: (_) => TransactionProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => TransactionProvider()),
             provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-            provider.ChangeNotifierProvider(create: (_) => ThemeStyleProvider()),
-            provider.ChangeNotifierProvider(create: (_) => StreamInsightsFlagProvider(flagKey: 'stream_insights', defaultValue: true)),
+            provider.ChangeNotifierProvider(
+                create: (_) => ThemeStyleProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => StreamInsightsFlagProvider(
+                    flagKey: 'stream_insights', defaultValue: true)),
           ],
-          child: ProviderScope(
-            child: const MaterialApp(
+          child: const ProviderScope(
+            child: MaterialApp(
               home: UnifiedTransactionEntryScreen(),
             ),
           ),
@@ -128,19 +146,23 @@ void main() {
       expect(find.byKey(const Key('unified_insights_view')), findsOneWidget);
     });
 
-    testWidgets('Draft card functionality exists', (WidgetTester tester) async {
+    testWidgets('Draft card functionality exists', (tester) async {
       await tester.pumpWidget(
         provider.MultiProvider(
           providers: [
             provider.ChangeNotifierProvider(create: (_) => AccountProvider()),
             provider.ChangeNotifierProvider(create: (_) => BudgetProvider()),
-            provider.ChangeNotifierProvider(create: (_) => TransactionProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => TransactionProvider()),
             provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-            provider.ChangeNotifierProvider(create: (_) => ThemeStyleProvider()),
-            provider.ChangeNotifierProvider(create: (_) => StreamInsightsFlagProvider(flagKey: 'stream_insights', defaultValue: true)),
+            provider.ChangeNotifierProvider(
+                create: (_) => ThemeStyleProvider()),
+            provider.ChangeNotifierProvider(
+                create: (_) => StreamInsightsFlagProvider(
+                    flagKey: 'stream_insights', defaultValue: true)),
           ],
-          child: ProviderScope(
-            child: const MaterialApp(
+          child: const ProviderScope(
+            child: MaterialApp(
               home: UnifiedTransactionEntryScreen(),
             ),
           ),

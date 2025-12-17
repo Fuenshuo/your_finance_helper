@@ -21,7 +21,7 @@ void main() {
                 child: const Text('Pulse'),
                 isPositive: true,
               ),
-              const Text('Amount: \$50.00'),
+              const Text(r'Amount: $50.00'),
               const Text('Ripple'),
               const Text('Confirm'),
               const Text('Celebrate'),

@@ -2,15 +2,16 @@ import 'package:equatable/equatable.dart';
 
 /// Represents spending allocation breakdown between fixed and flexible expenses.
 class AllocationData extends Equatable {
-  final double fixedAmount; // Fixed expenses (rent, bills, etc.)
-  final double flexibleAmount; // Flexible expenses (discretionary spending)
-  final DateTime period; // Time period for this allocation
+  // Time period for this allocation
 
   const AllocationData({
     required this.fixedAmount,
     required this.flexibleAmount,
     required this.period,
   });
+  final double fixedAmount; // Fixed expenses (rent, bills, etc.)
+  final double flexibleAmount; // Flexible expenses (discretionary spending)
+  final DateTime period;
 
   // Calculated properties
   double get totalAmount => fixedAmount + flexibleAmount;

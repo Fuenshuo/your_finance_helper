@@ -1,6 +1,7 @@
 /// 🌊 Flux Ledger UI/UX 架构设计
 ///
 /// 从传统静态界面到动态流式体验的全面重构
+library;
 
 import 'package:flutter/material.dart';
 
@@ -35,12 +36,6 @@ class FluxNavigationArchitecture {
 
 /// 导航项定义
 class FluxNavItem {
-  final String id;
-  final String label;
-  final IconData icon;
-  final IconData activeIcon;
-  final String description;
-
   const FluxNavItem({
     required this.id,
     required this.label,
@@ -48,21 +43,25 @@ class FluxNavItem {
     required this.activeIcon,
     required this.description,
   });
+  final String id;
+  final String label;
+  final IconData icon;
+  final IconData activeIcon;
+  final String description;
 }
 
 /// 页面架构重构
 /// 从传统页面 → 流式页面组件
 abstract class FluxPage extends StatefulWidget {
-  final String title;
-  final String subtitle;
-  final FlowPageType pageType;
-
   const FluxPage({
-    super.key,
     required this.title,
     required this.subtitle,
     required this.pageType,
+    super.key,
   });
+  final String title;
+  final String subtitle;
+  final FlowPageType pageType;
 }
 
 /// 页面类型枚举
@@ -89,18 +88,17 @@ enum FlowPageType {
 /// 流式卡片组件系统
 /// 从静态卡片 → 动态流卡片
 abstract class FlowCard extends StatelessWidget {
-  final FlowCardType cardType;
-  final FlowHealthStatus healthStatus;
-  final VoidCallback? onTap;
-  final VoidCallback? onLongPress;
-
   const FlowCard({
-    super.key,
     required this.cardType,
+    super.key,
     this.healthStatus = FlowHealthStatus.neutral,
     this.onTap,
     this.onLongPress,
   });
+  final FlowCardType cardType;
+  final FlowHealthStatus healthStatus;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
   Widget buildContent(BuildContext context);
 }
@@ -146,18 +144,17 @@ enum FlowHealthStatus {
 
 /// 桑基图组件 - 资金流向可视化
 class FlowSankeyChart extends StatelessWidget {
+  const FlowSankeyChart({
+    required this.nodes,
+    required this.links,
+    super.key,
+    this.width = 300,
+    this.height = 400,
+  });
   final List<FlowNode> nodes;
   final List<FlowLink> links;
   final double width;
   final double height;
-
-  const FlowSankeyChart({
-    super.key,
-    required this.nodes,
-    required this.links,
-    this.width = 300,
-    this.height = 400,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -174,12 +171,6 @@ class FlowSankeyChart extends StatelessWidget {
 
 /// 桑基图节点
 class FlowNode {
-  final String id;
-  final String name;
-  final double value;
-  final Color color;
-  final Offset position;
-
   const FlowNode({
     required this.id,
     required this.name,
@@ -187,33 +178,36 @@ class FlowNode {
     required this.color,
     required this.position,
   });
+  final String id;
+  final String name;
+  final double value;
+  final Color color;
+  final Offset position;
 }
 
 /// 桑基图连接
 class FlowLink {
-  final String source;
-  final String target;
-  final double value;
-  final Color color;
-
   const FlowLink({
     required this.source,
     required this.target,
     required this.value,
     required this.color,
   });
+  final String source;
+  final String target;
+  final double value;
+  final Color color;
 }
 
 /// 实时流图组件 - 动态资金流展示
 class FlowRealtimeChart extends StatefulWidget {
-  final Stream<FlowData> flowStream;
-  final Duration updateInterval;
-
   const FlowRealtimeChart({
-    super.key,
     required this.flowStream,
+    super.key,
     this.updateInterval = const Duration(seconds: 1),
   });
+  final Stream<FlowData> flowStream;
+  final Duration updateInterval;
 
   @override
   State<FlowRealtimeChart> createState() => _FlowRealtimeChartState();
@@ -246,14 +240,12 @@ class _FlowRealtimeChartState extends State<FlowRealtimeChart>
 
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: RealtimeFlowPainter(
-            data: _currentData!,
-            animationValue: _controller.value,
-          ),
-        );
-      },
+      builder: (context, child) => CustomPaint(
+        painter: RealtimeFlowPainter(
+          data: _currentData!,
+          animationValue: _controller.value,
+        ),
+      ),
     );
   }
 
@@ -266,30 +258,28 @@ class _FlowRealtimeChartState extends State<FlowRealtimeChart>
 
 /// 流数据模型
 class FlowData {
-  final double inflow;
-  final double outflow;
-  final double balance;
-  final List<FlowPoint> points;
-
   const FlowData({
     required this.inflow,
     required this.outflow,
     required this.balance,
     required this.points,
   });
+  final double inflow;
+  final double outflow;
+  final double balance;
+  final List<FlowPoint> points;
 }
 
 /// 流数据点
 class FlowPoint {
-  final DateTime time;
-  final double value;
-  final FlowPointType type;
-
   const FlowPoint({
     required this.time,
     required this.value,
     required this.type,
   });
+  final DateTime time;
+  final double value;
+  final FlowPointType type;
 }
 
 /// 流数据点类型
@@ -301,14 +291,13 @@ enum FlowPointType {
 
 /// 流脉动指示器 - 实时状态反馈
 class FlowPulseIndicator extends StatefulWidget {
-  final FlowHealthStatus status;
-  final double size;
-
   const FlowPulseIndicator({
-    super.key,
     required this.status,
+    super.key,
     this.size = 24,
   });
+  final FlowHealthStatus status;
+  final double size;
 
   @override
   State<FlowPulseIndicator> createState() => _FlowPulseIndicatorState();
@@ -333,21 +322,19 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
 
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) {
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withValues(alpha: 0.3 + _controller.value * 0.7),
-          ),
-          child: Icon(
-            Icons.circle,
-            color: color,
-            size: widget.size * 0.6,
-          ),
-        );
-      },
+      builder: (context, child) => Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color.withValues(alpha: 0.3 + _controller.value * 0.7),
+        ),
+        child: Icon(
+          Icons.circle,
+          color: color,
+          size: widget.size * 0.6,
+        ),
+      ),
     );
   }
 
@@ -377,12 +364,11 @@ class _FlowPulseIndicatorState extends State<FlowPulseIndicator>
 /// 从传统表单 → 智能流引导
 
 class FlowEntryWizard extends StatefulWidget {
-  final FlowEntryType entryType;
-
   const FlowEntryWizard({
-    super.key,
     required this.entryType,
+    super.key,
   });
+  final FlowEntryType entryType;
 
   @override
   State<FlowEntryWizard> createState() => _FlowEntryWizardState();
@@ -393,38 +379,36 @@ class _FlowEntryWizardState extends State<FlowEntryWizard> {
   final Map<String, dynamic> _formData = {};
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_getStepTitle()),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: Text(_getStepTitle()),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-      ),
-      body: Column(
-        children: [
-          // 步骤指示器
-          FlowStepIndicator(
-            currentStep: _currentStep,
-            totalSteps: _getTotalSteps(),
-          ),
+        body: Column(
+          children: [
+            // 步骤指示器
+            FlowStepIndicator(
+              currentStep: _currentStep,
+              totalSteps: _getTotalSteps(),
+            ),
 
-          // 步骤内容
-          Expanded(
-            child: _buildCurrentStep(),
-          ),
+            // 步骤内容
+            Expanded(
+              child: _buildCurrentStep(),
+            ),
 
-          // 行动按钮
-          FlowActionButtons(
-            onPrevious: _currentStep > 0 ? _previousStep : null,
-            onNext: _canProceed() ? _nextStep : null,
-            nextLabel: _currentStep == _getTotalSteps() - 1 ? '完成' : '下一步',
-          ),
-        ],
-      ),
-    );
-  }
+            // 行动按钮
+            FlowActionButtons(
+              onPrevious: _currentStep > 0 ? _previousStep : null,
+              onNext: _canProceed() ? _nextStep : null,
+              nextLabel: _currentStep == _getTotalSteps() - 1 ? '完成' : '下一步',
+            ),
+          ],
+        ),
+      );
 
   String _getStepTitle() {
     // 根据当前步骤返回标题
@@ -483,86 +467,80 @@ enum FlowEntryType {
 
 /// 步骤指示器组件
 class FlowStepIndicator extends StatelessWidget {
+  const FlowStepIndicator({
+    required this.currentStep,
+    required this.totalSteps,
+    super.key,
+  });
   final int currentStep;
   final int totalSteps;
 
-  const FlowStepIndicator({
-    super.key,
-    required this.currentStep,
-    required this.totalSteps,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: List.generate(totalSteps, (index) {
-          return Expanded(
-            child: Container(
-              height: 4,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                color: index <= currentStep
-                    ? Theme.of(context).primaryColor
-                    : Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: List.generate(
+            totalSteps,
+            (index) => Expanded(
+              child: Container(
+                height: 4,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: index <= currentStep
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          );
-        }),
-      ),
-    );
-  }
+          ),
+        ),
+      );
 }
 
 /// 行动按钮组件
 class FlowActionButtons extends StatelessWidget {
-  final VoidCallback? onPrevious;
-  final VoidCallback? onNext;
-  final String nextLabel;
-
   const FlowActionButtons({
     super.key,
     this.onPrevious,
     this.onNext,
     this.nextLabel = '下一步',
   });
+  final VoidCallback? onPrevious;
+  final VoidCallback? onNext;
+  final String nextLabel;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          if (onPrevious != null)
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            if (onPrevious != null)
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onPrevious,
+                  child: const Text('上一步'),
+                ),
+              ),
+            if (onPrevious != null) const SizedBox(width: 16),
             Expanded(
-              child: OutlinedButton(
-                onPressed: onPrevious,
-                child: const Text('上一步'),
+              child: ElevatedButton(
+                onPressed: onNext,
+                child: Text(nextLabel),
               ),
             ),
-          if (onPrevious != null) const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: onNext,
-              child: Text(nextLabel),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
 }
 
 // ==================== 占位符实现 ====================
 
 /// 桑基图绘制器
 class SankeyPainter extends CustomPainter {
+  const SankeyPainter({required this.nodes, required this.links});
   final List<FlowNode> nodes;
   final List<FlowLink> links;
-
-  const SankeyPainter({required this.nodes, required this.links});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -575,13 +553,12 @@ class SankeyPainter extends CustomPainter {
 
 /// 实时流绘制器
 class RealtimeFlowPainter extends CustomPainter {
-  final FlowData data;
-  final double animationValue;
-
   const RealtimeFlowPainter({
     required this.data,
     required this.animationValue,
   });
+  final FlowData data;
+  final double animationValue;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -596,50 +573,46 @@ class RealtimeFlowPainter extends CustomPainter {
 /// 统一的页面布局框架
 
 abstract class FlowPageStructure extends StatelessWidget {
+  const FlowPageStructure({
+    required this.title,
+    required this.subtitle,
+    required this.body,
+    super.key,
+    this.actions = const [],
+    this.bottomBar,
+  });
   final String title;
   final String subtitle;
   final List<Widget> actions;
   final Widget body;
   final Widget? bottomBar;
 
-  const FlowPageStructure({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    this.actions = const [],
-    required this.body,
-    this.bottomBar,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F8FF), // 流背景色
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF8E8E93),
-                  ),
-            ),
-          ],
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: const Color(0xFFF2F8FF), // 流背景色
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF8E8E93),
+                    ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          actions: actions,
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: actions,
-      ),
-      body: body,
-      bottomNavigationBar: bottomBar,
-    );
-  }
+        body: body,
+        bottomNavigationBar: bottomBar,
+      );
 }
-

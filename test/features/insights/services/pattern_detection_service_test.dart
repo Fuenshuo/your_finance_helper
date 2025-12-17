@@ -27,7 +27,7 @@ void main() {
       '餐饮:100,购物:55',
       '餐饮:60', // Friday low spending
       '餐饮:120,娱乐:80',
-      '餐饮:100,购物:80'
+      '餐饮:100,购物:80',
     ];
   });
 
@@ -49,7 +49,8 @@ void main() {
         categoryBreakdown,
       );
 
-      expect(anomalies.length, greaterThanOrEqualTo(2)); // Wednesday high + Friday low
+      expect(anomalies.length,
+          greaterThanOrEqualTo(2)); // Wednesday high + Friday low
     });
 
     test('should correctly identify high spending anomaly', () async {
@@ -68,8 +69,10 @@ void main() {
       );
 
       expect(wednesdayAnomaly.actualAmount, 320.0);
-      expect(wednesdayAnomaly.expectedAmount, closeTo(137.0, 1.0)); // Baseline calculation
-      expect(wednesdayAnomaly.deviation, greaterThan(1.0)); // Significant deviation
+      expect(wednesdayAnomaly.expectedAmount,
+          closeTo(137.0, 1.0)); // Baseline calculation
+      expect(wednesdayAnomaly.deviation,
+          greaterThan(1.0)); // Significant deviation
       expect(wednesdayAnomaly.severity, equals(AnomalySeverity.high));
       expect(wednesdayAnomaly.reason, contains('激增'));
       expect(wednesdayAnomaly.categories, contains('餐饮'));
@@ -84,12 +87,16 @@ void main() {
       );
 
       final fridayAnomaly = anomalies.firstWhere(
-        (a) => a.anomalyDate.difference(testWeekStart).inDays == 4, // Friday (Day 4)
+        (a) =>
+            a.anomalyDate.difference(testWeekStart).inDays ==
+            4, // Friday (Day 4)
       );
 
       expect(fridayAnomaly.actualAmount, 60.0);
-      expect(fridayAnomaly.expectedAmount, closeTo(137.0, 1.0)); // Baseline calculation
-      expect(fridayAnomaly.deviation, lessThan(-0.5)); // Significant negative deviation
+      expect(fridayAnomaly.expectedAmount,
+          closeTo(137.0, 1.0)); // Baseline calculation
+      expect(fridayAnomaly.deviation,
+          lessThan(-0.5)); // Significant negative deviation
       expect(fridayAnomaly.reason, contains('偏低'));
     });
 
@@ -116,9 +123,11 @@ void main() {
     test('should identify weekend spending patterns', () {
       final patterns = service.identifyPatterns(normalWeek);
 
-      expect(patterns['weekendMultiplier'], greaterThan(1.0)); // Weekend spending higher
+      expect(patterns['weekendMultiplier'],
+          greaterThan(1.0)); // Weekend spending higher
       expect(patterns['peakDay'], isA<int>()); // Should identify peak day
-      expect(patterns['spendingTrend'], isA<double>()); // Should calculate trend
+      expect(
+          patterns['spendingTrend'], isA<double>()); // Should calculate trend
     });
 
     test('should handle empty category breakdown', () async {
@@ -134,7 +143,15 @@ void main() {
 
     test('should calculate different severity levels', () async {
       // Create week with various deviation levels
-      final testWeek = [100.0, 100.0, 100.0, 100.0, 100.0, 260.0, 100.0]; // 160% deviation
+      final testWeek = [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        260.0,
+        100.0
+      ]; // 160% deviation
       final anomalies = await service.detectWeeklyAnomalies(
         testWeek,
         testWeekStart,

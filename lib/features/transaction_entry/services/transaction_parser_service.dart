@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 
 /// 交易解析服务接口
 abstract class TransactionParserService {
@@ -55,7 +55,7 @@ class DefaultTransactionParserService implements TransactionParserService {
     '话费',
     '宽带',
     '物业费',
-    '房租'
+    '房租',
   ];
   static const List<String> _incomeKeywords = [
     '收入',
@@ -73,7 +73,7 @@ class DefaultTransactionParserService implements TransactionParserService {
     '奖金',
     '分红',
     '投资收益',
-    '租金'
+    '租金',
   ];
 
   @override
@@ -96,13 +96,12 @@ class DefaultTransactionParserService implements TransactionParserService {
         amount: amount,
         description: description,
         type: type,
-        confidence: 0.0, // 临时值，后续计算
       );
 
       final confidence = calculateConfidence(draft);
       return draft.copyWith(confidence: confidence);
     } catch (e) {
-      throw Exception('解析交易失败: ${e.toString()}');
+      throw Exception('解析交易失败: $e');
     }
   }
 
@@ -173,7 +172,7 @@ class DefaultTransactionParserService implements TransactionParserService {
 
   @override
   double calculateConfidence(DraftTransaction draft) {
-    double confidence = 0.0;
+    var confidence = 0.0;
 
     // 金额存在性 (30%)
     if (draft.amount != null && draft.amount! > 0) {
@@ -208,7 +207,5 @@ class DefaultTransactionParserService implements TransactionParserService {
 }
 
 /// TransactionParserService Provider
-final transactionParserServiceProvider =
-    Provider<TransactionParserService>((ref) {
-  return DefaultTransactionParserService();
-});
+final transactionParserServiceProvider = Provider<TransactionParserService>(
+    (ref) => DefaultTransactionParserService());

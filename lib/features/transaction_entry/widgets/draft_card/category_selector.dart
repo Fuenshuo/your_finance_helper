@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 
 /// 分类选择器组件
 class CategorySelector extends StatelessWidget {
-  final String? selectedCategoryId;
-  final ValueChanged<String?> onCategorySelected;
-
   const CategorySelector({
+    required this.onCategorySelected,
     super.key,
     this.selectedCategoryId,
-    required this.onCategorySelected,
   });
+  final String? selectedCategoryId;
+  final ValueChanged<String?> onCategorySelected;
 
   // 临时分类数据 - 在实际应用中应该从服务获取
   static const List<Map<String, dynamic>> _categories = [
@@ -17,25 +16,25 @@ class CategorySelector extends StatelessWidget {
       'id': 'food',
       'name': '餐饮',
       'icon': Icons.restaurant,
-      'color': Colors.orange
+      'color': Colors.orange,
     },
     {
       'id': 'transport',
       'name': '交通',
       'icon': Icons.directions_car,
-      'color': Colors.blue
+      'color': Colors.blue,
     },
     {
       'id': 'shopping',
       'name': '购物',
       'icon': Icons.shopping_bag,
-      'color': Colors.purple
+      'color': Colors.purple,
     },
     {
       'id': 'entertainment',
       'name': '娱乐',
       'icon': Icons.movie,
-      'color': Colors.pink
+      'color': Colors.pink,
     },
     {'id': 'other', 'name': '其他', 'icon': Icons.category, 'color': Colors.grey},
   ];

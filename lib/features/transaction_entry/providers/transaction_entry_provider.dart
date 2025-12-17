@@ -1,21 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/transaction_entry_state.dart';
-import '../models/draft_transaction.dart';
-import '../models/input_validation.dart';
-import '../services/transaction_parser_service.dart';
-import '../services/validation_service.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/transaction_entry_state.dart';
+import 'package:your_finance_flutter/features/transaction_entry/services/transaction_parser_service.dart';
+import 'package:your_finance_flutter/features/transaction_entry/services/validation_service.dart';
 
 /// 交易录入页面的主要状态管理器
 class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
-  final TransactionParserService _parserService;
-  final ValidationService _validationService;
-
   TransactionEntryNotifier({
     required TransactionParserService parserService,
     required ValidationService validationService,
   })  : _parserService = parserService,
         _validationService = validationService,
-        super(TransactionEntryState());
+        super(const TransactionEntryState());
+  final TransactionParserService _parserService;
+  final ValidationService _validationService;
 
   /// 更新输入文本并自动解析
   Future<void> updateInput(String input) async {
@@ -23,14 +22,12 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
 
     if (input.trim().isEmpty) {
       state = state.copyWith(
-        draftTransaction: null,
         validation: const InputValidation(),
-        parseError: null,
       );
       return;
     }
 
-    state = state.copyWith(isParsing: true, parseError: null);
+    state = state.copyWith(isParsing: true);
 
     try {
       final startTime = DateTime.now();
@@ -44,8 +41,9 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
         validation: validation,
         isParsing: false,
         performanceMetrics: state.performanceMetrics?.copyWith(
-          parseResponseTimeMs: parseTime,
-        ) ?? PerformanceMetrics(parseResponseTimeMs: parseTime),
+              parseResponseTimeMs: parseTime,
+            ) ??
+            PerformanceMetrics(parseResponseTimeMs: parseTime),
       );
     } on Exception catch (e) {
       state = state.copyWith(
@@ -53,7 +51,7 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
         parseError: e.toString(),
         validation: InputValidation(
           isValid: false,
-          errorMessage: '解析失败: ${e.toString()}',
+          errorMessage: '解析失败: $e',
           lastValidatedAt: DateTime.now(),
         ),
       );
@@ -67,7 +65,7 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
 
   /// 清空输入和草稿
   void clearInput() {
-    state = TransactionEntryState();
+    state = const TransactionEntryState();
   }
 
   /// 重新验证当前草稿
@@ -82,23 +80,20 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
       state = state.copyWith(
         validation: InputValidation(
           isValid: false,
-          errorMessage: '验证失败: ${e.toString()}',
+          errorMessage: '验证失败: $e',
         ).copyWith(lastValidatedAt: DateTime.now()),
       );
     }
   }
 
   /// 获取建议的修正
-  List<String> getSuggestions() {
-    return state.validation.suggestions;
-  }
+  List<String> getSuggestions() => state.validation.suggestions;
 
   /// 检查是否可以保存
-  bool canSave() {
-    return state.draftTransaction?.isComplete == true &&
-        state.validation.isValid &&
-        !state.isParsing;
-  }
+  bool canSave() =>
+      (state.draftTransaction?.isComplete ?? false) &&
+      state.validation.isValid &&
+      !state.isParsing;
 
   /// 确认交易并保存
   Future<void> confirmTransaction() async {
@@ -106,7 +101,7 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
       return;
     }
 
-    state = state.copyWith(isSaving: true, saveError: null);
+    state = state.copyWith(isSaving: true);
 
     try {
       final transaction = state.draftTransaction!.toTransaction();
@@ -118,17 +113,17 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
       state = state.copyWith(
         isSaving: false,
         savedTransaction: transaction,
-        draftTransaction: null,
         validation: const InputValidation(),
         currentInput: '',
         performanceMetrics: state.performanceMetrics?.copyWith(
-          lastUpdated: DateTime.now(),
-        ) ?? PerformanceMetrics(lastUpdated: DateTime.now()),
+              lastUpdated: DateTime.now(),
+            ) ??
+            PerformanceMetrics(lastUpdated: DateTime.now()),
       );
     } on Exception catch (e) {
       state = state.copyWith(
         isSaving: false,
-        saveError: '保存失败: ${e.toString()}',
+        saveError: '保存失败: $e',
       );
     }
   }
@@ -136,29 +131,34 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
   /// 取消当前交易
   void cancelTransaction() {
     state = state.copyWith(
-      draftTransaction: null,
       validation: const InputValidation(),
       currentInput: '',
       isParsing: false,
-      parseError: null,
     );
   }
 
   /// 更新交易字段
-  Future<void> updateTransactionField(String field, dynamic value) async {
+  Future<void> updateTransactionField(String field, Object? value) async {
     if (state.draftTransaction == null) return;
 
     final updatedDraft = state.draftTransaction!.copyWith(
-      amount: field == 'amount' ? value as double? : state.draftTransaction!.amount,
-      description:
-          field == 'description' ? value as String? : state.draftTransaction!.description,
-      type: field == 'type' ? value as TransactionType? : state.draftTransaction!.type,
-      transactionDate:
-          field == 'date' ? value as DateTime? : state.draftTransaction!.transactionDate,
-      accountId:
-          field == 'accountId' ? value as String? : state.draftTransaction!.accountId,
-      categoryId:
-          field == 'categoryId' ? value as String? : state.draftTransaction!.categoryId,
+      amount:
+          field == 'amount' ? value as double? : state.draftTransaction!.amount,
+      description: field == 'description'
+          ? value as String?
+          : state.draftTransaction!.description,
+      type: field == 'type'
+          ? value as TransactionType?
+          : state.draftTransaction!.type,
+      transactionDate: field == 'date'
+          ? value as DateTime?
+          : state.draftTransaction!.transactionDate,
+      accountId: field == 'accountId'
+          ? value as String?
+          : state.draftTransaction!.accountId,
+      categoryId: field == 'categoryId'
+          ? value as String?
+          : state.draftTransaction!.categoryId,
     );
 
     final validation = await _validationService.validateDraft(updatedDraft);
@@ -172,9 +172,7 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
   /// 清空错误状态
   void clearErrors() {
     state = state.copyWith(
-      parseError: null,
-      saveError: null,
-      validation: state.validation.copyWith(errorMessage: null),
+      validation: state.validation.copyWith(),
     );
   }
 }

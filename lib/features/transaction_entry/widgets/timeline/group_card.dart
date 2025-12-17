@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/draft_transaction.dart';
-import 'transaction_row.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/timeline/transaction_row.dart';
 
 /// 分组卡片组件 - 按日期分组显示交易
 class GroupCard extends StatelessWidget {
-  final DateTime date;
-  final List<DraftTransaction> drafts;
-  final void Function(DraftTransaction) onDraftSelected;
-  final void Function(DraftTransaction) onDraftDeleted;
-
   const GroupCard({
-    super.key,
     required this.date,
     required this.drafts,
     required this.onDraftSelected,
     required this.onDraftDeleted,
+    super.key,
   });
+  final DateTime date;
+  final List<DraftTransaction> drafts;
+  final void Function(DraftTransaction) onDraftSelected;
+  final void Function(DraftTransaction) onDraftDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +67,13 @@ class GroupCard extends StatelessWidget {
           ),
 
           // 交易列表
-          ...drafts.map((draft) => TransactionRow(
-                draft: draft,
-                onTap: () => onDraftSelected(draft),
-                onDelete: () => onDraftDeleted(draft),
-              )),
+          ...drafts.map(
+            (draft) => TransactionRow(
+              draft: draft,
+              onTap: () => onDraftSelected(draft),
+              onDelete: () => onDraftDeleted(draft),
+            ),
+          ),
         ],
       ),
     );

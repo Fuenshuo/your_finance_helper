@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../models/draft_transaction.dart';
-import 'group_card.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/timeline/group_card.dart';
 
 /// 时间线视图组件
 class TimelineView extends StatefulWidget {
-  final List<DraftTransaction> drafts;
-  final void Function(DraftTransaction) onDraftSelected;
-  final void Function(DraftTransaction) onDraftDeleted;
-
   const TimelineView({
-    super.key,
     required this.drafts,
     required this.onDraftSelected,
     required this.onDraftDeleted,
+    super.key,
   });
+  final List<DraftTransaction> drafts;
+  final void Function(DraftTransaction) onDraftSelected;
+  final void Function(DraftTransaction) onDraftDeleted;
 
   @override
   State<TimelineView> createState() => _TimelineViewState();
@@ -44,44 +43,45 @@ class _TimelineViewState extends State<TimelineView> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.history,
-            size: 64,
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '暂无交易记录',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '输入交易信息开始记录',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.4),
-                ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildEmptyState() => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history,
+              size: 64,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '暂无交易记录',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '输入交易信息开始记录',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.4),
+                  ),
+            ),
+          ],
+        ),
+      );
 
   Map<DateTime, List<DraftTransaction>> _groupDraftsByDate(
-      List<DraftTransaction> drafts) {
+    List<DraftTransaction> drafts,
+  ) {
     final grouped = <DateTime, List<DraftTransaction>>{};
 
     for (final draft in drafts) {

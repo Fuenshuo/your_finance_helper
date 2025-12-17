@@ -2,6 +2,7 @@
 ///
 /// Coordinates the execution of all verification checks across different
 /// components and manages the overall verification session.
+library;
 
 import 'logger.dart';
 
@@ -11,7 +12,7 @@ class VerificationRunner {
     'navigation',
     'providers',
     'build',
-    'legacy_archive'
+    'legacy_archive',
   ];
 
   /// Run full verification across all components
@@ -23,11 +24,12 @@ class VerificationRunner {
     final sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
     final components = targetComponents ?? _components;
 
-    VerificationLogger.logSessionStart(sessionId, 'Full migration verification');
+    VerificationLogger.logSessionStart(
+        sessionId, 'Full migration verification');
 
     final session = VerificationSession(sessionId: sessionId);
-    int passed = 0;
-    int failed = 0;
+    var passed = 0;
+    var failed = 0;
 
     for (final componentName in components) {
       try {
@@ -45,13 +47,12 @@ class VerificationRunner {
         VerificationLogger.logComponentResult(
           componentName,
           result.status == VerificationStatus.pass,
-          result.details
+          result.details,
         );
 
         if (failFast && result.status != VerificationStatus.pass) {
           break;
         }
-
       } catch (e, stackTrace) {
         failed++;
         final errorResult = VerificationResult(
@@ -62,7 +63,8 @@ class VerificationRunner {
         );
         session.addResult(errorResult);
 
-        VerificationLogger.error(componentName, 'Verification failed with exception', e, stackTrace);
+        VerificationLogger.error(
+            componentName, 'Verification failed with exception', e, stackTrace);
 
         if (failFast) {
           break;
@@ -71,24 +73,26 @@ class VerificationRunner {
     }
 
     session.endTime = DateTime.now();
-    VerificationLogger.logSessionEnd(sessionId, session.results.length, passed, failed);
+    VerificationLogger.logSessionEnd(
+        sessionId, session.results.length, passed, failed);
 
     return session;
   }
 
   /// Verify a specific component
-  Future<VerificationResult> verifyComponent(String componentName) async {
-    return await _verifyComponent(componentName);
-  }
+  Future<VerificationResult> verifyComponent(String componentName) async =>
+      _verifyComponent(componentName);
 
   Future<VerificationResult> _verifyComponent(String componentName) async {
     // This will be implemented with actual verification logic
     // For now, return a placeholder result
-    await Future<void>.delayed(const Duration(milliseconds: 100)); // Simulate work
+    await Future<void>.delayed(
+        const Duration(milliseconds: 100)); // Simulate work
 
     return VerificationResult(
       componentName: componentName,
-      status: VerificationStatus.pass, // Placeholder - will be replaced with real logic
+      status: VerificationStatus
+          .pass, // Placeholder - will be replaced with real logic
       details: 'Component verification completed',
       timestamp: DateTime.now(),
     );
@@ -101,18 +105,15 @@ class VerificationRunner {
   }
 
   /// Get available components
-  List<String> getAvailableComponents() {
-    return List.unmodifiable(_components);
-  }
+  List<String> getAvailableComponents() => List.unmodifiable(_components);
 }
 
 class VerificationSession {
+  VerificationSession({required this.sessionId}) : startTime = DateTime.now();
   final String sessionId;
   final DateTime startTime;
   DateTime? endTime;
   final List<VerificationResult> _results = [];
-
-  VerificationSession({required this.sessionId}) : startTime = DateTime.now();
 
   List<VerificationResult> get results => List.unmodifiable(_results);
 
@@ -121,9 +122,12 @@ class VerificationSession {
   }
 
   int get totalChecks => _results.length;
-  int get passedChecks => _results.where((r) => r.status == VerificationStatus.pass).length;
-  int get failedChecks => _results.where((r) => r.status == VerificationStatus.fail).length;
-  int get warningChecks => _results.where((r) => r.status == VerificationStatus.warning).length;
+  int get passedChecks =>
+      _results.where((r) => r.status == VerificationStatus.pass).length;
+  int get failedChecks =>
+      _results.where((r) => r.status == VerificationStatus.fail).length;
+  int get warningChecks =>
+      _results.where((r) => r.status == VerificationStatus.warning).length;
 
   VerificationStatus get overallStatus {
     if (failedChecks > 0) return VerificationStatus.fail;
@@ -134,12 +138,6 @@ class VerificationSession {
 }
 
 class VerificationResult {
-  final String componentName;
-  final VerificationStatus status;
-  final String details;
-  final DateTime timestamp;
-  final Map<String, bool>? checkResults;
-
   VerificationResult({
     required this.componentName,
     required this.status,
@@ -147,12 +145,11 @@ class VerificationResult {
     DateTime? timestamp,
     this.checkResults,
   }) : timestamp = timestamp ?? DateTime.now();
+  final String componentName;
+  final VerificationStatus status;
+  final String details;
+  final DateTime timestamp;
+  final Map<String, bool>? checkResults;
 }
 
-enum VerificationStatus {
-  pending,
-  pass,
-  fail,
-  warning
-}
-
+enum VerificationStatus { pending, pass, fail, warning }

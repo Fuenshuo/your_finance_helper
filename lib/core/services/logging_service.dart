@@ -3,9 +3,9 @@ import 'package:path_provider/path_provider.dart';
 
 /// 日志服务类，用于将日志写入文件而不是控制台
 class LoggingService {
-  static final LoggingService _instance = LoggingService._internal();
   factory LoggingService() => _instance;
   LoggingService._internal();
+  static final LoggingService _instance = LoggingService._internal();
 
   File? _logFile;
   bool _initialized = false;

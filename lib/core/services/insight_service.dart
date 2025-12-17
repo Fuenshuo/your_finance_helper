@@ -5,8 +5,8 @@ import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
-import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
+import 'package:your_finance_flutter/features/insights/services/pattern_detection_service.dart';
 
 /// Sentiment for the AI CFO commentary.
 enum InsightSentiment {
@@ -45,9 +45,8 @@ class FluxLoopManager {
   }
 
   /// Get job status stream
-  static Stream<FluxLoopJob> jobStatusStream(String jobId) {
-    return _jobControllers[jobId]?.stream ?? Stream.empty();
-  }
+  static Stream<FluxLoopJob> jobStatusStream(String jobId) =>
+      _jobControllers[jobId]?.stream ?? const Stream.empty();
 
   /// Process job in background
   static Future<void> _processJob(String jobId) async {
@@ -473,7 +472,7 @@ class MockInsightService implements InsightService {
       '娱乐',
       '购物',
       '娱乐',
-      '餐饮'
+      '餐饮',
     ]; // 7 categories for 7 days
 
     final anomalies = await _patternDetectionService.detectWeeklyAnomalies(
@@ -518,12 +517,11 @@ class MockInsightService implements InsightService {
   Future<FluxLoopJob> triggerAnalysis({
     required JobType type,
     required String transactionId,
-  }) async {
-    return FluxLoopManager.triggerAnalysis(
-      type: type,
-      transactionId: transactionId,
-    );
-  }
+  }) async =>
+      FluxLoopManager.triggerAnalysis(
+        type: type,
+        transactionId: transactionId,
+      );
 
   /// Trigger weekly pattern analysis
   Future<FluxLoopJob> triggerWeeklyAnalysis({
@@ -549,7 +547,6 @@ class MockInsightService implements InsightService {
   }
 
   /// Get status stream for a specific job
-  Stream<FluxLoopJob> jobStatusStream(String jobId) {
-    return FluxLoopManager.jobStatusStream(jobId);
-  }
+  Stream<FluxLoopJob> jobStatusStream(String jobId) =>
+      FluxLoopManager.jobStatusStream(jobId);
 }

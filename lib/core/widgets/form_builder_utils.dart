@@ -375,8 +375,12 @@ class FormBuilderUtils {
   }
 
   /// Length validator
-  static String? lengthValidator(String? value,
-      {int? min, int? max, String? fieldName}) {
+  static String? lengthValidator(
+    String? value, {
+    int? min,
+    int? max,
+    String? fieldName,
+  }) {
     if (value == null || value.isEmpty) return null;
 
     if (min != null && value.length < min) {
@@ -526,7 +530,7 @@ extension FormBuilderExtensions on GlobalKey<FormBuilderState> {
   }
 
   /// Set field value
-  void setFieldValue(String fieldName, dynamic value) {
+  void setFieldValue(String fieldName, Object? value) {
     final state = currentState;
     state?.fields[fieldName]?.didChange(value);
   }

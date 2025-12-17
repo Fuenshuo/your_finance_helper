@@ -23,16 +23,29 @@ class FluxViewState extends Equatable {
     this.lastDrawerUpdate,
   });
 
+  factory FluxViewState.fromJson(Map<String, dynamic> json) => FluxViewState(
+        timeframe: FluxTimeframe.values.firstWhere(
+          (value) => value.name == json['timeframe'],
+          orElse: () => FluxTimeframe.day,
+        ),
+        pane: FluxPane.values.firstWhere(
+          (value) => value.name == json['pane'],
+          orElse: () => FluxPane.timeline,
+        ),
+        isFlagEnabled: json['isFlagEnabled'] as bool? ?? false,
+        lastDrawerUpdate: json['lastDrawerUpdate'] != null
+            ? DateTime.tryParse(json['lastDrawerUpdate'] as String)
+            : null,
+      );
+
   factory FluxViewState.initial({
     bool isFlagEnabled = true,
-  }) {
-    return FluxViewState(
-      timeframe: FluxTimeframe.day,
-      pane: FluxPane.timeline,
-      isFlagEnabled: isFlagEnabled,
-      lastDrawerUpdate: null,
-    );
-  }
+  }) =>
+      FluxViewState(
+        timeframe: FluxTimeframe.day,
+        pane: FluxPane.timeline,
+        isFlagEnabled: isFlagEnabled,
+      );
 
   final FluxTimeframe timeframe;
   final FluxPane pane;
@@ -45,42 +58,22 @@ class FluxViewState extends Equatable {
     bool? isFlagEnabled,
     DateTime? lastDrawerUpdate,
     bool clearDrawerTimestamp = false,
-  }) {
-    return FluxViewState(
-      timeframe: timeframe ?? this.timeframe,
-      pane: pane ?? this.pane,
-      isFlagEnabled: isFlagEnabled ?? this.isFlagEnabled,
-      lastDrawerUpdate: clearDrawerTimestamp
-          ? null
-          : (lastDrawerUpdate ?? this.lastDrawerUpdate),
-    );
-  }
+  }) =>
+      FluxViewState(
+        timeframe: timeframe ?? this.timeframe,
+        pane: pane ?? this.pane,
+        isFlagEnabled: isFlagEnabled ?? this.isFlagEnabled,
+        lastDrawerUpdate: clearDrawerTimestamp
+            ? null
+            : (lastDrawerUpdate ?? this.lastDrawerUpdate),
+      );
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'timeframe': timeframe.name,
-      'pane': pane.name,
-      'isFlagEnabled': isFlagEnabled,
-      'lastDrawerUpdate': lastDrawerUpdate?.toIso8601String(),
-    };
-  }
-
-  factory FluxViewState.fromJson(Map<String, dynamic> json) {
-    return FluxViewState(
-      timeframe: FluxTimeframe.values.firstWhere(
-        (value) => value.name == json['timeframe'],
-        orElse: () => FluxTimeframe.day,
-      ),
-      pane: FluxPane.values.firstWhere(
-        (value) => value.name == json['pane'],
-        orElse: () => FluxPane.timeline,
-      ),
-      isFlagEnabled: json['isFlagEnabled'] as bool? ?? false,
-      lastDrawerUpdate: json['lastDrawerUpdate'] != null
-          ? DateTime.tryParse(json['lastDrawerUpdate'] as String)
-          : null,
-    );
-  }
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'timeframe': timeframe.name,
+        'pane': pane.name,
+        'isFlagEnabled': isFlagEnabled,
+        'lastDrawerUpdate': lastDrawerUpdate?.toIso8601String(),
+      };
 
   bool get isShowingInsights => pane == FluxPane.insights;
 
@@ -133,7 +126,7 @@ class FluxViewStateNotifier extends StateNotifier<FluxViewState> {
   }
 
   void markDrawerUpdated(DateTime timestamp) {
-    final DateTime? lastUpdate = state.lastDrawerUpdate;
+    final lastUpdate = state.lastDrawerUpdate;
     if (lastUpdate == null || timestamp.isAfter(lastUpdate)) {
       state = state.copyWith(lastDrawerUpdate: timestamp);
     }

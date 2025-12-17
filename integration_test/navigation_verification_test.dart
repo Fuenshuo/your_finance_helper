@@ -29,25 +29,35 @@ void main() {
       testWidget = provider.MultiProvider(
         providers: [
           provider.ChangeNotifierProvider(
-              create: (_) => AccountProvider()..initialize()),
+            create: (_) => AccountProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => AssetProvider()..initialize()),
+            create: (_) => AssetProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => BudgetProvider()..initialize()),
+            create: (_) => BudgetProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => ExpensePlanProvider()..initialize()),
+            create: (_) => ExpensePlanProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => TransactionProvider()..initialize()),
+            create: (_) => TransactionProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => FluxThemeProvider()..initialize()),
+            create: (_) => FluxThemeProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => FlowDashboardProvider()..initialize()),
+            create: (_) => FlowDashboardProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => FlowStreamsProvider()..initialize()),
+            create: (_) => FlowStreamsProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => FlowInsightsProvider()..initialize()),
+            create: (_) => FlowInsightsProvider()..initialize(),
+          ),
           provider.ChangeNotifierProvider(
-              create: (_) => FlowAnalyticsProvider()..initialize()),
+            create: (_) => FlowAnalyticsProvider()..initialize(),
+          ),
         ],
         child: ProviderScope(
           child: MaterialApp(

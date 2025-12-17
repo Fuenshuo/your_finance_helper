@@ -41,11 +41,17 @@ class _FixedAssetDetailScreenState extends State<FixedAssetDetailScreen> {
     // ===== v1.1.0 初始化企业级动效系统 =====
     // 注册固定资产详情专用动效曲线
     IOSAnimationSystem.registerCustomCurve(
-        'fixed-asset-card-expand', Curves.elasticOut);
+      'fixed-asset-card-expand',
+      Curves.elasticOut,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'depreciation-chart', Curves.easeInOutCubic);
+      'depreciation-chart',
+      Curves.easeInOutCubic,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'asset-maintenance-slide', Curves.fastOutSlowIn);
+      'asset-maintenance-slide',
+      Curves.fastOutSlowIn,
+    );
 
     _asset = widget.asset;
     _initializeControllers();

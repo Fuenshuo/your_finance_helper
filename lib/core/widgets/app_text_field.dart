@@ -1,30 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// iOS 风格输入框
 /// 特性：无边框、灰色填充背景、大圆角、内容居中
 class AppTextField extends StatefulWidget {
-  final String? labelText;
-  final String? hintText;
-  final String? errorText;
-  final String? helperText;
-  final TextEditingController? controller;
-  final TextInputType? keyboardType;
-  final Widget? prefixIcon;
-  final Widget? suffixIcon;
-  final bool obscureText;
-  final bool enabled;
-  final bool readOnly;
-  final VoidCallback? onTap;
-  final List<TextInputFormatter>? inputFormatters;
-  final ValueChanged<String>? onChanged;
-  final ValueChanged<String>? onFieldSubmitted;
-  final TextInputAction? textInputAction;
-  final int? maxLines;
-  final String? Function(String?)? validator;
-
   const AppTextField({
     super.key,
     this.labelText,
@@ -46,6 +27,24 @@ class AppTextField extends StatefulWidget {
     this.maxLines = 1,
     this.validator,
   });
+  final String? labelText;
+  final String? hintText;
+  final String? errorText;
+  final String? helperText;
+  final TextEditingController? controller;
+  final TextInputType? keyboardType;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final bool obscureText;
+  final bool enabled;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final List<TextInputFormatter>? inputFormatters;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onFieldSubmitted;
+  final TextInputAction? textInputAction;
+  final int? maxLines;
+  final String? Function(String?)? validator;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -141,8 +140,10 @@ class _AppTextFieldState extends State<AppTextField> {
                     prefixIcon: widget.prefixIcon != null
                         ? IconTheme(
                             data: IconThemeData(
-                                color: AppDesignTokens.primaryAction(context)),
-                            child: widget.prefixIcon!)
+                              color: AppDesignTokens.primaryAction(context),
+                            ),
+                            child: widget.prefixIcon!,
+                          )
                         : null,
                     suffixIcon: widget.suffixIcon,
                   ),
@@ -159,7 +160,8 @@ class _AppTextFieldState extends State<AppTextField> {
                         color: _isFocused
                             ? AppDesignTokens.primaryAction(context) // 聚焦时：主题色
                             : AppDesignTokens.dividerColor(
-                                context), // 未聚焦时：分割线颜色
+                                context,
+                              ), // 未聚焦时：分割线颜色
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(8), // 8pt 圆角
                           bottomRight: Radius.circular(8),

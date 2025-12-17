@@ -284,7 +284,8 @@ class _PeriodDifferenceAnalysisScreenState
                       color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: Colors.orange.withValues(alpha: 0.3)),
+                        color: Colors.orange.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: const Text(
                       '有剩余',
@@ -554,7 +555,11 @@ class _PeriodDifferenceAnalysisScreenState
   }
 
   Widget _buildOverviewItem(
-          String label, String value, Color color, IconData icon) =>
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) =>
       Column(
         children: [
           Container(
@@ -584,8 +589,11 @@ class _PeriodDifferenceAnalysisScreenState
         ],
       );
 
-  Widget _buildBalanceInfo(String label, double amount,
-      {bool isDifference = false}) {
+  Widget _buildBalanceInfo(
+    String label,
+    double amount, {
+    bool isDifference = false,
+  }) {
     var color = Colors.black;
     if (isDifference) {
       color = amount > 0
@@ -810,7 +818,8 @@ class _PeriodDifferenceAnalysisScreenState
                           prefixText: '¥ ',
                         ),
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                          decimal: true,
+                        ),
                         onChanged: (value) {
                           setDialogState(() {});
                         },
@@ -1052,8 +1061,11 @@ class _PeriodDifferenceAnalysisScreenState
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline,
-                              size: 18, color: Colors.blue),
+                          const Icon(
+                            Icons.info_outline,
+                            size: 18,
+                            color: Colors.blue,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(

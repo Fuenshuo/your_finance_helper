@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
+import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
+import 'package:your_finance_flutter/core/services/ai/payroll_recognition_service.dart';
 import 'package:your_finance_flutter/core/services/personal_income_tax_service.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/core/widgets/app_primary_button.dart';
-import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/bonus_management_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/salary_basic_info_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/salary_history_widget.dart';
 import 'package:your_finance_flutter/features/family_info/widgets/tax_deductions_widget.dart';
-import 'package:your_finance_flutter/core/services/ai/payroll_recognition_service.dart';
-import 'package:your_finance_flutter/core/services/ai/image_processing_service.dart';
 
 class SalaryIncomeSetupScreen extends StatefulWidget {
   const SalaryIncomeSetupScreen({
@@ -75,13 +75,16 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
     if (widget.salaryIncomeToEdit != null) {
       Logger.debug(
-          '📝 Initializing with existing salary income: ${widget.salaryIncomeToEdit!.name}');
+        '📝 Initializing with existing salary income: ${widget.salaryIncomeToEdit!.name}',
+      );
       Logger.debug(
-          '📝 Initial bonuses count: ${widget.salaryIncomeToEdit!.bonuses.length}');
+        '📝 Initial bonuses count: ${widget.salaryIncomeToEdit!.bonuses.length}',
+      );
       for (var i = 0; i < widget.salaryIncomeToEdit!.bonuses.length; i++) {
         final bonus = widget.salaryIncomeToEdit!.bonuses[i];
         Logger.debug(
-            '  Bonus $i: ${bonus.name}, type: ${bonus.type}, amount: ${bonus.amount}');
+          '  Bonus $i: ${bonus.name}, type: ${bonus.type}, amount: ${bonus.amount}',
+        );
       }
 
       final salaryIncome = widget.salaryIncomeToEdit!;
@@ -121,7 +124,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
   @override
   void dispose() {
     Logger.debug(
-        '📝 SalaryIncomeSetupScreen dispose called with bonuses: $_bonuses');
+      '📝 SalaryIncomeSetupScreen dispose called with bonuses: $_bonuses',
+    );
     _disposeControllers();
     super.dispose();
   }
@@ -241,7 +245,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
         // 计算年度累计应纳税额
         final annualTax = PersonalIncomeTaxService.calculateAnnualTax(
-            cumulativeTaxableIncome);
+          cumulativeTaxableIncome,
+        );
 
         // 计算当月应预扣税额
         final monthTax = annualTax - cumulativeTax;
@@ -286,7 +291,6 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
             ],
           ),
           backgroundColor: Colors.blue,
-          duration: const Duration(seconds: 4),
         ),
       );
     } catch (e) {
@@ -328,7 +332,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
       });
 
       // 1. 选择图片
-      final imageService = ImageProcessingService.getInstance();
+      final imageService = await ImageProcessingService.getInstance();
       final imageFile = await imageService.pickImageFromGallery();
       if (imageFile == null) {
         setState(() {
@@ -339,6 +343,12 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
 
       // 2. 保存图片
       final imagePath = await imageService.saveImageToAppDirectory(imageFile);
+      if (imagePath == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
       // 3. 识别工资条
       final service = await PayrollRecognitionService.getInstance();
@@ -377,11 +387,12 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('实发金额: ¥${result.netIncome.toStringAsFixed(2)}'),
+                Text('实发金额: ¥${result.netIncome?.toStringAsFixed(2) ?? "0.00"}'),
                 Text('置信度: ${(result.confidence * 100).toStringAsFixed(0)}%'),
                 if (result.salaryDate != null)
                   Text(
-                      '发薪日期: ${result.salaryDate!.toString().substring(0, 10)}'),
+                    '发薪日期: ${result.salaryDate.toString().substring(0, 10)}',
+                  ),
                 const SizedBox(height: 8),
                 const Text(
                   '提示: 已自动填充基本工资，其他字段请手动补充',
@@ -405,7 +416,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '识别成功！实发金额: ¥${result.netIncome.toStringAsFixed(2)}',
+              '识别成功！实发金额: ¥${result.netIncome?.toStringAsFixed(2) ?? "0.00"}',
             ),
             backgroundColor: Colors.green,
           ),
@@ -445,7 +456,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
       if (widget.salaryIncomeToEdit != null) {
         Logger.debug('📝 Updating existing salary income');
         Logger.debug(
-            '📝 Original salary income ID: ${widget.salaryIncomeToEdit!.id}');
+          '📝 Original salary income ID: ${widget.salaryIncomeToEdit!.id}',
+        );
         // 编辑模式：更新现有工资收入
         final updatedIncome = widget.salaryIncomeToEdit!.copyWith(
           name: _nameController.text.trim(),
@@ -565,7 +577,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
             FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(AppDesignTokens.spacing16),
+            padding: const EdgeInsets.all(AppDesignTokens.spacing16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -580,7 +592,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                         setState(() => _salaryDay = value),
                   ),
 
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
 
                   // Salary History Section
                   SalaryHistoryWidget(
@@ -590,18 +602,20 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                         setState(() => _salaryHistory.addAll(history)),
                   ),
 
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
 
                   // Bonus Management Section
                   BonusManagementWidget(
                     bonuses: _bonuses,
                     onBonusesChanged: (bonuses) {
                       Logger.debug(
-                          '📝 onBonusesChanged called with ${bonuses.length} bonuses');
+                        '📝 onBonusesChanged called with ${bonuses.length} bonuses',
+                      );
                       for (var i = 0; i < bonuses.length; i++) {
                         final bonus = bonuses[i];
                         Logger.debug(
-                            '  Bonus ${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
+                          '  Bonus ${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}',
+                        );
                       }
                       setState(() {
                         _bonuses.clear();
@@ -610,12 +624,12 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     },
                   ),
 
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
 
                   // Monthly Allowance Section
                   AppCard(
                     child: Padding(
-                      padding: EdgeInsets.all(AppDesignTokens.spacing16),
+                      padding: const EdgeInsets.all(AppDesignTokens.spacing16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -623,7 +637,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                             '月度津贴',
                             style: AppDesignTokens.title1(context),
                           ),
-                          SizedBox(height: AppDesignTokens.spacing16),
+                          const SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _housingAllowanceController,
                             labelText: '住房津贴',
@@ -633,7 +647,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                               color: AppDesignTokens.primaryAction(context),
                             ),
                           ),
-                          SizedBox(height: AppDesignTokens.spacing16),
+                          const SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _mealAllowanceController,
                             labelText: '餐补',
@@ -643,17 +657,17 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                               color: AppDesignTokens.successColor(context),
                             ),
                           ),
-                          SizedBox(height: AppDesignTokens.spacing16),
+                          const SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _transportationAllowanceController,
                             labelText: '交通补贴',
                             hintText: '请输入交通补贴金额',
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.directions_car,
                               color: AppDesignTokens.warningColor,
                             ),
                           ),
-                          SizedBox(height: AppDesignTokens.spacing16),
+                          const SizedBox(height: AppDesignTokens.spacing16),
                           AmountInputField(
                             controller: _otherAllowanceController,
                             labelText: '其他津贴',
@@ -668,7 +682,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     ),
                   ),
 
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
 
                   // Tax and Deductions Section
                   TaxDeductionsWidget(
@@ -684,12 +698,12 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     onSpecialDeductionChanged: _onSpecialDeductionChanged,
                   ),
 
-                  SizedBox(height: AppDesignTokens.spacing16),
+                  const SizedBox(height: AppDesignTokens.spacing16),
 
                   // Tax Prediction Section (独立预测区域)
                   AppCard(
                     child: Padding(
-                      padding: EdgeInsets.all(AppDesignTokens.spacing16),
+                      padding: const EdgeInsets.all(AppDesignTokens.spacing16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -699,19 +713,19 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                                 Icons.trending_up,
                                 color: AppDesignTokens.primaryAction(context),
                               ),
-                              SizedBox(width: AppDesignTokens.spacing8),
+                              const SizedBox(width: AppDesignTokens.spacing8),
                               Text(
                                 '下个月个税预测',
                                 style: AppDesignTokens.title1(context),
                               ),
                             ],
                           ),
-                          SizedBox(height: AppDesignTokens.spacing12),
+                          const SizedBox(height: AppDesignTokens.spacing12),
                           Text(
                             '基于当前录入的数据，预测下个月的个税（假设收入稳定）',
                             style: AppDesignTokens.caption(context),
                           ),
-                          SizedBox(height: AppDesignTokens.spacing16),
+                          const SizedBox(height: AppDesignTokens.spacing16),
                           AppPrimaryButton(
                             label: '预测下个月个税',
                             icon: Icons.calculate,
@@ -723,7 +737,7 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
                     ),
                   ),
 
-                  SizedBox(height: AppDesignTokens.spacing24),
+                  const SizedBox(height: AppDesignTokens.spacing24),
 
                   // Save Button
                   Center(

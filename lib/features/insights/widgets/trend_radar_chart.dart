@@ -23,12 +23,11 @@ import 'package:your_finance_flutter/features/insights/models/trend_data.dart';
 /// )
 /// ```
 class TrendRadarChart extends StatefulWidget {
-  final List<TrendData>? trendData;
-
   const TrendRadarChart({
     super.key,
     this.trendData,
   });
+  final List<TrendData>? trendData;
 
   @override
   State<TrendRadarChart> createState() => _TrendRadarChartState();
@@ -80,7 +79,6 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
             );
           }).toList(),
           titlesData: FlTitlesData(
-            show: true,
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -96,20 +94,12 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
                 reservedSize: 30,
               ),
             ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: false, // Hide Y axis labels for clean look
-              ),
-            ),
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            leftTitles: const AxisTitles(),
+            topTitles: const AxisTitles(),
+            rightTitles: const AxisTitles(),
           ),
           borderData: FlBorderData(show: false), // No borders
-          gridData: FlGridData(show: false), // No grid
+          gridData: const FlGridData(show: false), // No grid
           barTouchData: BarTouchData(
             touchTooltipData: BarTouchTooltipData(
               tooltipBgColor: AppDesignTokens.surface(context),
@@ -152,12 +142,14 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
       final result = List<TrendData>.from(data);
       final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-      for (int i = data.length; i < 7; i++) {
-        result.add(TrendData(
-          date: DateTime.now().add(Duration(days: i - data.length)),
-          amount: 0.0,
-          dayLabel: days[i],
-        ));
+      for (var i = data.length; i < 7; i++) {
+        result.add(
+          TrendData(
+            date: DateTime.now().add(Duration(days: i - data.length)),
+            amount: 0.0,
+            dayLabel: days[i],
+          ),
+        );
       }
 
       return result;
@@ -174,7 +166,8 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
   Color _getBarColor(double value, bool isTouched, BuildContext context) {
     if (isTouched) {
       return AppDesignTokens.amountNegativeColor(
-          context); // Red for touched state
+        context,
+      ); // Red for touched state
     }
 
     if (value == 0) {
@@ -185,19 +178,17 @@ class _TrendRadarChartState extends State<TrendRadarChart> {
     final baseColor = AppDesignTokens.amountPositiveColor(context);
     final intensity =
         (value / _getMaxValue(widget.trendData ?? [])).clamp(0.3, 1.0);
-    return baseColor.withValues(alpha: intensity.toDouble());
+    return baseColor.withValues(alpha: intensity);
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      height: 200,
-      alignment: Alignment.center,
-      child: Text(
-        'No trend data available',
-        style: AppDesignTokens.caption(context).copyWith(
-          color: AppDesignTokens.secondaryText(context),
+  Widget _buildEmptyState(BuildContext context) => Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Text(
+          'No trend data available',
+          style: AppDesignTokens.caption(context).copyWith(
+            color: AppDesignTokens.secondaryText(context),
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

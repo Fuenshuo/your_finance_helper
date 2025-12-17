@@ -95,7 +95,8 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.primaryAction(context)
                         .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(
-                        AppDesignTokens.radiusMedium(context)),
+                      AppDesignTokens.radiusMedium(context),
+                    ),
                     border: Border.all(
                       color: AppDesignTokens.primaryAction(context)
                           .withValues(alpha: 0.3),
@@ -199,7 +200,8 @@ class _TaxDeductionsWidgetState extends State<TaxDeductionsWidget> {
                     color: AppDesignTokens.primaryAction(context)
                         .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(
-                        AppDesignTokens.radiusMedium(context)),
+                      AppDesignTokens.radiusMedium(context),
+                    ),
                     border: Border.all(
                       color: AppDesignTokens.primaryAction(context)
                           .withValues(alpha: 0.3),

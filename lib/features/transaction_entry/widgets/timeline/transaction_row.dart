@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 
 /// 交易行组件
 class TransactionRow extends StatelessWidget {
-  final DraftTransaction draft;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
-
   const TransactionRow({
-    super.key,
     required this.draft,
     required this.onTap,
     required this.onDelete,
+    super.key,
   });
+  final DraftTransaction draft;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {

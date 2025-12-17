@@ -49,18 +49,20 @@ class PatternDetectionService {
           isHighSpending,
         );
 
-        anomalies.add(WeeklyAnomaly(
-          id: 'weekly_anomaly_${weekStart.toIso8601String()}_$i',
-          weekStart: weekStart,
-          anomalyDate: weekStart.add(Duration(days: i)),
-          expectedAmount: baseline,
-          actualAmount: spending,
-          deviation:
-              rawDeviation, // Keep the sign for proper deviation tracking
-          reason: reason,
-          severity: severity,
-          categories: _extractCategories(categoryBreakdown, i),
-        ));
+        anomalies.add(
+          WeeklyAnomaly(
+            id: 'weekly_anomaly_${weekStart.toIso8601String()}_$i',
+            weekStart: weekStart,
+            anomalyDate: weekStart.add(Duration(days: i)),
+            expectedAmount: baseline,
+            actualAmount: spending,
+            deviation:
+                rawDeviation, // Keep the sign for proper deviation tracking
+            reason: reason,
+            severity: severity,
+            categories: _extractCategories(categoryBreakdown, i),
+          ),
+        );
       }
     }
 
@@ -98,7 +100,9 @@ class PatternDetectionService {
 
   /// Extract categories for the specific day
   List<String> _extractCategories(
-      List<String> categoryBreakdown, int dayIndex) {
+    List<String> categoryBreakdown,
+    int dayIndex,
+  ) {
     if (categoryBreakdown.isEmpty || dayIndex >= categoryBreakdown.length) {
       return ['未知分类'];
     }

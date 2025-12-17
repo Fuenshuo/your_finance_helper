@@ -100,7 +100,6 @@ class IOSAnimationSystem {
         vsync: vsync,
       );
 
-
       await controller.forward();
       await controller.reverse();
 
@@ -293,6 +292,7 @@ class IOSAnimationSystem {
         completer.complete();
       }).catchError((Object error) {
         completer.completeError(error);
+        return null;
       });
     } catch (e) {
       completer.completeError(e);
@@ -300,7 +300,6 @@ class IOSAnimationSystem {
 
     return completer.future;
   }
-
 
   // ===== iOS风格动效组件 =====
 

@@ -68,7 +68,8 @@ void main() {
 
       expect(result['survivalSpending'], 5800.0);
       expect(result['lifestyleSpending'], 800.0);
-      expect(result['survivalPercentage'], closeTo(0.879, 0.01)); // 5800/6600 ≈ 0.879
+      expect(result['survivalPercentage'],
+          closeTo(0.879, 0.01)); // 5800/6600 ≈ 0.879
       expect(result['pattern'], 'survival_heavy');
     });
 
@@ -195,10 +196,12 @@ void main() {
         categorizedTransactions: transactions,
       );
 
-      expect(healthScore.metrics['savingsRate'], 0.5); // (10000-5000)/10000 = 0.5
+      expect(
+          healthScore.metrics['savingsRate'], 0.5); // (10000-5000)/10000 = 0.5
       expect(healthScore.metrics['spendingRatio'], 0.5); // 5000/10000 = 0.5
       expect(healthScore.metrics['survivalPercentage'], 0.6); // 3000/5000 = 0.6
-      expect(healthScore.metrics['lifestylePercentage'], 0.4); // 2000/5000 = 0.4
+      expect(
+          healthScore.metrics['lifestylePercentage'], 0.4); // 2000/5000 = 0.4
       expect(healthScore.metrics['totalIncome'], 10000.0);
       expect(healthScore.metrics['totalSpending'], 5000.0);
     });
@@ -212,14 +215,17 @@ void main() {
         categorizedTransactions: [],
       );
 
-      expect(emptyScore.score, closeTo(100, 10)); // Should get high score for no spending
+      expect(emptyScore.score,
+          closeTo(100, 10)); // Should get high score for no spending
 
       // Test with zero income
       final zeroIncomeScore = await service.calculateMonthlyHealthScore(
         month: DateTime(2025, 11),
         totalIncome: 0.0,
         totalSpending: 1000.0,
-        categorizedTransactions: [{'category': '餐饮', 'amount': 1000.0}],
+        categorizedTransactions: [
+          {'category': '餐饮', 'amount': 1000.0}
+        ],
       );
 
       expect(zeroIncomeScore.score, lessThan(50)); // Should be low score
@@ -295,7 +301,8 @@ void main() {
         expect(result['analysis'], contains('50%'));
       });
 
-      test('should provide different analysis for different patterns', () async {
+      test('should provide different analysis for different patterns',
+          () async {
         // Survival heavy
         final survivalHeavy = await service.analyzeSurvivalLifestyleBreakdown(
           totalIncome: 10000.0,

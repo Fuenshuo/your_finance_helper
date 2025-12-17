@@ -73,28 +73,28 @@ void main() {
           (e) => e.name == 'expense',
           orElse: () => TransactionType.expense,
         ),
-        TransactionType.expense
+        TransactionType.expense,
       );
       expect(
         TransactionType.values.firstWhere(
           (e) => e.name == 'income',
           orElse: () => TransactionType.expense,
         ),
-        TransactionType.income
+        TransactionType.income,
       );
       expect(
         TransactionType.values.firstWhere(
           (e) => e.name == 'transfer',
           orElse: () => TransactionType.expense,
         ),
-        TransactionType.transfer
+        TransactionType.transfer,
       );
       expect(
         TransactionType.values.firstWhere(
           (e) => e.name == 'invalid',
           orElse: () => TransactionType.expense,
         ),
-        TransactionType.expense
+        TransactionType.expense,
       );
       // null case - would need different handling
     });
@@ -106,4 +106,3 @@ void main() {
     });
   });
 }
-

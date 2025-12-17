@@ -102,7 +102,7 @@ void main() {
 
       // When/Then: calculations should work correctly
       expect(allocation.totalAmount, 75000.0);
-      expect(allocation.flexibleRatio, 1/3); // 25000/75000 = 1/3
+      expect(allocation.flexibleRatio, 1 / 3); // 25000/75000 = 1/3
     });
 
     test('AllocationData handles decimal amounts correctly', () {

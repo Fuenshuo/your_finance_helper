@@ -43,7 +43,9 @@ class SalaryCalculationService {
   /// @param month 月份 (1-12)
   /// @return 该月份的津贴收入
   static double calculateMonthlyAllowance(
-      SalaryIncome salaryIncome, int month) {
+    SalaryIncome salaryIncome,
+    int month,
+  ) {
     // 检查是否有该月份的特殊津贴记录
     if (salaryIncome.monthlyAllowances != null &&
         salaryIncome.monthlyAllowances!.containsKey(month)) {
@@ -63,7 +65,9 @@ class SalaryCalculationService {
   /// @param month 月份 (1-12)
   /// @return 该月份的津贴记录
   static AllowanceRecord getMonthlyAllowanceRecord(
-      SalaryIncome salaryIncome, int month) {
+    SalaryIncome salaryIncome,
+    int month,
+  ) {
     // 检查是否有该月份的特殊津贴记录
     if (salaryIncome.monthlyAllowances != null &&
         salaryIncome.monthlyAllowances!.containsKey(month)) {
@@ -117,7 +121,8 @@ class SalaryCalculationService {
     for (var i = 0; i < bonuses.length; i++) {
       final bonus = bonuses[i];
       await logger.log(
-          '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}');
+        '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}',
+      );
       if (bonus.type == BonusType.quarterlyBonus) {
         await logger.log('    季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
       }
@@ -181,14 +186,16 @@ class SalaryCalculationService {
           final periodIncome = currentEntry.value * monthsInPeriod;
           totalBasicIncome += periodIncome;
           Logger.debug(
-              '    时间段: ${effectiveStart} 到 ${effectiveEnd}, 月数: $monthsInPeriod, 收入: $periodIncome');
+            '    时间段: $effectiveStart 到 $effectiveEnd, 月数: $monthsInPeriod, 收入: $periodIncome',
+          );
         }
       }
     } else {
       // 没有工资历史，使用当前工资
       totalBasicIncome = basicSalary * completedMonths;
       Logger.debug(
-          '  无工资历史记录，使用当前工资: $basicSalary * $completedMonths = $totalBasicIncome');
+        '  无工资历史记录，使用当前工资: $basicSalary * $completedMonths = $totalBasicIncome',
+      );
     }
 
     // 计算津贴收入（考虑月度津贴变化）
@@ -202,7 +209,8 @@ class SalaryCalculationService {
         final allowanceRecord = monthlyAllowances[month]!;
         monthlyAllowance = allowanceRecord.totalAllowance;
         Logger.debug(
-            '    ${month}月津贴 (特殊): ¥${monthlyAllowance.toStringAsFixed(0)}');
+          '    $month月津贴 (特殊): ¥${monthlyAllowance.toStringAsFixed(0)}',
+        );
       } else {
         // 使用默认津贴
         monthlyAllowance = housingAllowance +
@@ -210,7 +218,8 @@ class SalaryCalculationService {
             transportationAllowance +
             otherAllowance;
         Logger.debug(
-            '    ${month}月津贴 (默认): ¥${monthlyAllowance.toStringAsFixed(0)}');
+          '    $month月津贴 (默认): ¥${monthlyAllowance.toStringAsFixed(0)}',
+        );
       }
       totalAllowanceIncome += monthlyAllowance;
     }
@@ -235,7 +244,7 @@ class SalaryCalculationService {
                 bonus.calculateMonthlyBonus(currentYear, month);
             bonusPeriodIncome += monthlyBonus;
             if (monthlyBonus > 0) {
-              Logger.debug('    ${bonus.name} 在 ${month}月 发放: $monthlyBonus');
+              Logger.debug('    ${bonus.name} 在 $month月 发放: $monthlyBonus');
             }
           }
         }
@@ -286,7 +295,7 @@ class SalaryCalculationService {
         final monthlyBonus = bonus.calculateMonthlyBonus(currentYear, month);
         monthBonusIncome += monthlyBonus;
         if (monthlyBonus > 0) {
-          Logger.debug('    ${month}月奖金: ${bonus.name} = $monthlyBonus');
+          Logger.debug('    $month月奖金: ${bonus.name} = $monthlyBonus');
         }
       }
 
@@ -322,7 +331,8 @@ class SalaryCalculationService {
       totalTax += monthTax > 0 ? monthTax : 0;
 
       Logger.debug(
-          '    ${month}月: 收入=$monthGrossIncome, 扣除=$monthDeductions, 专项扣除=$monthSpecialDeduction, 应税所得=$monthTaxableIncome, 累计应税=$cumulativeTaxableIncome, 年度税额=$annualTax, 当月税额=$monthTax, 累计税额=$cumulativeTax');
+        '    $month月: 收入=$monthGrossIncome, 扣除=$monthDeductions, 专项扣除=$monthSpecialDeduction, 应税所得=$monthTaxableIncome, 累计应税=$cumulativeTaxableIncome, 年度税额=$annualTax, 当月税额=$monthTax, 累计税额=$cumulativeTax',
+      );
     }
 
     // 奖金税收单独计算（年终奖等特殊奖金）
@@ -504,7 +514,8 @@ class SalaryCalculationService {
     for (var i = 0; i < bonuses.length; i++) {
       final bonus = bonuses[i];
       await logger.log(
-          '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}');
+        '  奖金${i + 1}: ${bonus.name}, 类型=${bonus.type}, 金额=${bonus.amount}',
+      );
       if (bonus.type == BonusType.quarterlyBonus) {
         await logger.log('    季度奖金发放月份: ${bonus.quarterlyPaymentMonths}');
       }

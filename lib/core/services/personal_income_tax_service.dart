@@ -503,7 +503,8 @@ class BonusTaxCalculator {
     double otherTaxFreeMonthly,
   ) {
     Logger.debug(
-        '🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount');
+      '🧮 计算奖金税费: ${bonus.name}, 类型=${bonus.type}, 年度金额=$annualBonusAmount',
+    );
 
     switch (bonus.type) {
       case BonusType.yearEndBonus:
@@ -570,7 +571,8 @@ class BonusTaxCalculator {
     double otherTaxFreeMonthly,
   ) {
     Logger.debug(
-        '🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly');
+      '🧮 计算月奖金税费: 奖金=$monthlyBonusAmount, 基本收入=$monthlyBaseIncome, 扣除=$monthlyDeductions, 专项扣除=$specialDeductionMonthly',
+    );
     final totalMonthlyIncome = monthlyBaseIncome + monthlyBonusAmount;
     Logger.debug('  总月收入: $totalMonthlyIncome');
 

@@ -150,7 +150,8 @@ class FileScanner {
 
   /// 查找包含特定内容的Dart文件
   Future<List<ScanResult>> findDartFilesWithContent(
-      String searchPattern) async {
+    String searchPattern,
+  ) async {
     final dartFiles = await scanDirectory(null, {'.dart'});
     final matchingFiles = <ScanResult>[];
 

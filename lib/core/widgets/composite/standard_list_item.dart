@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// 基础列表行样式 (StandardListItemStyle)
 /// 所有列表行的基类，定义了左右对齐、固定高度和间距
@@ -10,6 +10,14 @@ import '../../theme/app_design_tokens.dart';
 /// - 垂直内边距：16pt
 /// - 左右对齐：MainAxisAlignment.spaceBetween
 abstract class StandardListItem extends StatelessWidget {
+  const StandardListItem({
+    required this.title,
+    super.key,
+    this.leading,
+    this.titleStyle,
+    this.spacing,
+  });
+
   /// 左侧标题/标签
   final String title;
 
@@ -22,21 +30,13 @@ abstract class StandardListItem extends StatelessWidget {
   /// 行间距（用于列表中的多个项）
   final double? spacing;
 
-  const StandardListItem({
-    super.key,
-    required this.title,
-    this.leading,
-    this.titleStyle,
-    this.spacing,
-  });
-
   /// 构建左侧内容（标题 + 图标）
   Widget buildLeading(BuildContext context) {
     if (leading != null) {
       return Row(
         children: [
           leading!,
-          SizedBox(width: AppDesignTokens.spacing12),
+          const SizedBox(width: AppDesignTokens.spacing12),
           Expanded(
             child: Text(
               title,
@@ -56,24 +56,21 @@ abstract class StandardListItem extends StatelessWidget {
   Widget buildTrailing(BuildContext context);
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56, // 固定高度：56pt
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDesignTokens.globalHorizontalPadding,
-        vertical: AppDesignTokens.spacingMedium,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: buildLeading(context),
-          ),
-          SizedBox(width: AppDesignTokens.spacing12),
-          buildTrailing(context),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+        height: 56, // 固定高度：56pt
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDesignTokens.globalHorizontalPadding,
+          vertical: AppDesignTokens.spacingMedium,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: buildLeading(context),
+            ),
+            const SizedBox(width: AppDesignTokens.spacing12),
+            buildTrailing(context),
+          ],
+        ),
+      );
 }

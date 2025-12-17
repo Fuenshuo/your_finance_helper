@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 
 /// 滚动条组件 - 时间线滚动指示器
 class Scrubber extends StatefulWidget {
-  final ScrollController scrollController;
-  final List<DateTime> dates;
-
   const Scrubber({
-    super.key,
     required this.scrollController,
     required this.dates,
+    super.key,
   });
+  final ScrollController scrollController;
+  final List<DateTime> dates;
 
   @override
   State<Scrubber> createState() => _ScrubberState();

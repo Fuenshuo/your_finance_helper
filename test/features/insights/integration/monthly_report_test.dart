@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_finance_flutter/features/insights/services/insight_service.dart';
+import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
 import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
-import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
+import 'package:your_finance_flutter/features/insights/services/insight_service.dart';
 
 void main() {
   late InsightService insightService;
@@ -21,7 +21,7 @@ void main() {
     test('should generate comprehensive monthly CFO report', () async {
       // Arrange: Create comprehensive monthly data
       final monthlyData = {
-        'month': DateTime(2024, 1, 1),
+        'month': DateTime(2024),
         'totalIncome': 15000.0,
         'totalExpenses': 12000.0,
         'categories': {
@@ -112,7 +112,7 @@ void main() {
     test('should handle months with concerning financial health', () async {
       // Arrange: Create concerning monthly data (poor financial health)
       final concerningData = {
-        'month': DateTime(2024, 2, 1),
+        'month': DateTime(2024, 2),
         'totalIncome': 8000.0,
         'totalExpenses': 8500.0,
         'categories': {
@@ -187,21 +187,21 @@ void main() {
 
       final monthsData = [
         {
-          'month': DateTime(2023, 12, 1),
+          'month': DateTime(2023, 12),
           'totalIncome': 12000.0,
           'totalExpenses': 11000.0,
           'score': 75.0,
           'grade': 'C',
         },
         {
-          'month': DateTime(2024, 1, 1),
+          'month': DateTime(2024),
           'totalIncome': 13000.0,
           'totalExpenses': 10500.0,
           'score': 82.0,
           'grade': 'B',
         },
         {
-          'month': DateTime(2024, 2, 1),
+          'month': DateTime(2024, 2),
           'totalIncome': 14000.0,
           'totalExpenses': 11200.0,
           'score': 78.0,
@@ -225,7 +225,7 @@ void main() {
       // Wait for all reports to complete
       final completionFutures = jobs.map((jobItem) async {
         final jobStream = insightService.jobStatusStream(jobItem.id);
-        return await jobStream.firstWhere(
+        return jobStream.firstWhere(
           (jobStatus) => jobStatus.isCompleted || jobStatus.isFailed,
         );
       });
@@ -256,7 +256,7 @@ void main() {
       final job = await insightService.triggerAnalysis(
         type: JobType.monthlyHealth,
         transactionId: 'monthly_report_failure_test',
-        metadata: {'month': DateTime(2024, 3, 1)},
+        metadata: {'month': DateTime(2024, 3)},
       );
 
       final jobStream = insightService.jobStatusStream(job.id);
@@ -266,11 +266,13 @@ void main() {
 
       // Assert: Failure is handled gracefully with appropriate error reporting
       expect(failedJob.isFailed, true);
-      expect(failedJob.error, contains('Monthly health analysis service unavailable'));
+      expect(failedJob.error,
+          contains('Monthly health analysis service unavailable'));
       expect(failedJob.result, isNull);
     });
 
-    test('should generate actionable insights for different financial profiles', () async {
+    test('should generate actionable insights for different financial profiles',
+        () async {
       // Test reports for different financial archetypes
 
       final archetypes = [
@@ -319,17 +321,19 @@ void main() {
         final report = completedJob.result!;
 
         // Verify archetype-specific insights
-        expect(report.contains(archetype['name'] as String), true);
-        expect(report.contains(archetype['expectedFocus'] as String), true);
+        expect(report.contains(archetype['name']! as String), true);
+        expect(report.contains(archetype['expectedFocus']! as String), true);
         expect(report.contains('个性化分析'), true);
       }
     });
 
-    test('should integrate with health analysis service for comprehensive assessment', () async {
+    test(
+        'should integrate with health analysis service for comprehensive assessment',
+        () async {
       // Test integration between insight service and health analysis service
 
       final comprehensiveData = {
-        'month': DateTime(2024, 5, 1),
+        'month': DateTime(2024, 5),
         'transactions': [
           {'amount': 5000.0, 'category': '工资', 'type': 'income'},
           {'amount': 2000.0, 'category': '房租', 'type': 'expense'},

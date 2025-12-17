@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_finance_flutter/features/transaction_entry/services/transaction_parser_service.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/services/transaction_parser_service.dart';
 
 void main() {
   late TransactionParserService parserService;
@@ -19,7 +19,7 @@ void main() {
 
       test('should parse amount with currency symbols', () {
         expect(parserService.parseAmount('¥100'), 100.0);
-        expect(parserService.parseAmount('\$50'), 50.0);
+        expect(parserService.parseAmount(r'$50'), 50.0);
         expect(parserService.parseAmount('€75.5'), 75.5);
         expect(parserService.parseAmount('£200'), 200.0);
       });
@@ -76,23 +76,34 @@ void main() {
 
     group('inferTransactionType', () {
       test('should infer expense from keywords', () {
-        expect(parserService.inferTransactionType('买午饭25元'), TransactionType.expense);
-        expect(parserService.inferTransactionType('超市购物50元'), TransactionType.expense);
-        expect(parserService.inferTransactionType('交水费30元'), TransactionType.expense);
-        expect(parserService.inferTransactionType('消费100元'), TransactionType.expense);
+        expect(parserService.inferTransactionType('买午饭25元'),
+            TransactionType.expense);
+        expect(parserService.inferTransactionType('超市购物50元'),
+            TransactionType.expense);
+        expect(parserService.inferTransactionType('交水费30元'),
+            TransactionType.expense);
+        expect(parserService.inferTransactionType('消费100元'),
+            TransactionType.expense);
       });
 
       test('should infer income from keywords', () {
-        expect(parserService.inferTransactionType('工资收入5000元'), TransactionType.income);
-        expect(parserService.inferTransactionType('奖金1000元'), TransactionType.income);
-        expect(parserService.inferTransactionType('收到分红2000元'), TransactionType.income);
-        expect(parserService.inferTransactionType('利息收入50元'), TransactionType.income);
+        expect(parserService.inferTransactionType('工资收入5000元'),
+            TransactionType.income);
+        expect(parserService.inferTransactionType('奖金1000元'),
+            TransactionType.income);
+        expect(parserService.inferTransactionType('收到分红2000元'),
+            TransactionType.income);
+        expect(parserService.inferTransactionType('利息收入50元'),
+            TransactionType.income);
       });
 
       test('should infer transfer from keywords', () {
-        expect(parserService.inferTransactionType('转账给朋友100元'), TransactionType.transfer);
-        expect(parserService.inferTransactionType('汇款200元'), TransactionType.transfer);
-        expect(parserService.inferTransactionType('还款50元'), TransactionType.transfer);
+        expect(parserService.inferTransactionType('转账给朋友100元'),
+            TransactionType.transfer);
+        expect(parserService.inferTransactionType('汇款200元'),
+            TransactionType.transfer);
+        expect(parserService.inferTransactionType('还款50元'),
+            TransactionType.transfer);
       });
 
       test('should return null when type cannot be determined', () {
@@ -108,7 +119,6 @@ void main() {
           amount: 25.0,
           description: '午饭',
           type: TransactionType.expense,
-          confidence: 0.0, // Will be overridden
         );
 
         final confidence = parserService.calculateConfidence(draft);
@@ -119,8 +129,6 @@ void main() {
         final draft = DraftTransaction(
           amount: 25.0,
           description: '午饭',
-          type: null,
-          confidence: 0.0,
         );
 
         final confidence = parserService.calculateConfidence(draft);
@@ -131,9 +139,6 @@ void main() {
       test('should calculate low confidence for minimal information', () {
         final draft = DraftTransaction(
           amount: 25.0,
-          description: null,
-          type: null,
-          confidence: 0.0,
         );
 
         final confidence = parserService.calculateConfidence(draft);
@@ -238,8 +243,8 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle mixed currency symbols', () {
-        expect(parserService.parseAmount('¥100\$50€25'), 100.0);
-        expect(parserService.parseAmount('mixed_currency\$100¥50'), 100.0);
+        expect(parserService.parseAmount(r'¥100$50€25'), 100.0);
+        expect(parserService.parseAmount(r'mixed_currency$100¥50'), 100.0);
       });
 
       test('should handle Chinese numerals', () {
@@ -249,18 +254,23 @@ void main() {
       });
 
       test('should handle multiple expense keywords', () {
-        expect(parserService.inferTransactionType('买了东西又消费了'), TransactionType.expense);
-        expect(parserService.inferTransactionType('购物并付款'), TransactionType.expense);
+        expect(parserService.inferTransactionType('买了东西又消费了'),
+            TransactionType.expense);
+        expect(parserService.inferTransactionType('购物并付款'),
+            TransactionType.expense);
       });
 
       test('should handle overlapping income and expense keywords', () {
         // This is a design decision - expense keywords take precedence
-        expect(parserService.inferTransactionType('收入消费100元'), TransactionType.expense);
-        expect(parserService.inferTransactionType('消费收入200元'), TransactionType.expense);
+        expect(parserService.inferTransactionType('收入消费100元'),
+            TransactionType.expense);
+        expect(parserService.inferTransactionType('消费收入200元'),
+            TransactionType.expense);
       });
 
       test('should handle very long descriptions', () async {
-        const longDescription = '这是一个非常非常长的描述，用来测试解析服务是否能够正确处理超长文本输入的情况，看看是否会影响解析的准确性和性能';
+        const longDescription =
+            '这是一个非常非常长的描述，用来测试解析服务是否能够正确处理超长文本输入的情况，看看是否会影响解析的准确性和性能';
         const input = '$longDescription 100元';
 
         final draft = await parserService.parseTransaction(input);

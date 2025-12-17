@@ -1,9 +1,10 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
-import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
-import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
 import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
+import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
+import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
 
 /// Cache entry with metadata
 class CacheEntry<T> {
@@ -26,26 +27,24 @@ class CacheEntry<T> {
     DateTime? timestamp,
     DateTime? expiry,
     String? key,
-  }) {
-    return CacheEntry(
-      data: data ?? this.data,
-      timestamp: timestamp ?? this.timestamp,
-      expiry: expiry ?? this.expiry,
-      key: key ?? this.key,
-    );
-  }
+  }) =>
+      CacheEntry(
+        data: data ?? this.data,
+        timestamp: timestamp ?? this.timestamp,
+        expiry: expiry ?? this.expiry,
+        key: key ?? this.key,
+      );
 }
 
 /// Insight caching service for performance optimization
 class CacheService {
+  CacheService._();
   static const String _cachePrefix = 'insights_cache_';
   static const Duration _defaultExpiry = Duration(hours: 24);
   static const int _maxCacheSize = 100;
 
   static final CacheService _instance = CacheService._();
   static CacheService get instance => _instance;
-
-  CacheService._();
 
   final Map<String, CacheEntry<dynamic>> _memoryCache = {};
   SharedPreferences? _prefs;
@@ -90,16 +89,16 @@ class CacheService {
   }
 
   /// Get cached daily cap
-  DailyCap? getCachedDailyCap(String userId) {
-    return _getCachedData(
-      'daily_cap_$userId',
-      _deserializeDailyCap,
-    );
-  }
+  DailyCap? getCachedDailyCap(String userId) => _getCachedData(
+        'daily_cap_$userId',
+        _deserializeDailyCap,
+      );
 
   /// Cache weekly insights
   Future<void> cacheWeeklyInsights(
-      String userId, List<WeeklyAnomaly> anomalies) async {
+    String userId,
+    List<WeeklyAnomaly> anomalies,
+  ) async {
     await _cacheData(
       'weekly_insights_$userId',
       anomalies,
@@ -109,16 +108,16 @@ class CacheService {
   }
 
   /// Get cached weekly insights
-  List<WeeklyAnomaly>? getCachedWeeklyInsights(String userId) {
-    return _getCachedData(
-      'weekly_insights_$userId',
-      _deserializeWeeklyAnomalies,
-    );
-  }
+  List<WeeklyAnomaly>? getCachedWeeklyInsights(String userId) => _getCachedData(
+        'weekly_insights_$userId',
+        _deserializeWeeklyAnomalies,
+      );
 
   /// Cache monthly health score
   Future<void> cacheMonthlyHealth(
-      String userId, MonthlyHealthScore health) async {
+    String userId,
+    MonthlyHealthScore health,
+  ) async {
     await _cacheData(
       'monthly_health_$userId',
       health,
@@ -128,16 +127,16 @@ class CacheService {
   }
 
   /// Get cached monthly health
-  MonthlyHealthScore? getCachedMonthlyHealth(String userId) {
-    return _getCachedData(
-      'monthly_health_$userId',
-      _deserializeMonthlyHealth,
-    );
-  }
+  MonthlyHealthScore? getCachedMonthlyHealth(String userId) => _getCachedData(
+        'monthly_health_$userId',
+        _deserializeMonthlyHealth,
+      );
 
   /// Cache micro insights
   Future<void> cacheMicroInsights(
-      String userId, List<MicroInsight> insights) async {
+    String userId,
+    List<MicroInsight> insights,
+  ) async {
     await _cacheData(
       'micro_insights_$userId',
       insights,
@@ -147,12 +146,10 @@ class CacheService {
   }
 
   /// Get cached micro insights
-  List<MicroInsight>? getCachedMicroInsights(String userId) {
-    return _getCachedData(
-      'micro_insights_$userId',
-      _deserializeMicroInsights,
-    );
-  }
+  List<MicroInsight>? getCachedMicroInsights(String userId) => _getCachedData(
+        'micro_insights_$userId',
+        _deserializeMicroInsights,
+      );
 
   /// Generic cache method
   Future<void> _cacheData<T>(
@@ -278,9 +275,9 @@ class CacheService {
     final averageAge = validEntriesList.isEmpty
         ? 0.0
         : validEntriesList.fold<double>(
-                0,
-                (sum, entry) =>
-                    sum + now.difference(entry.timestamp).inMinutes) /
+              0,
+              (sum, entry) => sum + now.difference(entry.timestamp).inMinutes,
+            ) /
             validEntriesList.length;
 
     return {
@@ -300,7 +297,9 @@ class CacheService {
   String _serializeWeeklyAnomalies(List<WeeklyAnomaly> anomalies) =>
       jsonEncode(anomalies.map((a) => a.toJson()).toList());
   List<WeeklyAnomaly> _deserializeWeeklyAnomalies(String json) =>
-      (jsonDecode(json) as List).map((a) => WeeklyAnomaly.fromJson(a as Map<String, dynamic>)).toList();
+      (jsonDecode(json) as List)
+          .map((a) => WeeklyAnomaly.fromJson(a as Map<String, dynamic>))
+          .toList();
 
   String _serializeMonthlyHealth(MonthlyHealthScore health) =>
       jsonEncode(health.toJson());
@@ -310,7 +309,9 @@ class CacheService {
   String _serializeMicroInsights(List<MicroInsight> insights) =>
       jsonEncode(insights.map((i) => i.toJson()).toList());
   List<MicroInsight> _deserializeMicroInsights(String json) =>
-      (jsonDecode(json) as List).map((i) => MicroInsight.fromJson(i as Map<String, dynamic>)).toList();
+      (jsonDecode(json) as List)
+          .map((i) => MicroInsight.fromJson(i as Map<String, dynamic>))
+          .toList();
 
   CacheEntry<dynamic>? _deserializeCacheEntry(String key, String jsonString) {
     try {
@@ -324,17 +325,13 @@ class CacheService {
       switch (type) {
         case 'DailyCap':
           deserializedData = _deserializeDailyCap(data['data'] as String);
-          break;
         case 'List<WeeklyAnomaly>':
           deserializedData =
               _deserializeWeeklyAnomalies(data['data'] as String);
-          break;
         case 'MonthlyHealthScore':
           deserializedData = _deserializeMonthlyHealth(data['data'] as String);
-          break;
         case 'List<MicroInsight>':
           deserializedData = _deserializeMicroInsights(data['data'] as String);
-          break;
         default:
           return null;
       }

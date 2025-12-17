@@ -7,10 +7,10 @@ class FluxLoopJob extends Equatable {
     required this.type,
     required this.status,
     required this.createdAt,
+    required this.metadata,
     this.completedAt,
     this.result,
     this.error,
-    required this.metadata,
   });
 
   final String id;
@@ -26,8 +26,7 @@ class FluxLoopJob extends Equatable {
   bool get isCompleted => status == JobStatus.completed;
   bool get isFailed => status == JobStatus.failed;
   bool get isInProgress => status == JobStatus.processing;
-  Duration? get processingTime =>
-      completedAt != null ? completedAt!.difference(createdAt) : null;
+  Duration? get processingTime => completedAt?.difference(createdAt);
 
   FluxLoopJob copyWith({
     String? id,
@@ -38,18 +37,17 @@ class FluxLoopJob extends Equatable {
     String? result,
     String? error,
     Map<String, dynamic>? metadata,
-  }) {
-    return FluxLoopJob(
-      id: id ?? this.id,
-      type: type ?? this.type,
-      status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
-      completedAt: completedAt ?? this.completedAt,
-      result: result ?? this.result,
-      error: error ?? this.error,
-      metadata: metadata ?? this.metadata,
-    );
-  }
+  }) =>
+      FluxLoopJob(
+        id: id ?? this.id,
+        type: type ?? this.type,
+        status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
+        completedAt: completedAt ?? this.completedAt,
+        result: result ?? this.result,
+        error: error ?? this.error,
+        metadata: metadata ?? this.metadata,
+      );
 
   @override
   List<Object?> get props => [
@@ -79,4 +77,3 @@ enum JobStatus {
   completed, // Finished successfully
   failed, // Failed with error
 }
-

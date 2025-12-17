@@ -268,23 +268,29 @@ class PeriodClearanceSession extends Equatable {
         status:
             ClearanceSessionStatus.fromDisplayName(json['status'] as String),
         startBalances: (json['startBalances'] as List<dynamic>?)
-                ?.map((e) =>
-                    WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>))
+                ?.map(
+                  (e) =>
+                      WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>),
+                )
                 .toList() ??
             [],
         endBalances: (json['endBalances'] as List<dynamic>?)
-                ?.map((e) =>
-                    WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>))
+                ?.map(
+                  (e) =>
+                      WalletBalanceSnapshot.fromJson(e as Map<String, dynamic>),
+                )
                 .toList() ??
             [],
         walletDifferences: (json['walletDifferences'] as List<dynamic>?)
                 ?.map(
-                    (e) => WalletDifference.fromJson(e as Map<String, dynamic>))
+                  (e) => WalletDifference.fromJson(e as Map<String, dynamic>),
+                )
                 .toList() ??
             [],
         manualTransactions: (json['manualTransactions'] as List<dynamic>?)
-                ?.map((e) =>
-                    ManualTransaction.fromJson(e as Map<String, dynamic>))
+                ?.map(
+                  (e) => ManualTransaction.fromJson(e as Map<String, dynamic>),
+                )
                 .toList() ??
             [],
         creationDate: DateTime.parse(json['creationDate'] as String),

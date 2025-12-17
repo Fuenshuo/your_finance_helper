@@ -34,7 +34,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
         index: 1,
         child: AppCard(
           child: Padding(
-            padding: EdgeInsets.all(AppDesignTokens.spacing16),
+            padding: const EdgeInsets.all(AppDesignTokens.spacing16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,14 +63,15 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   ),
                 ),
                 if (_tempHistory.isNotEmpty) ...[
-                  SizedBox(height: AppDesignTokens.spacing8),
+                  const SizedBox(height: AppDesignTokens.spacing8),
                   Container(
-                    padding: EdgeInsets.all(AppDesignTokens.spacing8),
+                    padding: const EdgeInsets.all(AppDesignTokens.spacing8),
                     decoration: BoxDecoration(
                       color: AppDesignTokens.primaryAction(context)
                           .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(
-                          AppDesignTokens.radiusMedium(context)),
+                        AppDesignTokens.radiusMedium(context),
+                      ),
                       border: Border.all(
                         color: AppDesignTokens.primaryAction(context)
                             .withValues(alpha: 0.3),
@@ -83,7 +84,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                           color: AppDesignTokens.primaryAction(context),
                           size: 16,
                         ),
-                        SizedBox(width: AppDesignTokens.spacing8),
+                        const SizedBox(width: AppDesignTokens.spacing8),
                         Expanded(
                           child: Text(
                             '已记录 ${_tempHistory.length} 次工资调整',
@@ -119,7 +120,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                         color: Colors.grey.shade600,
                       ),
                 ),
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 添加新记录按钮
                 ElevatedButton.icon(
@@ -135,12 +136,12 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                     foregroundColor: Colors.white,
                   ),
                 ),
-                SizedBox(height: AppDesignTokens.spacing16),
+                const SizedBox(height: AppDesignTokens.spacing16),
 
                 // 显示工资历史记录
                 if (_tempHistory.isEmpty)
                   Container(
-                    padding: EdgeInsets.all(AppDesignTokens.spacing16),
+                    padding: const EdgeInsets.all(AppDesignTokens.spacing16),
                     decoration: BoxDecoration(
                       color: Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -189,8 +190,8 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
     StateSetter setState,
   ) =>
       Container(
-        margin: EdgeInsets.only(bottom: AppDesignTokens.spacing8),
-        padding: EdgeInsets.all(AppDesignTokens.spacing12),
+        margin: const EdgeInsets.only(bottom: AppDesignTokens.spacing8),
+        padding: const EdgeInsets.all(AppDesignTokens.spacing12),
         decoration: BoxDecoration(
           color: Colors.blue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
@@ -287,7 +288,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   child: Text(_formatDate(selectedDate)),
                 ),
               ),
-              SizedBox(height: AppDesignTokens.spacing16),
+              const SizedBox(height: AppDesignTokens.spacing16),
 
               // 新工资输入
               TextField(
@@ -360,7 +361,7 @@ class _SalaryHistoryWidgetState extends State<SalaryHistoryWidget> {
                   child: Text(_formatDate(selectedDate)),
                 ),
               ),
-              SizedBox(height: AppDesignTokens.spacing16),
+              const SizedBox(height: AppDesignTokens.spacing16),
 
               // 新工资输入
               TextField(

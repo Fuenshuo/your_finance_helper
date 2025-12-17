@@ -3,20 +3,19 @@ import 'package:flutter/services.dart';
 
 /// 文本输入框组件
 class TextInputField extends StatefulWidget {
+  const TextInputField({
+    required this.controller,
+    required this.hintText,
+    super.key,
+    this.enabled = true,
+    this.onChanged,
+    this.onSubmitted,
+  });
   final TextEditingController controller;
   final String hintText;
   final bool enabled;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onSubmitted;
-
-  const TextInputField({
-    super.key,
-    required this.controller,
-    required this.hintText,
-    this.enabled = true,
-    this.onChanged,
-    this.onSubmitted,
-  });
 
   @override
   State<TextInputField> createState() => _TextInputFieldState();
@@ -40,10 +39,12 @@ class _TextInputFieldState extends State<TextInputField>
     _borderAnimation = Tween<double>(
       begin: 1.0,
       end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _focusAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _focusAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _focusNode.addListener(_onFocusChanged);
   }
@@ -75,64 +76,62 @@ class _TextInputFieldState extends State<TextInputField>
 
     return AnimatedBuilder(
       animation: _borderAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: _isFocused
-                  ? colorScheme.primary.withValues(alpha: 0.6)
-                  : colorScheme.outline.withValues(alpha: 0.3),
-              width: _borderAnimation.value,
-            ),
-            boxShadow: _isFocused
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+      builder: (context, child) => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isFocused
+                ? colorScheme.primary.withValues(alpha: 0.6)
+                : colorScheme.outline.withValues(alpha: 0.3),
+            width: _borderAnimation.value,
           ),
-          child: TextField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            enabled: widget.enabled,
-            maxLines: 3,
-            minLines: 1,
-            textInputAction: TextInputAction.send,
-            onChanged: widget.onChanged,
-            onSubmitted: widget.onSubmitted != null
-                ? (_) => widget.onSubmitted!()
-                : null,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: widget.enabled
-                  ? colorScheme.onSurface
-                  : colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-            decoration: InputDecoration(
-              hintText: widget.hintText,
-              hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              isDense: true,
-            ),
-            inputFormatters: [
-              // 限制输入长度
-              LengthLimitingTextInputFormatter(500),
-              // 过滤无效字符
-              FilteringTextInputFormatter.deny(
-                  RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]')),
-            ],
+          boxShadow: _isFocused
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: TextField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          enabled: widget.enabled,
+          maxLines: 3,
+          minLines: 1,
+          textInputAction: TextInputAction.send,
+          onChanged: widget.onChanged,
+          onSubmitted:
+              widget.onSubmitted != null ? (_) => widget.onSubmitted!() : null,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: widget.enabled
+                ? colorScheme.onSurface
+                : colorScheme.onSurface.withValues(alpha: 0.5),
           ),
-        );
-      },
+          decoration: InputDecoration(
+            hintText: widget.hintText,
+            hintStyle: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            isDense: true,
+          ),
+          inputFormatters: [
+            // 限制输入长度
+            LengthLimitingTextInputFormatter(500),
+            // 过滤无效字符
+            FilteringTextInputFormatter.deny(
+              RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

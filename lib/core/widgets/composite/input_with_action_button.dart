@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/app_design_tokens.dart';
-import '../amount_input_field.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/amount_input_field.dart';
 
 /// 输入框+操作按钮组合组件
 /// 用于需要输入框旁边有操作按钮的场景（如基本工资+历史按钮）
@@ -32,32 +32,31 @@ class InputWithActionButton extends StatelessWidget {
   final String unitText; // 单位文本（如"元"）
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: AmountInputField(
-            controller: controller,
-            labelText: labelText,
-            hintText: hintText,
-            prefixIcon: prefixIcon,
-            validator: validator,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            onChanged: onChanged,
-            unitText: unitText,
+  Widget build(BuildContext context) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: AmountInputField(
+              controller: controller,
+              labelText: labelText,
+              hintText: hintText,
+              prefixIcon: prefixIcon,
+              validator: validator,
+              keyboardType: keyboardType,
+              inputFormatters: inputFormatters,
+              onChanged: onChanged,
+              unitText: unitText,
+            ),
           ),
-        ),
-        if (actionButton != null) ...[
-          SizedBox(width: AppDesignTokens.spacing12),
-          // 按钮容器，确保与输入框对齐
-          Padding(
-            padding: EdgeInsets.only(top: AppDesignTokens.spacing24), // 对齐label
-            child: actionButton!,
-          ),
+          if (actionButton != null) ...[
+            const SizedBox(width: AppDesignTokens.spacing12),
+            // 按钮容器，确保与输入框对齐
+            Padding(
+              padding: const EdgeInsets.only(
+                  top: AppDesignTokens.spacing24), // 对齐label
+              child: actionButton,
+            ),
+          ],
         ],
-      ],
-    );
-  }
+      );
 }

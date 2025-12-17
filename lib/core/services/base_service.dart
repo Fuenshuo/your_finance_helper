@@ -169,17 +169,14 @@ abstract class StatefulService implements BaseService {
   }
 
   @override
-  Future<bool> healthCheck() async {
-    return _state == ServiceState.initialized && _lastError == null;
-  }
+  Future<bool> healthCheck() async =>
+      _state == ServiceState.initialized && _lastError == null;
 
   @override
-  Map<String, dynamic> getStats() {
-    return {
-      'state': _state.name,
-      'lastError': _lastError,
-    };
-  }
+  Map<String, dynamic> getStats() => {
+        'state': _state.name,
+        'lastError': _lastError,
+      };
 }
 
 /// 服务管理器 - 统一管理所有服务的生命周期
@@ -198,9 +195,7 @@ class ServiceManager {
   }
 
   /// 获取服务
-  T? getService<T extends BaseService>(String name) {
-    return _services[name] as T?;
-  }
+  T? getService<T extends BaseService>(String name) => _services[name] as T?;
 
   /// 初始化所有服务
   Future<void> initializeAllServices() async {
@@ -319,14 +314,11 @@ class ServiceRegistry {
 
   /// 获取服务工厂
   ServiceFactory<T, C>?
-      getFactory<T extends BaseService, C extends ServiceConfig>() {
-    return _factories[T] as ServiceFactory<T, C>?;
-  }
+      getFactory<T extends BaseService, C extends ServiceConfig>() =>
+          _factories[T] as ServiceFactory<T, C>?;
 
   /// 获取服务配置
-  T? getConfig<T>(String key) {
-    return _configs[key] as T?;
-  }
+  T? getConfig<T>(String key) => _configs[key] as T?;
 
   /// 创建服务实例
   T? createService<T extends BaseService, C extends ServiceConfig>(C config) {

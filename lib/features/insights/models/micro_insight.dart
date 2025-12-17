@@ -12,6 +12,23 @@ class MicroInsight extends Equatable {
     required this.trigger,
   });
 
+  /// 从JSON反序列化
+  factory MicroInsight.fromJson(Map<String, dynamic> json) => MicroInsight(
+        id: json['id'] as String,
+        dailyCapId: json['dailyCapId'] as String,
+        generatedAt: DateTime.parse(json['generatedAt'] as String),
+        sentiment: Sentiment.values.firstWhere(
+          (e) => e.name == json['sentiment'],
+          orElse: () => Sentiment.neutral,
+        ),
+        message: json['message'] as String,
+        actions: (json['actions'] as List).cast<String>(),
+        trigger: InsightTrigger.values.firstWhere(
+          (e) => e.name == json['trigger'],
+          orElse: () => InsightTrigger.transactionAdded,
+        ),
+      );
+
   final String id;
   final String dailyCapId;
   final DateTime generatedAt;
@@ -32,17 +49,16 @@ class MicroInsight extends Equatable {
     String? message,
     List<String>? actions,
     InsightTrigger? trigger,
-  }) {
-    return MicroInsight(
-      id: id ?? this.id,
-      dailyCapId: dailyCapId ?? this.dailyCapId,
-      generatedAt: generatedAt ?? this.generatedAt,
-      sentiment: sentiment ?? this.sentiment,
-      message: message ?? this.message,
-      actions: actions ?? this.actions,
-      trigger: trigger ?? this.trigger,
-    );
-  }
+  }) =>
+      MicroInsight(
+        id: id ?? this.id,
+        dailyCapId: dailyCapId ?? this.dailyCapId,
+        generatedAt: generatedAt ?? this.generatedAt,
+        sentiment: sentiment ?? this.sentiment,
+        message: message ?? this.message,
+        actions: actions ?? this.actions,
+        trigger: trigger ?? this.trigger,
+      );
 
   @override
   List<Object?> get props => [
@@ -56,36 +72,15 @@ class MicroInsight extends Equatable {
       ];
 
   /// 序列化为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'dailyCapId': dailyCapId,
-      'generatedAt': generatedAt.toIso8601String(),
-      'sentiment': sentiment.name,
-      'message': message,
-      'actions': actions,
-      'trigger': trigger.name,
-    };
-  }
-
-  /// 从JSON反序列化
-  factory MicroInsight.fromJson(Map<String, dynamic> json) {
-    return MicroInsight(
-      id: json['id'] as String,
-      dailyCapId: json['dailyCapId'] as String,
-      generatedAt: DateTime.parse(json['generatedAt'] as String),
-      sentiment: Sentiment.values.firstWhere(
-        (e) => e.name == json['sentiment'],
-        orElse: () => Sentiment.neutral,
-      ),
-      message: json['message'] as String,
-      actions: (json['actions'] as List).cast<String>(),
-      trigger: InsightTrigger.values.firstWhere(
-        (e) => e.name == json['trigger'],
-        orElse: () => InsightTrigger.transactionAdded,
-      ),
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'dailyCapId': dailyCapId,
+        'generatedAt': generatedAt.toIso8601String(),
+        'sentiment': sentiment.name,
+        'message': message,
+        'actions': actions,
+        'trigger': trigger.name,
+      };
 }
 
 /// Sentiment type for AI insights

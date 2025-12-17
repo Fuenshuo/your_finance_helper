@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:your_finance_flutter/features/transaction_entry/screens/transaction_entry_screen.dart';
-import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/screens/transaction_entry_screen.dart';
 
 /// 端到端测试 - 完整用户交互流程
 ///
@@ -20,7 +20,7 @@ void main() {
   });
 
   group('Transaction Entry E2E Flow', () {
-    testWidgets('complete transaction creation flow', (WidgetTester tester) async {
+    testWidgets('complete transaction creation flow', (tester) async {
       // 构建应用
       await tester.pumpWidget(
         ProviderScope(
@@ -87,8 +87,8 @@ void main() {
       final stopwatch = Stopwatch()..start();
 
       // 执行多次解析操作
-      for (int i = 0; i < 10; i++) {
-        await entryNotifier.updateInput('测试交易${i}元');
+      for (var i = 0; i < 10; i++) {
+        await entryNotifier.updateInput('测试交易$i元');
       }
 
       stopwatch.stop();
@@ -117,7 +117,7 @@ void main() {
       // - 允许用户重试
     });
 
-    testWidgets('accessibility compliance', (WidgetTester tester) async {
+    testWidgets('accessibility compliance', (tester) async {
       // 测试无障碍功能合规性
 
       await tester.pumpWidget(
@@ -132,7 +132,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 验证语义标签
-      final semanticsNodes = find.bySemanticsLabel(RegExp(r'.*'));
+      final semanticsNodes = find.bySemanticsLabel(RegExp('.*'));
       expect(semanticsNodes, findsWidgets);
 
       // TODO: 添加更全面的无障碍测试
@@ -142,7 +142,7 @@ void main() {
       // - 颜色对比度检查
     });
 
-    testWidgets('cross-platform compatibility', (WidgetTester tester) async {
+    testWidgets('cross-platform compatibility', (tester) async {
       // 测试跨平台兼容性
 
       // 注意：Flutter的集成测试可以在不同平台上运行

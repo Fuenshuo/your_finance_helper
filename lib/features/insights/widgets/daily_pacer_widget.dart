@@ -7,8 +7,8 @@ import 'package:your_finance_flutter/features/insights/models/micro_insight.dart
 /// Daily spending progress widget with AI-powered micro-insights
 class DailyPacerWidget extends StatelessWidget {
   const DailyPacerWidget({
-    super.key,
     required this.dailyCap,
+    super.key,
     this.onTap,
   });
 
@@ -16,50 +16,48 @@ class DailyPacerWidget extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(AppDesignTokens.spacing16),
-        decoration: BoxDecoration(
-          color: AppDesignTokens.surface(context),
-          borderRadius: BorderRadius.circular(12.0), // radiusMedium
-          boxShadow: [
-            AppDesignTokens.primaryShadow(context),
-          ],
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(AppDesignTokens.spacing16),
+          decoration: BoxDecoration(
+            color: AppDesignTokens.surface(context),
+            borderRadius: BorderRadius.circular(12.0), // radiusMedium
+            boxShadow: [
+              AppDesignTokens.primaryShadow(context),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '今日消费进度',
+                    style: AppDesignTokens.headline(context),
+                  ),
+                  _buildStatusIndicator(context),
+                ],
+              ),
+              const SizedBox(height: AppDesignTokens.spacing12),
+
+              // Progress bar
+              _buildProgressBar(context),
+              const SizedBox(height: 12),
+
+              // Spending details
+              _buildSpendingDetails(context),
+              const SizedBox(height: 16),
+
+              // AI Micro-insight
+              if (dailyCap.latestInsight != null)
+                _buildMicroInsight(context, dailyCap.latestInsight!),
+            ],
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '今日消费进度',
-                  style: AppDesignTokens.headline(context),
-                ),
-                _buildStatusIndicator(context),
-              ],
-            ),
-            SizedBox(height: AppDesignTokens.spacing12),
-
-            // Progress bar
-            _buildProgressBar(context),
-            const SizedBox(height: 12),
-
-            // Spending details
-            _buildSpendingDetails(context),
-            const SizedBox(height: 16),
-
-            // AI Micro-insight
-            if (dailyCap.latestInsight != null)
-              _buildMicroInsight(context, dailyCap.latestInsight!),
-          ],
-        ),
-      ),
-    );
-  }
+      );
 
   Widget _buildStatusIndicator(BuildContext context) {
     final color = _getStatusColor(context);
@@ -82,7 +80,7 @@ class DailyPacerWidget extends StatelessWidget {
             size: 16,
             color: color,
           ),
-          SizedBox(width: AppDesignTokens.spacing4),
+          const SizedBox(width: AppDesignTokens.spacing4),
           Text(
             _getStatusText(),
             style: AppDesignTokens.caption(context).copyWith(
@@ -158,7 +156,6 @@ class DailyPacerWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(6.0),
         border: Border.all(
           color: color.withValues(alpha: 0.2),
-          width: 1,
         ),
       ),
       child: Column(
@@ -171,7 +168,7 @@ class DailyPacerWidget extends StatelessWidget {
                 size: 16,
                 color: color,
               ),
-              SizedBox(width: AppDesignTokens.spacing8),
+              const SizedBox(width: AppDesignTokens.spacing8),
               Text(
                 'AI 建议',
                 style: AppDesignTokens.caption(context).copyWith(
@@ -181,7 +178,7 @@ class DailyPacerWidget extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: AppDesignTokens.spacing8),
+          const SizedBox(height: AppDesignTokens.spacing8),
           Text(
             insight.message,
             style: AppDesignTokens.body(context),
@@ -191,25 +188,27 @@ class DailyPacerWidget extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: insight.actions.map((action) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6.0),
-                  ),
-                  child: Text(
-                    action,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                );
-              }).toList(),
+              children: insight.actions
+                  .map(
+                    (action) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6.0),
+                      ),
+                      child: Text(
+                        action,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: color,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ],

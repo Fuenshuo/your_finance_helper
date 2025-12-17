@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
-import '../theme/app_design_tokens.dart';
-import '../theme/app_design_tokens.dart' show AppStyle;
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// 自定义底部导航栏
 /// 支持 SharpProfessional 风格的底部指示线
 class AppBottomNavigationBar extends StatelessWidget {
+  const AppBottomNavigationBar({
+    required this.currentIndex,
+    required this.onTap,
+    required this.items,
+    super.key,
+    this.selectedItemColor,
+    this.unselectedItemColor,
+    this.backgroundColor,
+    this.elevation,
+    this.type = BottomNavigationBarType.fixed,
+  });
   final int currentIndex;
   final ValueChanged<int> onTap;
   final List<BottomNavigationBarItem> items;
@@ -13,18 +23,6 @@ class AppBottomNavigationBar extends StatelessWidget {
   final Color? backgroundColor;
   final double? elevation;
   final BottomNavigationBarType type;
-
-  const AppBottomNavigationBar({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-    required this.items,
-    this.selectedItemColor,
-    this.unselectedItemColor,
-    this.backgroundColor,
-    this.elevation,
-    this.type = BottomNavigationBarType.fixed,
-  });
 
   @override
   Widget build(BuildContext context) {

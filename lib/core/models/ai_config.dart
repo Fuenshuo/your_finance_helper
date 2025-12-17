@@ -35,7 +35,7 @@ class AiConfig extends Equatable {
   /// 从JSON创建
   factory AiConfig.fromJson(Map<String, dynamic> json) {
     // 兼容旧版本：如果有 customLlmModels 和 customVisionModels，转换为新格式
-    Map<String, List<String>> customModels = {};
+    var customModels = <String, List<String>>{};
     if (json['customModels'] != null) {
       final modelsMap = json['customModels'] as Map<String, dynamic>;
       customModels = modelsMap.map(
@@ -123,7 +123,7 @@ class AiConfig extends Equatable {
         'llmModel': llmModel,
         'visionModel': visionModel,
         'customModels': customModels.map(
-          (key, value) => MapEntry(key, value),
+          MapEntry.new,
         ),
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),

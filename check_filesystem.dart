@@ -39,7 +39,6 @@ void main() async {
         print('❌ 文件不存在: $path');
       }
     }
-
   } catch (e, stackTrace) {
     print('❌ 检查失败: $e');
     print('📋 堆栈跟踪: $stackTrace');
@@ -49,7 +48,8 @@ void main() async {
 Future<void> _scanDirectory(Directory dir) async {
   try {
     final entities = dir.listSync(recursive: true);
-    final jsonFiles = entities.whereType<File>().where((file) => file.path.endsWith('.json'));
+    final jsonFiles =
+        entities.whereType<File>().where((file) => file.path.endsWith('.json'));
 
     if (jsonFiles.isNotEmpty) {
       print('\n📄 发现的 JSON 文件:');

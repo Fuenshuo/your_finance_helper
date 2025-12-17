@@ -158,7 +158,8 @@ class CurrencyConverter {
       (rate) =>
           rate.fromCurrency == fromCurrency && rate.toCurrency == toCurrency,
       orElse: () => throw Exception(
-          'No direct exchange rate found for $fromCurrency to $toCurrency'),
+        'No direct exchange rate found for $fromCurrency to $toCurrency',
+      ),
     );
 
     return amount * directRate.rate;

@@ -4,12 +4,14 @@ import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 void main() {
   group('AppDesignTokens Dynamic Getters', () {
-    testWidgets('pageBackground returns correct color for light theme', (WidgetTester tester) async {
+    testWidgets('pageBackground returns correct color for light theme',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.pageBackground(context), const Color(0xFFF5F7FA));
+              expect(AppDesignTokens.pageBackground(context),
+                  const Color(0xFFF5F7FA));
               return const SizedBox();
             },
           ),
@@ -17,40 +19,15 @@ void main() {
       );
     });
 
-    testWidgets('pageBackground returns correct color for dark theme', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData.dark(),
-          home: Builder(
-            builder: (context) {
-              expect(AppDesignTokens.pageBackground(context), const Color(0xFF000000));
-              return const SizedBox();
-            },
-          ),
-        ),
-      );
-    });
-
-    testWidgets('primaryText returns correct color for light theme', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) {
-              expect(AppDesignTokens.primaryText(context), const Color(0xFF1C1C1E));
-              return const SizedBox();
-            },
-          ),
-        ),
-      );
-    });
-
-    testWidgets('primaryText returns correct color for dark theme', (WidgetTester tester) async {
+    testWidgets('pageBackground returns correct color for dark theme',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.primaryText(context), const Color(0xFFFFFFFF));
+              expect(AppDesignTokens.pageBackground(context),
+                  const Color(0xFF000000));
               return const SizedBox();
             },
           ),
@@ -58,13 +35,46 @@ void main() {
       );
     });
 
-    testWidgets('amountPositiveColor returns correct color for fluxBlue theme', (WidgetTester tester) async {
+    testWidgets('primaryText returns correct color for light theme',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              expect(AppDesignTokens.primaryText(context),
+                  const Color(0xFF1C1C1E));
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+    });
+
+    testWidgets('primaryText returns correct color for dark theme',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: Builder(
+            builder: (context) {
+              expect(AppDesignTokens.primaryText(context),
+                  const Color(0xFFFFFFFF));
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+    });
+
+    testWidgets('amountPositiveColor returns correct color for fluxBlue theme',
+        (tester) async {
       AppDesignTokens.setMoneyTheme(MoneyTheme.fluxBlue);
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.amountPositiveColor(context), const Color(0xFF0A84FF));
+              expect(AppDesignTokens.amountPositiveColor(context),
+                  const Color(0xFF0A84FF));
               return const SizedBox();
             },
           ),
@@ -72,13 +82,16 @@ void main() {
       );
     });
 
-    testWidgets('amountPositiveColor returns correct color for forestEmerald theme', (WidgetTester tester) async {
+    testWidgets(
+        'amountPositiveColor returns correct color for forestEmerald theme',
+        (tester) async {
       AppDesignTokens.setMoneyTheme(MoneyTheme.forestEmerald);
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.amountPositiveColor(context), const Color(0xFF2E7D32));
+              expect(AppDesignTokens.amountPositiveColor(context),
+                  const Color(0xFF2E7D32));
               return const SizedBox();
             },
           ),
@@ -86,12 +99,13 @@ void main() {
       );
     });
 
-    testWidgets('amountNegativeColor returns universal red', (WidgetTester tester) async {
+    testWidgets('amountNegativeColor returns universal red', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.amountNegativeColor(context), const Color(0xFFFF3B30));
+              expect(AppDesignTokens.amountNegativeColor(context),
+                  const Color(0xFFFF3B30));
               return const SizedBox();
             },
           ),
@@ -99,12 +113,13 @@ void main() {
       );
     });
 
-    testWidgets('primaryAction returns correct color', (WidgetTester tester) async {
+    testWidgets('primaryAction returns correct color', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.primaryAction(context), const Color(0xFF007AFF));
+              expect(AppDesignTokens.primaryAction(context),
+                  const Color(0xFF007AFF));
               return const SizedBox();
             },
           ),
@@ -112,12 +127,13 @@ void main() {
       );
     });
 
-    testWidgets('successColor returns correct color', (WidgetTester tester) async {
+    testWidgets('successColor returns correct color', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.successColor(context), const Color(0xFF8BC34A));
+              expect(AppDesignTokens.successColor(context),
+                  const Color(0xFF8BC34A));
               return const SizedBox();
             },
           ),
@@ -125,7 +141,8 @@ void main() {
       );
     });
 
-    testWidgets('surface returns correct color for light theme', (WidgetTester tester) async {
+    testWidgets('surface returns correct color for light theme',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(
@@ -138,7 +155,7 @@ void main() {
       );
     });
 
-    testWidgets('surface returns correct color for dark theme', (WidgetTester tester) async {
+    testWidgets('surface returns correct color for dark theme', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
@@ -152,7 +169,7 @@ void main() {
       );
     });
 
-    testWidgets('typography has correct sizes', (WidgetTester tester) async {
+    testWidgets('typography has correct sizes', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(

@@ -6,10 +6,10 @@ import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dar
 /// Floating insight bubble that points to anomalies on charts
 class InsightBubble extends StatelessWidget {
   const InsightBubble({
-    super.key,
     required this.anomaly,
     required this.targetPosition,
     required this.bubblePosition,
+    super.key,
     this.onTap,
     this.maxWidth = 280,
   });
@@ -102,26 +102,29 @@ class InsightBubble extends StatelessWidget {
                     Wrap(
                       spacing: 6,
                       runSpacing: 4,
-                      children: anomaly.categories.map((category) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getSeverityColor(context)
-                                .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            category,
-                            style: AppDesignTokens.caption(context).copyWith(
-                              color: _getSeverityColor(context),
-                              fontWeight: FontWeight.w500,
+                      children: anomaly.categories
+                          .map(
+                            (category) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getSeverityColor(context)
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                category,
+                                style:
+                                    AppDesignTokens.caption(context).copyWith(
+                                  color: _getSeverityColor(context),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          )
+                          .toList(),
                     ),
                   ],
 
@@ -169,21 +172,19 @@ class InsightBubble extends StatelessWidget {
               child: TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0.0, end: 1.0),
                 duration: const Duration(seconds: 2),
-                builder: (context, value, child) {
-                  return Opacity(
-                    opacity: (1 - value) * 0.5,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _getSeverityColor(context)
-                              .withValues(alpha: (1 - value) * 0.5),
-                          width: 2 * (1 - value),
-                        ),
+                builder: (context, value, child) => Opacity(
+                  opacity: (1 - value) * 0.5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _getSeverityColor(context)
+                            .withValues(alpha: (1 - value) * 0.5),
+                        width: 2 * (1 - value),
                       ),
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             ),
           ),
@@ -228,10 +229,10 @@ class InsightBubble extends StatelessWidget {
 /// Convenience widget for positioning insight bubbles relative to chart elements
 class InsightBubbleOverlay extends StatelessWidget {
   const InsightBubbleOverlay({
-    super.key,
     required this.anomalies,
     required this.chartSize,
     required this.dayToPosition,
+    super.key,
     this.onAnomalyTap,
   });
 
@@ -241,27 +242,27 @@ class InsightBubbleOverlay extends StatelessWidget {
   final void Function(WeeklyAnomaly anomaly)? onAnomalyTap;
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: anomalies.map((anomaly) {
-        final dayIndex =
-            anomaly.anomalyDate.difference(anomaly.weekStart).inDays;
-        final targetPosition = dayToPosition(dayIndex);
+  Widget build(BuildContext context) => Stack(
+        children: anomalies.map((anomaly) {
+          final dayIndex =
+              anomaly.anomalyDate.difference(anomaly.weekStart).inDays;
+          final targetPosition = dayToPosition(dayIndex);
 
-        // Position bubble above the target point
-        final bubblePosition = Offset(
-          (targetPosition.dx - 140).clamp(
-              10, chartSize.width - 290), // Center horizontally with margins
-          targetPosition.dy - 120, // Above the point
-        );
+          // Position bubble above the target point
+          final bubblePosition = Offset(
+            (targetPosition.dx - 140).clamp(
+              10,
+              chartSize.width - 290,
+            ), // Center horizontally with margins
+            targetPosition.dy - 120, // Above the point
+          );
 
-        return InsightBubble(
-          anomaly: anomaly,
-          targetPosition: targetPosition,
-          bubblePosition: bubblePosition,
-          onTap: onAnomalyTap != null ? () => onAnomalyTap!(anomaly) : null,
-        );
-      }).toList(),
-    );
-  }
+          return InsightBubble(
+            anomaly: anomaly,
+            targetPosition: targetPosition,
+            bubblePosition: bubblePosition,
+            onTap: onAnomalyTap != null ? () => onAnomalyTap!(anomaly) : null,
+          );
+        }).toList(),
+      );
 }

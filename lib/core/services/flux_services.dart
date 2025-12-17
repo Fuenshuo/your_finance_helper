@@ -1,13 +1,14 @@
 /// 🌊 Flux Ledger 服务层架构
 ///
 /// 从传统服务到流式服务的全面重构
+library;
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:rxdart/rxdart.dart';
 
-import '../models/flux_models.dart';
+import 'package:your_finance_flutter/core/models/flux_models.dart';
 
 /// 核心服务架构总览
 ///
@@ -48,10 +49,10 @@ import '../models/flux_models.dart';
 /// 流引擎 - Flux Ledger的核心处理单元
 /// 负责所有流式数据的处理、验证和转换
 class FlowEngine {
-  static final FlowEngine _instance = FlowEngine._internal();
   factory FlowEngine() => _instance;
 
   FlowEngine._internal();
+  static final FlowEngine _instance = FlowEngine._internal();
 
   final FlowProcessor _processor = FlowProcessor();
   final FlowValidator _validator = FlowValidator();
@@ -152,30 +153,26 @@ class FlowValidator {
 
 /// 流处理结果
 class FlowProcessingResult {
-  final bool success;
-  final Flow? processedFlow;
-  final List<String> errors;
-
   const FlowProcessingResult._({
     required this.success,
     this.processedFlow,
     this.errors = const [],
   });
 
-  factory FlowProcessingResult.success(Flow flow) {
-    return FlowProcessingResult._(success: true, processedFlow: flow);
-  }
+  factory FlowProcessingResult.success(Flow flow) =>
+      FlowProcessingResult._(success: true, processedFlow: flow);
 
-  factory FlowProcessingResult.failure(List<String> errors) {
-    return FlowProcessingResult._(success: false, errors: errors);
-  }
+  factory FlowProcessingResult.failure(List<String> errors) =>
+      FlowProcessingResult._(success: false, errors: errors);
+  final bool success;
+  final Flow? processedFlow;
+  final List<String> errors;
 }
 
 /// 批量流处理结果
 class BatchFlowProcessingResult {
-  final List<FlowProcessingResult> results;
-
   const BatchFlowProcessingResult(this.results);
+  final List<FlowProcessingResult> results;
 
   int get successCount => results.where((r) => r.success).length;
   int get failureCount => results.where((r) => !r.success).length;
@@ -184,23 +181,22 @@ class BatchFlowProcessingResult {
 
 /// 流验证结果
 class FlowValidationResult {
-  final bool isValid;
-  final List<String> errors;
-
   const FlowValidationResult({
     required this.isValid,
     required this.errors,
   });
+  final bool isValid;
+  final List<String> errors;
 }
 
 // ==================== 流分析服务 (Flow Analysis Service) ====================
 
 /// 流分析服务 - 模式识别和趋势分析
 class FlowAnalysisService {
-  static final FlowAnalysisService _instance = FlowAnalysisService._internal();
   factory FlowAnalysisService() => _instance;
 
   FlowAnalysisService._internal();
+  static final FlowAnalysisService _instance = FlowAnalysisService._internal();
 
   final BehaviorSubject<FlowAnalyticsData> _analyticsStream =
       BehaviorSubject.seeded(FlowAnalyticsData.empty());
@@ -244,7 +240,8 @@ class FlowAnalysisService {
   ) async {
     final inflows = flows.where((f) => f.type == FlowType.income);
     final outflows = flows.where(
-        (f) => f.type == FlowType.expense || f.type == FlowType.transfer);
+      (f) => f.type == FlowType.expense || f.type == FlowType.transfer,
+    );
 
     final totalInflow =
         inflows.fold<double>(0, (sum, f) => sum + f.amount.value);
@@ -263,7 +260,9 @@ class FlowAnalysisService {
   }
 
   Future<FlowTrends> _analyzeTrends(
-      List<Flow> flows, DateTimeRange period) async {
+    List<Flow> flows,
+    DateTimeRange period,
+  ) async {
     // 趋势分析逻辑
     return FlowTrends.empty();
   }
@@ -285,13 +284,6 @@ class FlowAnalysisService {
 
 /// 流分析数据
 class FlowAnalyticsData {
-  final DateTimeRange period;
-  final FlowBasicStats basicStats;
-  final FlowTrends trends;
-  final FlowCategoryAnalysis categoryAnalysis;
-  final List<FlowAnomaly> anomalies;
-  final DateTime generatedAt;
-
   const FlowAnalyticsData({
     required this.period,
     required this.basicStats,
@@ -301,29 +293,27 @@ class FlowAnalyticsData {
     required this.generatedAt,
   });
 
-  factory FlowAnalyticsData.empty() {
-    return FlowAnalyticsData(
-      period: DateTimeRange(
-        start: DateTime.now().subtract(const Duration(days: 30)),
-        end: DateTime.now(),
-      ),
-      basicStats: FlowBasicStats.empty(),
-      trends: FlowTrends.empty(),
-      categoryAnalysis: FlowCategoryAnalysis.empty(),
-      anomalies: [],
-      generatedAt: DateTime.now(),
-    );
-  }
+  factory FlowAnalyticsData.empty() => FlowAnalyticsData(
+        period: DateTimeRange(
+          start: DateTime.now().subtract(const Duration(days: 30)),
+          end: DateTime.now(),
+        ),
+        basicStats: FlowBasicStats.empty(),
+        trends: FlowTrends.empty(),
+        categoryAnalysis: FlowCategoryAnalysis.empty(),
+        anomalies: [],
+        generatedAt: DateTime.now(),
+      );
+  final DateTimeRange period;
+  final FlowBasicStats basicStats;
+  final FlowTrends trends;
+  final FlowCategoryAnalysis categoryAnalysis;
+  final List<FlowAnomaly> anomalies;
+  final DateTime generatedAt;
 }
 
 /// 基础统计数据
 class FlowBasicStats {
-  final double totalInflow;
-  final double totalOutflow;
-  final double netFlow;
-  final int flowCount;
-  final double averageFlow;
-
   const FlowBasicStats({
     required this.totalInflow,
     required this.totalOutflow,
@@ -332,77 +322,70 @@ class FlowBasicStats {
     required this.averageFlow,
   });
 
-  factory FlowBasicStats.empty() {
-    return const FlowBasicStats(
-      totalInflow: 0,
-      totalOutflow: 0,
-      netFlow: 0,
-      flowCount: 0,
-      averageFlow: 0,
-    );
-  }
+  factory FlowBasicStats.empty() => const FlowBasicStats(
+        totalInflow: 0,
+        totalOutflow: 0,
+        netFlow: 0,
+        flowCount: 0,
+        averageFlow: 0,
+      );
+  final double totalInflow;
+  final double totalOutflow;
+  final double netFlow;
+  final int flowCount;
+  final double averageFlow;
 }
 
 /// 趋势分析数据
 class FlowTrends {
-  final double inflowTrend; // 收入趋势 (-1 到 1)
-  final double outflowTrend; // 支出趋势 (-1 到 1)
-  final List<TrendPoint> trendPoints;
-
   const FlowTrends({
     required this.inflowTrend,
     required this.outflowTrend,
     required this.trendPoints,
   });
 
-  factory FlowTrends.empty() {
-    return const FlowTrends(
-      inflowTrend: 0,
-      outflowTrend: 0,
-      trendPoints: [],
-    );
-  }
+  factory FlowTrends.empty() => const FlowTrends(
+        inflowTrend: 0,
+        outflowTrend: 0,
+        trendPoints: [],
+      );
+  final double inflowTrend; // 收入趋势 (-1 到 1)
+  final double outflowTrend; // 支出趋势 (-1 到 1)
+  final List<TrendPoint> trendPoints;
 }
 
 /// 趋势数据点
 class TrendPoint {
-  final DateTime date;
-  final double inflow;
-  final double outflow;
-  final double netFlow;
-
   const TrendPoint({
     required this.date,
     required this.inflow,
     required this.outflow,
     required this.netFlow,
   });
+  final DateTime date;
+  final double inflow;
+  final double outflow;
+  final double netFlow;
 }
 
 /// 分类分析数据
 class FlowCategoryAnalysis {
-  final Map<String, double> categoryBreakdown;
-  final List<CategoryTrend> categoryTrends;
-
   const FlowCategoryAnalysis({
     required this.categoryBreakdown,
     required this.categoryTrends,
   });
 
-  factory FlowCategoryAnalysis.empty() {
-    return const FlowCategoryAnalysis(
-      categoryBreakdown: {},
-      categoryTrends: [],
-    );
-  }
+  factory FlowCategoryAnalysis.empty() => const FlowCategoryAnalysis(
+        categoryBreakdown: {},
+        categoryTrends: [],
+      );
+  final Map<String, double> categoryBreakdown;
+  final List<CategoryTrend> categoryTrends;
 }
 
 /// 分类趋势
 class CategoryTrend {
-  final String categoryId;
-  final String categoryName;
-  final double percentage;
-  final double change; // 相比上期的变化
+  // 相比上期的变化
 
   const CategoryTrend({
     required this.categoryId,
@@ -410,14 +393,15 @@ class CategoryTrend {
     required this.percentage,
     required this.change,
   });
+  final String categoryId;
+  final String categoryName;
+  final double percentage;
+  final double change;
 }
 
 /// 异常数据
 class FlowAnomaly {
-  final String flowId;
-  final String description;
-  final AnomalyType type;
-  final double severity; // 0-1
+  // 0-1
 
   const FlowAnomaly({
     required this.flowId,
@@ -425,6 +409,10 @@ class FlowAnomaly {
     required this.type,
     required this.severity,
   });
+  final String flowId;
+  final String description;
+  final AnomalyType type;
+  final double severity;
 }
 
 /// 异常类型
@@ -446,11 +434,11 @@ enum AnomalyType {
 
 /// 流预测服务 - AI驱动的资金流预测
 class FlowPredictionService {
-  static final FlowPredictionService _instance =
-      FlowPredictionService._internal();
   factory FlowPredictionService() => _instance;
 
   FlowPredictionService._internal();
+  static final FlowPredictionService _instance =
+      FlowPredictionService._internal();
 
   /// 预测未来资金流
   Future<FlowPrediction> predictFlows({
@@ -493,23 +481,19 @@ class FlowPredictionService {
 
 /// 预测结果
 class FlowPrediction {
-  final List<FlowPredictionItem> predictions;
-  final double confidence;
-  final DateTime generatedAt;
-
   const FlowPrediction({
     required this.predictions,
     required this.confidence,
     required this.generatedAt,
   });
+  final List<FlowPredictionItem> predictions;
+  final double confidence;
+  final DateTime generatedAt;
 }
 
 /// 预测项
 class FlowPredictionItem {
-  final DateTime date;
-  final FlowType type;
-  final double amount;
-  final double probability; // 0-1
+  // 0-1
 
   const FlowPredictionItem({
     required this.date,
@@ -517,16 +501,20 @@ class FlowPredictionItem {
     required this.amount,
     required this.probability,
   });
+  final DateTime date;
+  final FlowType type;
+  final double amount;
+  final double probability;
 }
 
 // ==================== 流模式服务 (Flow Pattern Service) ====================
 
 /// 流模式服务 - 识别和学习资金流动模式
 class FlowPatternService {
-  static final FlowPatternService _instance = FlowPatternService._internal();
   factory FlowPatternService() => _instance;
 
   FlowPatternService._internal();
+  static final FlowPatternService _instance = FlowPatternService._internal();
 
   /// 识别资金流模式
   Future<List<FlowPattern>> identifyPatterns(List<Flow> flows) async {
@@ -544,10 +532,10 @@ class FlowPatternService {
 
 /// 流洞察服务 - 生成智能财务洞察
 class FlowInsightService {
-  static final FlowInsightService _instance = FlowInsightService._internal();
   factory FlowInsightService() => _instance;
 
   FlowInsightService._internal();
+  static final FlowInsightService _instance = FlowInsightService._internal();
 
   final BehaviorSubject<List<FlowInsight>> _insightsStream =
       BehaviorSubject.seeded([]);
@@ -574,30 +562,32 @@ class FlowInsightService {
 
     // 大额交易洞察
     if (flow.amount.value > 10000) {
-      insights.add(FlowInsight(
-        id: 'large-transaction-${flow.id}',
-        userId: flow.userId,
-        type: InsightType.risk,
-        title: '大额交易提醒',
-        description: '检测到大额资金流动，请确认交易安全性',
-        severity: InsightSeverity.medium,
-        data: InsightData(
-          metrics: {'amount': flow.amount.value},
-          recommendations: [
-            InsightRecommendation(
-              id: 'review-transaction',
-              title: '审核交易',
-              description: '建议仔细检查这笔交易的必要性和安全性',
-              action: RecommendationAction.viewDetails,
-              parameters: {'flowId': flow.id},
-              expectedImpact: 0.8,
-            ),
-          ],
-          visualizationData: {},
+      insights.add(
+        FlowInsight(
+          id: 'large-transaction-${flow.id}',
+          userId: flow.userId,
+          type: InsightType.risk,
+          title: '大额交易提醒',
+          description: '检测到大额资金流动，请确认交易安全性',
+          severity: InsightSeverity.medium,
+          data: InsightData(
+            metrics: {'amount': flow.amount.value},
+            recommendations: [
+              InsightRecommendation(
+                id: 'review-transaction',
+                title: '审核交易',
+                description: '建议仔细检查这笔交易的必要性和安全性',
+                action: RecommendationAction.viewDetails,
+                parameters: {'flowId': flow.id},
+                expectedImpact: 0.8,
+              ),
+            ],
+            visualizationData: const {},
+          ),
+          relatedFlowIds: [flow.id],
+          generatedAt: DateTime.now(),
         ),
-        relatedFlowIds: [flow.id],
-        generatedAt: DateTime.now(),
-      ));
+      );
     }
 
     return insights;
@@ -623,10 +613,10 @@ class FlowInsightService {
 
 /// 流存储服务 - 资金流数据的持久化管理
 class FlowStorageService {
-  static final FlowStorageService _instance = FlowStorageService._internal();
   factory FlowStorageService() => _instance;
 
   FlowStorageService._internal();
+  static final FlowStorageService _instance = FlowStorageService._internal();
 
   /// 保存资金流
   Future<void> saveFlow(Flow flow) async {
@@ -659,10 +649,10 @@ class FlowStorageService {
 
 /// 实时流服务 - 提供实时资金流数据流
 class RealtimeFlowService {
-  static final RealtimeFlowService _instance = RealtimeFlowService._internal();
   factory RealtimeFlowService() => _instance;
 
   RealtimeFlowService._internal();
+  static final RealtimeFlowService _instance = RealtimeFlowService._internal();
 
   final StreamController<Flow> _flowStreamController =
       StreamController.broadcast();
@@ -683,10 +673,10 @@ class RealtimeFlowService {
 
 /// 服务初始化管理器
 class FluxServiceManager {
-  static final FluxServiceManager _instance = FluxServiceManager._internal();
   factory FluxServiceManager() => _instance;
 
   FluxServiceManager._internal();
+  static final FluxServiceManager _instance = FluxServiceManager._internal();
 
   /// 初始化所有流服务
   Future<void> initialize() async {

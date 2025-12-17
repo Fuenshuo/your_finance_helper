@@ -35,8 +35,10 @@ class Logger {
       await _initLogFile();
     }
 
-    info('Logger initialized',
-        'Level: $_currentLevel, FileLogging: $_fileLoggingEnabled');
+    info(
+      'Logger initialized',
+      'Level: $_currentLevel, FileLogging: $_fileLoggingEnabled',
+    );
   }
 
   /// 初始化日志文件
@@ -191,8 +193,11 @@ class Logger {
 /// 日志工具类 - 提供便捷的方法
 class Log {
   /// 页面日志
-  static void page(String pageName, String action,
-      [Map<String, dynamic>? params]) {
+  static void page(
+    String pageName,
+    String action, [
+    Map<String, dynamic>? params,
+  ]) {
     final message = '$action${params != null ? ': ${jsonEncode(params)}' : ''}';
     Logger.info(message, pageName);
   }
@@ -204,7 +209,7 @@ class Log {
   }
 
   /// 数据操作日志
-  static void data(String operation, String dataType, [dynamic details]) {
+  static void data(String operation, String dataType, [Object? details]) {
     final detailsStr =
         details is Map ? jsonEncode(details) : details?.toString() ?? '';
     final message =
@@ -218,15 +223,21 @@ class Log {
   }
 
   /// 业务流程日志
-  static void business(String process, String step,
-      [Map<String, dynamic>? context]) {
+  static void business(
+    String process,
+    String step, [
+    Map<String, dynamic>? context,
+  ]) {
     final message = '$step${context != null ? ': ${jsonEncode(context)}' : ''}';
     Logger.info(message, process);
   }
 
   /// 性能日志
-  static void performance(String operation, Duration duration,
-      [Map<String, dynamic>? metrics]) {
+  static void performance(
+    String operation,
+    Duration duration, [
+    Map<String, dynamic>? metrics,
+  ]) {
     final message =
         '$operation completed in ${duration.inMilliseconds}ms${metrics != null ? ', metrics: ${jsonEncode(metrics)}' : ''}';
     Logger.info(message, 'Performance');
@@ -235,7 +246,9 @@ class Log {
   /// 错误日志
   static void error(String location, String error, [Object? stackTrace]) {
     Logger.error(
-        '$error${stackTrace != null ? '\n$stackTrace' : ''}', location);
+      '$error${stackTrace != null ? '\n$stackTrace' : ''}',
+      location,
+    );
   }
 }
 
@@ -250,12 +263,15 @@ mixin LoggingMixin {
 
   /// 记录方法开始
   void logMethodStart(String methodName, [Map<String, dynamic>? params]) {
-    Log.method(logTag, '$methodName started',
-        params != null ? jsonEncode(params) : null);
+    Log.method(
+      logTag,
+      '$methodName started',
+      params != null ? jsonEncode(params) : null,
+    );
   }
 
   /// 记录方法结束
-  void logMethodEnd(String methodName, [dynamic result]) {
+  void logMethodEnd(String methodName, [Object? result]) {
     final resultStr = result != null ? ' -> $result' : '';
     Log.method(logTag, '$methodName completed$resultStr');
   }
@@ -266,7 +282,7 @@ mixin LoggingMixin {
   }
 
   /// 记录数据变更
-  void logDataChange(String operation, String dataType, [dynamic details]) {
+  void logDataChange(String operation, String dataType, [Object? details]) {
     Log.data(operation, dataType, details?.toString());
   }
 }
@@ -280,12 +296,17 @@ mixin PerformanceMixin {
   void startPerformance(String operation) {
     _performanceTimers[operation] = DateTime.now();
     Log.performance(
-        '$operation started', Duration.zero, {'tag': performanceTag});
+      '$operation started',
+      Duration.zero,
+      {'tag': performanceTag},
+    );
   }
 
   /// 结束性能监控
-  void endPerformance(String operation,
-      [Map<String, dynamic>? additionalMetrics]) {
+  void endPerformance(
+    String operation, [
+    Map<String, dynamic>? additionalMetrics,
+  ]) {
     final startTime = _performanceTimers.remove(operation);
     if (startTime != null) {
       final duration = DateTime.now().difference(startTime);
@@ -298,7 +319,9 @@ mixin PerformanceMixin {
 
   /// 监控异步操作性能
   Future<T> monitorAsync<T>(
-      String operation, Future<T> Function() asyncFunction) async {
+    String operation,
+    Future<T> Function() asyncFunction,
+  ) async {
     startPerformance(operation);
     try {
       final result = await asyncFunction();

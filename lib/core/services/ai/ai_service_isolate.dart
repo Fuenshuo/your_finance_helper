@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import '../../models/parsed_transaction.dart';
-import '../../models/transaction.dart';
+import 'package:your_finance_flutter/core/models/parsed_transaction.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
 
 /// AI服务Isolate包装器
 /// 将AI返回的复杂JSON解析放到Isolate中运行，避免阻塞UI线程
@@ -11,12 +11,11 @@ class AIServiceIsolate {
   static Future<ParsedTransaction> parseAIResponseInIsolate({
     required String response,
     required Map<String, dynamic> contextData,
-  }) async {
-    return compute(_parseAIResponse, {
-      'response': response,
-      'contextData': contextData,
-    });
-  }
+  }) async =>
+      compute(_parseAIResponse, {
+        'response': response,
+        'contextData': contextData,
+      });
 
   /// Isolate中的解析函数
   static ParsedTransaction _parseAIResponse(Map<String, dynamic> data) {
@@ -24,7 +23,7 @@ class AIServiceIsolate {
 
     try {
       // 尝试提取JSON（可能包含markdown代码块）
-      String jsonStr = response.trim();
+      var jsonStr = response.trim();
 
       // 移除markdown代码块标记
       if (jsonStr.startsWith('```json')) {
@@ -62,7 +61,6 @@ class AIServiceIsolate {
         amount: 0,
         type: TransactionType.expense,
         category: TransactionCategory.otherExpense,
-        confidence: 0.0,
         rawData: {'error': e.toString()},
       );
     }

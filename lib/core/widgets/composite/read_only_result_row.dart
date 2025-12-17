@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// S23: 只读结果展示行样式（ReadOnlyResultRowStyle）
 /// 用于展示系统自动计算的只读结果，如扣款金额
@@ -10,6 +10,20 @@ import '../../theme/app_design_tokens.dart';
 /// - 颜色使用 secondaryTextColor (深灰)，配合左侧的 bodyText 标签
 /// - 实现柔和的层级区分，保持"清爽"的留白感
 class ReadOnlyResultRow extends StatelessWidget {
+  const ReadOnlyResultRow({
+    required this.label,
+    super.key,
+    this.amount,
+    this.customValueText,
+    this.valueColor,
+    this.labelStyle,
+    this.valueStyle,
+    this.spacing,
+  }) : assert(
+          amount != null || customValueText != null,
+          '必须提供 amount 或 customValueText',
+        );
+
   /// 左侧标题
   final String label;
 
@@ -31,18 +45,6 @@ class ReadOnlyResultRow extends StatelessWidget {
   /// 行间距
   final double? spacing;
 
-  const ReadOnlyResultRow({
-    super.key,
-    required this.label,
-    this.amount,
-    this.customValueText,
-    this.valueColor,
-    this.labelStyle,
-    this.valueStyle,
-    this.spacing,
-  }) : assert(amount != null || customValueText != null,
-            '必须提供 amount 或 customValueText');
-
   @override
   Widget build(BuildContext context) {
     final displayValue = customValueText ??
@@ -54,7 +56,6 @@ class ReadOnlyResultRow extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // 左侧标签（bodyText）
         Text(

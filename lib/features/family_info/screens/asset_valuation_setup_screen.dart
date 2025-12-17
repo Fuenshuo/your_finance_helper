@@ -96,7 +96,9 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                     _buildInfoRow('子分类', widget.subCategory),
                     SizedBox(height: context.spacing8),
                     _buildInfoRow(
-                        '购入金额', '¥${widget.purchaseAmount.toStringAsFixed(2)}'),
+                      '购入金额',
+                      '¥${widget.purchaseAmount.toStringAsFixed(2)}',
+                    ),
                     SizedBox(height: context.spacing8),
                     _buildInfoRow('购入日期', _formatDate(widget.purchaseDate)),
                   ],
@@ -171,7 +173,8 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                       SwitchListTile(
                         title: const Text('使用智能推荐折旧率'),
                         subtitle: Text(
-                            '推荐年折旧率：${(_depreciationRate * 100).toStringAsFixed(1)}%'),
+                          '推荐年折旧率：${(_depreciationRate * 100).toStringAsFixed(1)}%',
+                        ),
                         value: !_useCustomRate,
                         onChanged: (value) {
                           setState(() {
@@ -192,10 +195,12 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                             suffixText: '%',
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}')),
+                              RegExp(r'^\d+\.?\d{0,2}'),
+                            ),
                           ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -286,10 +291,12 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                           _saveValuationSettings(DepreciationMethod.none),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
-                            vertical: context.responsiveSpacing16),
+                          vertical: context.responsiveSpacing16,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
-                              context.responsiveSpacing12),
+                            context.responsiveSpacing12,
+                          ),
                         ),
                       ),
                       child: const Text('跳过估值'),
@@ -303,10 +310,12 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                         backgroundColor: context.primaryAction,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(
-                            vertical: context.responsiveSpacing16),
+                          vertical: context.responsiveSpacing16,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
-                              context.responsiveSpacing12),
+                            context.responsiveSpacing12,
+                          ),
                         ),
                       ),
                       child: const Text('保存设置'),

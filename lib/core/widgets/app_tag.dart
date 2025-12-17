@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import '../theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// 分类标签组件
 /// 用于交易列表中的分类显示 (如: 餐饮, 交通)
 /// 样式：极淡的背景色 + 主色调文字，圆角矩形
 class AppTag extends StatelessWidget {
-  final String label;
-  final Color? color; // 如果不传，默认使用主色调
-  final bool isSelected;
-  final VoidCallback? onTap;
-
   const AppTag({
-    super.key,
     required this.label,
+    super.key,
     this.color,
     this.isSelected = false,
     this.onTap,
   });
+  final String label;
+  final Color? color; // 如果不传，默认使用主色调
+  final bool isSelected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

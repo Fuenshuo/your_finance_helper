@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
-import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:uuid/uuid.dart';
+import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
@@ -16,6 +14,8 @@ import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/hybrid_storage_service.dart';
 import 'package:your_finance_flutter/core/utils/debug_mode_manager.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
+import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/features/family_info/screens/account_detail_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/add_asset_flow_screen.dart';
 import 'package:your_finance_flutter/features/family_info/screens/asset_detail_screen.dart';
@@ -43,11 +43,17 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
 
     // 注册资产管理专用动效曲线
     IOSAnimationSystem.registerCustomCurve(
-        'asset-card-hover', Curves.easeInOutCubic);
+      'asset-card-hover',
+      Curves.easeInOutCubic,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'category-expand', Curves.elasticOut);
+      'category-expand',
+      Curves.elasticOut,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'asset-transition', Curves.fastOutSlowIn);
+      'asset-transition',
+      Curves.fastOutSlowIn,
+    );
   }
 
   @override
@@ -617,7 +623,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                           // 导航到钱包管理页面
                           Navigator.of(context).push(
                             AppAnimations.createRoute<void>(
-                                const WalletManagementScreen()),
+                              const WalletManagementScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.add),
@@ -745,7 +752,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                         // 导航到钱包管理页面
                         Navigator.of(context).push(
                           AppAnimations.createRoute<void>(
-                              const WalletManagementScreen()),
+                            const WalletManagementScreen(),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.manage_accounts),
@@ -773,7 +781,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       InkWell(
         onTap: () {
           Navigator.of(context).push(
-            AppAnimations.createRoute<void>(AccountDetailScreen(account: account)),
+            AppAnimations.createRoute<void>(
+                AccountDetailScreen(account: account)),
           );
         },
         child: Padding(
@@ -995,9 +1004,6 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           ),
         ),
       );
-
-
-
 
   bool _isPropertyAsset(AssetItem asset) {
     // 判断是否为房产类资产

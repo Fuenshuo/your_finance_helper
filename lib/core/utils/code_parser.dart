@@ -181,7 +181,9 @@ class CodeParser {
 
   /// 分析文件依赖关系
   Future<List<CodeDependency>> analyzeDependencies(
-      String filePath, String rootPath) async {
+    String filePath,
+    String rootPath,
+  ) async {
     final file = File(filePath);
     if (!await file.exists()) {
       return [];
@@ -216,16 +218,17 @@ class CodeParser {
       if (exportMatch != null) {
         final exportPath = exportMatch.group(1);
         if (exportPath != null) {
-          final resolvedPath = _resolveImportPath(exportPath, filePath, rootPath);
-        if (resolvedPath != null) {
-          dependencies.add(
-            CodeDependency(
-              fromFile: path.relative(filePath, from: rootPath),
-              toFile: path.relative(resolvedPath, from: rootPath),
-              type: DependencyType.export,
-            ),
-          );
-        }
+          final resolvedPath =
+              _resolveImportPath(exportPath, filePath, rootPath);
+          if (resolvedPath != null) {
+            dependencies.add(
+              CodeDependency(
+                fromFile: path.relative(filePath, from: rootPath),
+                toFile: path.relative(resolvedPath, from: rootPath),
+                type: DependencyType.export,
+              ),
+            );
+          }
         }
         continue;
       }
@@ -269,7 +272,10 @@ class CodeParser {
 
   /// 解析导入路径为绝对路径
   String? _resolveImportPath(
-      String importPath, String fromFile, String rootPath) {
+    String importPath,
+    String fromFile,
+    String rootPath,
+  ) {
     if (importPath.startsWith('dart:') || importPath.startsWith('package:')) {
       // 系统库和包导入，不解析为文件路径
       return null;
@@ -334,7 +340,8 @@ class BatchCodeAnalyzer {
 
   /// 分析整个目录的代码
   Future<Map<String, CodeAnalysisResult>> analyzeDirectory(
-      String directoryPath) async {
+    String directoryPath,
+  ) async {
     final results = <String, CodeAnalysisResult>{};
     final directory = Directory(directoryPath);
 

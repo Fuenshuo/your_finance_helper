@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
-import '../app_card.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 /// 资产配置卡片样式
 /// 使用紧凑型水平堆叠条形图替代圆饼图
@@ -11,6 +11,15 @@ import '../app_card.dart';
 /// - 次要的用 SecondaryColor 或柔和的 SurfaceColor
 /// - 提供快速的比例认知
 class AssetAllocationCard extends StatelessWidget {
+  const AssetAllocationCard({
+    required this.title,
+    required this.allocationData,
+    required this.totalAssets,
+    super.key,
+    this.colorMap,
+    this.padding,
+  });
+
   /// 标题
   final String title;
 
@@ -26,15 +35,6 @@ class AssetAllocationCard extends StatelessWidget {
   /// 卡片内边距
   final EdgeInsetsGeometry? padding;
 
-  const AssetAllocationCard({
-    super.key,
-    required this.title,
-    required this.allocationData,
-    required this.totalAssets,
-    this.colorMap,
-    this.padding,
-  });
-
   @override
   Widget build(BuildContext context) {
     if (allocationData.isEmpty || totalAssets <= 0) {
@@ -47,7 +47,7 @@ class AssetAllocationCard extends StatelessWidget {
               title,
               style: AppDesignTokens.cardTitle(context),
             ),
-            SizedBox(height: AppDesignTokens.spacingMedium),
+            const SizedBox(height: AppDesignTokens.spacingMedium),
             Text(
               '暂无资产数据',
               style: AppDesignTokens.body(context),
@@ -71,10 +71,10 @@ class AssetAllocationCard extends StatelessWidget {
             title,
             style: AppDesignTokens.cardTitle(context), // 18pt SemiBold
           ),
-          SizedBox(height: AppDesignTokens.spacingMedium),
+          const SizedBox(height: AppDesignTokens.spacingMedium),
           // 紧凑型水平堆叠条形图
           _buildStackedBarChart(context, sortedEntries),
-          SizedBox(height: AppDesignTokens.spacingMedium),
+          const SizedBox(height: AppDesignTokens.spacingMedium),
           // 图例（紧凑布局）
           _buildLegend(context, sortedEntries),
         ],
@@ -84,30 +84,31 @@ class AssetAllocationCard extends StatelessWidget {
 
   /// 构建堆叠条形图
   Widget _buildStackedBarChart(
-      BuildContext context, List<MapEntry<String, double>> entries) {
-    return Container(
-      height: 8, // 紧凑的条形图高度
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        color: AppDesignTokens.inputFill(context), // 背景色
-      ),
-      child: Row(
-        children: entries.map((entry) {
-          final color = _getColorForCategory(context, entry.key);
+    BuildContext context,
+    List<MapEntry<String, double>> entries,
+  ) =>
+      Container(
+        height: 8, // 紧凑的条形图高度
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          color: AppDesignTokens.inputFill(context), // 背景色
+        ),
+        child: Row(
+          children: entries.map((entry) {
+            final color = _getColorForCategory(context, entry.key);
 
-          return Expanded(
-            flex: (entry.value * 1000).round(), // 使用 flex 来分配宽度
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: _getBorderRadiusForSegment(entry, entries),
+            return Expanded(
+              flex: (entry.value * 1000).round(), // 使用 flex 来分配宽度
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: _getBorderRadiusForSegment(entry, entries),
+                ),
               ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+            );
+          }).toList(),
+        ),
+      );
 
   /// 获取分段圆角（首尾需要圆角）
   BorderRadius _getBorderRadiusForSegment(
@@ -135,35 +136,36 @@ class AssetAllocationCard extends StatelessWidget {
 
   /// 构建图例
   Widget _buildLegend(
-      BuildContext context, List<MapEntry<String, double>> entries) {
-    return Wrap(
-      spacing: AppDesignTokens.spacingMedium,
-      runSpacing: AppDesignTokens.spacingMinor,
-      children: entries.map((entry) {
-        final percentage = (entry.value / totalAssets) * 100;
-        final color = _getColorForCategory(context, entry.key);
+    BuildContext context,
+    List<MapEntry<String, double>> entries,
+  ) =>
+      Wrap(
+        spacing: AppDesignTokens.spacingMedium,
+        runSpacing: AppDesignTokens.spacingMinor,
+        children: entries.map((entry) {
+          final percentage = (entry.value / totalAssets) * 100;
+          final color = _getColorForCategory(context, entry.key);
 
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(2),
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            SizedBox(width: AppDesignTokens.spacingMinor),
-            Text(
-              '${entry.key} ${percentage.toStringAsFixed(1)}%',
-              style: AppDesignTokens.label(context), // 12pt Regular
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
+              const SizedBox(width: AppDesignTokens.spacingMinor),
+              Text(
+                '${entry.key} ${percentage.toStringAsFixed(1)}%',
+                style: AppDesignTokens.label(context), // 12pt Regular
+              ),
+            ],
+          );
+        }).toList(),
+      );
 
   /// 获取账户类型的颜色
   /// 最重要的使用 PrimaryColor，次要的使用 SecondaryColor 或柔和的 SurfaceColor

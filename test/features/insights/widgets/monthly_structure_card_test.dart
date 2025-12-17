@@ -14,18 +14,18 @@ void main() {
       grade: LetterGrade.A,
       score: 92.5,
       diagnosis: '本月财务状况优秀，各项指标表现良好。',
-      factors: [
+      factors: const [
         HealthFactor(
           name: '预算控制',
           impact: 0.8,
           description: '支出控制在预算范围内',
         ),
       ],
-      recommendations: [
+      recommendations: const [
         '继续保持良好的消费习惯',
         '考虑增加储蓄比例',
       ],
-      metrics: {
+      metrics: const {
         'savingsRate': 0.2,
         'spendingRatio': 0.8,
         'survivalPercentage': 0.5,
@@ -41,19 +41,19 @@ void main() {
       grade: LetterGrade.F,
       score: 35.0,
       diagnosis: '本月财务状况严重堪忧，存在重大风险。',
-      factors: [
+      factors: const [
         HealthFactor(
           name: '预算超支',
           impact: -0.9,
           description: '支出严重超过收入',
         ),
       ],
-      recommendations: [
+      recommendations: const [
         '立即削减非必要支出',
         '制定严格的预算计划',
         '寻求专业财务顾问帮助',
       ],
-      metrics: {
+      metrics: const {
         'savingsRate': -0.25,
         'spendingRatio': 1.25,
         'survivalPercentage': 0.4,
@@ -65,7 +65,7 @@ void main() {
   });
 
   group('MonthlyStructureCard Widget Tests', () {
-    testWidgets('should display healthy score correctly', (WidgetTester tester) async {
+    testWidgets('should display healthy score correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -87,7 +87,8 @@ void main() {
       expect(find.text('继续保持良好的消费习惯'), findsOneWidget);
     });
 
-    testWidgets('should display low score with warning styling', (WidgetTester tester) async {
+    testWidgets('should display low score with warning styling',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -109,7 +110,7 @@ void main() {
       expect(find.text('制定严格的预算计划'), findsOneWidget);
     });
 
-    testWidgets('should show survival vs lifestyle breakdown', (WidgetTester tester) async {
+    testWidgets('should show survival vs lifestyle breakdown', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -126,7 +127,7 @@ void main() {
       expect(find.text('生活'), findsOneWidget);
     });
 
-    testWidgets('should display top spending categories', (WidgetTester tester) async {
+    testWidgets('should display top spending categories', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -144,8 +145,8 @@ void main() {
       expect(find.text('娱乐'), findsOneWidget);
     });
 
-    testWidgets('should handle tap gesture', (WidgetTester tester) async {
-      bool tapped = false;
+    testWidgets('should handle tap gesture', (tester) async {
+      var tapped = false;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -165,7 +166,7 @@ void main() {
       expect(tapped, true);
     });
 
-    testWidgets('should render CFO report section', (WidgetTester tester) async {
+    testWidgets('should render CFO report section', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -178,10 +179,12 @@ void main() {
       expect(find.text('CFO 月度诊断'), findsOneWidget);
 
       // Check briefcase icon is present
-      expect(find.byIcon(Icons.business), findsNothing); // Phosphor icon, not Material icon
+      expect(find.byIcon(Icons.business),
+          findsNothing); // Phosphor icon, not Material icon
     });
 
-    testWidgets('should display different grades with appropriate colors', (WidgetTester tester) async {
+    testWidgets('should display different grades with appropriate colors',
+        (tester) async {
       // Test A grade (green/success)
       await tester.pumpWidget(
         MaterialApp(
@@ -205,7 +208,7 @@ void main() {
       expect(find.text('F'), findsOneWidget);
     });
 
-    testWidgets('should limit recommendations to 2 items', (WidgetTester tester) async {
+    testWidgets('should limit recommendations to 2 items', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -217,10 +220,11 @@ void main() {
       // Low score has 3 recommendations but should only show 2
       expect(find.text('立即削减非必要支出'), findsOneWidget);
       expect(find.text('制定严格的预算计划'), findsOneWidget);
-      expect(find.text('寻求专业财务顾问帮助'), findsNothing); // Third recommendation hidden
+      expect(
+          find.text('寻求专业财务顾问帮助'), findsNothing); // Third recommendation hidden
     });
 
-    testWidgets('should adapt layout for wide screens', (WidgetTester tester) async {
+    testWidgets('should adapt layout for wide screens', (tester) async {
       // Test with wide screen
       await tester.pumpWidget(
         MaterialApp(
@@ -238,7 +242,7 @@ void main() {
       expect(find.text('消费Top 3'), findsOneWidget);
     });
 
-    testWidgets('should adapt layout for narrow screens', (WidgetTester tester) async {
+    testWidgets('should adapt layout for narrow screens', (tester) async {
       // Test with narrow screen
       await tester.pumpWidget(
         MaterialApp(
@@ -259,7 +263,8 @@ void main() {
     });
 
     group('Donut chart rendering', () {
-      testWidgets('should render donut chart with correct percentages', (WidgetTester tester) async {
+      testWidgets('should render donut chart with correct percentages',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -273,7 +278,8 @@ void main() {
         expect(find.text('生存支出'), findsOneWidget);
       });
 
-      testWidgets('should show different percentages for unbalanced spending', (WidgetTester tester) async {
+      testWidgets('should show different percentages for unbalanced spending',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -288,7 +294,7 @@ void main() {
     });
 
     group('Grade badge styling', () {
-      testWidgets('should show green badge for A grade', (WidgetTester tester) async {
+      testWidgets('should show green badge for A grade', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -301,7 +307,7 @@ void main() {
         expect(find.text('A'), findsOneWidget);
       });
 
-      testWidgets('should show red badge for F grade', (WidgetTester tester) async {
+      testWidgets('should show red badge for F grade', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -316,7 +322,8 @@ void main() {
     });
 
     group('CFO report section', () {
-      testWidgets('should display diagnosis with appropriate styling', (WidgetTester tester) async {
+      testWidgets('should display diagnosis with appropriate styling',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -329,7 +336,7 @@ void main() {
         expect(find.text('本月财务状况优秀，各项指标表现良好。'), findsOneWidget);
       });
 
-      testWidgets('should show recommendations section', (WidgetTester tester) async {
+      testWidgets('should show recommendations section', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -343,22 +350,23 @@ void main() {
     });
 
     group('Edge cases', () {
-      testWidgets('should handle empty recommendations', (WidgetTester tester) async {
+      testWidgets('should handle empty recommendations', (tester) async {
         final scoreWithoutRecommendations = MonthlyHealthScore(
           id: 'test_empty',
           month: DateTime(2025, 11),
           grade: LetterGrade.C,
           score: 70.0,
           diagnosis: '一般状况',
-          factors: [],
-          recommendations: [],
-          metrics: {},
+          factors: const [],
+          recommendations: const [],
+          metrics: const {},
         );
 
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: MonthlyStructureCard(monthlyHealth: scoreWithoutRecommendations),
+              body: MonthlyStructureCard(
+                  monthlyHealth: scoreWithoutRecommendations),
             ),
           ),
         );
@@ -367,16 +375,16 @@ void main() {
         expect(find.text('建议行动：'), findsNothing);
       });
 
-      testWidgets('should handle missing metrics gracefully', (WidgetTester tester) async {
+      testWidgets('should handle missing metrics gracefully', (tester) async {
         final scoreWithoutMetrics = MonthlyHealthScore(
           id: 'test_no_metrics',
           month: DateTime(2025, 11),
           grade: LetterGrade.B,
           score: 80.0,
           diagnosis: '测试诊断',
-          factors: [],
-          recommendations: ['保持现状'],
-          metrics: {},
+          factors: const [],
+          recommendations: const ['保持现状'],
+          metrics: const {},
         );
 
         await tester.pumpWidget(

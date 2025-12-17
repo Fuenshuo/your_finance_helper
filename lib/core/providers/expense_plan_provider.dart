@@ -279,11 +279,8 @@ class ExpensePlanProvider with ChangeNotifier {
   }
 
   /// 获取所有未完成的还款计划
-  List<ExpensePlan> getPendingRepaymentPlans() {
-    return activeExpensePlans
-        .where((plan) => plan.loanAccountId != null)
-        .toList();
-  }
+  List<ExpensePlan> getPendingRepaymentPlans() =>
+      activeExpensePlans.where((plan) => plan.loanAccountId != null).toList();
 
   /// 刷新数据
   Future<void> refresh() async {

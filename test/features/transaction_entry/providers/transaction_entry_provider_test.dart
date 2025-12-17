@@ -1,14 +1,16 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/transaction_parser_service.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/validation_service.dart';
 
 // Mock classes
-class MockTransactionParserService extends Mock implements TransactionParserService {}
+class MockTransactionParserService extends Mock
+    implements TransactionParserService {}
+
 class MockValidationService extends Mock implements ValidationService {}
 
 void main() {
@@ -57,7 +59,7 @@ void main() {
       when(mockParserService.parseTransaction(testInput))
           .thenAnswer((_) async => mockDraft);
       when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => InputValidation(isValid: true));
+          .thenAnswer((_) async => const InputValidation());
 
       final notifier = container.read(transactionEntryProvider.notifier);
       await notifier.updateInput(testInput);
@@ -114,15 +116,15 @@ void main() {
       );
 
       when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => InputValidation(isValid: true));
+          .thenAnswer((_) async => const InputValidation());
 
       final notifier = container.read(transactionEntryProvider.notifier);
 
       // Set up state with valid draft
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-            draftTransaction: mockDraft,
-          );
+                draftTransaction: mockDraft,
+              );
 
       await notifier.confirmTransaction();
 
@@ -142,15 +144,15 @@ void main() {
       );
 
       when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => InputValidation(isValid: true));
+          .thenAnswer((_) async => const InputValidation());
 
       final notifier = container.read(transactionEntryProvider.notifier);
 
       // Set up state with draft
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-            draftTransaction: mockDraft,
-          );
+                draftTransaction: mockDraft,
+              );
 
       // Mock transaction saving to fail
       // Note: In real implementation, this would be mocked at service level
@@ -168,14 +170,14 @@ void main() {
       // Set up state with some data
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-            currentInput: 'test input',
-            draftTransaction: DraftTransaction(
-              amount: 50.0,
-              description: 'test',
-              type: TransactionType.expense,
-            ),
-            parseError: 'some error',
-          );
+                currentInput: 'test input',
+                draftTransaction: DraftTransaction(
+                  amount: 50.0,
+                  description: 'test',
+                  type: TransactionType.expense,
+                ),
+                parseError: 'some error',
+              );
 
       notifier.cancelTransaction();
 
@@ -196,15 +198,15 @@ void main() {
       final updatedDraft = mockDraft.copyWith(description: '新描述');
 
       when(mockValidationService.validateDraft(updatedDraft))
-          .thenAnswer((_) async => InputValidation(isValid: true));
+          .thenAnswer((_) async => const InputValidation());
 
       final notifier = container.read(transactionEntryProvider.notifier);
 
       // Set up initial state
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-            draftTransaction: mockDraft,
-          );
+                draftTransaction: mockDraft,
+              );
 
       await notifier.updateTransactionField('description', '新描述');
 
@@ -223,13 +225,13 @@ void main() {
       // Set up valid draft
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-            draftTransaction: DraftTransaction(
-              amount: 50.0,
-              description: 'valid transaction',
-              type: TransactionType.expense,
-            ),
-            isParsing: false,
-          );
+                draftTransaction: DraftTransaction(
+                  amount: 50.0,
+                  description: 'valid transaction',
+                  type: TransactionType.expense,
+                ),
+                isParsing: false,
+              );
 
       expect(notifier.canSave(), true);
 
@@ -246,13 +248,13 @@ void main() {
       // Set up state with errors
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-            parseError: 'parse error',
-            saveError: 'save error',
-            validation: InputValidation(
-              isValid: false,
-              errorMessage: 'validation error',
-            ),
-          );
+                parseError: 'parse error',
+                saveError: 'save error',
+                validation: const InputValidation(
+                  isValid: false,
+                  errorMessage: 'validation error',
+                ),
+              );
 
       notifier.clearErrors();
 

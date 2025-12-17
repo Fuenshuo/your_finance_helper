@@ -21,7 +21,7 @@ void main() {
       deviation: 25.0,
       reason: '轻微超支，主要是交通费用',
       severity: AnomalySeverity.low,
-      categories: ['交通'],
+      categories: const ['交通'],
     );
 
     mediumSeverityAnomaly = WeeklyAnomaly(
@@ -33,7 +33,7 @@ void main() {
       deviation: 75.0,
       reason: '中度超支，餐饮消费较多',
       severity: AnomalySeverity.medium,
-      categories: ['餐饮'],
+      categories: const ['餐饮'],
     );
 
     highSeverityAnomaly = WeeklyAnomaly(
@@ -45,12 +45,13 @@ void main() {
       deviation: 150.0,
       reason: '严重超支，购买了大型电器',
       severity: AnomalySeverity.high,
-      categories: ['购物'],
+      categories: const ['购物'],
     );
   });
 
   group('InsightBubble Widget Tests', () {
-    testWidgets('should display low severity anomaly with appropriate styling', (WidgetTester tester) async {
+    testWidgets('should display low severity anomaly with appropriate styling',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -70,7 +71,9 @@ void main() {
       expect(find.byType(InsightBubble), findsOneWidget);
     });
 
-    testWidgets('should display medium severity anomaly with appropriate styling', (WidgetTester tester) async {
+    testWidgets(
+        'should display medium severity anomaly with appropriate styling',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -87,7 +90,8 @@ void main() {
       expect(find.text('中度超支，餐饮消费较多'), findsOneWidget);
     });
 
-    testWidgets('should display high severity anomaly with appropriate styling', (WidgetTester tester) async {
+    testWidgets('should display high severity anomaly with appropriate styling',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -104,7 +108,7 @@ void main() {
       expect(find.text('严重超支，购买了大型电器'), findsOneWidget);
     });
 
-    testWidgets('should handle tap gesture', (WidgetTester tester) async {
+    testWidgets('should handle tap gesture', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -123,7 +127,7 @@ void main() {
       expect(find.text('轻微超支，主要是交通费用'), findsOneWidget);
     });
 
-    testWidgets('should truncate long reason text', (WidgetTester tester) async {
+    testWidgets('should truncate long reason text', (tester) async {
       final longReasonAnomaly = WeeklyAnomaly(
         id: 'long_reason',
         weekStart: DateTime.now().subtract(const Duration(days: 6)),
@@ -133,7 +137,7 @@ void main() {
         deviation: 50.0,
         reason: '这是一个非常非常长的异常原因描述，用来测试文本截断功能是否正常工作，如果文本太长应该会被截断并显示省略号。',
         severity: AnomalySeverity.medium,
-        categories: ['其他'],
+        categories: const ['其他'],
       );
 
       await tester.pumpWidget(
@@ -152,7 +156,8 @@ void main() {
       expect(find.byType(InsightBubble), findsOneWidget);
     });
 
-    testWidgets('should display different icons for different severities', (WidgetTester tester) async {
+    testWidgets('should display different icons for different severities',
+        (tester) async {
       // Test low severity (check icon)
       await tester.pumpWidget(
         MaterialApp(
@@ -200,7 +205,7 @@ void main() {
       expect(find.byType(InsightBubble), findsOneWidget);
     });
 
-    testWidgets('should display categories when available', (WidgetTester tester) async {
+    testWidgets('should display categories when available', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -218,7 +223,7 @@ void main() {
       expect(find.byType(InsightBubble), findsOneWidget);
     });
 
-    testWidgets('should handle anomalies without categories', (WidgetTester tester) async {
+    testWidgets('should handle anomalies without categories', (tester) async {
       final noCategoryAnomaly = WeeklyAnomaly(
         id: 'no_category',
         weekStart: DateTime.now().subtract(const Duration(days: 6)),
@@ -228,7 +233,7 @@ void main() {
         deviation: 50.0,
         reason: '无类别异常',
         severity: AnomalySeverity.medium,
-        categories: [],
+        categories: const [],
       );
 
       await tester.pumpWidget(
@@ -248,7 +253,8 @@ void main() {
     });
 
     group('Severity color mapping', () {
-      testWidgets('should use appropriate colors for severity levels', (WidgetTester tester) async {
+      testWidgets('should use appropriate colors for severity levels',
+          (tester) async {
         // Low severity should have success-like colors
         await tester.pumpWidget(
           MaterialApp(
@@ -297,7 +303,7 @@ void main() {
     });
 
     group('Edge cases', () {
-      testWidgets('should handle empty reason text', (WidgetTester tester) async {
+      testWidgets('should handle empty reason text', (tester) async {
         final emptyReasonAnomaly = WeeklyAnomaly(
           id: 'empty_reason',
           weekStart: DateTime.now().subtract(const Duration(days: 6)),
@@ -307,26 +313,26 @@ void main() {
           deviation: 50.0,
           reason: '',
           severity: AnomalySeverity.medium,
-          categories: [],
+          categories: const [],
         );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: InsightBubble(
-              anomaly: emptyReasonAnomaly,
-              targetPosition: const Offset(100, 100),
-              bubblePosition: const Offset(50, 50),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: InsightBubble(
+                anomaly: emptyReasonAnomaly,
+                targetPosition: const Offset(100, 100),
+                bubblePosition: const Offset(50, 50),
+              ),
             ),
           ),
-        ),
-      );
+        );
 
         // Should still render (empty text is handled gracefully)
         expect(find.byType(InsightBubble), findsOneWidget);
       });
 
-      testWidgets('should handle very short reason text', (WidgetTester tester) async {
+      testWidgets('should handle very short reason text', (tester) async {
         final shortReasonAnomaly = WeeklyAnomaly(
           id: 'short_reason',
           weekStart: DateTime.now().subtract(const Duration(days: 6)),
@@ -336,7 +342,7 @@ void main() {
           deviation: 50.0,
           reason: '短',
           severity: AnomalySeverity.low,
-          categories: [],
+          categories: const [],
         );
 
         await tester.pumpWidget(
@@ -355,7 +361,7 @@ void main() {
         expect(find.text('短'), findsOneWidget);
       });
 
-      testWidgets('should handle extreme deviation values', (WidgetTester tester) async {
+      testWidgets('should handle extreme deviation values', (tester) async {
         final extremeAnomaly = WeeklyAnomaly(
           id: 'extreme',
           weekStart: DateTime.now().subtract(const Duration(days: 6)),
@@ -365,7 +371,7 @@ void main() {
           deviation: 9900.0,
           reason: '极端异常支出',
           severity: AnomalySeverity.high,
-          categories: ['异常'],
+          categories: const ['异常'],
         );
 
         await tester.pumpWidget(
@@ -386,7 +392,8 @@ void main() {
     });
 
     group('Layout and styling', () {
-      testWidgets('should have appropriate padding and margins', (WidgetTester tester) async {
+      testWidgets('should have appropriate padding and margins',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -403,7 +410,7 @@ void main() {
         expect(find.byType(InsightBubble), findsOneWidget);
       });
 
-      testWidgets('should have rounded corners and shadows', (WidgetTester tester) async {
+      testWidgets('should have rounded corners and shadows', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -422,8 +429,9 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('should be accessible via keyboard navigation', (WidgetTester tester) async {
-        bool tapped = false;
+      testWidgets('should be accessible via keyboard navigation',
+          (tester) async {
+        var tapped = false;
 
         await tester.pumpWidget(
           MaterialApp(

@@ -1,17 +1,15 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// 语音输入按钮组件
 class VoiceInputButton extends StatefulWidget {
-  final ValueChanged<String> onVoiceInput;
-  final bool enabled;
-
   const VoiceInputButton({
-    super.key,
     required this.onVoiceInput,
+    super.key,
     this.enabled = true,
   });
+  final ValueChanged<String> onVoiceInput;
+  final bool enabled;
 
   @override
   State<VoiceInputButton> createState() => _VoiceInputButtonState();
@@ -38,19 +36,23 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.9,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     // 脉冲动画用于录音状态
     _pulseAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _initializeSpeechToText();
   }
@@ -88,8 +90,8 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
     }
   }
 
-  void _onSpeechError(dynamic error) {
-    print('语音识别错误: ${error.toString()}');
+  void _onSpeechError(Object error) {
+    print('语音识别错误: $error');
     setState(() => _isListening = false);
     _animationController.stop();
     _animationController.value = 0.0;
@@ -122,7 +124,6 @@ class _VoiceInputButtonState extends State<VoiceInputButton>
           });
         },
         localeId: 'zh_CN', // 中文识别
-        listenMode: stt.ListenMode.confirmation,
         partialResults: false,
       );
     }

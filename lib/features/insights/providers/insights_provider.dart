@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
-import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
-import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
-import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
 import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart';
+import 'package:your_finance_flutter/features/insights/models/micro_insight.dart';
+import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
+import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
 import 'package:your_finance_flutter/features/insights/services/insight_service.dart';
 
 /// Main provider for Flux Insights 2.0 - orchestrates all insight types
@@ -16,7 +16,7 @@ class InsightsProvider with ChangeNotifier {
   DailyCap? _dailyCap;
   List<WeeklyAnomaly> _weeklyAnomalies = [];
   MonthlyHealthScore? _monthlyHealth;
-  List<FluxLoopJob> _activeJobs = [];
+  final List<FluxLoopJob> _activeJobs = [];
 
   // UI state
   bool _isLoading = false;
@@ -57,7 +57,7 @@ class InsightsProvider with ChangeNotifier {
   Future<void> _initializeDailyInsights() async {
     // Daily cap would be calculated based on user's monthly budget
     // For now, using placeholder values
-    const double dailyReference = 200.0;
+    const dailyReference = 200.0;
 
     _dailyCap = DailyCap(
       id: 'daily_cap_${DateTime.now().toIso8601String().split('T').first}',
@@ -84,11 +84,11 @@ class InsightsProvider with ChangeNotifier {
     // For now, using placeholder data
     _monthlyHealth = MonthlyHealthScore(
       id: 'monthly_health_${DateTime.now().year}_${DateTime.now().month}',
-      month: DateTime(DateTime.now().year, DateTime.now().month, 1),
+      month: DateTime(DateTime.now().year, DateTime.now().month),
       grade: LetterGrade.B,
       score: 85.0,
       diagnosis: '财务状况良好，支出控制在合理范围内。',
-      factors: [
+      factors: const [
         HealthFactor(
           name: '预算控制',
           impact: 0.8,
@@ -100,11 +100,11 @@ class InsightsProvider with ChangeNotifier {
           description: '生活必需支出占比合理',
         ),
       ],
-      recommendations: [
+      recommendations: const [
         '考虑增加储蓄比例',
         '优化娱乐支出结构',
       ],
-      metrics: {
+      metrics: const {
         'savingsRate': 0.15,
         'expenseRatio': 0.75,
         'debtRatio': 0.05,
@@ -204,4 +204,3 @@ class InsightsProvider with ChangeNotifier {
     await initialize();
   }
 }
-

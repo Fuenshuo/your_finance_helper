@@ -1,12 +1,13 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/draft_persistence_service.dart';
 
 // Mock class
-class MockDraftPersistenceService extends Mock implements DraftPersistenceService {}
+class MockDraftPersistenceService extends Mock
+    implements DraftPersistenceService {}
 
 void main() {
   late MockDraftPersistenceService mockPersistenceService;
@@ -16,7 +17,8 @@ void main() {
     mockPersistenceService = MockDraftPersistenceService();
     container = ProviderContainer(
       overrides: [
-        draftPersistenceServiceProvider.overrideWithValue(mockPersistenceService),
+        draftPersistenceServiceProvider
+            .overrideWithValue(mockPersistenceService),
       ],
     );
   });
@@ -120,8 +122,8 @@ void main() {
       // Set up initial state
       container.read(draftManagerProvider.notifier).state =
           container.read(draftManagerProvider).copyWith(
-            savedDrafts: [existingDraft],
-          );
+        savedDrafts: [existingDraft],
+      );
 
       when(mockPersistenceService.saveDraft(updatedDraft))
           .thenAnswer((_) async => updatedDraft);
@@ -163,8 +165,8 @@ void main() {
       // Set up initial state with the draft
       container.read(draftManagerProvider.notifier).state =
           container.read(draftManagerProvider).copyWith(
-            savedDrafts: [draft],
-          );
+        savedDrafts: [draft],
+      );
 
       when(mockPersistenceService.deleteDraft(draft))
           .thenAnswer((_) async => {});
@@ -199,16 +201,17 @@ void main() {
 
     test('should clear all drafts', () async {
       final drafts = [
-        DraftTransaction(amount: 50.0, description: '草稿1', type: TransactionType.expense),
-        DraftTransaction(amount: 75.0, description: '草稿2', type: TransactionType.expense),
+        DraftTransaction(
+            amount: 50.0, description: '草稿1', type: TransactionType.expense),
+        DraftTransaction(
+            amount: 75.0, description: '草稿2', type: TransactionType.expense),
       ];
 
       // Set up initial state
       container.read(draftManagerProvider.notifier).state =
           container.read(draftManagerProvider).copyWith(savedDrafts: drafts);
 
-      when(mockPersistenceService.clearAllDrafts())
-          .thenAnswer((_) async => {});
+      when(mockPersistenceService.clearAllDrafts()).thenAnswer((_) async => {});
 
       final notifier = container.read(draftManagerProvider.notifier);
       await notifier.clearAllDrafts();
@@ -237,8 +240,8 @@ void main() {
       // Set up state with multiple drafts
       container.read(draftManagerProvider.notifier).state =
           container.read(draftManagerProvider).copyWith(
-            savedDrafts: [oldDraft, recentDraft],
-          );
+        savedDrafts: [oldDraft, recentDraft],
+      );
 
       final notifier = container.read(draftManagerProvider.notifier);
       final mostRecent = notifier.getMostRecentDraft();
@@ -257,9 +260,12 @@ void main() {
 
     test('should return correct draft count', () {
       final drafts = [
-        DraftTransaction(amount: 25.0, description: '草稿1', type: TransactionType.expense),
-        DraftTransaction(amount: 50.0, description: '草稿2', type: TransactionType.expense),
-        DraftTransaction(amount: 75.0, description: '草稿3', type: TransactionType.expense),
+        DraftTransaction(
+            amount: 25.0, description: '草稿1', type: TransactionType.expense),
+        DraftTransaction(
+            amount: 50.0, description: '草稿2', type: TransactionType.expense),
+        DraftTransaction(
+            amount: 75.0, description: '草稿3', type: TransactionType.expense),
       ];
 
       container.read(draftManagerProvider.notifier).state =
@@ -287,8 +293,8 @@ void main() {
       // Set up state with saved draft
       container.read(draftManagerProvider.notifier).state =
           container.read(draftManagerProvider).copyWith(
-            savedDrafts: [savedDraft],
-          );
+        savedDrafts: [savedDraft],
+      );
 
       final notifier = container.read(draftManagerProvider.notifier);
       final hasUnsavedChanges = notifier.hasUnsavedDraft(currentDraft);
@@ -307,8 +313,8 @@ void main() {
       // Set up state with the same draft
       container.read(draftManagerProvider.notifier).state =
           container.read(draftManagerProvider).copyWith(
-            savedDrafts: [draft],
-          );
+        savedDrafts: [draft],
+      );
 
       final notifier = container.read(draftManagerProvider.notifier);
       final hasUnsavedChanges = notifier.hasUnsavedDraft(draft);

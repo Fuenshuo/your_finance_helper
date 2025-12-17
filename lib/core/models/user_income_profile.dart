@@ -13,6 +13,29 @@ class UserIncomeProfile extends Equatable {
     this.transferDirectionPreference, // 转账方向偏好："sent" | "received" | "internal"
   });
 
+  /// 从JSON创建
+  factory UserIncomeProfile.fromJson(Map<String, dynamic> json) =>
+      UserIncomeProfile(
+        avgMonthlySalary: (json['avgMonthlySalary'] as num?)?.toDouble() ?? 0.0,
+        bonusMonths: (json['bonusMonths'] as List<dynamic>?)
+                ?.map((e) => e as int)
+                .toList() ??
+            [],
+        commonIncomeTypes: (json['commonIncomeTypes'] as List<dynamic>?)
+                ?.map(
+                  (e) => TransactionCategory.values.firstWhere(
+                    (cat) => cat.name == e,
+                    orElse: () => TransactionCategory.otherIncome,
+                  ),
+                )
+                .toList() ??
+            [],
+        salaryDayPattern: json['salaryDayPattern'] as int? ?? 0,
+        transactionCount: json['transactionCount'] as int? ?? 0,
+        transferDirectionPreference:
+            json['transferDirectionPreference'] as String?,
+      );
+
   /// 平均月收入（移动平均）
   final double avgMonthlySalary;
 
@@ -36,28 +59,6 @@ class UserIncomeProfile extends Equatable {
 
   /// 是否为冷启动（前5笔记录）
   bool get isColdStart => transactionCount < 5;
-
-  /// 从JSON创建
-  factory UserIncomeProfile.fromJson(Map<String, dynamic> json) {
-    return UserIncomeProfile(
-      avgMonthlySalary: (json['avgMonthlySalary'] as num?)?.toDouble() ?? 0.0,
-      bonusMonths: (json['bonusMonths'] as List<dynamic>?)
-              ?.map((e) => e as int)
-              .toList() ??
-          [],
-      commonIncomeTypes: (json['commonIncomeTypes'] as List<dynamic>?)
-              ?.map((e) => TransactionCategory.values.firstWhere(
-                    (cat) => cat.name == e,
-                    orElse: () => TransactionCategory.otherIncome,
-                  ))
-              .toList() ??
-          [],
-      salaryDayPattern: json['salaryDayPattern'] as int? ?? 0,
-      transactionCount: json['transactionCount'] as int? ?? 0,
-      transferDirectionPreference:
-          json['transferDirectionPreference'] as String?,
-    );
-  }
 
   /// 转换为JSON
   Map<String, dynamic> toJson() => {
@@ -90,12 +91,12 @@ class UserIncomeProfile extends Equatable {
 
   /// 从交易记录更新画像
   UserIncomeProfile updateFromTransaction(Transaction transaction) {
-    double newAvgMonthlySalary = avgMonthlySalary;
-    List<int> newBonusMonths = List.from(bonusMonths);
-    List<TransactionCategory> newCommonIncomeTypes =
-        List.from(commonIncomeTypes);
-    int newSalaryDayPattern = salaryDayPattern;
-    int newTransactionCount = transactionCount + 1;
+    var newAvgMonthlySalary = avgMonthlySalary;
+    final newBonusMonths = List<int>.from(bonusMonths);
+    final newCommonIncomeTypes =
+        List<TransactionCategory>.from(commonIncomeTypes);
+    var newSalaryDayPattern = salaryDayPattern;
+    final newTransactionCount = transactionCount + 1;
 
     // 如果是工资收入，更新平均月收入和发薪日模式
     if (transaction.type == TransactionType.income &&
@@ -157,7 +158,7 @@ class UserIncomeProfile extends Equatable {
     double? amount,
     DateTime? date,
   ) {
-    double enhanced = baseConfidence;
+    var enhanced = baseConfidence;
 
     // 如果是工资收入，且符合用户模式
     if (type == TransactionType.income &&
@@ -192,14 +193,11 @@ class UserIncomeProfile extends Equatable {
   }
 
   /// 获取转账默认方向
-  String? getDefaultTransferDirection() {
-    return transferDirectionPreference;
-  }
+  String? getDefaultTransferDirection() => transferDirectionPreference;
 
   /// 更新转账方向偏好
-  UserIncomeProfile updateTransferDirectionPreference(String direction) {
-    return copyWith(transferDirectionPreference: direction);
-  }
+  UserIncomeProfile updateTransferDirectionPreference(String direction) =>
+      copyWith(transferDirectionPreference: direction);
 
   @override
   List<Object?> get props => [

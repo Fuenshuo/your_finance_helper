@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
-import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
 import 'package:your_finance_flutter/screens/dashboard_home_screen.dart';
+import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

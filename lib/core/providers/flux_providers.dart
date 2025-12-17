@@ -11,10 +11,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/models/flux_models.dart'
     as flux_models;
 import 'package:your_finance_flutter/core/providers/stream_insights_flag_provider.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart'
     as ai_factory;
 import 'package:your_finance_flutter/core/services/ai/ai_service_factory.dart';
-import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
 import 'package:your_finance_flutter/core/services/ai/prompts/prompt_loader.dart';
 import 'package:your_finance_flutter/core/services/dio_http_service.dart';
 import 'package:your_finance_flutter/core/services/flux_services.dart';
@@ -109,12 +109,15 @@ class FlowDashboardProvider extends ChangeNotifier {
     final netFlow = analytics.basicStats.netFlow;
     final anomalyCount = analytics.anomalies.length;
 
-    if (netFlow > 0 && anomalyCount == 0)
+    if (netFlow > 0 && anomalyCount == 0) {
       return flux_models.FlowHealthStatus.healthy;
-    if (netFlow < -1000 || anomalyCount > 2)
+    }
+    if (netFlow < -1000 || anomalyCount > 2) {
       return flux_models.FlowHealthStatus.danger;
-    if (netFlow < 0 || anomalyCount > 0)
+    }
+    if (netFlow < 0 || anomalyCount > 0) {
       return flux_models.FlowHealthStatus.warning;
+    }
 
     return flux_models.FlowHealthStatus.neutral;
   }
@@ -565,9 +568,8 @@ final aiServiceFactoryProvider =
     Provider<AiServiceFactoryImpl>((ref) => ai_factory.aiServiceFactory);
 
 /// AI config service provider
-final aiConfigServiceProvider = FutureProvider<AiConfigService>((ref) async {
-  return AiConfigService.getInstance();
-});
+final aiConfigServiceProvider = FutureProvider<AiConfigService>(
+    (ref) async => AiConfigService.getInstance());
 
 /// Analysis data source provider - fixed to Serverless AI
 final analysisDataSourceProvider =

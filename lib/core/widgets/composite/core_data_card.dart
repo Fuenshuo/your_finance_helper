@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
-import '../app_card.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/app_card.dart';
 
 /// S22: 核心数据卡片样式（LargeDataDisplayCardStyle）
 /// 用于展示最高层级的关键结果（KPI）
@@ -11,6 +11,20 @@ import '../app_card.dart';
 /// - 底部可选迷你折线图，赋予数据生命力
 /// - 主数值使用 dataDisplayLarge (28pt Bold)
 class CoreDataCard extends StatelessWidget {
+  const CoreDataCard({
+    required this.subtitle,
+    required this.value,
+    super.key,
+    this.customValueText,
+    this.valueColor,
+    this.valueStyle,
+    this.subtitleStyle,
+    this.padding,
+    this.onTap,
+    this.trendData,
+    this.showTopAccent = true,
+  });
+
   /// 副标题/描述文字
   final String subtitle;
 
@@ -42,84 +56,67 @@ class CoreDataCard extends StatelessWidget {
   /// 是否显示顶部强调线（默认 true）
   final bool showTopAccent;
 
-  const CoreDataCard({
-    super.key,
-    required this.subtitle,
-    required this.value,
-    this.customValueText,
-    this.valueColor,
-    this.valueStyle,
-    this.subtitleStyle,
-    this.padding,
-    this.onTap,
-    this.trendData,
-    this.showTopAccent = true,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        AppCard(
-          onTap: onTap,
-          padding: padding ??
-              EdgeInsets.symmetric(
-                horizontal: AppDesignTokens.globalHorizontalPadding,
-                vertical: AppDesignTokens.spacing24,
-              ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center, // 居中显示
-            children: [
-              // 副标题
-              Text(
-                subtitle,
-                style: subtitleStyle ??
-                    AppDesignTokens.subtitle(context), // 14pt Regular
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppDesignTokens.spacingMedium),
-              // 主数值（居中，最大化）
-              Text(
-                customValueText ?? '￥${value.toStringAsFixed(2)}',
-                style: valueStyle ??
-                    AppDesignTokens.primaryValue(context).copyWith(
-                      fontSize: 28, // dataDisplayLarge: 28pt Bold
-                      fontWeight: FontWeight.w700,
-                      color:
-                          valueColor ?? AppDesignTokens.primaryAction(context),
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              // 底部趋势图（如果提供数据）
-              if (trendData != null && trendData!.isNotEmpty) ...[
-                SizedBox(height: AppDesignTokens.spacingMedium),
-                _buildTrendChart(context, trendData!),
+  Widget build(BuildContext context) => Stack(
+        children: [
+          AppCard(
+            onTap: onTap,
+            padding: padding ??
+                const EdgeInsets.symmetric(
+                  horizontal: AppDesignTokens.globalHorizontalPadding,
+                  vertical: AppDesignTokens.spacing24,
+                ),
+            child: Column(
+              children: [
+                // 副标题
+                Text(
+                  subtitle,
+                  style: subtitleStyle ??
+                      AppDesignTokens.subtitle(context), // 14pt Regular
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppDesignTokens.spacingMedium),
+                // 主数值（居中，最大化）
+                Text(
+                  customValueText ?? '￥${value.toStringAsFixed(2)}',
+                  style: valueStyle ??
+                      AppDesignTokens.primaryValue(context).copyWith(
+                        fontSize: 28, // dataDisplayLarge: 28pt Bold
+                        fontWeight: FontWeight.w700,
+                        color: valueColor ??
+                            AppDesignTokens.primaryAction(context),
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                // 底部趋势图（如果提供数据）
+                if (trendData != null && trendData!.isNotEmpty) ...[
+                  const SizedBox(height: AppDesignTokens.spacingMedium),
+                  _buildTrendChart(context, trendData!),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-        // 顶部 3px PrimaryColor 强调线
-        if (showTopAccent)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 3,
-              decoration: BoxDecoration(
-                color: AppDesignTokens.primaryAction(context),
-                borderRadius: BorderRadius.only(
-                  topLeft:
-                      Radius.circular(AppDesignTokens.radiusMedium(context)),
-                  topRight:
-                      Radius.circular(AppDesignTokens.radiusMedium(context)),
+          // 顶部 3px PrimaryColor 强调线
+          if (showTopAccent)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  color: AppDesignTokens.primaryAction(context),
+                  borderRadius: BorderRadius.only(
+                    topLeft:
+                        Radius.circular(AppDesignTokens.radiusMedium(context)),
+                    topRight:
+                        Radius.circular(AppDesignTokens.radiusMedium(context)),
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
-    );
-  }
+        ],
+      );
 
   /// 构建迷你折线图（趋势图）
   Widget _buildTrendChart(BuildContext context, List<double> data) {
@@ -148,12 +145,6 @@ class CoreDataCard extends StatelessWidget {
 
 /// 趋势图绘制器
 class _TrendChartPainter extends CustomPainter {
-  final List<double> data;
-  final double maxValue;
-  final double minValue;
-  final double range;
-  final Color color;
-
   _TrendChartPainter({
     required this.data,
     required this.maxValue,
@@ -161,6 +152,11 @@ class _TrendChartPainter extends CustomPainter {
     required this.range,
     required this.color,
   });
+  final List<double> data;
+  final double maxValue;
+  final double minValue;
+  final double range;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {

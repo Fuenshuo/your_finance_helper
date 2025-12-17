@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 
 /// 确认按钮组件
 class ConfirmButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final bool isValid;
-  final bool isComplete;
-
   const ConfirmButton({
     super.key,
     this.onPressed,
     this.isValid = false,
     this.isComplete = false,
   });
+  final VoidCallback? onPressed;
+  final bool isValid;
+  final bool isComplete;
 
   @override
   Widget build(BuildContext context) {

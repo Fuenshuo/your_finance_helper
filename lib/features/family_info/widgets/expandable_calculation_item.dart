@@ -165,7 +165,8 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                         color: Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: Colors.blue.withValues(alpha: 0.3)),
+                          color: Colors.blue.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,7 +213,8 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.2)),
+                            color: Colors.grey.withValues(alpha: 0.2),
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withValues(alpha: 0.05),
@@ -282,7 +284,8 @@ class _ExpandableCalculationItemState extends State<ExpandableCalculationItem>
                                     ...detail.components.map(
                                       (component) => Container(
                                         margin: EdgeInsets.only(
-                                            bottom: context.spacing4),
+                                          bottom: context.spacing4,
+                                        ),
                                         padding:
                                             EdgeInsets.all(context.spacing8),
                                         decoration: BoxDecoration(

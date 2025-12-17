@@ -159,7 +159,7 @@ class PerformanceMonitor {
     if (!kDebugMode) return;
 
     final prefix = operationName != null ? '[$operationName] ' : '';
-    Logger.debug('[ERROR] ${prefix}错误: $message');
+    Logger.debug('[ERROR] $prefix错误: $message');
   }
 
   /// 获取操作时间阈值
@@ -313,7 +313,7 @@ class _BottomTabUsageAggregator {
     required bool flagEnabled,
   }) {
     final normalizedLabel = label.toLowerCase();
-    final bool isInsightsTab = normalizedLabel.contains('insight');
+    final isInsightsTab = normalizedLabel.contains('insight');
 
     if (isInsightsTab) {
       if (flagEnabled) {
@@ -329,10 +329,10 @@ class _BottomTabUsageAggregator {
     if (_reportedReduction || _legacyInsightsSelections < 5) {
       return;
     }
-    final double mergedRate = _legacyInsightsSelections == 0
+    final mergedRate = _legacyInsightsSelections == 0
         ? 0
         : _mergedInsightsSelections / _legacyInsightsSelections;
-    final double reduction = 1 - mergedRate;
+    final reduction = 1 - mergedRate;
     if (reduction >= 0.8) {
       Logger.debug(
         '📉 StreamInsights bottom tab reduction achieved: '
@@ -342,7 +342,7 @@ class _BottomTabUsageAggregator {
       PerformanceMonitor.logUsageReductionTelemetry(
         legacySelections: _legacyInsightsSelections,
         mergedSelections: _mergedInsightsSelections,
-        reductionRatio: reduction,
+        reductionRatio: reduction.toDouble(),
       );
       _reportedReduction = true;
     }

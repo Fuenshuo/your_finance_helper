@@ -36,11 +36,17 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
 
     // 注册资产编辑表单专用动效曲线
     IOSAnimationSystem.registerCustomCurve(
-        'asset-edit-focus', Curves.easeInOutCubic);
+      'asset-edit-focus',
+      Curves.easeInOutCubic,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'asset-edit-validation', Curves.elasticOut);
+      'asset-edit-validation',
+      Curves.elasticOut,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'asset-edit-success', Curves.elasticOut);
+      'asset-edit-success',
+      Curves.elasticOut,
+    );
 
     _nameController = TextEditingController(text: widget.asset.name);
     _amountController =
@@ -198,12 +204,15 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
   Future<void> _valuateAsset() async {
     try {
       // 1. 选择图片
-      final imageService = ImageProcessingService.getInstance();
+      final imageService = await ImageProcessingService.getInstance();
       final imageFile = await imageService.pickImageFromGallery();
       if (imageFile == null) return;
 
       // 2. 保存图片
       final imagePath = await imageService.saveImageToAppDirectory(imageFile);
+      if (imagePath == null) {
+        return;
+      }
 
       // 3. 显示加载对话框
       if (!mounted) return;
@@ -226,7 +235,7 @@ class _EditAssetSheetState extends State<EditAssetSheet> {
 
       // 6. 填充表单字段（只填充名称，金额需要用户手动输入）
       setState(() {
-        _nameController.text = result.assetName;
+        _nameController.text = result.assetName ?? '';
         // 不自动填充金额，让用户手动输入
       });
 

@@ -381,8 +381,6 @@ class _AssetDistributionCardState extends State<AssetDistributionCard> {
   double _calculateCategoryTotal(List<AssetItem> assets) =>
       assets.fold(0.0, (sum, asset) => sum + asset.amount);
 
-
-
   // 获取分类颜色
   Color _getCategoryColor(AssetCategory category) {
     switch (category) {

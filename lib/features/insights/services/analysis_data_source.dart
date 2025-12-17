@@ -1,6 +1,6 @@
-import '../../../core/models/analysis_summary.dart';
-import '../../../core/models/transaction.dart';
-import '../../../core/models/flux_view_state.dart';
+import 'package:your_finance_flutter/core/models/analysis_summary.dart';
+import 'package:your_finance_flutter/core/models/flux_view_state.dart';
+import 'package:your_finance_flutter/core/models/transaction.dart';
 
 /// Abstract interface for transaction analysis implementations.
 /// Supports multiple strategies (HTTP, Serverless AI) through strategy pattern.
@@ -17,5 +17,7 @@ abstract class AnalysisDataSource {
   /// [timeframe] Analysis context (daily, weekly, monthly)
   /// Returns analysis results or safe defaults on failure
   Future<AnalysisSummary> analyze(
-      Transaction transaction, FluxTimeframe timeframe);
+    Transaction transaction,
+    FluxTimeframe timeframe,
+  );
 }

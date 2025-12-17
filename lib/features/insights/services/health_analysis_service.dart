@@ -39,7 +39,10 @@ class HealthAnalysisService {
       'lifestylePercentage': lifestylePercentage,
       'pattern': pattern,
       'analysis': _generatePatternAnalysis(
-          pattern, survivalPercentage, lifestylePercentage),
+        pattern,
+        survivalPercentage,
+        lifestylePercentage,
+      ),
       'categories': categorized['categories'],
     };
   }
@@ -114,9 +117,10 @@ class HealthAnalysisService {
   }
 
   Map<String, dynamic> _categorizeTransactions(
-      List<Map<String, dynamic>> transactions) {
-    double survivalSpending = 0.0;
-    double lifestyleSpending = 0.0;
+    List<Map<String, dynamic>> transactions,
+  ) {
+    var survivalSpending = 0.0;
+    var lifestyleSpending = 0.0;
     final categories = <String, Map<String, dynamic>>{};
 
     // Define survival vs lifestyle categories
@@ -148,7 +152,7 @@ class HealthAnalysisService {
       final amount = transaction['amount'] as double;
 
       if (survivalCategories.contains(category) ||
-          survivalCategories.any((c) => category.contains(c))) {
+          survivalCategories.any(category.contains)) {
         survivalSpending += amount;
         categories[category] = {
           'amount': (categories[category]?['amount'] ?? 0.0) + amount,
@@ -171,7 +175,9 @@ class HealthAnalysisService {
   }
 
   String _determineSpendingPattern(
-      double survivalPercent, double lifestylePercent) {
+    double survivalPercent,
+    double lifestylePercent,
+  ) {
     if (survivalPercent > 0.75) return 'survival_heavy';
     if (lifestylePercent > 0.75) return 'lifestyle_heavy';
     if ((survivalPercent - lifestylePercent).abs() < 0.1) {
@@ -182,7 +188,10 @@ class HealthAnalysisService {
   }
 
   String _generatePatternAnalysis(
-      String pattern, double survivalPercent, double lifestylePercent) {
+    String pattern,
+    double survivalPercent,
+    double lifestylePercent,
+  ) {
     switch (pattern) {
       case 'survival_heavy':
         return '生存支出占比过高 (${(survivalPercent * 100).round()}%)，建议优化生活支出比例。';
@@ -206,15 +215,15 @@ class HealthAnalysisService {
     required String pattern,
     required double survivalPercentage,
   }) {
-    double score = 50.0; // Base score
+    var score = 50.0; // Base score
 
     // Savings rate impact (most important)
     if (totalIncome == 0) {
       score = 0; // No income = 0 score
     } else {
-      if (savingsRate >= 0.2)
+      if (savingsRate >= 0.2) {
         score += 25; // Good savings
-      else if (savingsRate >= 0.1)
+      } else if (savingsRate >= 0.1)
         score += 15; // Decent savings
       else if (savingsRate >= 0)
         score += 5; // Some savings
@@ -223,9 +232,9 @@ class HealthAnalysisService {
     }
 
     // Spending ratio impact
-    if (spendingRatio <= 0.8)
+    if (spendingRatio <= 0.8) {
       score += 15; // Under 80% of income
-    else if (spendingRatio <= 1.0)
+    } else if (spendingRatio <= 1.0)
       score += 5; // Under 100% of income
     else
       score -=
@@ -235,19 +244,14 @@ class HealthAnalysisService {
     switch (pattern) {
       case 'balanced':
         score += 10;
-        break;
       case 'survival_leaning':
         score += 5;
-        break;
       case 'lifestyle_leaning':
         score -= 5;
-        break;
       case 'survival_heavy':
         score -= 10;
-        break;
       case 'lifestyle_heavy':
         score -= 15;
-        break;
     }
 
     return score.clamp(0.0, 100.0);
@@ -270,55 +274,67 @@ class HealthAnalysisService {
 
     // Savings rate factor
     if (savingsRate >= 0.2) {
-      factors.add(HealthFactor(
-        name: '储蓄充足',
-        impact: 0.8,
-        description: '月储蓄率 ${(savingsRate * 100).round()}%，财务基础稳固',
-      ));
+      factors.add(
+        HealthFactor(
+          name: '储蓄充足',
+          impact: 0.8,
+          description: '月储蓄率 ${(savingsRate * 100).round()}%，财务基础稳固',
+        ),
+      );
     } else if (savingsRate >= 0) {
-      factors.add(HealthFactor(
-        name: '储蓄一般',
-        impact: 0.4,
-        description: '月储蓄率 ${(savingsRate * 100).round()}%，有改善空间',
-      ));
+      factors.add(
+        HealthFactor(
+          name: '储蓄一般',
+          impact: 0.4,
+          description: '月储蓄率 ${(savingsRate * 100).round()}%，有改善空间',
+        ),
+      );
     } else {
-      factors.add(HealthFactor(
-        name: '支出超支',
-        impact: -0.9,
-        description: '月支出超出收入 ${(savingsRate.abs() * 100).round()}%，需要立即调整',
-      ));
+      factors.add(
+        HealthFactor(
+          name: '支出超支',
+          impact: -0.9,
+          description: '月支出超出收入 ${(savingsRate.abs() * 100).round()}%，需要立即调整',
+        ),
+      );
     }
 
     // Spending pattern factor
     switch (pattern) {
       case 'balanced':
-        factors.add(HealthFactor(
-          name: '支出均衡',
-          impact: 0.6,
-          description: '生存与生活支出比例合理，消费结构健康',
-        ));
-        break;
+        factors.add(
+          const HealthFactor(
+            name: '支出均衡',
+            impact: 0.6,
+            description: '生存与生活支出比例合理，消费结构健康',
+          ),
+        );
       case 'survival_heavy':
-        factors.add(HealthFactor(
-          name: '生存支出过高',
-          impact: -0.7,
-          description: '生存支出占比过高，可能影响生活质量',
-        ));
-        break;
+        factors.add(
+          const HealthFactor(
+            name: '生存支出过高',
+            impact: -0.7,
+            description: '生存支出占比过高，可能影响生活质量',
+          ),
+        );
       case 'lifestyle_heavy':
-        factors.add(HealthFactor(
-          name: '生活支出过高',
-          impact: -0.8,
-          description: '生活支出占比过高，可能影响财务稳定性',
-        ));
-        break;
+        factors.add(
+          const HealthFactor(
+            name: '生活支出过高',
+            impact: -0.8,
+            description: '生活支出占比过高，可能影响财务稳定性',
+          ),
+        );
     }
 
     return factors;
   }
 
   String _generateDiagnosis(
-      double score, String pattern, List<HealthFactor> factors) {
+    double score,
+    String pattern,
+    List<HealthFactor> factors,
+  ) {
     final grade = _calculateGrade(score);
 
     switch (grade) {
@@ -336,7 +352,10 @@ class HealthAnalysisService {
   }
 
   List<String> _generateRecommendations(
-      double score, String pattern, List<HealthFactor> factors) {
+    double score,
+    String pattern,
+    List<HealthFactor> factors,
+  ) {
     final recommendations = <String>[];
 
     if (score < 60) {
@@ -364,10 +383,8 @@ class HealthAnalysisService {
     switch (pattern) {
       case 'survival_heavy':
         recommendations.add('适当增加生活支出，提升生活质量');
-        break;
       case 'lifestyle_heavy':
         recommendations.add('控制生活支出比例，增加储蓄和投资');
-        break;
     }
 
     return recommendations.take(5).toList(); // Limit to 5 recommendations

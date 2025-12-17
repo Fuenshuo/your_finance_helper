@@ -18,15 +18,26 @@ class InsightsDrawerState extends Equatable {
     required this.collapseTimer,
   }) : assert(improvementCount >= 0, 'improvementCount cannot be negative');
 
-  factory InsightsDrawerState.hidden() {
-    return const InsightsDrawerState(
-      isVisible: false,
-      isExpanded: false,
-      message: null,
-      improvementCount: 0,
-      collapseTimer: _defaultCollapseDuration,
-    );
-  }
+  factory InsightsDrawerState.fromJson(Map<String, dynamic> json) =>
+      InsightsDrawerState(
+        isVisible: json['isVisible'] as bool? ?? false,
+        isExpanded: json['isExpanded'] as bool? ?? false,
+        message: json['message'] as String?,
+        improvementCount:
+            (json['improvementCount'] as int?)?.clamp(0, 1 << 31) ?? 0,
+        collapseTimer: Duration(
+          milliseconds: json['collapseTimer'] as int? ??
+              _defaultCollapseDuration.inMilliseconds,
+        ),
+      );
+
+  factory InsightsDrawerState.hidden() => const InsightsDrawerState(
+        isVisible: false,
+        isExpanded: false,
+        message: null,
+        improvementCount: 0,
+        collapseTimer: _defaultCollapseDuration,
+      );
 
   final bool isVisible;
   final bool isExpanded;
@@ -42,7 +53,7 @@ class InsightsDrawerState extends Equatable {
     int? improvementCount,
     Duration? collapseTimer,
   }) {
-    final bool resolvedVisibility = isVisible ?? this.isVisible;
+    final resolvedVisibility = isVisible ?? this.isVisible;
     return InsightsDrawerState(
       isVisible: resolvedVisibility,
       isExpanded: resolvedVisibility ? (isExpanded ?? this.isExpanded) : false,
@@ -52,29 +63,13 @@ class InsightsDrawerState extends Equatable {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'isVisible': isVisible,
-      'isExpanded': isExpanded,
-      'message': message,
-      'improvementCount': improvementCount,
-      'collapseTimer': collapseTimer.inMilliseconds,
-    };
-  }
-
-  factory InsightsDrawerState.fromJson(Map<String, dynamic> json) {
-    return InsightsDrawerState(
-      isVisible: json['isVisible'] as bool? ?? false,
-      isExpanded: json['isExpanded'] as bool? ?? false,
-      message: json['message'] as String?,
-      improvementCount:
-          (json['improvementCount'] as int?)?.clamp(0, 1 << 31) ?? 0,
-      collapseTimer: Duration(
-        milliseconds: json['collapseTimer'] as int? ??
-            _defaultCollapseDuration.inMilliseconds,
-      ),
-    );
-  }
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'isVisible': isVisible,
+        'isExpanded': isExpanded,
+        'message': message,
+        'improvementCount': improvementCount,
+        'collapseTimer': collapseTimer.inMilliseconds,
+      };
 
   bool get hasMessage => (message ?? '').isNotEmpty;
 
@@ -110,8 +105,8 @@ class InsightsDrawerController extends StateNotifier<InsightsDrawerState> {
     Duration? collapseAfter,
     Duration? deferExpansionBy,
   }) {
-    final int safeDelta = improvementDelta < 0 ? 0 : improvementDelta;
-    final bool shouldDefer =
+    final safeDelta = improvementDelta < 0 ? 0 : improvementDelta;
+    final shouldDefer =
         deferExpansionBy != null && deferExpansionBy > Duration.zero;
 
     _cancelTimers();
@@ -189,9 +184,7 @@ class InsightsDrawerController extends StateNotifier<InsightsDrawerState> {
   }
 
   void _startCollapseTimer(Duration duration) {
-    _collapseTimer = Timer(duration, () {
-      collapseNow();
-    });
+    _collapseTimer = Timer(duration, collapseNow);
   }
 
   void _cancelTimers() {

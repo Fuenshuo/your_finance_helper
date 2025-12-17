@@ -13,6 +13,23 @@ class DailyCap extends Equatable {
     this.latestInsight,
   });
 
+  /// 从JSON反序列化
+  factory DailyCap.fromJson(Map<String, dynamic> json) => DailyCap(
+        id: json['id'] as String,
+        date: DateTime.parse(json['date'] as String),
+        referenceAmount: (json['referenceAmount'] as num).toDouble(),
+        currentSpending: (json['currentSpending'] as num).toDouble(),
+        percentage: (json['percentage'] as num).toDouble(),
+        status: CapStatus.values.firstWhere(
+          (e) => e.name == json['status'],
+          orElse: () => CapStatus.safe,
+        ),
+        latestInsight: json['latestInsight'] != null
+            ? MicroInsight.fromJson(
+                json['latestInsight'] as Map<String, dynamic>)
+            : null,
+      );
+
   final String id;
   final DateTime date;
   final double referenceAmount; // Calculated daily budget
@@ -33,17 +50,16 @@ class DailyCap extends Equatable {
     double? percentage,
     CapStatus? status,
     MicroInsight? latestInsight,
-  }) {
-    return DailyCap(
-      id: id ?? this.id,
-      date: date ?? this.date,
-      referenceAmount: referenceAmount ?? this.referenceAmount,
-      currentSpending: currentSpending ?? this.currentSpending,
-      percentage: percentage ?? this.percentage,
-      status: status ?? this.status,
-      latestInsight: latestInsight ?? this.latestInsight,
-    );
-  }
+  }) =>
+      DailyCap(
+        id: id ?? this.id,
+        date: date ?? this.date,
+        referenceAmount: referenceAmount ?? this.referenceAmount,
+        currentSpending: currentSpending ?? this.currentSpending,
+        percentage: percentage ?? this.percentage,
+        status: status ?? this.status,
+        latestInsight: latestInsight ?? this.latestInsight,
+      );
 
   @override
   List<Object?> get props => [
@@ -57,35 +73,15 @@ class DailyCap extends Equatable {
       ];
 
   /// 序列化为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'date': date.toIso8601String(),
-      'referenceAmount': referenceAmount,
-      'currentSpending': currentSpending,
-      'percentage': percentage,
-      'status': status.name,
-      'latestInsight': latestInsight?.toJson(),
-    };
-  }
-
-  /// 从JSON反序列化
-  factory DailyCap.fromJson(Map<String, dynamic> json) {
-    return DailyCap(
-      id: json['id'] as String,
-      date: DateTime.parse(json['date'] as String),
-      referenceAmount: (json['referenceAmount'] as num).toDouble(),
-      currentSpending: (json['currentSpending'] as num).toDouble(),
-      percentage: (json['percentage'] as num).toDouble(),
-      status: CapStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => CapStatus.safe,
-      ),
-      latestInsight: json['latestInsight'] != null
-          ? MicroInsight.fromJson(json['latestInsight'] as Map<String, dynamic>)
-          : null,
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date.toIso8601String(),
+        'referenceAmount': referenceAmount,
+        'currentSpending': currentSpending,
+        'percentage': percentage,
+        'status': status.name,
+        'latestInsight': latestInsight?.toJson(),
+      };
 }
 
 /// Status of daily spending cap

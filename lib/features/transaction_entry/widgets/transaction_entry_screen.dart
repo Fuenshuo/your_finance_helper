@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:your_finance_flutter/core/utils/performance_monitor.dart';
-import '../providers/transaction_entry_provider.dart';
-import '../providers/draft_manager_provider.dart';
-import '../providers/input_validation_provider.dart';
-import 'input_dock/input_dock.dart';
-import 'draft_card/draft_card.dart';
-import 'timeline/timeline_view.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/input_validation_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/draft_card/draft_card.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/input_dock/input_dock.dart';
+import 'package:your_finance_flutter/features/transaction_entry/widgets/timeline/timeline_view.dart';
 
 /// 统一交易录入页面主组件
 ///
@@ -60,7 +60,7 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
 
   void _autoSaveDraft() {
     final entryState = ref.read(transactionEntryProvider);
-    if (entryState.draftTransaction?.hasData == true) {
+    if (entryState.draftTransaction?.hasData ?? false) {
       ref
           .read(draftManagerProvider.notifier)
           .saveDraft(entryState.draftTransaction!);
@@ -68,12 +68,10 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return PerformanceMonitor.monitorBuild(
-      'TransactionEntryScreen',
-      () => _buildUnifiedContent(context),
-    );
-  }
+  Widget build(BuildContext context) => PerformanceMonitor.monitorBuild(
+        'TransactionEntryScreen',
+        () => _buildUnifiedContent(context),
+      );
 
   Widget _buildUnifiedContent(BuildContext context) {
     final entryState = ref.watch(transactionEntryProvider);
@@ -221,7 +219,6 @@ class _TransactionEntryScreenState extends ConsumerState<TransactionEntryScreen>
       SnackBar(
         content: Text('验证警告: $warnings'),
         backgroundColor: Colors.orange,
-        duration: const Duration(seconds: 4),
       ),
     );
   }

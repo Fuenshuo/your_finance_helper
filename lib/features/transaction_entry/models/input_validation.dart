@@ -2,6 +2,14 @@ import 'package:equatable/equatable.dart';
 
 /// 输入验证模型
 class InputValidation extends Equatable {
+  const InputValidation({
+    this.isValid = true,
+    this.errorMessage,
+    this.warnings = const [],
+    this.suggestions = const [],
+    this.lastValidatedAt,
+  });
+
   /// 是否有效
   final bool isValid;
 
@@ -17,30 +25,21 @@ class InputValidation extends Equatable {
   /// 最后验证时间
   final DateTime? lastValidatedAt;
 
-  const InputValidation({
-    this.isValid = true,
-    this.errorMessage,
-    this.warnings = const [],
-    this.suggestions = const [],
-    this.lastValidatedAt,
-  });
-
   InputValidation copyWith({
     bool? isValid,
     String? errorMessage,
     List<String>? warnings,
     List<String>? suggestions,
     DateTime? lastValidatedAt,
-  }) {
-    return InputValidation(
-      isValid: isValid ?? this.isValid,
-      errorMessage: errorMessage ?? this.errorMessage,
-      warnings: warnings ?? this.warnings,
-      suggestions: suggestions ?? this.suggestions,
-      lastValidatedAt:
-          lastValidatedAt ?? this.lastValidatedAt ?? DateTime.now(),
-    );
-  }
+  }) =>
+      InputValidation(
+        isValid: isValid ?? this.isValid,
+        errorMessage: errorMessage ?? this.errorMessage,
+        warnings: warnings ?? this.warnings,
+        suggestions: suggestions ?? this.suggestions,
+        lastValidatedAt:
+            lastValidatedAt ?? this.lastValidatedAt ?? DateTime.now(),
+      );
 
   /// 是否有错误
   bool get hasError => !isValid && errorMessage != null;

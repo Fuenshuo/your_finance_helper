@@ -4,7 +4,9 @@ import 'package:your_finance_flutter/features/insights/models/health_score.dart'
 
 void main() {
   group('HealthScore Model', () {
-    test('HealthScore.calculate factory creates correct score and grade mapping', () {
+    test(
+        'HealthScore.calculate factory creates correct score and grade mapping',
+        () {
       // Test A grade: >= 90
       final allocationA = AllocationData(
         fixedAmount: 950.0,
@@ -102,9 +104,14 @@ void main() {
       final after = DateTime.now();
 
       expect(score.calculatedAt, isNotNull);
-      expect(score.calculatedAt.isAfter(before) || score.calculatedAt.isAtSameMomentAs(before), isTrue);
-      expect(score.calculatedAt.isBefore(after) || score.calculatedAt.isAtSameMomentAs(after), isTrue);
+      expect(
+          score.calculatedAt.isAfter(before) ||
+              score.calculatedAt.isAtSameMomentAs(before),
+          isTrue);
+      expect(
+          score.calculatedAt.isBefore(after) ||
+              score.calculatedAt.isAtSameMomentAs(after),
+          isTrue);
     });
-
   });
 }

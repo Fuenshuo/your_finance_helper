@@ -35,11 +35,13 @@ class TransactionProvider with ChangeNotifier {
       print('[TransactionProvider.initialize] [SUCCESS] StorageService 初始化完成');
     } else {
       print(
-          '[TransactionProvider.initialize] [INFO] TransactionProvider 已经初始化过，跳过 StorageService 获取');
+        '[TransactionProvider.initialize] [INFO] TransactionProvider 已经初始化过，跳过 StorageService 获取',
+      );
     }
     await _loadTransactions();
     print(
-        '[TransactionProvider.initialize] [TARGET] TransactionProvider 初始化完成');
+      '[TransactionProvider.initialize] [TARGET] TransactionProvider 初始化完成',
+    );
   }
 
   // 加载交易数据
@@ -52,24 +54,31 @@ class TransactionProvider with ChangeNotifier {
       print('[TransactionProvider._loadTransactions] [LOADING] 状态已设置为加载中');
 
       print(
-          '[TransactionProvider._loadTransactions] [STORAGE] 从 StorageService 加载正式交易');
+        '[TransactionProvider._loadTransactions] [STORAGE] 从 StorageService 加载正式交易',
+      );
       _transactions = await _storageService!.loadTransactions();
       print(
-          '[TransactionProvider._loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${_transactions.length}');
+        '[TransactionProvider._loadTransactions] [SUCCESS] 正式交易加载完成，数量: ${_transactions.length}',
+      );
 
       print(
-          '[TransactionProvider._loadTransactions] [DRAFT] 从 StorageService 加载草稿交易');
+        '[TransactionProvider._loadTransactions] [DRAFT] 从 StorageService 加载草稿交易',
+      );
       _draftTransactions = await _storageService!.loadDraftTransactions();
       print(
-          '[TransactionProvider._loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${_draftTransactions.length}');
+        '[TransactionProvider._loadTransactions] [SUCCESS] 草稿交易加载完成，数量: ${_draftTransactions.length}',
+      );
 
       print('[TransactionProvider._loadTransactions] [STATS] 数据加载完成统计:');
       print(
-          '[TransactionProvider._loadTransactions] [CHART] 正式交易: ${_transactions.length} 笔');
+        '[TransactionProvider._loadTransactions] [CHART] 正式交易: ${_transactions.length} 笔',
+      );
       print(
-          '[TransactionProvider._loadTransactions] [DRAFT] 草稿交易: ${_draftTransactions.length} 笔');
+        '[TransactionProvider._loadTransactions] [DRAFT] 草稿交易: ${_draftTransactions.length} 笔',
+      );
       print(
-          '[TransactionProvider._loadTransactions] [TREND] 总计: ${_transactions.length + _draftTransactions.length} 笔');
+        '[TransactionProvider._loadTransactions] [TREND] 总计: ${_transactions.length + _draftTransactions.length} 笔',
+      );
 
       if (_transactions.isEmpty && _draftTransactions.isEmpty) {
         print('[TransactionProvider._loadTransactions] [WARN] 警告：没有找到任何交易数据！');
@@ -112,7 +121,9 @@ class TransactionProvider with ChangeNotifier {
 
         // Trigger Flux Loop analysis for updated transaction
         await _triggerInsightAnalysis(
-            updatedTransaction.id, JobType.dailyAnalysis);
+          updatedTransaction.id,
+          JobType.dailyAnalysis,
+        );
 
         notifyListeners();
       }
@@ -140,7 +151,9 @@ class TransactionProvider with ChangeNotifier {
 
   // Helper method to trigger insight analysis
   Future<void> _triggerInsightAnalysis(
-      String transactionId, JobType jobType) async {
+    String transactionId,
+    JobType jobType,
+  ) async {
     try {
       // Only trigger if insights provider is available
       if (_insightsProvider != null) {
@@ -231,7 +244,9 @@ class TransactionProvider with ChangeNotifier {
 
   // 获取指定时间范围的交易
   List<Transaction> getTransactionsByDateRange(
-          DateTime startDate, DateTime endDate) =>
+    DateTime startDate,
+    DateTime endDate,
+  ) =>
       _transactions
           .where(
             (t) =>
@@ -301,8 +316,10 @@ class TransactionProvider with ChangeNotifier {
       calculateTotalExpense(startDate: startDate, endDate: endDate);
 
   // 按分类统计支出
-  Map<TransactionCategory, double> getExpenseByCategory(
-      {DateTime? startDate, DateTime? endDate}) {
+  Map<TransactionCategory, double> getExpenseByCategory({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
     var transactions = _transactions;
 
     if (startDate != null && endDate != null) {

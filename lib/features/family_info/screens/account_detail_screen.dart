@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
 import 'package:your_finance_flutter/core/models/account.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
@@ -9,12 +8,13 @@ import 'package:your_finance_flutter/core/providers/account_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
 import 'package:your_finance_flutter/core/theme/responsive_text_styles.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/utils/unified_notifications.dart';
 import 'package:your_finance_flutter/core/widgets/app_animations.dart';
 import 'package:your_finance_flutter/core/widgets/app_card.dart';
 import 'package:your_finance_flutter/features/family_info/screens/account_edit_screen.dart';
-import 'package:your_finance_flutter/features/transaction_entry/screens/unified_transaction_entry_screen.dart';
 import 'package:your_finance_flutter/features/transaction_entry/screens/transaction_detail_screen.dart';
+import 'package:your_finance_flutter/features/transaction_entry/screens/unified_transaction_entry_screen.dart';
 
 /// 账户详情页面
 class AccountDetailScreen extends StatefulWidget {
@@ -925,10 +925,11 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
               // 计算高亮效果
               final highlightColor = highlightProgress > 0.0
                   ? Colors.yellow.shade400.withValues(
-                      alpha: (highlightProgress * 0.3).clamp(0.0, 1.0))
+                      alpha: (highlightProgress * 0.3).clamp(0.0, 1.0),
+                    )
                   : Colors.transparent;
 
-              return Container(
+              return ColoredBox(
                 color: highlightColor,
                 child: Transform.translate(
                   offset: Offset(slideOffset, 0), // 从右侧滑入
@@ -981,7 +982,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                             child: Padding(
                               padding:
                                   EdgeInsets.all(context.responsiveSpacing4),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.delete_outline,
                                 color: Colors.red,
                                 size: 20,
@@ -1040,7 +1041,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
                 SizedBox(width: context.responsiveSpacing8),
                 InkWell(
                   onTap: () => _deleteTransaction(transaction),
-                  child: Icon(
+                  child: const Icon(
                     Icons.delete_outline,
                     color: Colors.red,
                     size: 20,

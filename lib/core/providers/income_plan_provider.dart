@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/bonus_item.dart';
 import 'package:your_finance_flutter/core/models/budget.dart';
 import 'package:your_finance_flutter/core/models/income_plan.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
 import 'package:your_finance_flutter/core/services/storage_service.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 class IncomePlanProvider with ChangeNotifier {
   List<IncomePlan> _incomePlans = [];
@@ -245,7 +245,8 @@ class IncomePlanProvider with ChangeNotifier {
 
   /// 自动执行收入计划，生成相应的收入交易
   Future<void> autoExecuteIncomePlans(
-      TransactionProvider transactionProvider) async {
+    TransactionProvider transactionProvider,
+  ) async {
     final now = DateTime.now();
     final executedPlans = <IncomePlan>[];
 
@@ -301,7 +302,9 @@ class IncomePlanProvider with ChangeNotifier {
 
   /// 执行单个收入计划，创建收入交易
   Future<void> _executeIncomePlan(
-      IncomePlan plan, TransactionProvider transactionProvider) async {
+    IncomePlan plan,
+    TransactionProvider transactionProvider,
+  ) async {
     // 创建收入交易
     final transaction = Transaction(
       description: '${plan.name} - 自动收入',
@@ -317,7 +320,8 @@ class IncomePlanProvider with ChangeNotifier {
 
     await transactionProvider.addTransaction(transaction);
     Logger.debug(
-        '✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}');
+      '✅ 已创建收入交易: ${transaction.description}, 金额: ¥${transaction.amount}',
+    );
   }
 
   // 刷新数据

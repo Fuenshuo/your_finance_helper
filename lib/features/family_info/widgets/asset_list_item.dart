@@ -237,7 +237,7 @@ class _AssetListItemState extends State<AssetListItem>
                                   children: [
                                     Text(
                                       '¥${widget.asset.effectiveValue.toStringAsFixed(2)}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.green,

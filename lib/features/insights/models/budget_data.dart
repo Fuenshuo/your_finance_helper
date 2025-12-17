@@ -2,15 +2,16 @@ import 'package:equatable/equatable.dart';
 
 /// Represents daily budget tracking and spending progress.
 class BudgetData extends Equatable {
-  final double budgetAmount; // Total daily budget (e.g., ¥200)
-  final double spentAmount; // Amount spent today (e.g., ¥112)
-  final DateTime date; // Budget date
+  // Budget date
 
   const BudgetData({
     required this.budgetAmount,
     required this.spentAmount,
     required this.date,
   });
+  final double budgetAmount; // Total daily budget (e.g., ¥200)
+  final double spentAmount; // Amount spent today (e.g., ¥112)
+  final DateTime date;
 
   // Calculated properties
   double get remainingAmount => budgetAmount - spentAmount;

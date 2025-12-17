@@ -1,41 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/input_validation.dart';
-import '../models/draft_transaction.dart';
-import '../services/validation_service.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
+import 'package:your_finance_flutter/features/transaction_entry/services/validation_service.dart';
 
 /// 输入验证状态
 class InputValidationState {
-  final InputValidation currentValidation;
-  final bool isValidating;
-  final Map<String, InputValidation> fieldValidations;
-
   const InputValidationState({
     this.currentValidation = const InputValidation(),
     this.isValidating = false,
     this.fieldValidations = const {},
   });
+  final InputValidation currentValidation;
+  final bool isValidating;
+  final Map<String, InputValidation> fieldValidations;
 
   InputValidationState copyWith({
     InputValidation? currentValidation,
     bool? isValidating,
     Map<String, InputValidation>? fieldValidations,
-  }) {
-    return InputValidationState(
-      currentValidation: currentValidation ?? this.currentValidation,
-      isValidating: isValidating ?? this.isValidating,
-      fieldValidations: fieldValidations ?? this.fieldValidations,
-    );
-  }
+  }) =>
+      InputValidationState(
+        currentValidation: currentValidation ?? this.currentValidation,
+        isValidating: isValidating ?? this.isValidating,
+        fieldValidations: fieldValidations ?? this.fieldValidations,
+      );
 }
 
 /// 输入验证管理器
 class InputValidationNotifier extends StateNotifier<InputValidationState> {
-  final ValidationService _validationService;
-
   InputValidationNotifier({
     required ValidationService validationService,
   })  : _validationService = validationService,
         super(const InputValidationState());
+  final ValidationService _validationService;
 
   /// 验证完整草稿
   Future<void> validateDraft(DraftTransaction draft) async {
@@ -51,7 +48,7 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
       state = state.copyWith(
         currentValidation: InputValidation(
           isValid: false,
-          errorMessage: '验证失败: ${e.toString()}',
+          errorMessage: '验证失败: $e',
         ).copyWith(lastValidatedAt: DateTime.now()),
         isValidating: false,
       );
@@ -59,7 +56,7 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
   }
 
   /// 验证单个字段
-  Future<void> validateField(String fieldName, dynamic value) async {
+  Future<void> validateField(String fieldName, Object? value) async {
     try {
       final fieldValidation =
           await _validationService.validateField(fieldName, value);
@@ -71,7 +68,7 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
     } on Exception catch (e) {
       final errorValidation = InputValidation(
         isValid: false,
-        errorMessage: '字段验证失败: ${e.toString()}',
+        errorMessage: '字段验证失败: $e',
       ).copyWith(lastValidatedAt: DateTime.now());
 
       final updatedFieldValidations =
@@ -96,7 +93,7 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
       state = state.copyWith(
         currentValidation: InputValidation(
           isValid: false,
-          errorMessage: '批量验证失败: ${e.toString()}',
+          errorMessage: '批量验证失败: $e',
         ).copyWith(lastValidatedAt: DateTime.now()),
         isValidating: false,
       );
@@ -104,15 +101,12 @@ class InputValidationNotifier extends StateNotifier<InputValidationState> {
   }
 
   /// 获取字段验证结果
-  InputValidation? getFieldValidation(String fieldName) {
-    return state.fieldValidations[fieldName];
-  }
+  InputValidation? getFieldValidation(String fieldName) =>
+      state.fieldValidations[fieldName];
 
   /// 检查所有字段是否有效
-  bool areAllFieldsValid() {
-    return state.fieldValidations.values
-        .every((validation) => validation.isValid);
-  }
+  bool areAllFieldsValid() =>
+      state.fieldValidations.values.every((validation) => validation.isValid);
 
   /// 获取所有验证错误
   List<String> getAllErrors() {

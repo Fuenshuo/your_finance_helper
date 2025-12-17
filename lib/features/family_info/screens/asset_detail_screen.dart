@@ -28,11 +28,17 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     // ===== v1.1.0 初始化企业级动效系统 =====
     // 注册通用资产详情专用动效曲线
     IOSAnimationSystem.registerCustomCurve(
-        'asset-detail-expand', Curves.elasticOut);
+      'asset-detail-expand',
+      Curves.elasticOut,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'asset-history-chart', Curves.easeInOutCubic);
+      'asset-history-chart',
+      Curves.easeInOutCubic,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'asset-info-slide', Curves.fastOutSlowIn);
+      'asset-info-slide',
+      Curves.fastOutSlowIn,
+    );
   }
 
   @override
@@ -147,7 +153,9 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                         '当前估值',
                         '¥${widget.asset.currentValue!.toStringAsFixed(2)}',
                         _getValueColor(
-                            widget.asset.currentValue!, widget.asset.amount),
+                          widget.asset.currentValue!,
+                          widget.asset.amount,
+                        ),
                         subtitle: _getValueChangeText(),
                       ),
                     ],
@@ -245,8 +253,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        Navigator.of(context)
-                            .push(
+                        Navigator.of(context).push(
                           AppAnimations.createRoute<void>(
                             AssetEditScreen(asset: widget.asset),
                           ),

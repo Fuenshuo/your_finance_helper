@@ -236,7 +236,8 @@ List<Account> get _sampleAccounts => [
         name: '主钱包',
         type: AccountType.cash,
         balance: 3200,
-        creationDate: DateTime(2024, 1, 1), // ignore: avoid_redundant_argument_values
+        creationDate:
+            DateTime(2024, 1, 1), // ignore: avoid_redundant_argument_values
       ),
     ];
 
@@ -248,7 +249,8 @@ List<EnvelopeBudget> get _sampleEnvelopeBudgets => [
         allocatedAmount: 800,
         spentAmount: 120,
         period: BudgetPeriod.monthly,
-        startDate: DateTime(2025, 1, 1), // ignore: avoid_redundant_argument_values
+        startDate:
+            DateTime(2025, 1, 1), // ignore: avoid_redundant_argument_values
         endDate: DateTime(2025, 1, 31),
       ),
     ];

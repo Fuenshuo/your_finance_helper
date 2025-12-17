@@ -81,11 +81,13 @@ class BudgetProvider with ChangeNotifier {
         for (var i = 0; i < _salaryIncomes.length; i++) {
           final income = _salaryIncomes[i];
           Logger.debug(
-              '  工资收入${i + 1}: ${income.name} - 基本工资=${income.basicSalary}, 奖金数量=${income.bonuses.length}');
+            '  工资收入${i + 1}: ${income.name} - 基本工资=${income.basicSalary}, 奖金数量=${income.bonuses.length}',
+          );
           for (var j = 0; j < income.bonuses.length; j++) {
             final bonus = income.bonuses[j];
             Logger.debug(
-                '    奖金${j + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
+              '    奖金${j + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}',
+            );
           }
         }
       }
@@ -232,7 +234,8 @@ class BudgetProvider with ChangeNotifier {
     for (var i = 0; i < updatedIncome.bonuses.length; i++) {
       final bonus = updatedIncome.bonuses[i];
       Logger.debug(
-          '  奖金${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}');
+        '  奖金${i + 1}: ${bonus.name} - ${bonus.quarterlyPaymentMonths}',
+      );
     }
 
     // 如果数据正在加载，等待加载完成

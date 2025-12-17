@@ -48,7 +48,5 @@ class CurrencyFormatter {
   }
 
   /// Check if string is valid currency format
-  static bool isValidCurrency(String value) {
-    return parse(value) != null;
-  }
+  static bool isValidCurrency(String value) => parse(value) != null;
 }

@@ -2,6 +2,7 @@
 ///
 /// Comprehensive integration test that verifies all unified_transaction_entry_screen
 /// functionality works correctly after the Flux Ledger cleanup.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,29 +28,38 @@ void main() {
       // Setup test widget with all required providers
       testWidget = provider.MultiProvider(
         providers: [
-          provider.ChangeNotifierProvider(create: (_) => AccountProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => AssetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => BudgetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => ExpensePlanProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => TransactionProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FluxThemeProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowDashboardProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowStreamsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowInsightsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowAnalyticsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AccountProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AssetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => BudgetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ExpensePlanProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => TransactionProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FluxThemeProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowDashboardProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowStreamsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowInsightsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowAnalyticsProvider()..initialize()),
         ],
         child: ProviderScope(
           child: MaterialApp(
             home: const UnifiedTransactionEntryScreen(),
             theme: ThemeData.light(),
             darkTheme: ThemeData.dark(),
-            themeMode: ThemeMode.system,
           ),
         ),
       );
     });
 
-    testWidgets('Screen renders without errors', (WidgetTester tester) async {
+    testWidgets('Screen renders without errors', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -57,17 +67,19 @@ void main() {
       expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
 
       // Check for key UI elements that should be present
-      expect(find.byKey(const Key('unified_timeframe_segmented_control')), findsOneWidget);
+      expect(find.byKey(const Key('unified_timeframe_segmented_control')),
+          findsOneWidget);
       expect(find.byKey(const Key('unified_input_dock')), findsOneWidget);
       expect(find.byKey(const Key('unified_timeline_view')), findsOneWidget);
     });
 
-    testWidgets('Time range controls are interactive', (WidgetTester tester) async {
+    testWidgets('Time range controls are interactive', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
       // Find the timeframe control
-      final timeframeControl = find.byKey(const Key('unified_timeframe_segmented_control'));
+      final timeframeControl =
+          find.byKey(const Key('unified_timeframe_segmented_control'));
       expect(timeframeControl, findsOneWidget);
 
       // Test that it's tappable (verifies interactivity)
@@ -75,7 +87,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Input dock accepts text input', (WidgetTester tester) async {
+    testWidgets('Input dock accepts text input', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -90,7 +102,7 @@ void main() {
       expect(find.text('Test transaction'), findsOneWidget);
     });
 
-    testWidgets('Timeline view displays content', (WidgetTester tester) async {
+    testWidgets('Timeline view displays content', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -98,10 +110,11 @@ void main() {
       expect(find.byKey(const Key('unified_timeline_view')), findsOneWidget);
 
       // Check for timeline group list (may be empty initially but should exist)
-      expect(find.byKey(const Key('unified_timeline_group_list')), findsOneWidget);
+      expect(
+          find.byKey(const Key('unified_timeline_group_list')), findsOneWidget);
     });
 
-    testWidgets('Insights view is accessible', (WidgetTester tester) async {
+    testWidgets('Insights view is accessible', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -112,7 +125,7 @@ void main() {
       expect(insightsView, findsOneWidget);
     });
 
-    testWidgets('Draft card functionality exists', (WidgetTester tester) async {
+    testWidgets('Draft card functionality exists', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -123,20 +136,30 @@ void main() {
       expect(draftCard, findsOneWidget);
     });
 
-    testWidgets('Theme mode affects visual appearance', (WidgetTester tester) async {
+    testWidgets('Theme mode affects visual appearance', (tester) async {
       // Test with light theme
-      var lightThemeWidget = provider.MultiProvider(
+      final lightThemeWidget = provider.MultiProvider(
         providers: [
-          provider.ChangeNotifierProvider(create: (_) => AccountProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => AssetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => BudgetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => ExpensePlanProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => TransactionProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FluxThemeProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowDashboardProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowStreamsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowInsightsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowAnalyticsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AccountProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AssetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => BudgetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ExpensePlanProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => TransactionProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FluxThemeProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowDashboardProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowStreamsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowInsightsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowAnalyticsProvider()..initialize()),
         ],
         child: ProviderScope(
           child: MaterialApp(
@@ -155,18 +178,28 @@ void main() {
       expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
 
       // Test with dark theme
-      var darkThemeWidget = provider.MultiProvider(
+      final darkThemeWidget = provider.MultiProvider(
         providers: [
-          provider.ChangeNotifierProvider(create: (_) => AccountProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => AssetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => BudgetProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => ExpensePlanProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => TransactionProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FluxThemeProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowDashboardProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowStreamsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowInsightsProvider()..initialize()),
-          provider.ChangeNotifierProvider(create: (_) => FlowAnalyticsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AccountProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AssetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => BudgetProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ExpensePlanProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => TransactionProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FluxThemeProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowDashboardProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowStreamsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowInsightsProvider()..initialize()),
+          provider.ChangeNotifierProvider(
+              create: (_) => FlowAnalyticsProvider()..initialize()),
         ],
         child: ProviderScope(
           child: MaterialApp(
@@ -185,10 +218,11 @@ void main() {
       expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
     });
 
-    testWidgets('Screen handles provider dependencies correctly', (WidgetTester tester) async {
+    testWidgets('Screen handles provider dependencies correctly',
+        (tester) async {
       // Test without all required providers (should fail gracefully)
-      var incompleteWidget = MaterialApp(
-        home: const UnifiedTransactionEntryScreen(),
+      const incompleteWidget = MaterialApp(
+        home: UnifiedTransactionEntryScreen(),
       );
 
       await tester.pumpWidget(incompleteWidget);
@@ -199,4 +233,3 @@ void main() {
     });
   });
 }
-

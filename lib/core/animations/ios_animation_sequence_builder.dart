@@ -163,8 +163,9 @@ class IOSAnimationSequence {
     VoidCallback? onError,
   }) async {
     final builder = system.createSequenceBuilder(
-        vsync: vsync, sequenceId: sequenceId)
-      ..configure(config);
+      vsync: vsync,
+      sequenceId: sequenceId,
+    )..configure(config);
 
     for (final step in steps) {
       if (step.isDelay) {

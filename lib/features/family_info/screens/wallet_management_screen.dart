@@ -149,7 +149,10 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
                     _buildEmptyState(context)
                   else
                     _buildAccountList(
-                        context, accountProvider, transactionProvider),
+                      context,
+                      accountProvider,
+                      transactionProvider,
+                    ),
                 ],
               ),
             ),
@@ -291,7 +294,11 @@ class _WalletManagementScreenState extends State<WalletManagementScreen> {
             (account) => AppAnimations.animatedListItem(
               index: accounts.indexOf(account),
               child: _buildAccountCard(
-                  context, account, accountProvider, transactionProvider),
+                context,
+                account,
+                accountProvider,
+                transactionProvider,
+              ),
             ),
           ),
         ],

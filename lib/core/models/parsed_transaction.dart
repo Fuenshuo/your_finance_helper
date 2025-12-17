@@ -22,6 +22,41 @@ class ParsedTransaction extends Equatable {
     this.rawData,
   });
 
+  /// 从JSON创建
+  factory ParsedTransaction.fromJson(Map<String, dynamic> json) =>
+      ParsedTransaction(
+        description: json['description'] as String?,
+        amount: (json['amount'] as num?)?.toDouble(),
+        type: json['type'] != null
+            ? TransactionType.values.firstWhere(
+                (e) => e.name == json['type'],
+                orElse: () => TransactionType.expense,
+              )
+            : null,
+        category: json['category'] != null
+            ? TransactionCategory.values.firstWhere(
+                (e) => e.name == json['category'],
+                orElse: () => TransactionCategory.otherExpense,
+              )
+            : null,
+        subCategory: json['subCategory'] as String?,
+        accountId: json['accountId'] as String?,
+        accountName: json['accountName'] as String?,
+        envelopeBudgetId: json['envelopeBudgetId'] as String?,
+        date: json['date'] != null
+            ? DateTime.parse(json['date'] as String)
+            : null,
+        notes: json['notes'] as String?,
+        confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+        uncertainty: json['uncertainty'] as String?,
+        nextStuff: json['nextStuff'] as String?,
+        source: ParsedTransactionSource.values.firstWhere(
+          (e) => e.name == json['source'],
+          orElse: () => ParsedTransactionSource.unknown,
+        ),
+        rawData: json['rawData'] as Map<String, dynamic>?,
+      );
+
   /// 交易描述
   final String? description;
 
@@ -102,41 +137,6 @@ class ParsedTransaction extends Equatable {
       date: date ?? DateTime.now(),
       notes: notes,
       status: status,
-    );
-  }
-
-  /// 从JSON创建
-  factory ParsedTransaction.fromJson(Map<String, dynamic> json) {
-    return ParsedTransaction(
-      description: json['description'] as String?,
-      amount: (json['amount'] as num?)?.toDouble(),
-      type: json['type'] != null
-          ? TransactionType.values.firstWhere(
-              (e) => e.name == json['type'],
-              orElse: () => TransactionType.expense,
-            )
-          : null,
-      category: json['category'] != null
-          ? TransactionCategory.values.firstWhere(
-              (e) => e.name == json['category'],
-              orElse: () => TransactionCategory.otherExpense,
-            )
-          : null,
-      subCategory: json['subCategory'] as String?,
-      accountId: json['accountId'] as String?,
-      accountName: json['accountName'] as String?,
-      envelopeBudgetId: json['envelopeBudgetId'] as String?,
-      date:
-          json['date'] != null ? DateTime.parse(json['date'] as String) : null,
-      notes: json['notes'] as String?,
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      uncertainty: json['uncertainty'] as String?,
-      nextStuff: json['nextStuff'] as String?,
-      source: ParsedTransactionSource.values.firstWhere(
-        (e) => e.name == json['source'],
-        orElse: () => ParsedTransactionSource.unknown,
-      ),
-      rawData: json['rawData'] as Map<String, dynamic>?,
     );
   }
 

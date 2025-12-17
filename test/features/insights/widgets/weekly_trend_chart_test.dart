@@ -22,21 +22,20 @@ void main() {
     anomalousAnomalies = [
       WeeklyAnomaly(
         id: 'anomaly_1',
-        weekStart: anomalyDate.subtract(Duration(days: 2)),
+        weekStart: anomalyDate.subtract(const Duration(days: 2)),
         anomalyDate: anomalyDate,
         expectedAmount: 200.0,
         actualAmount: 400.0,
         deviation: 100.0,
         reason: '周三支出异常高，主要是餐饮消费',
         severity: AnomalySeverity.medium,
-        categories: ['餐饮'],
+        categories: const ['餐饮'],
       ),
     ];
   });
 
   group('WeeklyTrendChart Widget Tests', () {
-    testWidgets('should display weekly trend chart',
-        (WidgetTester tester) async {
+    testWidgets('should display weekly trend chart', (tester) async {
       final insight = _buildWeeklyInsight(normalWeeklyData, normalAnomalies);
       await tester.pumpWidget(
         MaterialApp(
@@ -51,7 +50,7 @@ void main() {
     });
 
     testWidgets('should display chart with anomaly highlighting',
-        (WidgetTester tester) async {
+        (tester) async {
       final insight =
           _buildWeeklyInsight(anomalousWeeklyData, anomalousAnomalies);
       await tester.pumpWidget(
@@ -66,8 +65,7 @@ void main() {
       expect(find.byType(WeeklyTrendChart), findsOneWidget);
     });
 
-    testWidgets('should handle empty anomalies list',
-        (WidgetTester tester) async {
+    testWidgets('should handle empty anomalies list', (tester) async {
       final insight = _buildWeeklyInsight(normalWeeklyData, normalAnomalies);
       await tester.pumpWidget(
         MaterialApp(
@@ -81,7 +79,7 @@ void main() {
       expect(find.byType(WeeklyTrendChart), findsOneWidget);
     });
 
-    testWidgets('should handle single anomaly', (WidgetTester tester) async {
+    testWidgets('should handle single anomaly', (tester) async {
       final insight =
           _buildWeeklyInsight(anomalousWeeklyData, anomalousAnomalies);
       await tester.pumpWidget(
@@ -96,8 +94,7 @@ void main() {
       expect(find.byType(WeeklyTrendChart), findsOneWidget);
     });
 
-    testWidgets('should handle multiple anomalies',
-        (WidgetTester tester) async {
+    testWidgets('should handle multiple anomalies', (tester) async {
       final multiAnomalies = [
         WeeklyAnomaly(
           id: 'anomaly_1',
@@ -108,7 +105,7 @@ void main() {
           deviation: 50.0,
           reason: '周四支出较高',
           severity: AnomalySeverity.low,
-          categories: ['购物'],
+          categories: const ['购物'],
         ),
         WeeklyAnomaly(
           id: 'anomaly_2',
@@ -119,7 +116,7 @@ void main() {
           deviation: 150.0,
           reason: '周日支出异常高',
           severity: AnomalySeverity.high,
-          categories: ['娱乐'],
+          categories: const ['娱乐'],
         ),
       ];
 
@@ -140,7 +137,7 @@ void main() {
     });
 
     group('Edge cases', () {
-      testWidgets('should handle zero spending', (WidgetTester tester) async {
+      testWidgets('should handle zero spending', (tester) async {
         final zeroData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
         final insight = _buildWeeklyInsight(zeroData, []);
@@ -156,8 +153,7 @@ void main() {
         expect(find.byType(WeeklyTrendChart), findsOneWidget);
       });
 
-      testWidgets('should handle very high spending',
-          (WidgetTester tester) async {
+      testWidgets('should handle very high spending', (tester) async {
         final highData = [1000.0, 1200.0, 800.0, 1500.0, 900.0, 1100.0, 1300.0];
 
         final insight = _buildWeeklyInsight(highData, []);

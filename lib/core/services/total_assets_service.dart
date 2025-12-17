@@ -81,8 +81,11 @@ class TotalAssetsService {
   }
 
   /// 计算总负债
-  static double _calculateTotalLiabilities(List<Account> accounts,
-          List<Transaction> transactions, AccountProvider accountProvider) =>
+  static double _calculateTotalLiabilities(
+    List<Account> accounts,
+    List<Transaction> transactions,
+    AccountProvider accountProvider,
+  ) =>
       accounts
           .where(
             (account) =>
@@ -90,10 +93,11 @@ class TotalAssetsService {
                 account.type.isLiability,
           )
           .fold(
-              0.0,
-              (sum, account) =>
-                  sum +
-                  accountProvider.getAccountBalance(account.id, transactions));
+            0.0,
+            (sum, account) =>
+                sum +
+                accountProvider.getAccountBalance(account.id, transactions),
+          );
 
   /// 计算负债率
   static double calculateDebtRatio({

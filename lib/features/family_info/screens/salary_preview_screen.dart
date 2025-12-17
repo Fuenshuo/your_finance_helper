@@ -31,7 +31,7 @@ class _SalaryPreviewScreenState extends State<SalaryPreviewScreen> {
     _calculateSalary();
   }
 
-  void _calculateSalary() async {
+  Future<void> _calculateSalary() async {
     setState(() {
       _isCalculating = true;
     });
@@ -58,8 +58,7 @@ class _SalaryPreviewScreenState extends State<SalaryPreviewScreen> {
     // 使用年度累积预扣法进行计算
     await logger.log('📊 使用年度累积预扣法计算');
 
-    _calculationResult =
-        await SalaryCalculationService.calculateAutoCumulative(
+    _calculationResult = await SalaryCalculationService.calculateAutoCumulative(
       completedMonths: 12, // 固定计算12个月（一年）
       salaryHistory: widget.salaryIncome.salaryHistory ?? {},
       basicSalary: widget.salaryIncome.basicSalary,
@@ -96,7 +95,7 @@ class _SalaryPreviewScreenState extends State<SalaryPreviewScreen> {
             style: context.textTheme.headlineMedium,
           ),
           centerTitle: true,
-          actions: [],
+          actions: const [],
         ),
         body: _isCalculating
             ? const Center(child: CircularProgressIndicator())
@@ -260,8 +259,7 @@ class _SalaryPreviewScreenState extends State<SalaryPreviewScreen> {
         margin: EdgeInsets.symmetric(horizontal: context.responsiveSpacing8),
       );
 
-
-  void _saveSalaryIncome() async {
+  Future<void> _saveSalaryIncome() async {
     try {
       // Get the budget provider
       final budgetProvider =

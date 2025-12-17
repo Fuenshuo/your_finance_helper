@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../core/models/ai_config.dart';
-import '../core/router/flux_router.dart';
-import '../core/services/ai/ai_config_service.dart';
-import '../core/theme/app_design_tokens.dart';
-import '../core/widgets/composite/switch_control_list_item.dart';
+import 'package:your_finance_flutter/core/models/ai_config.dart';
+import 'package:your_finance_flutter/core/router/flux_router.dart';
+import 'package:your_finance_flutter/core/services/ai/ai_config_service.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/composite/switch_control_list_item.dart';
 
 /// AI配置页面
 class AiConfigScreen extends StatefulWidget {
@@ -26,7 +26,7 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
     {
       'id': 'siliconFlow',
       'name': 'SiliconFlow',
-      'envKey': 'SILICONFLOW_API_KEY'
+      'envKey': 'SILICONFLOW_API_KEY',
     },
   ];
 
@@ -92,180 +92,176 @@ class _AiConfigScreenState extends State<AiConfigScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI 服务配置'),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(FluxRoutes.streams),
-          tooltip: '返回',
-        ),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveConfig,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(
-                    '保存',
-                    style: TextStyle(
-                      color: AppDesignTokens.primaryAction(context),
-                      fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: const Text('AI 服务配置'),
+          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go(FluxRoutes.streams),
+            tooltip: '返回',
+          ),
+          actions: [
+            TextButton(
+              onPressed: _isLoading ? null : _saveConfig,
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      '保存',
+                      style: TextStyle(
+                        color: AppDesignTokens.primaryAction(context),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-          ),
-        ],
-      ),
-      body: Container(
-        color: AppDesignTokens.pageBackground(context),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _buildSection(context, '基本设置', [
-                SwitchControlListItem(
-                  title: '启用 AI 服务',
-                  value: _isEnabled,
-                  onChanged: (value) => setState(() => _isEnabled = value),
-                ),
-              ]),
-              _buildSection(context, 'AI 服务提供商', _buildProviderSelection()),
-              _buildSection(context, 'API 配置', [_buildApiKeyField()]),
-              SizedBox(height: AppDesignTokens.spacing24),
-              _buildTestSection(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSection(
-      BuildContext context, String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppDesignTokens.globalHorizontalPadding,
-            vertical: AppDesignTokens.spacing16,
-          ),
-          child: Text(
-            title,
-            style: AppDesignTokens.title1(context),
-          ),
-        ),
-        Container(
-          color: AppDesignTokens.surface(context),
-          child: Column(children: children),
-        ),
-        SizedBox(height: AppDesignTokens.spacing16),
-      ],
-    );
-  }
-
-  List<Widget> _buildProviderSelection() {
-    return _providers.map((provider) {
-      final isSelected = _selectedProvider == provider['id'];
-      return Container(
-        margin: EdgeInsets.symmetric(
-            horizontal: AppDesignTokens.globalHorizontalPadding),
-        child: RadioListTile<String>(
-          title: Text(
-            provider['name']!,
-            style: AppDesignTokens.body(context).copyWith(
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
-          ),
-          subtitle: Text(
-            '环境变量: ${provider['envKey']}',
-            style: AppDesignTokens.caption(context),
-          ),
-          value: provider['id']!,
-          groupValue: _selectedProvider,
-          onChanged: (value) => setState(() => _selectedProvider = value!),
-          activeColor: AppDesignTokens.primaryAction(context),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppDesignTokens.spacing16,
-            vertical: AppDesignTokens.spacing8,
+          ],
+        ),
+        body: ColoredBox(
+          color: AppDesignTokens.pageBackground(context),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                _buildSection(context, '基本设置', [
+                  SwitchControlListItem(
+                    title: '启用 AI 服务',
+                    value: _isEnabled,
+                    onChanged: (value) => setState(() => _isEnabled = value),
+                  ),
+                ]),
+                _buildSection(context, 'AI 服务提供商', _buildProviderSelection()),
+                _buildSection(context, 'API 配置', [_buildApiKeyField()]),
+                const SizedBox(height: AppDesignTokens.spacing24),
+                _buildTestSection(),
+              ],
+            ),
           ),
         ),
       );
-    }).toList();
-  }
 
-  Widget _buildApiKeyField() {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: AppDesignTokens.globalHorizontalPadding),
-      child: TextFormField(
-        controller: _apiKeyController,
-        style: AppDesignTokens.body(context),
-        decoration: InputDecoration(
-          labelText: 'API Key',
-          hintText: '输入你的 API Key',
-          border: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-        obscureText: true,
-        validator: (value) {
-          if (!_isEnabled) return null;
-          if (value == null || value.trim().isEmpty) {
-            return '请输入 API Key';
-          }
-          return null;
-        },
-      ),
-    );
-  }
-
-  Widget _buildTestSection() {
-    return Padding(
-      padding: EdgeInsets.all(AppDesignTokens.globalHorizontalPadding),
-      child: Column(
+  Widget _buildSection(
+    BuildContext context,
+    String title,
+    List<Widget> children,
+  ) =>
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '测试配置',
-            style: AppDesignTokens.title1(context),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDesignTokens.globalHorizontalPadding,
+              vertical: AppDesignTokens.spacing16,
+            ),
+            child: Text(
+              title,
+              style: AppDesignTokens.title1(context),
+            ),
           ),
-          SizedBox(height: AppDesignTokens.spacing12),
-          Text(
-            '保存配置后，可以通过交易录入界面测试 AI 解析功能。例如：输入"午饭20元"，AI 将自动解析为交易记录。',
-            style: AppDesignTokens.body(context),
+          ColoredBox(
+            color: AppDesignTokens.surface(context),
+            child: Column(children: children),
           ),
-          SizedBox(height: AppDesignTokens.spacing24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => context.go(FluxRoutes.streams),
-                  child: const Text('返回'),
-                ),
-              ),
-              SizedBox(width: AppDesignTokens.spacing16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveConfig,
-                  child: const Text('保存配置'),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: AppDesignTokens.spacing16),
         ],
-      ),
-    );
-  }
+      );
+
+  List<Widget> _buildProviderSelection() => _providers.map((provider) {
+        final isSelected = _selectedProvider == provider['id'];
+        return Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppDesignTokens.globalHorizontalPadding,
+          ),
+          child: RadioListTile<String>(
+            title: Text(
+              provider['name']!,
+              style: AppDesignTokens.body(context).copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+            subtitle: Text(
+              '环境变量: ${provider['envKey']}',
+              style: AppDesignTokens.caption(context),
+            ),
+            value: provider['id']!,
+            groupValue: _selectedProvider,
+            onChanged: (value) => setState(() => _selectedProvider = value!),
+            activeColor: AppDesignTokens.primaryAction(context),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppDesignTokens.spacing16,
+              vertical: AppDesignTokens.spacing8,
+            ),
+          ),
+        );
+      }).toList();
+
+  Widget _buildApiKeyField() => Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDesignTokens.globalHorizontalPadding,
+        ),
+        child: TextFormField(
+          controller: _apiKeyController,
+          style: AppDesignTokens.body(context),
+          decoration: InputDecoration(
+            labelText: 'API Key',
+            hintText: '输入你的 API Key',
+            border: OutlineInputBorder(
+              borderRadius:
+                  BorderRadius.circular(AppDesignTokens.radiusMedium(context)),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          obscureText: true,
+          validator: (value) {
+            if (!_isEnabled) return null;
+            if (value == null || value.trim().isEmpty) {
+              return '请输入 API Key';
+            }
+            return null;
+          },
+        ),
+      );
+
+  Widget _buildTestSection() => Padding(
+        padding: const EdgeInsets.all(AppDesignTokens.globalHorizontalPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '测试配置',
+              style: AppDesignTokens.title1(context),
+            ),
+            const SizedBox(height: AppDesignTokens.spacing12),
+            Text(
+              '保存配置后，可以通过交易录入界面测试 AI 解析功能。例如：输入"午饭20元"，AI 将自动解析为交易记录。',
+              style: AppDesignTokens.body(context),
+            ),
+            const SizedBox(height: AppDesignTokens.spacing24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => context.go(FluxRoutes.streams),
+                    child: const Text('返回'),
+                  ),
+                ),
+                const SizedBox(width: AppDesignTokens.spacing16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveConfig,
+                    child: const Text('保存配置'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
 
   @override
   void dispose() {

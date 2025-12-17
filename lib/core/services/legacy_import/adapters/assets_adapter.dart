@@ -23,7 +23,8 @@ class LegacyAssetsAdapter {
 
   /// Parses SharedPreferences assets_data (current app format)
   static Future<List<AssetItem>> parseSharedPreferences(
-      String jsonString) async {
+    String jsonString,
+  ) async {
     try {
       final dynamic jsonData = jsonDecode(jsonString);
       if (jsonData is List) {
@@ -35,7 +36,7 @@ class LegacyAssetsAdapter {
     return <AssetItem>[];
   }
 
-  static AssetItem _mapAsset(dynamic raw) {
+  static AssetItem _mapAsset(Object? raw) {
     final m = (raw is Map<String, dynamic>) ? raw : <String, dynamic>{};
 
     final id = (m['id']?.toString().trim().isNotEmpty ?? false)
@@ -69,13 +70,13 @@ class LegacyAssetsAdapter {
     );
   }
 
-  static double _toDouble(dynamic v) {
+  static double _toDouble(Object? v) {
     if (v is num) return v.toDouble();
     if (v is String) return double.tryParse(v) ?? 0.0;
     return 0.0;
   }
 
-  static DateTime _parseDate(dynamic v) {
+  static DateTime _parseDate(Object? v) {
     if (v is DateTime) return v;
     if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
     if (v is String) {

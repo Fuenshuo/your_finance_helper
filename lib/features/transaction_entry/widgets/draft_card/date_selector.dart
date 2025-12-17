@@ -3,14 +3,13 @@ import 'package:intl/intl.dart';
 
 /// 日期选择器组件
 class DateSelector extends StatelessWidget {
-  final DateTime? selectedDate;
-  final ValueChanged<DateTime?> onDateSelected;
-
   const DateSelector({
+    required this.onDateSelected,
     super.key,
     this.selectedDate,
-    required this.onDateSelected,
   });
+  final DateTime? selectedDate;
+  final ValueChanged<DateTime?> onDateSelected;
 
   @override
   Widget build(BuildContext context) {

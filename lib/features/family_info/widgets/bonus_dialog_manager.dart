@@ -16,11 +16,13 @@ class BonusDialogManager {
     BonusItem bonus,
   ) async {
     Logger.debug(
-        '📝 showEditDialog called with bonus: ${bonus.name} and quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}');
+      '📝 showEditDialog called with bonus: ${bonus.name} and quarterlyPaymentMonths: ${bonus.quarterlyPaymentMonths}',
+    );
     final result = await _showBonusDialog(context, bonus);
     if (result != null) {
       Logger.debug(
-          '✅ showEditDialog returning bonus: ${result.name} with quarterlyPaymentMonths: ${result.quarterlyPaymentMonths}');
+        '✅ showEditDialog returning bonus: ${result.name} with quarterlyPaymentMonths: ${result.quarterlyPaymentMonths}',
+      );
     } else {
       Logger.debug('❌ showEditDialog returning null');
     }
@@ -59,22 +61,27 @@ class BonusDialogManager {
       final storageService = await StorageService.getInstance();
       final salaryIncomes = await storageService.loadSalaryIncomes();
       Logger.debug(
-          '[BonusDialogManager._getBasicSalary] 📊 加载到工资收入记录: ${salaryIncomes.length} 条');
+        '[BonusDialogManager._getBasicSalary] 📊 加载到工资收入记录: ${salaryIncomes.length} 条',
+      );
 
       if (salaryIncomes.isNotEmpty) {
         final basicSalary = salaryIncomes.first.basicSalary;
         Logger.debug(
-            '[BonusDialogManager._getBasicSalary] 💰 找到基本工资: ¥$basicSalary');
+          '[BonusDialogManager._getBasicSalary] 💰 找到基本工资: ¥$basicSalary',
+        );
         Logger.debug(
-            '[BonusDialogManager._getBasicSalary] 📝 工资收入详情: ${salaryIncomes.first.name}');
+          '[BonusDialogManager._getBasicSalary] 📝 工资收入详情: ${salaryIncomes.first.name}',
+        );
 
         if (basicSalary > 0) {
           Logger.debug(
-              '[BonusDialogManager._getBasicSalary] ✅ 返回有效基本工资: ¥$basicSalary');
+            '[BonusDialogManager._getBasicSalary] ✅ 返回有效基本工资: ¥$basicSalary',
+          );
           return basicSalary;
         } else {
           Logger.warning(
-              '[BonusDialogManager._getBasicSalary] ⚠️ 基本工资为0或null: $basicSalary');
+            '[BonusDialogManager._getBasicSalary] ⚠️ 基本工资为0或null: $basicSalary',
+          );
           return null;
         }
       } else {
@@ -143,7 +150,8 @@ class BonusDialogManager {
     BonusItem? bonus,
   ) async {
     Logger.debug(
-        '📝 _showBonusDialog called with bonus: ${bonus?.name} and quarterlyPaymentMonths: ${bonus?.quarterlyPaymentMonths}');
+      '📝 _showBonusDialog called with bonus: ${bonus?.name} and quarterlyPaymentMonths: ${bonus?.quarterlyPaymentMonths}',
+    );
     final type = bonus?.type ?? BonusType.quarterlyBonus;
     final name = bonus?.name ??
         (type == BonusType.thirteenthSalary
@@ -583,7 +591,8 @@ class _BonusDialogState extends State<_BonusDialog> {
                             TextButton(
                               onPressed: () {
                                 Logger.debug(
-                                    '🗑️ Clear button clicked, clearing all months');
+                                  '🗑️ Clear button clicked, clearing all months',
+                                );
                                 _updateQuarterlyMonths([]);
                               },
                               child: const Text('清空'),
@@ -607,20 +616,23 @@ class _BonusDialogState extends State<_BonusDialog> {
                             child: TextButton(
                               onPressed: () {
                                 Logger.debug(
-                                    '📝 Month button clicked: $month月, currently selected: $isSelected');
+                                  '📝 Month button clicked: $month月, currently selected: $isSelected',
+                                );
                                 final currentMonths =
                                     List<int>.from(_quarterlyPaymentMonths);
                                 if (isSelected) {
                                   // Remove selected month
                                   currentMonths.remove(month);
                                   Logger.debug(
-                                      '📝 Removing month $month月, new list: $currentMonths');
+                                    '📝 Removing month $month月, new list: $currentMonths',
+                                  );
                                 } else if (currentMonths.length < 4) {
                                   // Add new month
                                   currentMonths.add(month);
                                   currentMonths.sort();
                                   Logger.debug(
-                                      '📝 Adding month $month月, new list: $currentMonths');
+                                    '📝 Adding month $month月, new list: $currentMonths',
+                                  );
                                 }
                                 _updateQuarterlyMonths(currentMonths);
                               },
@@ -631,7 +643,9 @@ class _BonusDialogState extends State<_BonusDialog> {
                                 foregroundColor:
                                     isSelected ? Colors.white : Colors.black87,
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 12),
+                                  horizontal: 8,
+                                  vertical: 12,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4),
                                 ),
@@ -756,8 +770,8 @@ class _BonusDialogState extends State<_BonusDialog> {
                             // 为十三薪月份选择时更新金额（支持调薪）
                             if (_type == BonusType.thirteenthSalary) {
                               BonusDialogManager._getBasicSalaryForMonth(
-                                      _thirteenthSalaryMonth)
-                                  .then((monthlySalary) {
+                                _thirteenthSalaryMonth,
+                              ).then((monthlySalary) {
                                 if (monthlySalary != null &&
                                     monthlySalary > 0) {
                                   // 总是更新金额，除非用户明确设置为不同的值
@@ -1165,7 +1179,8 @@ class _BonusDialogState extends State<_BonusDialog> {
                 }
 
                 Logger.debug(
-                    '📝 Creating bonus with quarterlyPaymentMonths: $_quarterlyPaymentMonths');
+                  '📝 Creating bonus with quarterlyPaymentMonths: $_quarterlyPaymentMonths',
+                );
 
                 final newBonus = BonusItem(
                   id: widget.bonus?.id ??
@@ -1214,7 +1229,8 @@ class _BonusDialogState extends State<_BonusDialog> {
                   updateDate: DateTime.now(),
                   quarterlyPaymentMonths: _type == BonusType.quarterlyBonus
                       ? List<int>.from(
-                          _quarterlyPaymentMonths) // Create a new list to avoid reference issues
+                          _quarterlyPaymentMonths,
+                        ) // Create a new list to avoid reference issues
                       : null,
                   thirteenthSalaryMonth: _type == BonusType.thirteenthSalary
                       ? _thirteenthSalaryMonth
@@ -1233,7 +1249,8 @@ class _BonusDialogState extends State<_BonusDialog> {
                 );
 
                 Logger.debug(
-                    '✅ Bonus created successfully with quarterlyPaymentMonths: ${newBonus.quarterlyPaymentMonths}');
+                  '✅ Bonus created successfully with quarterlyPaymentMonths: ${newBonus.quarterlyPaymentMonths}',
+                );
                 Navigator.of(context).pop(newBonus);
               } else {
                 Logger.debug('❌ Form validation failed');

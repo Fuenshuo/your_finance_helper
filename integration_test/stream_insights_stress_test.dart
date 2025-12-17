@@ -80,8 +80,7 @@ Future<void> main() async {
           () async => runToggleLoop(tester),
           reportKey: reportKey,
         );
-        final summary =
-            binding.reportData![reportKey]! as Map<String, dynamic>;
+        final summary = binding.reportData![reportKey]! as Map<String, dynamic>;
         final averageBuild = summary['average_frame_build_time_millis'] as num;
         final worstBuild = summary['worst_frame_build_time_millis'] as num;
         debugPrint(

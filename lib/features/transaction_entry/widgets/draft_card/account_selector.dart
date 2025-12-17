@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 
 /// 账户选择器组件
 class AccountSelector extends StatelessWidget {
-  final String? selectedAccountId;
-  final ValueChanged<String?> onAccountSelected;
-
   const AccountSelector({
+    required this.onAccountSelected,
     super.key,
     this.selectedAccountId,
-    required this.onAccountSelected,
   });
+  final String? selectedAccountId;
+  final ValueChanged<String?> onAccountSelected;
 
   // 临时账户数据
   static const List<Map<String, dynamic>> _accounts = [
@@ -18,13 +17,13 @@ class AccountSelector extends StatelessWidget {
       'id': 'card',
       'name': '银行卡',
       'icon': Icons.credit_card,
-      'color': Colors.blue
+      'color': Colors.blue,
     },
     {
       'id': 'alipay',
       'name': '支付宝',
       'icon': Icons.account_balance_wallet,
-      'color': Colors.blue
+      'color': Colors.blue,
     },
     {'id': 'wechat', 'name': '微信', 'icon': Icons.chat, 'color': Colors.green},
   ];

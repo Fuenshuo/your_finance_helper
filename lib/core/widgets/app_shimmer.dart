@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
-import '../theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
 
 /// 现代骨架屏效果
 /// 使用 LinearGradient 实现流光效果
 class AppShimmer extends StatefulWidget {
-  final double width;
-  final double height;
-  final double radius;
-
   const AppShimmer({
-    super.key,
     required this.width,
     required this.height,
+    super.key,
     this.radius = 8,
   });
 
   // 预设：圆形骨架（头像）
-  factory AppShimmer.circle({required double size}) {
-    return AppShimmer(width: size, height: size, radius: size / 2);
-  }
+  factory AppShimmer.circle({required double size}) =>
+      AppShimmer(width: size, height: size, radius: size / 2);
 
   // 预设：文本行骨架
-  factory AppShimmer.text(
-      {double width = double.infinity, double height = 16}) {
-    return AppShimmer(width: width, height: height, radius: 4);
-  }
+  factory AppShimmer.text({
+    double width = double.infinity,
+    double height = 16,
+  }) =>
+      AppShimmer(width: width, height: height, radius: 4);
+  final double width;
+  final double height;
+  final double radius;
 
   @override
   State<AppShimmer> createState() => _AppShimmerState();
@@ -60,36 +59,34 @@ class _AppShimmerState extends State<AppShimmer>
 
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) {
-        return Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.radius),
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [baseColor, highlightColor, baseColor],
-              stops: const [0.1, 0.5, 0.9],
-              // 核心：通过 transform 移动渐变，产生流动感
-              transform: _SlidingGradientTransform(_controller.value),
-            ),
+      builder: (context, child) => Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.radius),
+          gradient: LinearGradient(
+            colors: [baseColor, highlightColor, baseColor],
+            stops: const [0.1, 0.5, 0.9],
+            // 核心：通过 transform 移动渐变，产生流动感
+            transform: _SlidingGradientTransform(_controller.value),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
 
 class _SlidingGradientTransform extends GradientTransform {
-  final double slidePercent;
   const _SlidingGradientTransform(this.slidePercent);
+  final double slidePercent;
 
   @override
-  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
-    return Matrix4.translationValues(
-        bounds.width * slidePercent * 2 - bounds.width, 0.0, 0.0);
-  }
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) =>
+      Matrix4.translationValues(
+        bounds.width * slidePercent * 2 - bounds.width,
+        0.0,
+        0.0,
+      );
 }
 
 /// 预定义的Shimmer组件（兼容旧代码）
@@ -114,7 +111,7 @@ class AppShimmerWidgets {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppShimmer.text(width: double.infinity, height: 16),
+                  AppShimmer.text(),
                   const SizedBox(height: AppDesignTokens.spacing8),
                   AppShimmer.text(width: 120, height: 12),
                 ],

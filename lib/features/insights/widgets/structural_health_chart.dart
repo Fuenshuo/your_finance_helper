@@ -26,12 +26,11 @@ import 'package:your_finance_flutter/features/insights/services/financial_calcul
 /// )
 /// ```
 class StructuralHealthChart extends StatefulWidget {
-  final AllocationData? allocationData;
-
   const StructuralHealthChart({
     super.key,
     this.allocationData,
   });
+  final AllocationData? allocationData;
 
   @override
   State<StructuralHealthChart> createState() => _StructuralHealthChartState();
@@ -168,43 +167,42 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
     return sections;
   }
 
-  Widget _buildBreakdownList(AllocationData allocation, BuildContext context) {
-    return Column(
-      children: [
-        // Fixed expenses row
-        _buildBreakdownRow(
-          context,
-          label: 'Fixed Expenses',
-          amount: allocation.fixedAmount,
-          formattedAmount: _formatAmount(allocation.fixedAmount),
-          color: AppDesignTokens.amountNegativeColor(context),
-        ),
+  Widget _buildBreakdownList(AllocationData allocation, BuildContext context) =>
+      Column(
+        children: [
+          // Fixed expenses row
+          _buildBreakdownRow(
+            context,
+            label: 'Fixed Expenses',
+            amount: allocation.fixedAmount,
+            formattedAmount: _formatAmount(allocation.fixedAmount),
+            color: AppDesignTokens.amountNegativeColor(context),
+          ),
 
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-        // Flexible expenses row
-        _buildBreakdownRow(
-          context,
-          label: 'Flexible Expenses',
-          amount: allocation.flexibleAmount,
-          formattedAmount: _formatAmount(allocation.flexibleAmount),
-          color: AppDesignTokens.amountPositiveColor(context),
-        ),
+          // Flexible expenses row
+          _buildBreakdownRow(
+            context,
+            label: 'Flexible Expenses',
+            amount: allocation.flexibleAmount,
+            formattedAmount: _formatAmount(allocation.flexibleAmount),
+            color: AppDesignTokens.amountPositiveColor(context),
+          ),
 
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-        // Total row
-        _buildBreakdownRow(
-          context,
-          label: 'Total',
-          amount: allocation.totalAmount,
-          formattedAmount: _formatAmount(allocation.totalAmount),
-          color: AppDesignTokens.primaryText(context),
-          isTotal: true,
-        ),
-      ],
-    );
-  }
+          // Total row
+          _buildBreakdownRow(
+            context,
+            label: 'Total',
+            amount: allocation.totalAmount,
+            formattedAmount: _formatAmount(allocation.totalAmount),
+            color: AppDesignTokens.primaryText(context),
+            isTotal: true,
+          ),
+        ],
+      );
 
   String _formatAmount(double amount) {
     // Use the CurrencyFormatter for consistent formatting
@@ -218,75 +216,72 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
     required String formattedAmount,
     required Color color,
     bool isTotal = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
+  }) =>
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: isTotal
+                    ? AppDesignTokens.headline(context)
+                    : AppDesignTokens.body(context),
+              ),
+            ],
+          ),
+          Text(
+            formattedAmount,
+            style: isTotal
+                ? AppDesignTokens.headline(context).copyWith(color: color)
+                : AppDesignTokens.body(context).copyWith(color: color),
+          ),
+        ],
+      );
+
+  Widget _buildEmptyState(BuildContext context) => Container(
+        height: 300,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             Text(
-              label,
-              style: isTotal
-                  ? AppDesignTokens.headline(context)
-                  : AppDesignTokens.body(context),
+              'Complete spending setup to see health score',
+              style: AppDesignTokens.caption(context).copyWith(
+                color: AppDesignTokens.secondaryText(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            // Placeholder donut ring
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppDesignTokens.inputFill(context),
+                  width: 15,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '--',
+                style: AppDesignTokens.largeTitle(context).copyWith(
+                  color: AppDesignTokens.secondaryText(context),
+                ),
+              ),
             ),
           ],
         ),
-        Text(
-          formattedAmount,
-          style: isTotal
-              ? AppDesignTokens.headline(context).copyWith(color: color)
-              : AppDesignTokens.body(context).copyWith(color: color),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      height: 300,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Complete spending setup to see health score',
-            style: AppDesignTokens.caption(context).copyWith(
-              color: AppDesignTokens.secondaryText(context),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          // Placeholder donut ring
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppDesignTokens.inputFill(context),
-                width: 15,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '--',
-              style: AppDesignTokens.largeTitle(context).copyWith(
-                color: AppDesignTokens.secondaryText(context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+      );
 }

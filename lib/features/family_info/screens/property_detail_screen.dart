@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/animations/ios_animation_system.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   const PropertyDetailScreen({
@@ -48,11 +48,17 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     // ===== v1.1.0 初始化企业级动效系统 =====
     // 注册房产详情专用动效曲线
     IOSAnimationSystem.registerCustomCurve(
-        'property-card-expand', Curves.elasticOut);
+      'property-card-expand',
+      Curves.elasticOut,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'valuation-chart', Curves.easeInOutCubic);
+      'valuation-chart',
+      Curves.easeInOutCubic,
+    );
     IOSAnimationSystem.registerCustomCurve(
-        'property-info-slide', Curves.fastOutSlowIn);
+      'property-info-slide',
+      Curves.fastOutSlowIn,
+    );
 
     _property = widget.asset;
     _initializeControllers();

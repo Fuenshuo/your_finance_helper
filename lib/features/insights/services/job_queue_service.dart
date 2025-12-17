@@ -4,12 +4,11 @@ import 'package:your_finance_flutter/features/insights/models/flux_loop_job.dart
 
 /// Service for managing background job queues
 class JobQueueService {
-  static final JobQueueService _instance = JobQueueService._();
-  static JobQueueService get instance => _instance;
-
   JobQueueService._() {
     _initializeQueues();
   }
+  static final JobQueueService _instance = JobQueueService._();
+  static JobQueueService get instance => _instance;
 
   final Map<JobType, Queue<FluxLoopJob>> _jobQueues = {};
   final Map<String, StreamController<FluxLoopJob>> _jobControllers = {};
@@ -44,9 +43,8 @@ class JobQueueService {
   }
 
   /// Get job status stream
-  Stream<FluxLoopJob> watchJob(String jobId) {
-    return _jobControllers[jobId]?.stream ?? Stream.empty();
-  }
+  Stream<FluxLoopJob> watchJob(String jobId) =>
+      _jobControllers[jobId]?.stream ?? const Stream.empty();
 
   /// Cancel a job
   Future<void> cancelJob(String jobId) async {
@@ -57,7 +55,7 @@ class JobQueueService {
         type: JobType.dailyAnalysis, // Placeholder
         status: JobStatus.failed,
         createdAt: DateTime.now(),
-        metadata: {},
+        metadata: const {},
       );
       controller.add(cancelledJob);
       await controller.close();
@@ -126,13 +124,13 @@ class JobQueueService {
     Future<String> processJob() async {
       switch (job.type) {
         case JobType.dailyAnalysis:
-          return await _processDailyAnalysis(job);
+          return _processDailyAnalysis(job);
         case JobType.weeklyPatterns:
-          return await _processWeeklyAnalysis(job);
+          return _processWeeklyAnalysis(job);
         case JobType.monthlyHealth:
-          return await _processMonthlyAnalysis(job);
+          return _processMonthlyAnalysis(job);
         case JobType.microInsight:
-          return await _processMicroInsight(job);
+          return _processMicroInsight(job);
       }
     }
 
@@ -191,12 +189,9 @@ class JobQueueService {
     return stats;
   }
 
-  int _getTotalJobsForType(JobType type) {
-    return _jobQueues[type]!.length +
-        _jobControllers.values
-            .where((controller) => !controller.isClosed)
-            .length;
-  }
+  int _getTotalJobsForType(JobType type) =>
+      _jobQueues[type]!.length +
+      _jobControllers.values.where((controller) => !controller.isClosed).length;
 
   /// Clean up completed jobs
   void cleanup() {

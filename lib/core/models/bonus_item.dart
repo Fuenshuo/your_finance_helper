@@ -220,7 +220,8 @@ class BonusItem extends Equatable {
   double calculateMonthlyBonus(int year, int month) {
     final date = DateTime(year, month);
     Logger.debug(
-        '🎁 计算奖金月份: ${name}, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency');
+      '🎁 计算奖金月份: $name, 年=$year, 月=$month, 开始日期=$startDate, 类型=$type, 频率=$frequency',
+    );
 
     // 检查奖金是否在指定日期有效
     // 对于十三薪和年终奖，我们特殊处理日期检查
@@ -354,8 +355,8 @@ class BonusItem extends Equatable {
         if (startDate.year <= year &&
             (endDate == null || endDate!.year >= year)) {
           // 检查是否已发放或在年度内
-          if (startDate.isBefore(DateTime(year + 1, 1, 1)) &&
-              (endDate == null || endDate!.isAfter(DateTime(year, 1, 1)))) {
+          if (startDate.isBefore(DateTime(year + 1)) &&
+              (endDate == null || endDate!.isAfter(DateTime(year)))) {
             return amount; // 在年度内，返回全额
           }
         }
@@ -473,7 +474,6 @@ class BonusItem extends Equatable {
 
     return bonusPerHalf * paidHalfs;
   }
-
 
   /// 创建副本
   BonusItem copyWith({

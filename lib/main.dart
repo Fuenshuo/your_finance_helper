@@ -10,4 +10,3 @@ import 'package:your_finance_flutter/main_flux.dart' as flux;
 void main() {
   flux.main();
 }
-

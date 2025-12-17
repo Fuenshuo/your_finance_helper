@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/input_validation_provider.dart';
-import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 
 /// 交易录入功能集成测试
 ///
@@ -77,7 +77,8 @@ void main() {
     });
 
     test('validation integration', () async {
-      final validationNotifier = container.read(inputValidationProvider.notifier);
+      final validationNotifier =
+          container.read(inputValidationProvider.notifier);
 
       // 测试有效草稿验证
       final validDraft = DraftTransaction(
@@ -92,7 +93,6 @@ void main() {
 
       // 测试无效草稿验证
       final invalidDraft = DraftTransaction(
-        amount: null, // 缺少金额
         description: '', // 空描述
         type: TransactionType.expense,
       );

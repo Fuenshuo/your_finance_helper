@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/core/models/asset_item.dart';
 import 'package:your_finance_flutter/core/providers/asset_provider.dart';
+import 'package:your_finance_flutter/core/theme/app_theme.dart';
+import 'package:your_finance_flutter/core/utils/logger.dart';
 import 'package:your_finance_flutter/features/family_info/screens/add_asset_sheet.dart';
 import 'package:your_finance_flutter/features/family_info/screens/edit_asset_sheet.dart';
 import 'package:your_finance_flutter/features/family_info/screens/property_detail_screen.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart';
 
 class AddAssetFlowScreen extends StatefulWidget {
   const AddAssetFlowScreen({
@@ -323,7 +323,8 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
 
   void _showAddAssetSheet(AssetCategory category) {
     Logger.debug(
-        '📋 AddAssetFlowScreen: 显示添加资产表单 - 分类: ${category.displayName}');
+      '📋 AddAssetFlowScreen: 显示添加资产表单 - 分类: ${category.displayName}',
+    );
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -334,12 +335,14 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
             '📋 AddAssetFlowScreen: 收到新资产 - 名称: ${asset.name}, ID: ${asset.id}, 分类: ${asset.category.displayName}',
           );
           Logger.debug(
-              '📋 AddAssetFlowScreen: 添加前临时资产数量: ${_tempAssets.length}');
+            '📋 AddAssetFlowScreen: 添加前临时资产数量: ${_tempAssets.length}',
+          );
           setState(() {
             _tempAssets.add(asset);
           });
           Logger.debug(
-              '📋 AddAssetFlowScreen: 添加后临时资产数量: ${_tempAssets.length}');
+            '📋 AddAssetFlowScreen: 添加后临时资产数量: ${_tempAssets.length}',
+          );
         },
       ),
     );
@@ -366,7 +369,8 @@ class _AddAssetFlowScreenState extends State<AddAssetFlowScreen> {
           asset: asset,
           onAssetUpdated: (updatedAsset) {
             Logger.debug(
-                '📋 AddAssetFlowScreen: 资产已更新 - 名称: ${updatedAsset.name}');
+              '📋 AddAssetFlowScreen: 资产已更新 - 名称: ${updatedAsset.name}',
+            );
             setState(() {
               final index = _tempAssets.indexWhere((a) => a.id == asset.id);
               if (index != -1) {

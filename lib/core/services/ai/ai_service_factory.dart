@@ -10,9 +10,11 @@ abstract class AiServiceFactory {
 /// AI服务工厂 - 根据配置创建对应的AI服务实例
 class AiServiceFactoryImpl implements AiServiceFactory {
   /// 根据配置创建AI服务实例
+  @override
   AiService createService(AiConfig config) {
     // 目前只支持基础的AI服务，具体实现由子类决定
-    throw UnimplementedError('AI service creation not implemented for ${config.provider}');
+    throw UnimplementedError(
+        'AI service creation not implemented for ${config.provider}');
   }
 
   /// 根据提供商创建默认配置的服务实例

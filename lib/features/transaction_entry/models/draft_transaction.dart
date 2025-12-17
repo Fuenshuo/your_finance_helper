@@ -2,10 +2,26 @@ import 'package:equatable/equatable.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 
 // Re-export TransactionType from core models to avoid conflicts
-export 'package:your_finance_flutter/core/models/transaction.dart' show TransactionType;
+export 'package:your_finance_flutter/core/models/transaction.dart'
+    show TransactionType;
 
 /// 草稿交易模型
 class DraftTransaction extends Equatable {
+  DraftTransaction({
+    this.amount,
+    this.description,
+    this.type,
+    this.accountId,
+    this.categoryId,
+    this.transactionDate,
+    this.tags = const [],
+    this.isExpense,
+    this.confidence = 0.0,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  })  : createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
+
   /// 交易金额
   final double? amount;
 
@@ -39,21 +55,6 @@ class DraftTransaction extends Equatable {
   /// 最后修改时间
   final DateTime updatedAt;
 
-  DraftTransaction({
-    this.amount,
-    this.description,
-    this.type,
-    this.accountId,
-    this.categoryId,
-    this.transactionDate,
-    this.tags = const [],
-    this.isExpense,
-    this.confidence = 0.0,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
-
   DraftTransaction copyWith({
     double? amount,
     String? description,
@@ -66,21 +67,20 @@ class DraftTransaction extends Equatable {
     double? confidence,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) {
-    return DraftTransaction(
-      amount: amount ?? this.amount,
-      description: description ?? this.description,
-      type: type ?? this.type,
-      accountId: accountId ?? this.accountId,
-      categoryId: categoryId ?? this.categoryId,
-      transactionDate: transactionDate ?? this.transactionDate,
-      tags: tags ?? this.tags,
-      isExpense: isExpense ?? this.isExpense,
-      confidence: confidence ?? this.confidence,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
-    );
-  }
+  }) =>
+      DraftTransaction(
+        amount: amount ?? this.amount,
+        description: description ?? this.description,
+        type: type ?? this.type,
+        accountId: accountId ?? this.accountId,
+        categoryId: categoryId ?? this.categoryId,
+        transactionDate: transactionDate ?? this.transactionDate,
+        tags: tags ?? this.tags,
+        isExpense: isExpense ?? this.isExpense,
+        confidence: confidence ?? this.confidence,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? DateTime.now(),
+      );
 
   /// 是否已完成填写
   bool get isComplete =>
@@ -105,7 +105,8 @@ class DraftTransaction extends Equatable {
   Transaction toTransaction() {
     // 基本验证
     if (!isComplete) {
-      throw StateError('DraftTransaction is not complete, cannot convert to Transaction');
+      throw StateError(
+          'DraftTransaction is not complete, cannot convert to Transaction');
     }
 
     return Transaction(

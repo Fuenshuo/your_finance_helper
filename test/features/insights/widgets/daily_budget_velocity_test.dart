@@ -29,7 +29,7 @@ void main() {
   });
 
   group('DailyBudgetVelocity Widget Tests', () {
-    testWidgets('displays normal budget progress correctly', (WidgetTester tester) async {
+    testWidgets('displays normal budget progress correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -48,7 +48,7 @@ void main() {
       expect(find.byType(FractionallySizedBox), findsOneWidget);
     });
 
-    testWidgets('displays overspent budget correctly', (WidgetTester tester) async {
+    testWidgets('displays overspent budget correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -64,7 +64,7 @@ void main() {
       expect(find.text('Over: ¥50'), findsOneWidget);
     });
 
-    testWidgets('displays zero budget empty state correctly', (WidgetTester tester) async {
+    testWidgets('displays zero budget empty state correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -82,11 +82,11 @@ void main() {
       expect(find.textContaining('Over:'), findsNothing);
     });
 
-    testWidgets('displays null budget empty state correctly', (WidgetTester tester) async {
+    testWidgets('displays null budget empty state correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
-            body: DailyBudgetVelocity(budgetData: null),
+            body: DailyBudgetVelocity(),
           ),
         ),
       );
@@ -95,7 +95,7 @@ void main() {
       expect(find.text('Set a budget to see velocity'), findsOneWidget);
     });
 
-    testWidgets('progress bar has correct height (4px)', (WidgetTester tester) async {
+    testWidgets('progress bar has correct height (4px)', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -106,14 +106,16 @@ void main() {
 
       // Find the progress bar container
       final container = tester.widget<Container>(
-        find.byType(Container).at(0), // First container should be the progress bar
+        find
+            .byType(Container)
+            .at(0), // First container should be the progress bar
       );
 
       // Check height constraint
       expect(container.constraints?.maxHeight, 4.0);
     });
 
-    testWidgets('handles exact budget match (100% spent)', (WidgetTester tester) async {
+    testWidgets('handles exact budget match (100% spent)', (tester) async {
       final exactBudget = BudgetData(
         budgetAmount: 200.0,
         spentAmount: 200.0,
@@ -133,7 +135,7 @@ void main() {
       expect(find.text('Left: ¥0'), findsOneWidget);
     });
 
-    testWidgets('handles large budget amounts correctly', (WidgetTester tester) async {
+    testWidgets('handles large budget amounts correctly', (tester) async {
       final largeBudget = BudgetData(
         budgetAmount: 10000.0,
         spentAmount: 7500.0,

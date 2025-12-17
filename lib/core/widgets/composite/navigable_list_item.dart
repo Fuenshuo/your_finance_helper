@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../theme/app_design_tokens.dart';
-import 'standard_list_item.dart';
+import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
+import 'package:your_finance_flutter/core/widgets/composite/standard_list_item.dart';
 
 /// 导航/可编辑行 (NavigableListItemStyle)
 /// 右侧有箭头 >，点击有波纹效果
@@ -10,6 +10,17 @@ import 'standard_list_item.dart';
 /// - S27: 交易分类、账户选择、日期选择
 /// - 所有需要导航到下一页或弹窗的列表项
 class NavigableListItem extends StandardListItem {
+  const NavigableListItem({
+    required super.title,
+    super.key,
+    super.leading,
+    super.titleStyle,
+    super.spacing,
+    this.trailingContent,
+    this.onTap,
+    this.showArrow = true,
+  });
+
   /// 右侧内容（可选，如果提供则显示在箭头前）
   final Widget? trailingContent;
 
@@ -19,35 +30,22 @@ class NavigableListItem extends StandardListItem {
   /// 是否显示箭头（默认 true）
   final bool showArrow;
 
-  const NavigableListItem({
-    super.key,
-    required super.title,
-    super.leading,
-    super.titleStyle,
-    super.spacing,
-    this.trailingContent,
-    this.onTap,
-    this.showArrow = true,
-  });
-
   @override
-  Widget buildTrailing(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (trailingContent != null) ...[
-          trailingContent!,
-          SizedBox(width: AppDesignTokens.spacing8),
+  Widget buildTrailing(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingContent != null) ...[
+            trailingContent!,
+            const SizedBox(width: AppDesignTokens.spacing8),
+          ],
+          if (showArrow)
+            Icon(
+              CupertinoIcons.chevron_right,
+              size: 16,
+              color: AppDesignTokens.secondaryText(context),
+            ),
         ],
-        if (showArrow)
-          Icon(
-            CupertinoIcons.chevron_right,
-            size: 16,
-            color: AppDesignTokens.secondaryText(context),
-          ),
-      ],
-    );
-  }
+      );
 
   @override
   Widget build(BuildContext context) {

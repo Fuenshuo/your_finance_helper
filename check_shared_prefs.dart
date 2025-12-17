@@ -27,7 +27,8 @@ void main() async {
     if (transactionsData != null) {
       print('✅ 找到交易数据:');
       print('  原始数据长度: ${transactionsData.length} 字符');
-      print('  预览: ${transactionsData.substring(0, math.min(200, transactionsData.length))}');
+      print(
+          '  预览: ${transactionsData.substring(0, math.min(200, transactionsData.length))}');
 
       // 尝试解析
       try {
@@ -51,7 +52,6 @@ void main() async {
     const migrationKey = 'data_migration_version';
     final migrationVersion = prefs.getInt(migrationKey);
     print('\n🔄 数据迁移版本: ${migrationVersion ?? '未设置'}');
-
   } catch (e, stackTrace) {
     print('❌ 检查失败: $e');
     print('📋 堆栈跟踪: $stackTrace');

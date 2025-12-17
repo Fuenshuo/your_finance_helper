@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/draft_transaction.dart';
+import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 
 /// 草稿持久化服务接口
 abstract class DraftPersistenceService {
@@ -28,14 +28,13 @@ abstract class DraftPersistenceService {
 
 /// 默认草稿持久化服务实现
 class DefaultDraftPersistenceService implements DraftPersistenceService {
+  DefaultDraftPersistenceService({
+    Future<SharedPreferences>? prefsFuture,
+  }) : _prefsFuture = prefsFuture ?? SharedPreferences.getInstance();
   static const String _draftsKey = 'transaction_drafts';
   static const int _maxDrafts = 50; // 最大保存草稿数量
 
   final Future<SharedPreferences> _prefsFuture;
-
-  DefaultDraftPersistenceService({
-    Future<SharedPreferences>? prefsFuture,
-  })  : _prefsFuture = prefsFuture ?? SharedPreferences.getInstance();
 
   @override
   Future<DraftTransaction> saveDraft(DraftTransaction draft) async {
@@ -59,7 +58,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
       }
 
       // 序列化并保存
-      final draftsJson = drafts.map((d) => _draftToJson(d)).toList();
+      final draftsJson = drafts.map(_draftToJson).toList();
       final jsonString = jsonEncode(draftsJson);
 
       // 使用安全存储保存敏感数据
@@ -68,7 +67,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
 
       return draft;
     } catch (e) {
-      throw Exception('保存草稿失败: ${e.toString()}');
+      throw Exception('保存草稿失败: $e');
     }
   }
 
@@ -96,7 +95,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
       return drafts;
     } catch (e) {
       // 如果解密或解析失败，返回空列表并记录错误
-      debugPrint('加载草稿失败: ${e.toString()}');
+      debugPrint('加载草稿失败: $e');
       return [];
     }
   }
@@ -117,7 +116,7 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
 
     drafts.removeWhere((d) => d.createdAt == draft.createdAt);
 
-    final draftsJson = drafts.map((d) => _draftToJson(d)).toList();
+    final draftsJson = drafts.map(_draftToJson).toList();
     final encryptedData = await _encryptData(jsonEncode(draftsJson));
 
     await prefs.setString(_draftsKey, encryptedData);
@@ -149,52 +148,49 @@ class DefaultDraftPersistenceService implements DraftPersistenceService {
       final bytes = base64Decode(encryptedData);
       return utf8.decode(bytes);
     } catch (e) {
-      throw FormatException('数据解密失败');
+      throw const FormatException('数据解密失败');
     }
   }
 
   /// 将DraftTransaction转换为JSON
-  Map<String, dynamic> _draftToJson(DraftTransaction draft) {
-    return {
-      'amount': draft.amount,
-      'description': draft.description,
-      'type': draft.type?.name,
-      'accountId': draft.accountId,
-      'categoryId': draft.categoryId,
-      'transactionDate': draft.transactionDate?.toIso8601String(),
-      'tags': draft.tags,
-      'isExpense': draft.isExpense,
-      'confidence': draft.confidence,
-      'createdAt': draft.createdAt.toIso8601String(),
-      'updatedAt': draft.updatedAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> _draftToJson(DraftTransaction draft) => {
+        'amount': draft.amount,
+        'description': draft.description,
+        'type': draft.type?.name,
+        'accountId': draft.accountId,
+        'categoryId': draft.categoryId,
+        'transactionDate': draft.transactionDate?.toIso8601String(),
+        'tags': draft.tags,
+        'isExpense': draft.isExpense,
+        'confidence': draft.confidence,
+        'createdAt': draft.createdAt.toIso8601String(),
+        'updatedAt': draft.updatedAt.toIso8601String(),
+      };
 
   /// 从JSON创建DraftTransaction
-  DraftTransaction _draftFromJson(Map<String, dynamic> json) {
-    return DraftTransaction(
-      amount: json['amount'] as double?,
-      description: json['description'] as String?,
-      type: json['type'] != null ? TransactionType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => TransactionType.expense,
-      ) : null,
-      accountId: json['accountId'] as String?,
-      categoryId: json['categoryId'] as String?,
-      transactionDate: json['transactionDate'] != null
-          ? DateTime.parse(json['transactionDate'] as String)
-          : null,
-      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? const [],
-      isExpense: json['isExpense'] as bool?,
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
-  }
+  DraftTransaction _draftFromJson(Map<String, dynamic> json) =>
+      DraftTransaction(
+        amount: json['amount'] as double?,
+        description: json['description'] as String?,
+        type: json['type'] != null
+            ? TransactionType.values.firstWhere(
+                (e) => e.name == json['type'],
+                orElse: () => TransactionType.expense,
+              )
+            : null,
+        accountId: json['accountId'] as String?,
+        categoryId: json['categoryId'] as String?,
+        transactionDate: json['transactionDate'] != null
+            ? DateTime.parse(json['transactionDate'] as String)
+            : null,
+        tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? const [],
+        isExpense: json['isExpense'] as bool?,
+        confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+      );
 }
 
 /// DraftPersistenceService Provider
-final draftPersistenceServiceProvider =
-    Provider<DraftPersistenceService>((ref) {
-  return DefaultDraftPersistenceService();
-});
+final draftPersistenceServiceProvider = Provider<DraftPersistenceService>(
+    (ref) => DefaultDraftPersistenceService());

@@ -27,14 +27,6 @@ enum ErrorType {
 
 /// 错误信息类
 class ErrorInfo {
-  final ErrorType type;
-  final String message;
-  final String? details;
-  final DateTime timestamp;
-  final String? source;
-  final dynamic originalError;
-  final StackTrace? stackTrace;
-
   ErrorInfo({
     required this.type,
     required this.message,
@@ -47,42 +39,50 @@ class ErrorInfo {
 
   /// 创建网络错误
   factory ErrorInfo.network(String message, {String? details, Object? error}) =>
-    ErrorInfo(
-      type: ErrorType.network,
-      message: message,
-      details: details,
-      originalError: error,
-    );
+      ErrorInfo(
+        type: ErrorType.network,
+        message: message,
+        details: details,
+        originalError: error,
+      );
 
   /// 创建验证错误
-  factory ErrorInfo.validation(String message, {
+  factory ErrorInfo.validation(
+    String message, {
     String? details,
     String? source,
   }) =>
-    ErrorInfo(
-      type: ErrorType.validation,
-      message: message,
-      details: details,
-      source: source,
-    );
+      ErrorInfo(
+        type: ErrorType.validation,
+        message: message,
+        details: details,
+        source: source,
+      );
 
   /// 创建解析错误
   factory ErrorInfo.parsing(String message, {String? details, Object? error}) =>
-    ErrorInfo(
-      type: ErrorType.parsing,
-      message: message,
-      details: details,
-      originalError: error,
-    );
+      ErrorInfo(
+        type: ErrorType.parsing,
+        message: message,
+        details: details,
+        originalError: error,
+      );
 
   /// 创建保存错误
   factory ErrorInfo.save(String message, {String? details, Object? error}) =>
-    ErrorInfo(
-      type: ErrorType.save,
-      message: message,
-      details: details,
-      originalError: error,
-    );
+      ErrorInfo(
+        type: ErrorType.save,
+        message: message,
+        details: details,
+        originalError: error,
+      );
+  final ErrorType type;
+  final String message;
+  final String? details;
+  final DateTime timestamp;
+  final String? source;
+  final dynamic originalError;
+  final StackTrace? stackTrace;
 
   /// 获取用户友好的错误消息
   String get userFriendlyMessage => switch (type) {
@@ -234,15 +234,16 @@ final errorHandlingServiceProvider =
     Provider<ErrorHandlingService>((ref) => DefaultErrorHandlingService());
 
 /// StateSynchronizationService Provider
-final stateSynchronizationServiceProvider = Provider<StateSynchronizationService>(
-    (ref) => DefaultStateSynchronizationService(),
+final stateSynchronizationServiceProvider =
+    Provider<StateSynchronizationService>(
+  (ref) => DefaultStateSynchronizationService(),
 );
 
 /// 扩展方法：用于在UI层处理错误
 extension ErrorHandlingExtensions on WidgetRef {
   /// 报告错误
   void reportError(ErrorInfo error) =>
-    read(errorHandlingServiceProvider).reportError(error);
+      read(errorHandlingServiceProvider).reportError(error);
 
   /// 同步状态变更
   Future<void> syncState(String key, Object? value) async {

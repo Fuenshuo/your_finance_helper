@@ -11,11 +11,12 @@ void main() {
   });
 
   group('FinancialCalculationService - Health Score Calculation', () {
-    test('calculateHealthScore with flexibleRatio 0.25 returns score 75', () async {
+    test('calculateHealthScore with flexibleRatio 0.25 returns score 75',
+        () async {
       // Given: flexible spending ratio of 0.25 (25%)
       final allocation = AllocationData(
-        fixedAmount: 750.0,    // 75% fixed
-        flexibleAmount: 250.0,  // 25% flexible
+        fixedAmount: 750.0, // 75% fixed
+        flexibleAmount: 250.0, // 25% flexible
         period: DateTime.now(),
       );
 
@@ -27,11 +28,13 @@ void main() {
       expect(result.grade, HealthGrade.C);
     });
 
-    test('calculateHealthScore with flexibleRatio 0.1 returns score 90 (A grade)', () async {
+    test(
+        'calculateHealthScore with flexibleRatio 0.1 returns score 90 (A grade)',
+        () async {
       // Given: flexible spending ratio of 0.1 (10%)
       final allocation = AllocationData(
-        fixedAmount: 900.0,    // 90% fixed
-        flexibleAmount: 100.0,  // 10% flexible
+        fixedAmount: 900.0, // 90% fixed
+        flexibleAmount: 100.0, // 10% flexible
         period: DateTime.now(),
       );
 
@@ -43,11 +46,13 @@ void main() {
       expect(result.grade, HealthGrade.A);
     });
 
-    test('calculateHealthScore with flexibleRatio 0.8 returns score 20 (F grade)', () async {
+    test(
+        'calculateHealthScore with flexibleRatio 0.8 returns score 20 (F grade)',
+        () async {
       // Given: flexible spending ratio of 0.8 (80%)
       final allocation = AllocationData(
-        fixedAmount: 200.0,    // 20% fixed
-        flexibleAmount: 800.0,  // 80% flexible
+        fixedAmount: 200.0, // 20% fixed
+        flexibleAmount: 800.0, // 80% flexible
         period: DateTime.now(),
       );
 
@@ -62,7 +67,7 @@ void main() {
     test('calculateHealthScore clamps score to minimum 0', () async {
       // Given: 100% flexible spending (score should be 0)
       final allocation = AllocationData(
-        fixedAmount: 0.0,      // 0% fixed
+        fixedAmount: 0.0, // 0% fixed
         flexibleAmount: 1000.0, // 100% flexible
         period: DateTime.now(),
       );
@@ -94,7 +99,7 @@ void main() {
     test('calculateHealthScore throws on invalid allocation data', () async {
       // Given: invalid allocation data (negative amounts)
       final allocation = AllocationData(
-        fixedAmount: -100.0,  // Invalid negative
+        fixedAmount: -100.0, // Invalid negative
         flexibleAmount: -50.0, // Invalid negative
         period: DateTime.now(),
       );

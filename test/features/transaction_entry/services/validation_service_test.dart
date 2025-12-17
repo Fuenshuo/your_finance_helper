@@ -10,7 +10,6 @@ void main() {
   });
 
   group('ValidationService', () {
-
     test('should validate draft with low confidence', () async {
       final draft = DraftTransaction(
         amount: 100.0,
@@ -79,9 +78,9 @@ void main() {
       final validation = await validationService.validateField('amount', 100.0);
       expect(validation.isValid, true);
 
-      final invalidValidation = await validationService.validateField('amount', null);
+      final invalidValidation =
+          await validationService.validateField('amount', null);
       expect(invalidValidation.isValid, false);
     });
   });
 }
-
