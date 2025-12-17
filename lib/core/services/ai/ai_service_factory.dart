@@ -1,7 +1,5 @@
 import 'package:your_finance_flutter/core/models/ai_config.dart';
 import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
-import 'package:your_finance_flutter/core/services/ai/dashscope_ai_service.dart';
-import 'package:your_finance_flutter/core/services/ai/siliconflow_ai_service.dart';
 
 /// AI服务工厂接口
 abstract class AiServiceFactory {
@@ -13,12 +11,8 @@ abstract class AiServiceFactory {
 class AiServiceFactoryImpl implements AiServiceFactory {
   /// 根据配置创建AI服务实例
   AiService createService(AiConfig config) {
-    switch (config.provider) {
-      case AiProvider.dashscope:
-        return DashScopeAiService(config);
-      case AiProvider.siliconFlow:
-        return SiliconFlowAiService(config);
-    }
+    // 目前只支持基础的AI服务，具体实现由子类决定
+    throw UnimplementedError('AI service creation not implemented for ${config.provider}');
   }
 
   /// 根据提供商创建默认配置的服务实例
