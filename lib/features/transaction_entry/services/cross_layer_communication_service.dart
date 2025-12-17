@@ -63,7 +63,7 @@ class DefaultCrossLayerCommunicationService
       StreamController.broadcast();
 
   @override
-  void sendEvent(CommunicationEvent event, data, {String? source}) {
+  void sendEvent(CommunicationEvent event, Object? data, {String? source}) {
     final eventData = CommunicationEventData(
       type: event,
       data: data,

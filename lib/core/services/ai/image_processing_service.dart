@@ -5,8 +5,11 @@
 
 import 'dart:io';
 
+/// Service for handling image capture and processing operations.
 class ImageProcessingService {
   static ImageProcessingService? _instance;
+
+  ImageProcessingService._();
 
   static Future<ImageProcessingService> getInstance() async {
     if (_instance == null) {
@@ -15,8 +18,6 @@ class ImageProcessingService {
     }
     return _instance!;
   }
-
-  ImageProcessingService._();
 
   Future<void> _initialize() async {
     // TODO: Initialize image processing dependencies

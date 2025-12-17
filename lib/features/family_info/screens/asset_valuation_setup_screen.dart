@@ -430,7 +430,7 @@ class _AssetValuationSetupScreenState extends State<AssetValuationSetupScreen> {
                     });
                   }
                 },
-                child: SizedBox.shrink(),
+                child: const SizedBox.shrink(),
               ),
             ],
           ),

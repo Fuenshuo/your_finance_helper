@@ -363,17 +363,18 @@ class _LoggingInterceptor extends Interceptor {
 class _ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    DioException processedErr = err;
     switch (err.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        err = DioException(
+        processedErr = DioException(
           requestOptions: err.requestOptions,
           error: '网络连接超时，请检查网络连接',
           type: err.type,
         );
       case DioExceptionType.connectionError:
-        err = DioException(
+        processedErr = DioException(
           requestOptions: err.requestOptions,
           error: '网络连接失败，请检查网络设置',
           type: err.type,
@@ -399,21 +400,21 @@ class _ErrorInterceptor extends Interceptor {
             message = '服务器暂时不可用';
         }
 
-        err = DioException(
+        processedErr = DioException(
           requestOptions: err.requestOptions,
           response: err.response,
           error: message,
           type: err.type,
         );
       default:
-        err = DioException(
+        processedErr = DioException(
           requestOptions: err.requestOptions,
           error: '网络请求失败，请稍后重试',
           type: err.type,
         );
     }
 
-    super.onError(err, handler);
+    super.onError(processedErr, handler);
   }
 }
 

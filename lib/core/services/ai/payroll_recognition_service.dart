@@ -5,6 +5,7 @@
 
 import 'package:your_finance_flutter/core/database/app_database.dart';
 
+/// Represents the result of a payroll recognition operation.
 class PayrollRecognitionResult {
   final double salary;
   final Map<String, dynamic> details;
@@ -58,6 +59,8 @@ class PayrollRecognitionResult {
 class PayrollRecognitionService {
   static PayrollRecognitionService? _instance;
 
+  PayrollRecognitionService._();
+
   static Future<PayrollRecognitionService> getInstance() async {
     if (_instance == null) {
       _instance = PayrollRecognitionService._();
@@ -65,8 +68,6 @@ class PayrollRecognitionService {
     }
     return _instance!;
   }
-
-  PayrollRecognitionService._();
 
   Future<void> _initialize() async {
     // TODO: Initialize AI model and OCR dependencies

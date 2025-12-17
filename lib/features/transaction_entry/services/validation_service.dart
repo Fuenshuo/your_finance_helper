@@ -107,7 +107,7 @@ class DefaultValidationService implements ValidationService {
   }
 
   @override
-  Future<InputValidation> validateField(String fieldName, value) async {
+  Future<InputValidation> validateField(String fieldName, Object? value) async {
     switch (fieldName) {
       case 'amount':
         return _validateAmount(value);

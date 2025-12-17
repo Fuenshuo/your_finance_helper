@@ -3,6 +3,7 @@
 /// Provides AI-powered asset valuation capabilities using image analysis
 /// and market data to estimate asset values.
 
+/// Represents the result of an asset valuation operation.
 class AssetValuationResult {
   final double estimatedValue;
   final double confidence;
@@ -24,6 +25,8 @@ class AssetValuationResult {
 class AssetValuationService {
   static AssetValuationService? _instance;
 
+  AssetValuationService._();
+
   static Future<AssetValuationService> getInstance() async {
     if (_instance == null) {
       _instance = AssetValuationService._();
@@ -31,8 +34,6 @@ class AssetValuationService {
     }
     return _instance!;
   }
-
-  AssetValuationService._();
 
   Future<void> _initialize() async {
     // TODO: Initialize AI model and dependencies

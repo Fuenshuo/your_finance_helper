@@ -223,22 +223,24 @@ class HealthAnalysisService {
     } else {
       if (savingsRate >= 0.2) {
         score += 25; // Good savings
-      } else if (savingsRate >= 0.1)
+      } else if (savingsRate >= 0.1) {
         score += 15; // Decent savings
-      else if (savingsRate >= 0)
+      } else if (savingsRate >= 0) {
         score += 5; // Some savings
-      else
+      } else {
         score -= (savingsRate.abs() * 100).clamp(0, 50); // Overspending penalty
+      }
     }
 
     // Spending ratio impact
     if (spendingRatio <= 0.8) {
       score += 15; // Under 80% of income
-    } else if (spendingRatio <= 1.0)
+    } else if (spendingRatio <= 1.0) {
       score += 5; // Under 100% of income
-    else
+    } else {
       score -=
           ((spendingRatio - 1.0) * 20).clamp(0, 20); // Overspending penalty
+    }
 
     // Pattern impact
     switch (pattern) {
