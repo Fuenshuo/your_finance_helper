@@ -3,7 +3,6 @@
 /// Provides AI-powered asset valuation capabilities using image analysis
 /// and market data to estimate asset values.
 
-
 class AssetValuationResult {
   final double estimatedValue;
   final double confidence;

@@ -4,7 +4,6 @@ class QuarterlyBonusCalculator {
   @deprecated
   static List<int> customQuarterlyMonths = [3, 6, 9, 12];
 
-
   /// Check if quarterly months configuration is valid for calculations
   @deprecated
   static bool isValidForCalculation() => const [3, 6, 9, 12].isNotEmpty;
@@ -30,7 +29,6 @@ class QuarterlyBonusCalculator {
         calculatePaymentDatesFromCount(startDate, paymentCount);
     return paymentDates.isNotEmpty ? paymentDates.last : startDate;
   }
-
 
   /// Calculate payment dates based on count with specific quarterly months
   static List<DateTime> calculatePaymentDatesFromCountWithMonths(

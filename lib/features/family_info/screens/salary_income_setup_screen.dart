@@ -387,7 +387,8 @@ class _SalaryIncomeSetupScreenState extends State<SalaryIncomeSetupScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('实发金额: ¥${result.netIncome?.toStringAsFixed(2) ?? "0.00"}'),
+                Text(
+                    '实发金额: ¥${result.netIncome?.toStringAsFixed(2) ?? "0.00"}'),
                 Text('置信度: ${(result.confidence * 100).toStringAsFixed(0)}%'),
                 if (result.salaryDate != null)
                   Text(

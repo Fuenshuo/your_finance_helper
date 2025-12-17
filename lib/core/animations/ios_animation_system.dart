@@ -858,7 +858,8 @@ class _IOSListItem extends StatelessWidget {
           border: Border(
             bottom: isLast
                 ? BorderSide.none
-                : BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 0.5),
+                : BorderSide(
+                    color: Colors.grey.withValues(alpha: 0.2), width: 0.5),
           ),
         ),
         child: ListTile(

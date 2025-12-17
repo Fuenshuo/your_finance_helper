@@ -128,60 +128,78 @@ enum AnimationType {
   // 基础交互
   /// 点击动画
   tap,
+
   /// 按下动画
   press,
+
   /// 悬停动画
   hover,
+
   /// 拖拽动画
   drag,
 
   // 状态变化
   /// 出现动画
   appear,
+
   /// 消失动画
   disappear,
+
   /// 变换动画
   transform,
+
   /// 变形动画
   morph,
 
   // 反馈动画
   /// 成功反馈动画
   success,
+
   /// 错误反馈动画
   error,
+
   /// 警告反馈动画
   warning,
+
   /// 加载动画
   loading,
 
   // 导航动画
   /// 滑动导航动画
   slide,
+
   /// 淡入淡出导航动画
   fade,
+
   /// 缩放导航动画
   scale,
+
   /// 旋转导航动画
   rotate,
 
   // 特殊效果
   /// 抖动效果
   shake,
+
   /// 弹跳效果
   bounce,
+
   /// 摇摆效果
   wobble,
+
   /// 脉冲效果
   pulse,
 
   // iOS特色
   /// iOS弹簧动画
   iosSpring,
+
   /// iOS橡皮筋动画
   iosRubberBand,
+
   /// iOS精灵动画
   iosGenie,
+
   /// iOS吸入动画
   iosSuck,
 }
@@ -191,44 +209,56 @@ enum AnimationContext {
   // UI组件
   /// 按钮组件
   button,
+
   /// 卡片组件
   card,
+
   /// 列表组件
   list,
+
   /// 输入组件
   input,
+
   /// 模态框组件
   modal,
 
   // 页面级别
   /// 导航场景
   navigation,
+
   /// 页面过渡场景
   transition,
+
   /// 新手引导场景
   onboarding,
 
   // 数据展示
   /// 图表展示
   chart,
+
   /// 图形展示
   graph,
+
   /// 指标展示
   indicator,
 
   // 交互反馈
   /// 手势交互
   gesture,
+
   /// 反馈场景
   feedback,
+
   /// 确认场景
   confirmation,
 
   // 特殊场景
   /// 错误场景
   error,
+
   /// 成功场景
   success,
+
   /// 加载场景
   loading,
 }

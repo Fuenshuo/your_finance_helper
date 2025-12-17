@@ -38,7 +38,7 @@ jobs:
         run: flutter analyze lib/
 
       - name: Check formatting
-        run: flutter format --set-exit-if-changed lib/
+        run: dart format --set-exit-if-changed lib/
 
       - name: Run linting
         run: flutter pub run flutter_lints
