@@ -196,15 +196,19 @@ class _AccountEditScreenState extends State<AccountEditScreen> {
       final accountProvider = context.read<AccountProvider>();
       await accountProvider.updateAccount(updatedAccount);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('账户已更新')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('账户已更新')),
+        );
 
-      Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('保存失败: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存失败: $e')),
+        );
+      }
     }
   }
 }

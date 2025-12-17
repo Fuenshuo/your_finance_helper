@@ -18,7 +18,7 @@ enum MoneyTheme {
 /// 应用风格枚举
 enum AppStyle {
   iOSFintech, // iOS Fintech 风格（默认）：12pt/16pt圆角，弥散阴影
-  SharpProfessional, // SharpProfessional 风格：8pt圆角，清晰阴影
+  sharpProfessional, // SharpProfessional 风格：8pt圆角，清晰阴影
 }
 
 /// 现代 iOS 风格设计系统
@@ -198,7 +198,7 @@ class AppDesignTokens {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final s = style ?? _currentStyle;
 
-    if (s == AppStyle.SharpProfessional) {
+    if (s == AppStyle.sharpProfessional) {
       // SharpProfessional: 清晰阴影
       return BoxShadow(
         color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
@@ -226,7 +226,7 @@ class AppDesignTokens {
   /// 获取按钮阴影（支持风格切换）
   static BoxShadow buttonShadow(BuildContext context, {AppStyle? style}) {
     final s = style ?? _currentStyle;
-    if (s == AppStyle.SharpProfessional) {
+    if (s == AppStyle.sharpProfessional) {
       // SharpProfessional: elevation 4.0 的清晰阴影
       return BoxShadow(
         color: Colors.black.withValues(alpha: 0.2),

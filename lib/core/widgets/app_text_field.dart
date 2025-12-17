@@ -73,7 +73,7 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     final currentStyle = AppDesignTokens.getCurrentStyle();
-    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
+    final isSharpProfessional = currentStyle == AppStyle.sharpProfessional;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -23,7 +23,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentStyle = AppDesignTokens.getCurrentStyle();
-    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
+    final isSharpProfessional = currentStyle == AppStyle.sharpProfessional;
 
     // SharpProfessional: Elevation 2.0 的清晰阴影，确保卡片与背景分界明确
     // iOS Fintech: 使用原有的有色阴影

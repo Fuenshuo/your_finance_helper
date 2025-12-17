@@ -49,7 +49,7 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton>
   /// 获取按钮阴影（SharpProfessional: 清晰紧凑，iOS Fintech: 柔和扩散）
   List<BoxShadow> _getButtonShadow(BuildContext context) {
     final currentStyle = AppDesignTokens.getCurrentStyle();
-    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
+    final isSharpProfessional = currentStyle == AppStyle.sharpProfessional;
 
     if (isSharpProfessional) {
       // SharpProfessional: 紧凑且略深的阴影，避免柔和的大面积扩散

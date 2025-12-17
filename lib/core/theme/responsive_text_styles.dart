@@ -1,83 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
-import 'package:your_finance_flutter/core/theme/app_theme.dart' as LegacyTheme;
+import 'package:your_finance_flutter/core/theme/app_theme.dart' as legacy_theme;
 
 /// 响应式文本样式工具类
 class ResponsiveTextStyles {
   static TextStyle getDisplayLarge(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 34),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 34),
         fontWeight: FontWeight.w600,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getDisplayMedium(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 28),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 28),
         fontWeight: FontWeight.w700,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getHeadlineMedium(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 17),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 17),
         fontWeight: FontWeight.w600,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getBodyLarge(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 17),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 17),
         fontWeight: FontWeight.w400,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getBodyMedium(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 15),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 15),
         fontWeight: FontWeight.w400,
         color: AppDesignTokens.secondaryText(context),
       );
 
   static TextStyle getBodySmall(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 13),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 13),
         fontWeight: FontWeight.w400,
         color: AppDesignTokens.secondaryText(context),
       );
 
   static TextStyle getLabelLarge(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 15),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 15),
         fontWeight: FontWeight.w500,
         color: AppDesignTokens.primaryText(context),
       );
 
   // 移动端优化的文本样式
   static TextStyle getMobileTitle(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 20),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 20),
         fontWeight: FontWeight.w600,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getMobileSubtitle(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 16),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 16),
         fontWeight: FontWeight.w500,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getMobileBody(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 14),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 14),
         fontWeight: FontWeight.w400,
         color: AppDesignTokens.primaryText(context),
       );
 
   static TextStyle getMobileCaption(BuildContext context) => TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 12),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 12),
         fontWeight: FontWeight.w400,
         color: AppDesignTokens.secondaryText(context),
       );
@@ -88,8 +88,8 @@ class ResponsiveTextStyles {
     bool isPositive = true,
   }) =>
       TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 18),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 18),
         fontWeight: FontWeight.w600,
         color: isPositive
             ? AppDesignTokens.amountPositiveColor(context)
@@ -102,8 +102,8 @@ class ResponsiveTextStyles {
     bool isPositive = true,
   }) =>
       TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 24),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 24),
         fontWeight: FontWeight.w700,
         color: isPositive
             ? AppDesignTokens.amountPositiveColor(context)
@@ -116,8 +116,8 @@ class ResponsiveTextStyles {
     bool isPositive = true,
   }) =>
       TextStyle(
-        fontFamily: LegacyTheme.AppTheme.fontFamily,
-        fontSize: LegacyTheme.AppTheme.getResponsiveFontSize(context, 16),
+        fontFamily: legacy_theme.AppTheme.fontFamily,
+        fontSize: legacy_theme.AppTheme.getResponsiveFontSize(context, 16),
         fontWeight: FontWeight.w600,
         color: isPositive
             ? AppDesignTokens.amountPositiveColor(context)

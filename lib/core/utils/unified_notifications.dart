@@ -125,7 +125,7 @@ class NotificationConfig {
         return NotificationConfig(
           type: type,
           message: message,
-          duration: duration ?? const Duration(), // 不自动关闭
+          duration: duration ?? Duration.zero, // 不自动关闭
           priority: NotificationPriority.urgent,
           icon: Icons.error,
           actionLabel: actionLabel ?? '确定',

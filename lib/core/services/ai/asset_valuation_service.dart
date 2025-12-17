@@ -2,16 +2,8 @@
 ///
 /// Provides AI-powered asset valuation capabilities using image analysis
 /// and market data to estimate asset values.
-
 /// Represents the result of an asset valuation operation.
 class AssetValuationResult {
-  final double estimatedValue;
-  final double confidence;
-  final Map<String, dynamic> details;
-  final String? assetName;
-  final String? brand;
-  final String? model;
-
   const AssetValuationResult({
     required this.estimatedValue,
     required this.confidence,
@@ -20,12 +12,19 @@ class AssetValuationResult {
     this.brand,
     this.model,
   });
+
+  final double estimatedValue;
+  final double confidence;
+  final Map<String, dynamic> details;
+  final String? assetName;
+  final String? brand;
+  final String? model;
 }
 
 class AssetValuationService {
-  static AssetValuationService? _instance;
-
   AssetValuationService._();
+
+  static AssetValuationService? _instance;
 
   static Future<AssetValuationService> getInstance() async {
     if (_instance == null) {

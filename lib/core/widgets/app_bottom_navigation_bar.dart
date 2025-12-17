@@ -27,7 +27,7 @@ class AppBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentStyle = AppDesignTokens.getCurrentStyle();
-    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
+    final isSharpProfessional = currentStyle == AppStyle.sharpProfessional;
 
     final defaultSelectedColor =
         selectedItemColor ?? AppDesignTokens.primaryAction(context);

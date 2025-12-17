@@ -131,7 +131,7 @@ class ThemeStyleProvider extends ChangeNotifier {
     switch (style) {
       case AppStyle.iOSFintech:
         return 'iOS Fintech';
-      case AppStyle.SharpProfessional:
+      case AppStyle.sharpProfessional:
         return 'Sharp Professional';
     }
   }

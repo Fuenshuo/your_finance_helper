@@ -1,15 +1,8 @@
-/// Image Processing Service - Image capture and processing
-///
-/// Provides image capture capabilities for asset valuation and
-/// document recognition workflows.
-
 import 'dart:io';
-
-/// Service for handling image capture and processing operations.
 class ImageProcessingService {
-  static ImageProcessingService? _instance;
-
   ImageProcessingService._();
+
+  static ImageProcessingService? _instance;
 
   static Future<ImageProcessingService> getInstance() async {
     if (_instance == null) {

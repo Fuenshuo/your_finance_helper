@@ -74,7 +74,7 @@ class _AmountInputFieldState extends State<AmountInputField> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final currentStyle = AppDesignTokens.getCurrentStyle();
-    final isSharpProfessional = currentStyle == AppStyle.SharpProfessional;
+    final isSharpProfessional = currentStyle == AppStyle.sharpProfessional;
 
     return SizedBox(
       width: widget.width,

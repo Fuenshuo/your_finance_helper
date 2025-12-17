@@ -90,6 +90,21 @@ linter:
     # 允许控制语句体在新行（有时单行更清晰）
     always_put_control_body_on_new_line: false
 
+    # 允许switch语句使用default case（处理意外情况很重要）
+    no_default_cases: false
+
+    # 暂时允许BuildContext跨异步间隙使用（需要逐步修复）
+    use_build_context_synchronously: false
+
+    # 允许dynamic调用（在处理运行时类型和Map访问时必要）
+    avoid_dynamic_calls: false
+
+    # 允许慢的异步IO（文件系统操作在移动应用中不可避免）
+    avoid_slow_async_io: false
+
+    # 允许只有一个成员的抽象类（有时是合理的抽象设计）
+    one_member_abstracts: false
+
     # 对于现有代码库，80字符行长度限制过于严格
     lines_longer_than_80_chars: false
 

@@ -1,18 +1,5 @@
-/// Payroll Recognition Service - AI-powered payroll document analysis
-///
-/// Provides AI-powered payroll document recognition and data extraction
-/// capabilities for automated salary information processing.
-
 import 'package:your_finance_flutter/core/database/app_database.dart';
-
-/// Represents the result of a payroll recognition operation.
 class PayrollRecognitionResult {
-  final double salary;
-  final Map<String, dynamic> details;
-  final double confidence;
-  final DateTime? salaryDate;
-  final double? netIncome;
-
   const PayrollRecognitionResult({
     required this.salary,
     required this.details,
@@ -20,6 +7,12 @@ class PayrollRecognitionResult {
     this.salaryDate,
     this.netIncome,
   });
+
+  final double salary;
+  final Map<String, dynamic> details;
+  final double confidence;
+  final DateTime? salaryDate;
+  final double? netIncome;
 
   // Convert to SalaryIncome object
   SalaryIncome toSalaryIncome({
@@ -57,9 +50,9 @@ class PayrollRecognitionResult {
 }
 
 class PayrollRecognitionService {
-  static PayrollRecognitionService? _instance;
-
   PayrollRecognitionService._();
+
+  static PayrollRecognitionService? _instance;
 
   static Future<PayrollRecognitionService> getInstance() async {
     if (_instance == null) {
