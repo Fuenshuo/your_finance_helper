@@ -101,8 +101,11 @@ void main() {
     });
 
     testWidgets('amountNegativeColor returns universal red', (tester) async {
+      // Reset theme to default before test
+      AppDesignTokens.setMoneyTheme(MoneyTheme.fluxBlue);
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData.light(),
           home: Builder(
             builder: (context) {
               expect(AppDesignTokens.amountNegativeColor(context),
