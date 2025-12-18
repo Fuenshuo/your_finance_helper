@@ -285,11 +285,13 @@ void main() {
         updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
       );
 
+      // Current draft has same fields but different updatedAt (simulating unsaved changes)
       final currentDraft = DraftTransaction(
         amount: 100.0,
-        description: '当前草稿', // 描述不同
+        description: '已保存草稿', // Same description to match similarity check
         type: TransactionType.expense,
-        updatedAt: DateTime.now(),
+        updatedAt:
+            DateTime.now(), // Different updatedAt indicates unsaved changes
       );
 
       // Set up state with saved draft

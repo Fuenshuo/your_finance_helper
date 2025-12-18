@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:matcher/matcher.dart';
 import 'package:mockito/mockito.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
@@ -94,7 +95,17 @@ void main() {
     test('should clear input and draft when empty input provided', () async {
       final notifier = container.read(transactionEntryProvider.notifier);
 
-      // First set some input
+      // First set some input with mock
+      final mockDraft = DraftTransaction(
+        amount: 50.0,
+        description: 'test',
+        type: TransactionType.expense,
+      );
+      when(mockParserService.parseTransaction('some input'))
+          .thenAnswer((_) async => mockDraft);
+      when(mockValidationService.validateDraft(mockDraft))
+          .thenAnswer((_) async => const InputValidation());
+
       await notifier.updateInput('some input');
       var state = container.read(transactionEntryProvider);
       expect(state.currentInput, 'some input');

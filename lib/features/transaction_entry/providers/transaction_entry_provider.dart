@@ -22,7 +22,10 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
 
     if (input.trim().isEmpty) {
       state = state.copyWith(
+        draftTransaction: null,
+        parseError: null,
         validation: const InputValidation(),
+        isParsing: false,
       );
       return;
     }
@@ -133,6 +136,8 @@ class TransactionEntryNotifier extends StateNotifier<TransactionEntryState> {
     state = state.copyWith(
       validation: const InputValidation(),
       currentInput: '',
+      draftTransaction: null,
+      parseError: null,
       isParsing: false,
     );
   }
