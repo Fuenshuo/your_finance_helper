@@ -1,34 +1,99 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:matcher/matcher.dart';
-import 'package:mockito/mockito.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/input_validation.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/transaction_parser_service.dart';
 import 'package:your_finance_flutter/features/transaction_entry/services/validation_service.dart';
 
-// Mock classes
-class MockTransactionParserService extends Mock
-    implements TransactionParserService {}
+// Fake implementations for testing
+class FakeTransactionParserService implements TransactionParserService {
+  String? _lastInput;
+  DraftTransaction? _returnValue;
+  Exception? _throwException;
 
-class MockValidationService extends Mock implements ValidationService {}
+  void setReturnValue(DraftTransaction draft) {
+    _returnValue = draft;
+    _throwException = null;
+  }
+
+  void setException(Exception exception) {
+    _throwException = exception;
+    _returnValue = null;
+  }
+
+  String? get lastInput => _lastInput;
+
+  @override
+  Future<DraftTransaction> parseTransaction(String input) async {
+    _lastInput = input;
+    if (_throwException != null) {
+      throw _throwException!;
+    }
+    return _returnValue ?? DraftTransaction(amount: 0.0);
+  }
+
+  @override
+  double? parseAmount(String input) => null;
+
+  @override
+  String? parseDescription(String input) => null;
+
+  @override
+  TransactionType? inferTransactionType(String input) => null;
+
+  @override
+  double calculateConfidence(DraftTransaction draft) => 0.0;
+}
+
+class FakeValidationService implements ValidationService {
+  DraftTransaction? _lastDraft;
+  InputValidation? _returnValue;
+
+  void setReturnValue(InputValidation validation) {
+    _returnValue = validation;
+  }
+
+  DraftTransaction? get lastDraft => _lastDraft;
+
+  @override
+  Future<InputValidation> validateDraft(DraftTransaction draft) async {
+    _lastDraft = draft;
+    return _returnValue ?? const InputValidation();
+  }
+
+  @override
+  Future<InputValidation> validateField(String fieldName, Object? value) async {
+    return const InputValidation();
+  }
+
+  @override
+  Future<Map<String, InputValidation>> validateFields(
+    Map<String, dynamic> fields,
+  ) async {
+    return {};
+  }
+}
 
 void main() {
-  late MockTransactionParserService mockParserService;
-  late MockValidationService mockValidationService;
+  late FakeTransactionParserService fakeParserService;
+  late FakeValidationService fakeValidationService;
   late ProviderContainer container;
 
   setUp(() {
-    mockParserService = MockTransactionParserService();
-    mockValidationService = MockValidationService();
+    fakeParserService = FakeTransactionParserService();
+    fakeValidationService = FakeValidationService();
 
     container = ProviderContainer(
       overrides: [
-        transactionParserServiceProvider.overrideWithValue(mockParserService),
-        validationServiceProvider.overrideWithValue(mockValidationService),
+        transactionParserServiceProvider.overrideWithValue(fakeParserService),
+        validationServiceProvider.overrideWithValue(fakeValidationService),
       ],
     );
+  });
+
+  tearDown(() {
+    container.dispose();
   });
 
   tearDown(() {
@@ -57,10 +122,9 @@ void main() {
         confidence: 0.8,
       );
 
-      when(mockParserService.parseTransaction(testInput))
-          .thenAnswer((_) async => mockDraft);
-      when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => const InputValidation());
+      // Set up fake service return values
+      fakeParserService.setReturnValue(mockDraft);
+      fakeValidationService.setReturnValue(const InputValidation());
 
       final notifier = container.read(transactionEntryProvider.notifier);
       await notifier.updateInput(testInput);
@@ -71,16 +135,15 @@ void main() {
       expect(state.draftTransaction!.amount, 25.0);
       expect(state.isParsing, false);
 
-      verify(mockParserService.parseTransaction(testInput)).called(1);
-      verify(mockValidationService.validateDraft(mockDraft)).called(1);
+      expect(fakeParserService.lastInput, testInput);
+      expect(fakeValidationService.lastDraft, mockDraft);
     });
 
     test('should handle parsing errors gracefully', () async {
       const testInput = 'invalid input';
       const errorMessage = '解析失败';
 
-      when(mockParserService.parseTransaction(testInput))
-          .thenThrow(Exception(errorMessage));
+      fakeParserService.setException(Exception(errorMessage));
 
       final notifier = container.read(transactionEntryProvider.notifier);
       await notifier.updateInput(testInput);
@@ -101,10 +164,8 @@ void main() {
         description: 'test',
         type: TransactionType.expense,
       );
-      when(mockParserService.parseTransaction('some input'))
-          .thenAnswer((_) async => mockDraft);
-      when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => const InputValidation());
+      fakeParserService.setReturnValue(mockDraft);
+      fakeValidationService.setReturnValue(const InputValidation());
 
       await notifier.updateInput('some input');
       var state = container.read(transactionEntryProvider);
@@ -123,18 +184,22 @@ void main() {
         amount: 100.0,
         description: '测试交易',
         type: TransactionType.expense,
+        accountId: 'account1',
+        categoryId: 'category1',
+        transactionDate: DateTime.now(),
         confidence: 0.9,
       );
 
-      when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => const InputValidation());
+      fakeValidationService
+          .setReturnValue(const InputValidation(isValid: true));
 
       final notifier = container.read(transactionEntryProvider.notifier);
 
-      // Set up state with valid draft
+      // Set up state with valid draft and validation
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
                 draftTransaction: mockDraft,
+                validation: const InputValidation(isValid: true),
               );
 
       await notifier.confirmTransaction();
@@ -148,31 +213,33 @@ void main() {
     });
 
     test('should handle confirmation errors', () async {
-      final mockDraft = DraftTransaction(
+      // Test with incomplete draft (missing required fields)
+      final incompleteDraft = DraftTransaction(
         amount: 100.0,
         description: '测试交易',
         type: TransactionType.expense,
+        // Missing accountId, categoryId, transactionDate
       );
 
-      when(mockValidationService.validateDraft(mockDraft))
-          .thenAnswer((_) async => const InputValidation());
+      fakeValidationService
+          .setReturnValue(const InputValidation(isValid: true));
 
       final notifier = container.read(transactionEntryProvider.notifier);
 
-      // Set up state with draft
+      // Set up state with incomplete draft
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
-                draftTransaction: mockDraft,
+                draftTransaction: incompleteDraft,
+                validation: const InputValidation(isValid: true),
               );
-
-      // Mock transaction saving to fail
-      // Note: In real implementation, this would be mocked at service level
 
       await notifier.confirmTransaction();
 
       final state = container.read(transactionEntryProvider);
       expect(state.isSaving, false);
-      expect(state.saveError, isNull); // No error in current implementation
+      expect(
+          state.saveError, isNotNull); // Should have error for incomplete draft
+      expect(state.saveError, contains('不完整'));
     });
 
     test('should cancel transaction', () {
@@ -208,8 +275,7 @@ void main() {
 
       final updatedDraft = mockDraft.copyWith(description: '新描述');
 
-      when(mockValidationService.validateDraft(updatedDraft))
-          .thenAnswer((_) async => const InputValidation());
+      fakeValidationService.setReturnValue(const InputValidation());
 
       final notifier = container.read(transactionEntryProvider.notifier);
 
@@ -223,8 +289,11 @@ void main() {
 
       final state = container.read(transactionEntryProvider);
       expect(state.draftTransaction!.description, '新描述');
+      expect(state.draftTransaction!.amount, 100.0);
+      expect(state.draftTransaction!.type, TransactionType.expense);
 
-      verify(mockValidationService.validateDraft(updatedDraft)).called(1);
+      // Verify validation was called with updated draft
+      expect(fakeValidationService.lastDraft?.description, '新描述');
     });
 
     test('should check if transaction can be saved', () {
@@ -233,14 +302,18 @@ void main() {
       // Initial state - cannot save
       expect(notifier.canSave(), false);
 
-      // Set up valid draft
+      // Set up valid draft (complete with all required fields)
       container.read(transactionEntryProvider.notifier).state =
           container.read(transactionEntryProvider).copyWith(
                 draftTransaction: DraftTransaction(
                   amount: 50.0,
                   description: 'valid transaction',
                   type: TransactionType.expense,
+                  accountId: 'account1',
+                  categoryId: 'category1',
+                  transactionDate: DateTime.now(),
                 ),
+                validation: const InputValidation(isValid: true),
                 isParsing: false,
               );
 

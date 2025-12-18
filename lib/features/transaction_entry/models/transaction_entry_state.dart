@@ -110,16 +110,24 @@ class TransactionEntryState extends Equatable {
     String? saveError,
     Object? savedTransaction,
     PerformanceMetrics? performanceMetrics,
+    bool clearDraftTransaction = false,
+    bool clearParseError = false,
+    bool clearSaveError = false,
+    bool clearSavedTransaction = false,
   }) =>
       TransactionEntryState(
         currentInput: currentInput ?? this.currentInput,
-        draftTransaction: draftTransaction ?? this.draftTransaction,
+        draftTransaction: clearDraftTransaction
+            ? null
+            : (draftTransaction ?? this.draftTransaction),
         validation: validation ?? this.validation,
         isParsing: isParsing ?? this.isParsing,
-        parseError: parseError ?? this.parseError,
+        parseError: clearParseError ? null : (parseError ?? this.parseError),
         isSaving: isSaving ?? this.isSaving,
-        saveError: saveError ?? this.saveError,
-        savedTransaction: savedTransaction ?? this.savedTransaction,
+        saveError: clearSaveError ? null : (saveError ?? this.saveError),
+        savedTransaction: clearSavedTransaction
+            ? null
+            : (savedTransaction ?? this.savedTransaction),
         performanceMetrics: performanceMetrics ?? this.performanceMetrics,
       );
 
