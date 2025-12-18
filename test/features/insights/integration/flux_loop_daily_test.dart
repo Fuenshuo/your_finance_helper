@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:matcher/matcher.dart';
 import 'package:mockito/mockito.dart';
 import 'package:your_finance_flutter/core/models/transaction.dart';
 import 'package:your_finance_flutter/core/services/ai/mock_ai_service.dart';
@@ -84,12 +85,15 @@ void main() {
       expect(completedJob.error, isNull);
 
       // Verify AI service was called
-      verify(mockAiService.analyzeDailyCap(any)).called(1);
+      verify(mockAiService
+              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
+          .called(1);
     });
 
     test('should handle daily cap analysis failure gracefully', () async {
       // Arrange: Set up AI service to fail
-      when(mockAiService.analyzeDailyCap(any))
+      when(mockAiService
+              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
           .thenThrow(Exception('AI service unavailable'));
 
       // Act: Trigger analysis
@@ -180,7 +184,8 @@ void main() {
 
       // Set up mock responses for each transaction
       var callCount = 0;
-      when(mockAiService.analyzeDailyCap(any))
+      when(mockAiService
+              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
           .thenAnswer((_) async => mockCaps[callCount++ % mockCaps.length]);
 
       // Act: Trigger analysis for each transaction
@@ -208,7 +213,9 @@ void main() {
       }
 
       // Verify AI service was called for each transaction
-      verify(mockAiService.analyzeDailyCap(any)).called(transactions.length);
+      verify(mockAiService
+              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
+          .called(transactions.length);
     });
 
     test('should prioritize urgent daily cap warnings', () async {
@@ -276,7 +283,9 @@ void main() {
         '分析C完成',
       ];
 
-      when(mockAiService.analyzeDailyCap(any)).thenAnswer((_) async {
+      when(mockAiService
+              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
+          .thenAnswer((_) async {
         // Simulate different processing times
         await Future<void>.delayed(Duration(milliseconds: 10 * responseIndex));
         return DailyCap(
@@ -326,7 +335,9 @@ void main() {
       }
 
       // Verify AI service was called for each job
-      verify(mockAiService.analyzeDailyCap(any)).called(transactionIds.length);
+      verify(mockAiService
+              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
+          .called(transactionIds.length);
     });
 
     test('should maintain job history and provide analysis trends', () async {
