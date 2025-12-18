@@ -39,10 +39,11 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData.light(),
           home: Builder(
             builder: (context) {
-              expect(AppDesignTokens.primaryText(context),
-                  const Color(0xFF1C1C1E));
+              // In light theme, primaryText should be black
+              expect(AppDesignTokens.primaryText(context), Colors.black);
               return const SizedBox();
             },
           ),
