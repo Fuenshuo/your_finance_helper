@@ -10,9 +10,18 @@ alwaysApply: true
 
 ## ⚠️ Mandatory CI Checks
 
-The CI pipeline runs three critical quality checks that **MUST pass** before any code can be merged:
+The CI pipeline runs these critical quality checks that **MUST pass** before any code can be merged:
 
-### 1. Code Analysis (Warnings Allowed)
+### Code Quality Job (Runs First - Blocks All Other Jobs)
+
+#### 1. Install Dependencies
+```bash
+flutter pub get
+```
+- **Requirement**: All dependencies must resolve successfully
+- **Action**: Run before any other checks
+
+#### 2. Code Analysis (Warnings Allowed)
 ```bash
 flutter analyze lib/ --no-fatal-warnings
 ```
@@ -21,7 +30,7 @@ flutter analyze lib/ --no-fatal-warnings
 - **Errors**: Not allowed - will cause CI failure
 - **Action**: Fix all analyzer errors before committing
 
-### 2. Code Formatting Check
+#### 3. Code Formatting Check
 ```bash
 dart format --set-exit-if-changed lib/
 ```
@@ -30,7 +39,7 @@ dart format --set-exit-if-changed lib/
 - **Action**: Always run `dart format lib/` before committing
 - **Auto-fix**: Run `dart format lib/` to automatically fix formatting issues
 
-### 3. Info-Level Linting (Strict)
+#### 4. Info-Level Linting (Strict)
 ```bash
 flutter analyze lib/ --fatal-infos
 ```
@@ -42,14 +51,39 @@ flutter analyze lib/ --fatal-infos
   - Other style violations
 - **Action**: Fix all info-level lint issues before committing
 
+### Unit Tests Job (Runs After Code Quality)
+
+#### 5. Run Unit Tests with Coverage
+```bash
+flutter test --coverage test/
+```
+- **Requirement**: All unit tests must pass
+- **Coverage**: Coverage data is generated for Codecov
+- **Action**: Ensure all tests pass before committing
+
+### Integration Tests Job (Runs After Unit Tests)
+
+#### 6. Run Integration Tests
+```bash
+flutter test integration_test/
+```
+- **Requirement**: All integration tests must pass
+- **Action**: Ensure integration tests pass before committing
+
 ## Pre-Commit Checklist
 
-**Before committing any code changes, ensure:**
+**⚠️ MANDATORY: Before committing ANY code changes, ensure:**
 
-- [ ] ✅ Run `flutter analyze lib/` - No errors
+- [ ] ✅ Run `flutter pub get` - Dependencies resolved
+- [ ] ✅ Run `flutter analyze lib/ --no-fatal-warnings` - No errors
 - [ ] ✅ Run `dart format lib/` - All files formatted
+- [ ] ✅ Run `dart format --set-exit-if-changed lib/` - Verify formatting
 - [ ] ✅ Run `flutter analyze lib/ --fatal-infos` - No info messages
-- [ ] ✅ All tests pass: `flutter test`
+- [ ] ✅ Run `flutter test` - All tests pass
+
+**Use automated script**: `./scripts/pre-commit-check.sh`
+
+**See**: [Pre-Commit Requirements](mdc:.cursor/rules/pre-commit-requirements.mdc) for detailed instructions
 
 ## Common Violations and Fixes
 

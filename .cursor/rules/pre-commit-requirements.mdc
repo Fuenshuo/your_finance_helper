@@ -1,0 +1,156 @@
+---
+description: Mandatory pre-commit checks that must pass before any code is committed to GitHub
+globs: **/*
+alwaysApply: true
+---
+
+# Pre-Commit Requirements
+
+**⚠️ CRITICAL: Before committing ANY code to GitHub, you MUST run all CI checks locally.**
+
+## Mandatory Pre-Commit Checks
+
+Before every commit, you MUST execute these checks in order:
+
+### 1. Install Dependencies
+```bash
+flutter pub get
+```
+- **Why**: Ensures all dependencies are resolved
+- **CI Step**: Line 39 in [ci.yml](mdc:.github/workflows/ci.yml)
+
+### 2. Code Analysis (No Fatal Warnings)
+```bash
+flutter analyze lib/ --no-fatal-warnings
+```
+- **Why**: Catches analyzer errors before CI
+- **CI Step**: Line 42 in [ci.yml](mdc:.github/workflows/ci.yml)
+- **Failure Impact**: Blocks code-quality job, prevents all other jobs
+
+### 3. Code Formatting Check
+```bash
+dart format lib/
+dart format --set-exit-if-changed lib/  # Verify no changes needed
+```
+- **Why**: Ensures code formatting compliance
+- **CI Step**: Line 45 in [ci.yml](mdc:.github/workflows/ci.yml)
+- **Failure Impact**: Blocks code-quality job
+- **Auto-fix**: `dart format lib/` automatically fixes formatting
+
+### 4. Info-Level Linting (Strict)
+```bash
+flutter analyze lib/ --fatal-infos
+```
+- **Why**: Catches style violations (eol_at_end_of_file, unnecessary_raw_strings, etc.)
+- **CI Step**: Line 48 in [ci.yml](mdc:.github/workflows/ci.yml)
+- **Failure Impact**: Blocks code-quality job
+- **Common Issues**: Missing newlines, unnecessary raw strings
+
+### 5. Unit Tests (Recommended)
+```bash
+flutter test --coverage test/
+```
+- **Why**: Ensures tests pass before CI
+- **CI Step**: Line 67 in [ci.yml](mdc:.github/workflows/ci.yml)
+- **Failure Impact**: Blocks unit-tests job and all downstream jobs
+
+## Automated Pre-Commit Script
+
+Use the provided script to run all checks:
+
+```bash
+# Run all checks
+./scripts/pre-commit-check.sh
+
+# Skip tests (faster, but less safe)
+./scripts/pre-commit-check.sh --skip-tests
+```
+
+## AI Assistant Requirements
+
+**When you (the AI) are about to commit code, you MUST:**
+
+1. ✅ Run `flutter pub get` to ensure dependencies are current
+2. ✅ Run `flutter analyze lib/ --no-fatal-warnings` - Fix any errors
+3. ✅ Run `dart format lib/` - Format all code
+4. ✅ Run `dart format --set-exit-if-changed lib/` - Verify formatting
+5. ✅ Run `flutter analyze lib/ --fatal-infos` - Fix any info-level issues
+6. ✅ Run `flutter test` (if tests exist) - Ensure tests pass
+7. ✅ Only then proceed with `git commit` and `git push`
+
+## Quick Pre-Commit Command
+
+```bash
+# One-liner to run all checks
+flutter pub get && \
+flutter analyze lib/ --no-fatal-warnings && \
+dart format lib/ && \
+dart format --set-exit-if-changed lib/ && \
+flutter analyze lib/ --fatal-infos && \
+flutter test && \
+echo "✅ All checks passed - ready to commit!"
+```
+
+## CI Workflow Dependencies
+
+Understanding the CI workflow dependency chain:
+
+```
+code-quality (must pass)
+  ↓
+unit-tests (depends on code-quality)
+  ↓
+integration-tests (depends on unit-tests)
+  ↓
+performance-tests (depends on integration-tests)
+  ↓
+deploy-staging / deploy-production
+```
+
+**If code-quality fails, ALL downstream jobs are blocked.**
+
+## Failure Prevention
+
+### Common Failures and Fixes
+
+1. **Formatting Failure**
+   ```bash
+   # Fix automatically
+   dart format lib/
+   git add lib/
+   ```
+
+2. **Info-Level Lint Failure**
+   ```bash
+   # Check what's wrong
+   flutter analyze lib/ --fatal-infos
+   # Fix issues (usually missing newlines or unnecessary raw strings)
+   dart format lib/  # Often fixes these automatically
+   ```
+
+3. **Analyzer Errors**
+   ```bash
+   # Check errors
+   flutter analyze lib/ --no-fatal-warnings
+   # Fix errors manually
+   ```
+
+## Enforcement
+
+- **Pre-Commit**: Run checks locally before committing
+- **CI Enforcement**: CI will fail if checks don't pass
+- **Merge Block**: Failed CI prevents merging to `main` or `develop`
+- **Zero Tolerance**: All checks must pass
+
+## Related Rules
+
+- [CI Lint Compliance](mdc:.cursor/rules/ci-lint-compliance.mdc) - Detailed CI rules
+- [Development Workflow](mdc:.cursor/rules/development-workflow.mdc) - Development guidelines
+- [Git Workflow](mdc:.cursor/rules/git-workflow.mdc) - Git best practices
+
+## Notes
+
+- **Never skip these checks** - They prevent CI failures
+- **Run checks before every commit** - Not just before pushing
+- **Use the pre-commit script** - It automates all checks
+- **Fix issues immediately** - Don't commit broken code
