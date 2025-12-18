@@ -1,0 +1,169 @@
+---
+description: CI/CD linting and formatting rules that must always be complied with
+globs: **/*.dart
+alwaysApply: true
+---
+
+# CI/CD Linting and Formatting Compliance Rules
+
+**These rules are enforced by the CI/CD pipeline and MUST be followed in all code changes.**
+
+## ⚠️ Mandatory CI Checks
+
+The CI pipeline runs three critical quality checks that **MUST pass** before any code can be merged:
+
+### 1. Code Analysis (Warnings Allowed)
+```bash
+flutter analyze lib/ --no-fatal-warnings
+```
+- **Requirement**: Code analysis must complete without errors
+- **Warnings**: Allowed but should be minimized
+- **Errors**: Not allowed - will cause CI failure
+- **Action**: Fix all analyzer errors before committing
+
+### 2. Code Formatting Check
+```bash
+dart format --set-exit-if-changed lib/
+```
+- **Requirement**: All code must be properly formatted
+- **Behavior**: Exits with error code if any files need formatting
+- **Action**: Always run `dart format lib/` before committing
+- **Auto-fix**: Run `dart format lib/` to automatically fix formatting issues
+
+### 3. Info-Level Linting (Strict)
+```bash
+flutter analyze lib/ --fatal-infos
+```
+- **Requirement**: All info-level lint messages must be resolved
+- **Strictness**: Even info messages cause CI failure
+- **Common Issues**:
+  - Missing newlines at end of files (`eol_at_end_of_file`)
+  - Unnecessary raw strings (`unnecessary_raw_strings`)
+  - Other style violations
+- **Action**: Fix all info-level lint issues before committing
+
+## Pre-Commit Checklist
+
+**Before committing any code changes, ensure:**
+
+- [ ] ✅ Run `flutter analyze lib/` - No errors
+- [ ] ✅ Run `dart format lib/` - All files formatted
+- [ ] ✅ Run `flutter analyze lib/ --fatal-infos` - No info messages
+- [ ] ✅ All tests pass: `flutter test`
+
+## Common Violations and Fixes
+
+### Missing End-of-File Newline
+```dart
+// ❌ DON'T: Missing newline at end
+class MyClass {
+  // ...
+}
+```
+
+```dart
+// ✅ DO: Include newline at end
+class MyClass {
+  // ...
+}
+
+```
+
+**Fix**: Run `dart format` or manually add newline
+
+### Unnecessary Raw Strings
+```dart
+// ❌ DON'T: Unnecessary raw string
+final pattern = RegExp(r'([一二三四五六七八九十]+)');
+```
+
+```dart
+// ✅ DO: Use regular string when no escaping needed
+final pattern = RegExp('([一二三四五六七八九十]+)');
+```
+
+**Fix**: Remove `r` prefix when string doesn't contain backslashes
+
+### Formatting Issues
+```dart
+// ❌ DON'T: Inconsistent formatting
+class MyClass{
+  void method(){
+    if(condition){
+      // ...
+    }
+  }
+}
+```
+
+```dart
+// ✅ DO: Properly formatted
+class MyClass {
+  void method() {
+    if (condition) {
+      // ...
+    }
+  }
+}
+```
+
+**Fix**: Run `dart format lib/` to auto-format
+
+## Automated Fixes
+
+### Format All Code
+```bash
+dart format lib/
+```
+
+### Check Formatting Without Fixing
+```bash
+dart format --set-exit-if-changed lib/
+```
+
+### Analyze with Info-Level Checks
+```bash
+flutter analyze lib/ --fatal-infos
+```
+
+### Full Pre-Commit Check
+```bash
+# Format code
+dart format lib/
+
+# Analyze (warnings allowed)
+flutter analyze lib/ --no-fatal-warnings
+
+# Strict analyze (info-level fatal)
+flutter analyze lib/ --fatal-infos
+
+# Run tests
+flutter test
+```
+
+## CI Workflow Reference
+
+See [.github/workflows/ci.yml](mdc:.github/workflows/ci.yml) for the exact CI commands:
+
+- **Line 42**: `flutter analyze lib/ --no-fatal-warnings`
+- **Line 45**: `dart format --set-exit-if-changed lib/`
+- **Line 48**: `flutter analyze lib/ --fatal-infos`
+
+## Enforcement
+
+- **CI Failure**: Any violation will cause the CI pipeline to fail
+- **Merge Block**: Failed CI checks block merging to `main` or `develop`
+- **Zero Tolerance**: All three checks must pass for code to be merged
+
+## Related Rules
+
+- [日志格式化规范](mdc:.cursor/rules/logging-format.mdc) - Logging standards
+- [组件设计原则](mdc:.cursor/rules/component-design.mdc) - Component design guidelines
+- [Git工作流和版本控制规范](mdc:.cursor/rules/git-workflow.mdc) - Git workflow
+
+## Notes
+
+- These rules are **non-negotiable** - they are enforced by CI/CD
+- Always run local checks before pushing to avoid CI failures
+- Use IDE integration to catch issues early (format on save, real-time analysis)
+- Consider setting up pre-commit hooks to automate these checks

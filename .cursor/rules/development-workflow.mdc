@@ -31,10 +31,30 @@ flutter run -d chrome --hot
 - `timeago: ^3.6.0` - 时间格式化
 
 ## 代码质量检查
+
+**⚠️ 重要：所有代码必须通过 CI 检查才能合并。详见 [CI Lint 合规规则](mdc:.cursor/rules/ci-lint-compliance.mdc)**
+
+### 提交前必须执行的检查
 ```bash
-flutter analyze  # 静态代码分析
-flutter test     # 运行测试
+# 1. 格式化代码
+dart format lib/
+
+# 2. 代码分析（允许警告）
+flutter analyze lib/ --no-fatal-warnings
+
+# 3. 严格代码分析（info级别也会失败）
+flutter analyze lib/ --fatal-infos
+
+# 4. 运行测试
+flutter test
 ```
+
+### CI 强制执行的规则
+- ✅ 代码格式化：`dart format --set-exit-if-changed lib/`
+- ✅ 代码分析：`flutter analyze lib/ --no-fatal-warnings`
+- ✅ 严格检查：`flutter analyze lib/ --fatal-infos`
+
+**违反任何规则都会导致 CI 失败并阻止合并！**
 
 ## 常见问题解决
 1. **StorageService初始化问题**: 使用`late final`和异步初始化
