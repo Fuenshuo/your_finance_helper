@@ -117,7 +117,7 @@ class DefaultTransactionParserService implements TransactionParserService {
 
     // 处理混合货币符号：提取每个货币符号后的数字
     final currencyAmounts = <double>[];
-    
+
     // 匹配各种货币符号后的数字
     final currencyRegex = RegExp(r'[¥$€£](\d+(?:\.\d{1,2})?)');
     final currencyMatches = currencyRegex.allMatches(convertedInput);
@@ -134,12 +134,12 @@ class DefaultTransactionParserService implements TransactionParserService {
 
     // 合并所有找到的金额，保持顺序
     final allAmounts = <double>[];
-    
+
     // 如果有货币符号后的数字，优先使用它们（按出现顺序）
     if (currencyAmounts.isNotEmpty) {
       allAmounts.addAll(currencyAmounts);
     }
-    
+
     // 添加其他数字（避免重复）
     for (final match in matches) {
       final amount = double.tryParse(match.group(1) ?? '');
@@ -157,49 +157,49 @@ class DefaultTransactionParserService implements TransactionParserService {
   /// 将中文数字转换为阿拉伯数字
   String _convertChineseNumerals(String input) {
     var result = input;
-    
+
     // 处理英文数字模式（测试用例）
     final englishPatterns = {
-      r'two_hundred_fifty_yuan': '250',
-      r'one_thousand_yuan': '1000',
-      r'fifty_five_yuan': '55',
+      'two_hundred_fifty_yuan': '250',
+      'one_thousand_yuan': '1000',
+      'fifty_five_yuan': '55',
     };
-    
+
     for (final entry in englishPatterns.entries) {
       final pattern = RegExp(entry.key);
       if (pattern.hasMatch(result)) {
         result = result.replaceAll(pattern, entry.value);
       }
     }
-    
+
     // 处理中文数字模式
     // 匹配模式：数字词 + 单位词（可选） + 货币单位
     // 支持"二十五元五角"这样的组合 - 需要分别匹配"二十五元"和"五角"
-    final chinesePattern1 = RegExp(r'([一二三四五六七八九十]+)([百千万]?)([元块])');
+    final chinesePattern1 = RegExp('([一二三四五六七八九十]+)([百千万]?)([元块])');
     final chineseMatches1 = chinesePattern1.allMatches(input);
-    
+
     for (final match in chineseMatches1) {
       final numPart = match.group(1) ?? '';
       final unitPart = match.group(2) ?? '';
       final currencyPart = match.group(3) ?? '';
-      
+
       final numValue = _parseChineseNumber(numPart, unitPart, currencyPart);
-      
+
       if (numValue != null && numValue > 0) {
         result = result.replaceFirst(match.group(0) ?? '', numValue.toString());
       }
     }
-    
+
     // 处理角分部分（如"五角"）
-    final chinesePattern2 = RegExp(r'([一二三四五六七八九十]+)([角分])');
+    final chinesePattern2 = RegExp('([一二三四五六七八九十]+)([角分])');
     final chineseMatches2 = chinesePattern2.allMatches(result);
-    
+
     for (final match in chineseMatches2) {
       final numPart = match.group(1) ?? '';
       final currencyPart = match.group(2) ?? '';
-      
+
       final numValue = _parseChineseNumber(numPart, '', currencyPart);
-      
+
       if (numValue != null && numValue > 0) {
         // 查找前面的数字并相加
         final beforeMatch = RegExp(r'(\d+(?:\.\d+)?)').allMatches(result);
@@ -216,7 +216,8 @@ class DefaultTransactionParserService implements TransactionParserService {
             result = result.replaceFirst(match.group(0) ?? '', '');
           }
         } else {
-          result = result.replaceFirst(match.group(0) ?? '', numValue.toString());
+          result =
+              result.replaceFirst(match.group(0) ?? '', numValue.toString());
         }
       }
     }
@@ -225,7 +226,8 @@ class DefaultTransactionParserService implements TransactionParserService {
   }
 
   /// 解析中文数字
-  double? _parseChineseNumber(String numPart, String unitPart, String currencyPart) {
+  double? _parseChineseNumber(
+      String numPart, String unitPart, String currencyPart) {
     const digitMap = {
       '零': 0,
       '一': 1,
@@ -238,24 +240,24 @@ class DefaultTransactionParserService implements TransactionParserService {
       '八': 8,
       '九': 9,
     };
-    
+
     const unitMap = {
       '十': 10,
       '百': 100,
       '千': 1000,
       '万': 10000,
     };
-    
+
     if (numPart.isEmpty) return null;
-    
+
     var result = 0.0;
     var temp = 0;
-    
+
     // 解析数字部分（如"二十五"）
     var lastWasTen = false;
     for (var i = 0; i < numPart.length; i++) {
       final char = numPart[i];
-      
+
       if (digitMap.containsKey(char)) {
         // 数字字符（一、二、三等）
         if (lastWasTen) {
@@ -284,7 +286,7 @@ class DefaultTransactionParserService implements TransactionParserService {
         lastWasTen = false;
       }
     }
-    
+
     // 处理剩余的数字
     if (temp > 0) {
       if (unitPart.isNotEmpty && unitMap.containsKey(unitPart)) {
@@ -298,14 +300,14 @@ class DefaultTransactionParserService implements TransactionParserService {
       // 只有单位词，没有数字（如"十元"）
       result += unitMap[unitPart]!;
     }
-    
+
     // 处理角分
     if (currencyPart == '角') {
       result = result / 10;
     } else if (currencyPart == '分') {
       result = result / 100;
     }
-    
+
     return result > 0 ? result : null;
   }
 
@@ -321,7 +323,8 @@ class DefaultTransactionParserService implements TransactionParserService {
     description = description.replaceAll(RegExp(r'(花了)?[元块角分]*$'), '').trim();
 
     // 移除常见的消费相关动词和连接词（如"消费"、"花了"、"一共"等）
-    description = description.replaceAll(RegExp(r'(消费|花了|支付|付款|花费|一共)$'), '').trim();
+    description =
+        description.replaceAll(RegExp(r'(消费|花了|支付|付款|花费|一共)$'), '').trim();
 
     // 移除常见的分隔符和多余空格
     description = description.replaceAll(RegExp(r'[,\.\-\s]+'), ' ').trim();
@@ -400,7 +403,9 @@ class DefaultTransactionParserService implements TransactionParserService {
     }
 
     // 如果只有金额和描述，但没有类型，置信度应该降低
-    if (draft.type == null && draft.description != null && draft.amount != null) {
+    if (draft.type == null &&
+        draft.description != null &&
+        draft.amount != null) {
       confidence = confidence * 0.9; // 降低10%
     }
 
