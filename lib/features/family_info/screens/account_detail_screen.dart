@@ -1229,14 +1229,14 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
 
       // 显示成功消息
       if (mounted) {
-        unifiedNotifications.showSuccess(context, '账户已删除');
+      unifiedNotifications.showSuccess(context, '账户已删除');
 
-        // 返回上一页
-        Navigator.of(context).pop();
+      // 返回上一页
+      Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
-        unifiedNotifications.showError(context, '删除失败: $e');
+      unifiedNotifications.showError(context, '删除失败: $e');
       }
     }
   }

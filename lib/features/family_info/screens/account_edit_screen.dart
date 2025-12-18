@@ -197,17 +197,17 @@ class _AccountEditScreenState extends State<AccountEditScreen> {
       await accountProvider.updateAccount(updatedAccount);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('账户已更新')),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('账户已更新')),
+      );
 
-        Navigator.of(context).pop();
+      Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e')),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('保存失败: $e')),
+      );
       }
     }
   }

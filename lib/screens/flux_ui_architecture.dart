@@ -616,3 +616,4 @@ abstract class FlowPageStructure extends StatelessWidget {
         bottomNavigationBar: bottomBar,
       );
 }
+
