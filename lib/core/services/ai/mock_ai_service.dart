@@ -14,6 +14,9 @@ import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dar
 /// This mock implements the AiService interface and provides additional
 /// test-specific methods that are used in integration tests.
 class MockAiService extends Mock implements AiService {
+  /// Create a mock AI service with default config
+  MockAiService() : super();
+
   /// Default config for the mock service
   final AiConfig _defaultConfig = AiConfig(
     provider: AiProvider.dashscope,
@@ -21,9 +24,6 @@ class MockAiService extends Mock implements AiService {
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );
-
-  /// Create a mock AI service with default config
-  MockAiService() : super();
 
   @override
   // ignore: invalid_use_of_visible_for_testing_member
@@ -145,7 +145,6 @@ class MockAiService extends Mock implements AiService {
   /// Mock method for daily cap analysis
   /// Used in integration tests for daily spending analysis
   /// This is a test-specific method, not part of the AiService interface
-  @override
   Future<DailyCap> analyzeDailyCap(List<Map<String, dynamic>>? transactions) {
     // ignore: invalid_use_of_visible_for_testing_member
     return super.noSuchMethod(
