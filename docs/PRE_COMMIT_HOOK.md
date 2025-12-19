@@ -55,9 +55,25 @@ git commit --no-verify -m "emergency fix"
 2. **代码分析错误**: 查看错误信息，修复后重新提交
 3. **Linting 错误**: 修复所有 info 级别的 lint 问题
 
+## 安装 Hook
+
+首次克隆仓库或 hook 文件丢失时，需要安装 hook：
+
+```bash
+./scripts/install-pre-commit-hook.sh
+```
+
+或者手动复制：
+
+```bash
+cp scripts/pre-commit-hook.template .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
 ## 文件位置
 
-- **Pre-commit Hook**: `.git/hooks/pre-commit`
+- **Pre-commit Hook**: `.git/hooks/pre-commit` (不会被 git 跟踪)
+- **Hook 安装脚本**: `scripts/install-pre-commit-hook.sh`
 - **检查脚本**: `scripts/pre-commit-check.sh`
 - **CI 配置**: `.github/workflows/ci.yml`
 
@@ -65,8 +81,9 @@ git commit --no-verify -m "emergency fix"
 
 1. Pre-commit hook 只检查 `lib/` 目录下的代码，与 CI 流程保持一致
 2. Hook 不会运行单元测试（避免提交过慢），但 CI 会运行
-3. 如果 hook 文件丢失，可以从 `.git/hooks/pre-commit` 重新创建
+3. `.git/hooks/pre-commit` 文件不会被 git 跟踪，每个开发者需要单独安装
 4. Hook 需要执行权限：`chmod +x .git/hooks/pre-commit`
+5. 团队新成员克隆仓库后需要运行安装脚本
 
 ## 故障排除
 
