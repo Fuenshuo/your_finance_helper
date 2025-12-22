@@ -8,12 +8,18 @@ import 'package:your_finance_flutter/core/services/ai/ai_service.dart';
 import 'package:your_finance_flutter/features/insights/models/daily_cap.dart';
 import 'package:your_finance_flutter/features/insights/models/monthly_health.dart';
 import 'package:your_finance_flutter/features/insights/models/weekly_anomaly.dart';
+import 'package:your_finance_flutter/features/insights/services/ai_analysis_delegates.dart';
 
 /// Mock AI Service for testing
 ///
 /// This mock implements the AiService interface and provides additional
 /// test-specific methods that are used in integration tests.
-class MockAiService extends Mock implements AiService {
+class MockAiService extends Mock
+    implements
+        AiService,
+        DailyCapAnalyzer,
+        WeeklyPatternAnalyzer,
+        MonthlyHealthAnalyzer {
   /// Create a mock AI service with default config
   MockAiService() : super();
 
@@ -145,6 +151,7 @@ class MockAiService extends Mock implements AiService {
   /// Mock method for daily cap analysis
   /// Used in integration tests for daily spending analysis
   /// This is a test-specific method, not part of the AiService interface
+  @override
   Future<DailyCap> analyzeDailyCap(List<Map<String, dynamic>>? transactions) {
     // ignore: invalid_use_of_visible_for_testing_member
     return super.noSuchMethod(
@@ -178,8 +185,9 @@ class MockAiService extends Mock implements AiService {
   /// Mock method for weekly pattern analysis
   /// Used in integration tests for weekly spending pattern detection
   /// This is a test-specific method, not part of the AiService interface
+  @override
   Future<List<WeeklyAnomaly>> analyzeWeeklyPatterns(
-    List<Map<String, dynamic>> weeklyData,
+    List<Map<String, dynamic>>? weeklyData,
   ) {
     // ignore: invalid_use_of_visible_for_testing_member
     return super.noSuchMethod(
@@ -196,8 +204,9 @@ class MockAiService extends Mock implements AiService {
   /// Mock method for monthly health analysis
   /// Used in integration tests for monthly financial health assessment
   /// This is a test-specific method, not part of the AiService interface
+  @override
   Future<MonthlyHealthScore> analyzeMonthlyHealth(
-    Map<String, dynamic> monthlyData,
+    Map<String, dynamic>? monthlyData,
   ) {
     // ignore: invalid_use_of_visible_for_testing_member
     return super.noSuchMethod(

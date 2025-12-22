@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/features/transaction_entry/models/draft_transaction.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/input_validation_provider.dart';
@@ -14,9 +15,12 @@ import 'package:your_finance_flutter/features/transaction_entry/providers/transa
 /// 4. 确认保存交易
 /// 5. 查看交易历史
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late ProviderContainer container;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
     container = ProviderContainer();
   });
 

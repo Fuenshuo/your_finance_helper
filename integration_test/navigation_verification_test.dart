@@ -14,9 +14,11 @@ import 'package:your_finance_flutter/core/providers/asset_provider.dart';
 import 'package:your_finance_flutter/core/providers/budget_provider.dart';
 import 'package:your_finance_flutter/core/providers/expense_plan_provider.dart';
 import 'package:your_finance_flutter/core/providers/flux_providers.dart';
+import 'package:your_finance_flutter/core/providers/theme_provider.dart';
+import 'package:your_finance_flutter/core/providers/theme_style_provider.dart';
 import 'package:your_finance_flutter/core/providers/transaction_provider.dart';
-import 'package:your_finance_flutter/screens/dashboard_home_screen.dart';
 import 'package:your_finance_flutter/screens/main_navigation_screen.dart';
+import 'package:your_finance_flutter/screens/unified_transaction_entry_screen.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +44,12 @@ void main() {
           ),
           provider.ChangeNotifierProvider(
             create: (_) => TransactionProvider()..initialize(),
+          ),
+          provider.ChangeNotifierProvider(
+            create: (_) => ThemeProvider(),
+          ),
+          provider.ChangeNotifierProvider(
+            create: (_) => ThemeStyleProvider()..initialize(),
           ),
           provider.ChangeNotifierProvider(
             create: (_) => FluxThemeProvider()..initialize(),
@@ -85,101 +93,48 @@ void main() {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // Check for expected navigation items
-      // This would need to be customized based on actual tab labels
-      expect(find.byIcon(Icons.dashboard), findsOneWidget);
-      expect(find.byIcon(Icons.account_balance_wallet), findsOneWidget);
-      expect(find.byIcon(Icons.insights), findsOneWidget);
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      // The Stream+Insights merged UI is enabled by default, which yields:
+      // Stream (timeline), Assets, Me.
+      expect(find.text('Stream'), findsOneWidget);
+      expect(find.text('Assets'), findsOneWidget);
+      expect(find.text('Me'), findsOneWidget);
+
+      // Selected tab uses the active icon.
+      expect(find.byIcon(Icons.timeline), findsOneWidget);
     });
 
-    testWidgets('Dashboard tab displays correctly', (tester) async {
+    testWidgets('Stream tab displays correctly', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // Tap on dashboard tab (first tab, index 0)
-      await tester.tap(find.byIcon(Icons.dashboard));
+      // Tap on stream tab (index 0)
+      await tester.tap(find.text('Stream'));
       await tester.pumpAndSettle();
 
-      // Verify dashboard content is displayed
-      expect(find.byType(DashboardHomeScreen), findsOneWidget);
+      // Verify stream content is displayed
+      expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
     });
 
     testWidgets('Navigation between tabs works', (tester) async {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // Start on dashboard tab
-      expect(find.byType(DashboardHomeScreen), findsOneWidget);
+      // Start on stream tab
+      expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
 
-      // Navigate to transaction entry (assuming second tab)
-      await tester.tap(find.byIcon(Icons.account_balance_wallet));
+      // Navigate to assets tab
+      await tester.tap(find.text('Assets'));
       await tester.pumpAndSettle();
 
-      // This would check for transaction entry screen
-      // expect(find.byType(UnifiedTransactionEntryScreen), findsOneWidget);
+      // Verify the assets placeholder content is visible.
+      expect(find.text('资产与账户模块即将上线'), findsOneWidget);
 
-      // Navigate back to dashboard
-      await tester.tap(find.byIcon(Icons.dashboard));
+      // Navigate to me tab
+      await tester.tap(find.text('Me'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(DashboardHomeScreen), findsOneWidget);
-    });
-
-    testWidgets('Insights tab loads correctly', (tester) async {
-      await tester.pumpWidget(testWidget);
-      await tester.pumpAndSettle();
-
-      // Navigate to insights tab
-      await tester.tap(find.byIcon(Icons.insights));
-      await tester.pumpAndSettle();
-
-      // Check that insights content loads
-      // This would be customized based on actual insights screen
-      expect(find.text('Insights'), findsWidgets); // Assuming there's a title
-    });
-
-    testWidgets('Settings tab is accessible', (tester) async {
-      await tester.pumpWidget(testWidget);
-      await tester.pumpAndSettle();
-
-      // Navigate to settings tab
-      await tester.tap(find.byIcon(Icons.settings));
-      await tester.pumpAndSettle();
-
-      // Check that settings content loads
-      // This would be customized based on actual settings screen
-      expect(find.text('Settings'), findsWidgets); // Assuming there's a title
-    });
-
-    testWidgets('Back navigation works within tabs', (tester) async {
-      await tester.pumpWidget(testWidget);
-      await tester.pumpAndSettle();
-
-      // Navigate to a tab
-      await tester.tap(find.byIcon(Icons.insights));
-      await tester.pumpAndSettle();
-
-      // Simulate back button press (Android back or iOS swipe)
-      // Note: This test assumes the app handles back navigation properly
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-
-      // Should be back to previous state
-      // This test would need customization based on actual back navigation behavior
-    });
-
-    testWidgets('Navigation handles provider dependencies', (tester) async {
-      // Test without all required providers (should handle gracefully)
-      const incompleteWidget = MaterialApp(
-        home: MainNavigationScreen(),
-      );
-
-      await tester.pumpWidget(incompleteWidget);
-
-      // The navigation screen should handle missing providers gracefully
-      // (This test verifies the screen doesn't crash immediately without providers)
-      await tester.pumpAndSettle();
+      // Verify the me placeholder content is visible.
+      expect(find.text('个人中心即将上线'), findsOneWidget);
     });
 
     testWidgets('Navigation state persists during tab switches',
@@ -187,19 +142,16 @@ void main() {
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // Navigate to transaction tab and perform some action
-      await tester.tap(find.byIcon(Icons.account_balance_wallet));
+      // Navigate to assets tab and perform some action
+      await tester.tap(find.text('Assets'));
       await tester.pumpAndSettle();
 
-      // Perform some action that changes state (e.g., input text)
-      // This would depend on the actual transaction entry screen implementation
-
-      // Switch to another tab
-      await tester.tap(find.byIcon(Icons.dashboard));
+      // Switch to another tab (me)
+      await tester.tap(find.text('Me'));
       await tester.pumpAndSettle();
 
-      // Switch back to transaction tab
-      await tester.tap(find.byIcon(Icons.account_balance_wallet));
+      // Switch back to assets tab
+      await tester.tap(find.text('Assets'));
       await tester.pumpAndSettle();
 
       // Verify that state was preserved

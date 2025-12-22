@@ -42,9 +42,7 @@ void main() {
         trigger: InsightTrigger.transactionAdded,
       );
 
-      when(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .thenAnswer(
+      when(mockAiService.analyzeDailyCap(any)).thenAnswer(
         (_) async => DailyCap(
           id: 'daily_cap_123',
           date: DateTime.now(),
@@ -85,15 +83,12 @@ void main() {
       expect(completedJob.error, isNull);
 
       // Verify AI service was called
-      verify(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .called(1);
+      verify(mockAiService.analyzeDailyCap(any)).called(1);
     });
 
     test('should handle daily cap analysis failure gracefully', () async {
       // Arrange: Set up AI service to fail
-      when(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
+      when(mockAiService.analyzeDailyCap(any))
           .thenThrow(Exception('AI service unavailable'));
 
       // Act: Trigger analysis
@@ -184,8 +179,7 @@ void main() {
 
       // Set up mock responses for each transaction
       var callCount = 0;
-      when(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
+      when(mockAiService.analyzeDailyCap(any))
           .thenAnswer((_) async => mockCaps[callCount++ % mockCaps.length]);
 
       // Act: Trigger analysis for each transaction
@@ -213,18 +207,14 @@ void main() {
       }
 
       // Verify AI service was called for each transaction
-      verify(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .called(transactions.length);
+      verify(mockAiService.analyzeDailyCap(any)).called(transactions.length);
     });
 
     test('should prioritize urgent daily cap warnings', () async {
       // Test that urgent warnings (like exceeding 80% budget) are processed immediately
 
       // Mock an urgent situation
-      when(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .thenAnswer(
+      when(mockAiService.analyzeDailyCap(any)).thenAnswer(
         (_) async => DailyCap(
           id: 'urgent_cap',
           date: DateTime.now(),
@@ -283,24 +273,23 @@ void main() {
         '分析C完成',
       ];
 
-      when(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .thenAnswer((_) async {
+      when(mockAiService.analyzeDailyCap(any)).thenAnswer((_) async {
+        final idx = responseIndex++;
         // Simulate different processing times
-        await Future<void>.delayed(Duration(milliseconds: 10 * responseIndex));
+        await Future<void>.delayed(Duration(milliseconds: 10 * idx));
         return DailyCap(
-          id: 'daily_cap_$responseIndex',
+          id: 'daily_cap_$idx',
           date: DateTime.now(),
           referenceAmount: 500.0,
-          currentSpending: 100.0 + (responseIndex * 50.0),
-          percentage: 0.2 + (responseIndex * 0.1),
+          currentSpending: 100.0 + (idx * 50.0),
+          percentage: 0.2 + (idx * 0.1),
           status: CapStatus.safe,
           latestInsight: MicroInsight(
-            id: 'insight_$responseIndex',
-            dailyCapId: 'daily_cap_$responseIndex',
+            id: 'insight_$idx',
+            dailyCapId: 'daily_cap_$idx',
             generatedAt: DateTime.now(),
             sentiment: Sentiment.positive,
-            message: responses[responseIndex],
+            message: responses[idx],
             actions: const ['查看详细分析'],
             trigger: InsightTrigger.transactionAdded,
           ),
@@ -315,7 +304,6 @@ void main() {
           metadata: {'index': i},
         );
         jobs.add(job);
-        responseIndex++;
       }
 
       // Wait for all jobs to complete
@@ -335,9 +323,7 @@ void main() {
       }
 
       // Verify AI service was called for each job
-      verify(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .called(transactionIds.length);
+      verify(mockAiService.analyzeDailyCap(any)).called(transactionIds.length);
     });
 
     test('should maintain job history and provide analysis trends', () async {
@@ -357,9 +343,7 @@ void main() {
       ];
 
       var analysisIndex = 0;
-      when(mockAiService
-              .analyzeDailyCap(argThat(isA<List<Map<String, dynamic>>>())))
-          .thenAnswer(
+      when(mockAiService.analyzeDailyCap(any)).thenAnswer(
         (_) async => DailyCap(
           id: 'trend_cap_$analysisIndex',
           date: DateTime.now(),

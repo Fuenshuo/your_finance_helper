@@ -21,7 +21,7 @@ void main() {
 
       // Verify initial theme (light theme by default)
       final initialBackgroundColor = AppDesignTokens.pageBackground(
-        tester.element(find.byType(Container)),
+        tester.element(find.byType(FluxInsightsScreen)),
       );
       expect(initialBackgroundColor, isNotNull);
 
@@ -37,7 +37,7 @@ void main() {
 
       // Verify dark theme colors are applied
       final darkBackgroundColor = AppDesignTokens.pageBackground(
-        tester.element(find.byType(Container)),
+        tester.element(find.byType(FluxInsightsScreen)),
       );
       expect(darkBackgroundColor, isNotNull);
 

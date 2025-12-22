@@ -311,6 +311,10 @@ AI结果的智能缓存，避免重复计算。
 - 第三方API集成测试
 - 错误场景测试
 
+### Mock 支持
+- `mock_ai_service.dart` 基于 Mockito，用于 Insights 等模块的集成测试。
+  - 为兼容 Mockito 在 sound null-safety 下的参数 matcher（本质上以 `null` 作为占位），`analyzeDailyCap / analyzeWeeklyPatterns / analyzeMonthlyHealth` 的入参允许为 nullable，并在实现内部做空值兜底。
+
 ### 性能测试
 - AI响应时间测试
 - 并发处理能力测试
@@ -338,5 +342,6 @@ class NewAiService extends AiService {
 - [Core Services总文档](../README.md)
 - [自然语言交易解析服务](natural_language_transaction_service.dart)
 - [AI配置管理服务](ai_config_service.dart)
+
 
 

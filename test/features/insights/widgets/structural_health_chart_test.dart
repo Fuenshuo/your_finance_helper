@@ -102,7 +102,9 @@ void main() {
       expect(find.text('Fixed Expenses'), findsOneWidget);
       expect(find.text('Flexible Expenses'), findsOneWidget);
       expect(find.text('Total'), findsOneWidget);
-      expect(find.text('¥1000'), findsOneWidget); // Fixed amount
+      // For fixed-only allocations, the UI shows the same number for the fixed
+      // segment and the total.
+      expect(find.text('¥1000'), findsNWidgets(2));
       expect(find.text('¥0'), findsOneWidget); // Flexible amount
     });
 
@@ -120,7 +122,9 @@ void main() {
       expect(find.text('Flexible Expenses'), findsOneWidget);
       expect(find.text('Total'), findsOneWidget);
       expect(find.text('¥0'), findsOneWidget); // Fixed amount
-      expect(find.text('¥1000'), findsOneWidget); // Flexible amount
+      // For flexible-only allocations, the UI shows the same number for the
+      // flexible segment and the total.
+      expect(find.text('¥1000'), findsNWidgets(2));
     });
 
     testWidgets('displays health score correctly', (tester) async {

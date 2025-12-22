@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/draft_manager_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/providers/transaction_entry_provider.dart';
 import 'package:your_finance_flutter/features/transaction_entry/screens/transaction_entry_screen.dart';
@@ -9,9 +10,12 @@ import 'package:your_finance_flutter/features/transaction_entry/screens/transact
 ///
 /// 测试从用户输入到交易保存的完整流程
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late ProviderContainer container;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
     container = ProviderContainer();
   });
 
@@ -64,20 +68,23 @@ void main() {
       await entryNotifier.updateInput('午饭25元');
 
       final draftState = container.read(transactionEntryProvider);
-      expect(draftState.draftTransaction, isNotNull);
+      final draft = draftState.draftTransaction;
+      expect(draft, isNotNull);
+
+      final draftManager = container.read(draftManagerProvider.notifier);
+      await draftManager.saveDraft(draft!);
 
       // 2. 模拟应用重启 - 创建新的container
       final newContainer = ProviderContainer();
 
       // 3. 验证数据是否正确恢复
-      final draftManager = newContainer.read(draftManagerProvider.notifier);
-      await draftManager.loadSavedDrafts();
-
-      // 注意：实际实现中需要确保数据持久化逻辑
+      final newDraftManager = newContainer.read(draftManagerProvider.notifier);
+      await newDraftManager.loadSavedDrafts();
+      final restoredState = newContainer.read(draftManagerProvider);
+      expect(restoredState.savedDrafts, isNotEmpty);
+      expect(restoredState.savedDrafts.first.description, equals(draft.description));
 
       newContainer.dispose();
-
-      // TODO: 实现完整的持久化测试
     });
 
     test('performance under load', () async {

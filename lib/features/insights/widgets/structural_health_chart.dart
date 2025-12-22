@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:your_finance_flutter/core/theme/app_design_tokens.dart';
-import 'package:your_finance_flutter/core/utils/currency_formatter.dart';
 import 'package:your_finance_flutter/features/insights/models/allocation_data.dart';
 import 'package:your_finance_flutter/features/insights/models/health_score.dart';
 import 'package:your_finance_flutter/features/insights/services/financial_calculation_service.dart';
@@ -57,23 +56,20 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
 
   Future<void> _calculateHealthScore() async {
     if (widget.allocationData == null) {
-      setState(() {
-        _healthScore = null;
-      });
+      if (!mounted) return;
+      setState(() => _healthScore = null);
       return;
     }
 
     try {
       final score = await _calculationService
           .calculateHealthScore(widget.allocationData!);
-      setState(() {
-        _healthScore = score;
-      });
+      if (!mounted) return;
+      setState(() => _healthScore = score);
     } catch (e) {
       print('[StructuralHealthChart] Error calculating health score: $e');
-      setState(() {
-        _healthScore = null;
-      });
+      if (!mounted) return;
+      setState(() => _healthScore = null);
     }
   }
 
@@ -86,53 +82,57 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
       return _buildEmptyState(context);
     }
 
-    return Column(
-      children: [
-        // Donut Chart with centered score overlay
-        AspectRatio(
-          aspectRatio: 1.0, // Square aspect ratio for donut chart
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Donut chart background
-              PieChart(
-                PieChartData(
-                  sections: _buildChartSections(allocation),
-                  centerSpaceRadius:
-                      60, // Thin 15px ring (60 radius - 45 inner = 15px)
-                  sectionsSpace: 0, // No space between sections for thin ring
-                  centerSpaceColor: Colors.transparent,
-                ),
-              ),
-
-              // Centered Score Display (overlay on chart center)
-              Column(
-                mainAxisSize: MainAxisSize.min,
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Donut Chart with centered score overlay
+          SizedBox(
+            height: 240,
+            child: AspectRatio(
+              aspectRatio: 1.0, // Square aspect ratio for donut chart
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(
-                    _healthScore?.score.toStringAsFixed(0) ?? '75',
-                    style: AppDesignTokens.largeTitle(context).copyWith(
-                      color: AppDesignTokens.primaryText(context),
-                      fontWeight: FontWeight.bold,
+                  // Donut chart background
+                  PieChart(
+                    PieChartData(
+                      sections: _buildChartSections(allocation),
+                      centerSpaceRadius:
+                          60, // Thin 15px ring (60 radius - 45 inner = 15px)
+                      sectionsSpace:
+                          0, // No space between sections for thin ring
+                      centerSpaceColor: Colors.transparent,
                     ),
                   ),
-                  Text(
-                    'Health Score',
-                    style: AppDesignTokens.caption(context),
+
+                  // Centered Score Display (overlay on chart center)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _healthScore?.score.toStringAsFixed(0) ?? '75',
+                        style: AppDesignTokens.largeTitle(context).copyWith(
+                          color: AppDesignTokens.primaryText(context),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Health Score',
+                        style: AppDesignTokens.caption(context),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 24),
 
-        const SizedBox(height: 24),
-
-        const SizedBox(height: 24),
-
-        // Color-coded breakdown list
-        _buildBreakdownList(allocation, context),
-      ],
+          // Color-coded breakdown list
+          _buildBreakdownList(allocation, context),
+        ],
+      ),
     );
   }
 
@@ -204,10 +204,7 @@ class _StructuralHealthChartState extends State<StructuralHealthChart> {
         ],
       );
 
-  String _formatAmount(double amount) {
-    // Use the CurrencyFormatter for consistent formatting
-    return CurrencyFormatter.format(amount);
-  }
+  String _formatAmount(double amount) => '¥${amount.toStringAsFixed(0)}';
 
   Widget _buildBreakdownRow(
     BuildContext context, {

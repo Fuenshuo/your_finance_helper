@@ -9,9 +9,7 @@ import 'package:your_finance_flutter/features/insights/models/trend_data.dart';
 
 /// Service class for financial calculations with error handling and performance monitoring.
 class FinancialCalculationService {
-  FinancialCalculationService() {
-    _initPrefs();
-  }
+  FinancialCalculationService();
   SharedPreferences? _prefs;
 
   static const String _trendDataKey = 'flux_insights_trend_data';

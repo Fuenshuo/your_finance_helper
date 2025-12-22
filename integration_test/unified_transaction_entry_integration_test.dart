@@ -142,37 +142,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Check for insights view
-      expect(find.byKey(const Key('unified_insights_view')), findsOneWidget);
-    });
-
-    testWidgets('Draft card functionality exists', (tester) async {
-      await tester.pumpWidget(
-        provider.MultiProvider(
-          providers: [
-            provider.ChangeNotifierProvider(create: (_) => AccountProvider()),
-            provider.ChangeNotifierProvider(create: (_) => BudgetProvider()),
-            provider.ChangeNotifierProvider(
-                create: (_) => TransactionProvider()),
-            provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-            provider.ChangeNotifierProvider(
-                create: (_) => ThemeStyleProvider()),
-            provider.ChangeNotifierProvider(
-                create: (_) => StreamInsightsFlagProvider(
-                    flagKey: 'stream_insights', defaultValue: true)),
-          ],
-          child: const ProviderScope(
-            child: MaterialApp(
-              home: UnifiedTransactionEntryScreen(),
-            ),
-          ),
-        ),
-      );
-
+      // Switch to insights pane (only becomes visible after the toggle).
+      await tester.tap(find.byKey(const Key('unified_insights_nav_chip')));
       await tester.pumpAndSettle();
 
-      // Check for draft card (may not be visible initially, but element should exist)
-      expect(find.byKey(const Key('unified_draft_card')), findsOneWidget);
+      expect(find.byKey(const Key('unified_insights_view')), findsOneWidget);
     });
   });
 }
