@@ -75,22 +75,60 @@ jobs:
 
   # 集成测试
   integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: unit-tests
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Xcode (select a version that supports iPhone 16)
+        uses: maxim-lobanov/setup-xcode@v2
+        with:
+          xcode-version: '15.4'    # Xcode version that provides iPhone 16/specific iOS runtime
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.6'
 
-
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          # CocoaPods for iOS
+          brew install cocoapods || true
+          pushd ios || exit 0
+          pod install --repo-update || true
+          popd || true
 
-      - name: Run integration tests
-        run: flutter test integration_test/
+      - name: List available iOS simulators
+        run: xcrun simctl list devices
+
+      - name: Boot iPhone 16 simulator and expose UDID
+        run: |
+          # Find a bootable "iPhone 16" device UDID (uses first available)
+          UDID=$(xcrun simctl list devices available | grep -m1 "iPhone 16 (" || true)
+          if [ -z "$UDID" ]; then
+            echo "No available 'iPhone 16' simulator found. See 'xcrun simctl list devices' output above."
+            exit 1
+          fi
+          # extract UDID
+          UDID=$(echo "$UDID" | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          echo "Found UDID=$UDID"
+          echo "DEVICE_UDID=$UDID" >> $GITHUB_ENV
+          open -a Simulator || true
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+      - name: Wait for simulator to be ready (optional extra wait)
+        run: sleep 5
+
+      - name: Run integration tests on iPhone 16 simulator
+        env:
+          DEVICE_UDID: ${{ env.DEVICE_UDID }}
+        run: |
+          # Verify flutter sees the simulator
+          flutter devices
+          # Run integration tests against the simulator UDID
+          flutter test integration_test/ -d $DEVICE_UDID
 
   # 安全审计
   security-audit:
